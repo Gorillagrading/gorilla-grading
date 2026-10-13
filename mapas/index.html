@@ -1,0 +1,2022 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🗺️ Mapa Visual Real con Capturas — Gorilla Grading</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-deep: #080A09;
+      --bg-card: #121513;
+      --bg-card-hover: #181C19;
+      --bg-elevated: #1F2520;
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-medium: rgba(255, 255, 255, 0.18);
+      
+      --brand-green: #22C55E;
+      --brand-green-glow: rgba(34, 197, 94, 0.3);
+      
+      --action-keep: #10B981;
+      --action-keep-bg: rgba(16, 185, 129, 0.15);
+      --action-remove: #EF4444;
+      --action-remove-bg: rgba(239, 68, 68, 0.15);
+      --action-replace: #F59E0B;
+      --action-replace-bg: rgba(245, 158, 11, 0.15);
+      --action-merge: #3B82F6;
+      --action-merge-bg: rgba(59, 130, 246, 0.15);
+
+      --text-main: #F3F4F6;
+      --text-muted: #9CA3AF;
+      --text-dim: #6B7280;
+      
+      --font-display: 'Outfit', sans-serif;
+      --font-body: 'Plus Jakarta Sans', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-deep);
+      color: var(--text-main);
+      font-family: var(--font-body);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      padding-bottom: 120px;
+    }
+
+    /* TOP BAR */
+    header.header {
+      background: rgba(8, 10, 9, 0.92);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border-subtle);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      padding: 14px 28px;
+    }
+
+    .header-content {
+      max-width: 1600px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .logo-badge {
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #15803D 0%, #052E16 100%);
+      border: 1px solid var(--brand-green);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      box-shadow: 0 0 16px var(--brand-green-glow);
+    }
+
+    .header-title h1 {
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 700;
+      color: #FFF;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .header-title p {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      font-family: var(--font-body);
+      font-size: 13px;
+      font-weight: 600;
+      padding: 9px 16px;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-primary {
+      background: var(--brand-green);
+      color: #052E16;
+    }
+
+    .btn-primary:hover {
+      background: #4ADE80;
+      box-shadow: 0 0 16px var(--brand-green-glow);
+    }
+
+    .btn-outline {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: var(--border-medium);
+      color: var(--text-main);
+    }
+
+    .btn-outline:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: #FFF;
+    }
+
+    /* STATS & PROGRESS STRIP */
+    .summary-strip {
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 12px 28px;
+    }
+
+    .summary-inner {
+      max-width: 1600px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .metric-pills {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .metric-pill {
+      font-size: 12px;
+      font-weight: 700;
+      padding: 5px 12px;
+      border-radius: 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-elevated);
+    }
+
+    .metric-pill.keep { color: var(--action-keep); border-color: rgba(16, 185, 129, 0.4); }
+    .metric-pill.remove { color: var(--action-remove); border-color: rgba(239, 68, 68, 0.4); }
+    .metric-pill.replace { color: var(--action-replace); border-color: rgba(245, 158, 11, 0.4); }
+    .metric-pill.merge { color: var(--action-merge); border-color: rgba(59, 130, 246, 0.4); }
+    .metric-pill.pending { color: var(--text-muted); }
+
+    .progress-box {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .progress-bar-bg {
+      width: 140px;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #10B981, #22C55E);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    /* MAIN CONTAINER */
+    .main-container {
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 24px 28px;
+    }
+
+    /* HERO INSTRUCTION BANNER */
+    .banner-real-images {
+      background: radial-gradient(circle at 10% 20%, rgba(34, 197, 94, 0.12) 0%, rgba(18, 21, 19, 0.95) 70%);
+      border: 1px solid rgba(34, 197, 94, 0.35);
+      border-radius: 16px;
+      padding: 22px 26px;
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .banner-text h2 {
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 700;
+      color: #FFF;
+      margin-bottom: 4px;
+    }
+
+    .banner-text p {
+      color: var(--text-muted);
+      font-size: 14px;
+      max-width: 900px;
+    }
+
+    .legend-chips {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .chip-legend {
+      font-size: 12px;
+      font-weight: 700;
+      padding: 6px 12px;
+      border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .chip-legend.keep { background: var(--action-keep-bg); color: var(--action-keep); border: 1px solid var(--action-keep); }
+    .chip-legend.remove { background: var(--action-remove-bg); color: var(--action-remove); border: 1px solid var(--action-remove); }
+    .chip-legend.replace { background: var(--action-replace-bg); color: var(--action-replace); border: 1px solid var(--action-replace); }
+    .chip-legend.merge { background: var(--action-merge-bg); color: var(--action-merge); border: 1px solid var(--action-merge); }
+
+    /* FILTERS */
+    .filter-tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      background: var(--bg-card);
+      padding: 6px;
+      border-radius: 12px;
+      border: 1px solid var(--border-subtle);
+      margin-bottom: 24px;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-family: var(--font-body);
+      font-size: 13px;
+      font-weight: 600;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .tab-btn:hover {
+      color: #FFF;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .tab-btn.active {
+      background: var(--brand-green);
+      color: #052E16;
+    }
+
+    /* SECTION GROUPS */
+    .group-header {
+      margin: 32px 0 18px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .group-header h3 {
+      font-family: var(--font-display);
+      font-size: 22px;
+      font-weight: 700;
+      color: #FFF;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .group-tag {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      padding: 4px 10px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-muted);
+    }
+
+    /* CARDS GRID */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(520px, 1fr));
+      gap: 28px;
+    }
+
+    @media (max-width: 650px) {
+      .cards-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .section-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .section-card:hover {
+      border-color: var(--border-medium);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+    }
+
+    /* STATUS RIBBONS */
+    .section-card.status-keep { border-left: 5px solid var(--action-keep); }
+    .section-card.status-remove { border-left: 5px solid var(--action-remove); opacity: 0.75; }
+    .section-card.status-replace { border-left: 5px solid var(--action-replace); }
+    .section-card.status-merge { border-left: 5px solid var(--action-merge); }
+
+    /* CARD HEADER */
+    .card-head {
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      background: rgba(255, 255, 255, 0.02);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .card-order-badge {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: rgba(34, 197, 94, 0.12);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--brand-green);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .card-meta {
+      flex: 1;
+    }
+
+    .card-title {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 700;
+      color: #FFF;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 2px;
+    }
+
+    .card-route {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+
+    .duplicate-warning {
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      color: #FBBF24;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* REAL SCREENSHOT CONTAINER */
+    .screenshot-box {
+      background: #000;
+      position: relative;
+      cursor: zoom-in;
+      overflow: hidden;
+      max-height: 280px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .screenshot-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: top center;
+      transition: transform 0.3s ease;
+      display: block;
+    }
+
+    .screenshot-box:hover img {
+      transform: scale(1.02);
+    }
+
+    .zoom-hint {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      background: rgba(0, 0, 0, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #FFF;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 6px;
+      backdrop-filter: blur(4px);
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    /* CARD BODY & DECISIONS */
+    .card-body {
+      padding: 18px 20px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .card-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .card-details-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+
+    .card-detail-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+    }
+
+    .bullet {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--brand-green);
+      margin-top: 6px;
+      flex-shrink: 0;
+    }
+
+    /* DECISION BUTTONS */
+    .decision-controls {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: auto;
+    }
+
+    .decision-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+    }
+
+    .decision-btn-group {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+    }
+
+    .vote-btn {
+      font-family: var(--font-body);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 10px 4px;
+      border-radius: 8px;
+      border: 1px solid var(--border-subtle);
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s ease;
+    }
+
+    .vote-btn:hover {
+      border-color: #FFF;
+      color: #FFF;
+    }
+
+    .vote-btn.active-keep {
+      background: var(--action-keep);
+      color: #052E16;
+      border-color: var(--action-keep);
+      box-shadow: 0 0 14px rgba(16, 185, 129, 0.4);
+    }
+
+    .vote-btn.active-remove {
+      background: var(--action-remove);
+      color: #FFF;
+      border-color: var(--action-remove);
+      box-shadow: 0 0 14px rgba(239, 68, 68, 0.4);
+    }
+
+    .vote-btn.active-replace {
+      background: var(--action-replace);
+      color: #451A03;
+      border-color: var(--action-replace);
+      box-shadow: 0 0 14px rgba(245, 158, 11, 0.4);
+    }
+
+    .vote-btn.active-merge {
+      background: var(--action-merge);
+      color: #FFF;
+      border-color: var(--action-merge);
+      box-shadow: 0 0 14px rgba(59, 130, 246, 0.4);
+    }
+
+    .notes-box {
+      width: 100%;
+      background: #080A09;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 10px 12px;
+      color: #FFF;
+      font-family: var(--font-body);
+      font-size: 12px;
+    }
+
+    .notes-box:focus {
+      outline: none;
+      border-color: var(--brand-green);
+      box-shadow: 0 0 10px var(--brand-green-glow);
+    }
+
+    /* LIGHTBOX FOR FULL IMAGE INSPECTION */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.92);
+      backdrop-filter: blur(10px);
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 30px;
+    }
+
+    .lightbox-overlay.open {
+      display: flex;
+    }
+
+    .lightbox-header {
+      width: 100%;
+      max-width: 1200px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .lightbox-header h4 {
+      font-family: var(--font-display);
+      font-size: 18px;
+      color: #FFF;
+    }
+
+    .lightbox-close {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #FFF;
+      font-size: 18px;
+      padding: 6px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .lightbox-close:hover {
+      background: #EF4444;
+      border-color: #EF4444;
+    }
+
+    .lightbox-img-wrapper {
+      max-width: 1200px;
+      max-height: 80vh;
+      overflow: auto;
+      border-radius: 12px;
+      border: 1px solid var(--border-medium);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9);
+      background: #0B0E0B;
+    }
+
+    .lightbox-img-wrapper img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    /* MODAL EXPORT */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(8px);
+      z-index: 1500;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-overlay.open {
+      display: flex;
+    }
+
+    .modal-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-medium);
+      border-radius: 16px;
+      width: 100%;
+      max-width: 800px;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.9);
+    }
+
+    .modal-header {
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-header h3 {
+      font-family: var(--font-display);
+      font-size: 18px;
+      color: #FFF;
+    }
+
+    .modal-close {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    .modal-body {
+      padding: 20px 24px;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .report-textarea {
+      width: 100%;
+      height: 380px;
+      background: #080A09;
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 16px;
+      color: #A7F3D0;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .modal-footer {
+      padding: 16px 24px;
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #10B981;
+      color: #052E16;
+      font-weight: 700;
+      padding: 12px 20px;
+      border-radius: 10px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+      z-index: 3000;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(10px);
+      transition: all 0.25s ease;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-content">
+      <div class="brand-group">
+        <div class="logo-badge">🦍</div>
+        <div class="header-title">
+          <h1>GORILLA GRADING <span style="color: var(--brand-green); font-size: 13px; background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.3); padding: 2px 8px; border-radius: 6px;">MAPA VISUAL CON CAPTURAS REALES</span></h1>
+          <p>Tablero de Decisiones con fotos reales de la web actual</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button class="btn btn-outline" onclick="loadRecommendedPreset()">
+          ✨ Propuesta Sugerida
+        </button>
+        <button class="btn btn-outline" onclick="triggerImportJSON()">
+          📥 Importar Votos (JSON)
+        </button>
+        <input type="file" id="jsonFileInput" accept=".json" style="display:none;" onchange="handleImportJSON(event)">
+        <button class="btn btn-outline" onclick="resetVotes()">
+          🔄 Reiniciar
+        </button>
+        <button class="btn btn-primary" onclick="openExportModal()">
+          📋 Exportar Acta del Equipo
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- PROGRESS STRIP -->
+  <div class="summary-strip">
+    <div class="summary-inner">
+      <div class="metric-pills">
+        <div class="metric-pill keep"><span>✅ DEJAR:</span> <span id="count-keep">0</span></div>
+        <div class="metric-pill remove"><span>❌ ELIMINAR:</span> <span id="count-remove">0</span></div>
+        <div class="metric-pill replace"><span>🔄 SUSTITUIR:</span> <span id="count-replace">0</span></div>
+        <div class="metric-pill merge"><span>🔗 FUSIONAR:</span> <span id="count-merge">0</span></div>
+        <div class="metric-pill pending"><span>⏳ PENDIENTES:</span> <span id="count-pending">25</span></div>
+      </div>
+
+      <div class="progress-box">
+        <span>Progreso de revisión:</span>
+        <div class="progress-bar-bg">
+          <div id="progress-fill" class="progress-bar-fill"></div>
+        </div>
+        <span id="progress-text">0%</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN WRAPPER -->
+  <main class="main-container">
+
+    <!-- WELCOME / INSTRUCTIONS CARD -->
+    <div class="banner-real-images">
+      <div class="banner-text">
+        <h2>🖼️ Cada tarjeta muestra la IMAGEN REAL exacta de cómo se ve en la web</h2>
+        <p>
+          Haz clic en cualquier imagen para verla en pantalla completa. 
+          Votad con vuestro equipo si se <strong>DEJA</strong>, se <strong>ELIMINA</strong>, se <strong>SUSTITUYE</strong> o se <strong>FUSIONA</strong>.
+        </p>
+      </div>
+      <div class="legend-chips">
+        <div class="chip-legend keep">✅ DEJAR: Mantener</div>
+        <div class="chip-legend remove">❌ ELIMINAR: Quitar</div>
+        <div class="chip-legend replace">🔄 SUSTITUIR: Cambiar</div>
+        <div class="chip-legend merge">🔗 FUSIONAR: Unir</div>
+      </div>
+    </div>
+
+    <!-- FILTER TABS -->
+    <div class="filter-tabs">
+      <button class="tab-btn active" onclick="setFilter('all')">Ver Todo (25)</button>
+      <button class="tab-btn" onclick="setFilter('home')">🏠 Solo la Home (12 secciones en orden)</button>
+      <button class="tab-btn" onclick="setFilter('pages')">📑 Páginas del Menú (5)</button>
+      <button class="tab-btn" onclick="setFilter('pillars')">🏛️ Los 4 Pilares (4)</button>
+      <button class="tab-btn" onclick="setFilter('orphans')">⚠️ Huérfanas y Dudas (4)</button>
+      <button class="tab-btn" onclick="setFilter('pending')">⏳ Solo Pendientes de Votar</button>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- GRUPO 1: SECCIONES DE LA HOME (12) -->
+    <!-- ============================================== -->
+    <div class="group-header" data-category="home">
+      <h3>🏠 Página de Inicio (Home) — 12 Secciones en Orden</h3>
+      <span class="group-tag">De arriba a abajo tal como navega el usuario</span>
+    </div>
+
+    <div class="cards-grid" data-category="home">
+
+      <!-- 01. Hero -->
+      <div class="section-card" id="card-sec-1" data-id="sec-1" data-cat="home">
+        <div class="card-head">
+          <div class="card-order-badge">01</div>
+          <div class="card-meta">
+            <div class="card-title">Hero + Slab Inspector 3D</div>
+            <div class="card-route">Componente: LuxuryHero.tsx</div>
+          </div>
+        </div>
+        <div class="screenshot-box" onclick="openLightbox('./capturas/sec-1.png?v=1791892903257', 'Sección 01: Hero + Slab Inspector 3D')">
+          <img src="./capturas/sec-1.png?v=1791892903257" alt="Hero con Slab 3D">
+          <span class="zoom-hint">🔍 Ampliar foto real</span>
+        </div>
+        <div class="card-body">
+          <p class="card-desc">
+            Cabecera principal con titular ("Precision Gives Value"), botones de acción directa y el Slab 3D interactivo que rota con el cursor.
+          </p>
+          <div class="card-details-list">
+            <div class="card-detail-item"><span class="bullet"></span> Elemento principal de impacto visual.</div>
+          </div>
+          <div class="decision-controls">
+            <div class="decision-label">Decisión del equipo:</div>
+            <div class="decision-btn-group">
+              <button class="vote-btn" onclick="vote('sec-1', 'keep')"><span>✅</span>DEJAR</button>
+              <button class="vote-btn" onclick="vote('sec-1', 'remove')"><span>❌</span>QUITAR</button>
+              <button class="vote-btn" onclick="vote('sec-1', 'replace')"><span>🔄</span>CAMBIAR</button>
+              <button class="vote-btn" onclick="vote('sec-1', 'merge')"><span>🔗</span>UNIR</button>
+            </div>
+            <input type="text" class="notes-box" placeholder="Comentarios / sugerencias del equipo..." oninput="saveNote('sec-1', this.value)">
+          </div>
+        </div>
+      </div>
+
+      <!-- 02. Carrusel Logos -->
+      <div class="section-card" id="card-sec-2" data-id="sec-2" data-cat="home">
+        <div class="card-head">
+          <div class="card-order-badge">02</div>
+          <div class="card-meta">
+            <div class="card-title">Trusted by Collectors (Logos TCG)</div>
+            <div class="card-route">Componente: BrandEcosystemRibbon.tsx</div>
+          </div>
+        </div>
+        <div class="screenshot-box" onclick="openLightbox('./capturas/sec-2.png?v=1791892903257', 'Sección 02: Carrusel de Logos TCG')">
+          <img src="./capturas/sec-2.png?v=1791892903257" alt="Carrusel de logos TCG">
+          <span class="zoom-hint">🔍 Ampliar foto real</span>
+        </div>
+        <div class="card-body">
+          <p class="card-desc">
+            Cinta deslizante con 15 logos de juegos de cartas (Pokémon, Magic, Yu-Gi-Oh!, One Piece, Lorcana, etc.).
+          </p>
+          <div class="card-details-list">
+            <div class="card-detail-item"><span class="bullet"></span> Comunica confianza y variedad de compatibilidad.</div>
+          </div>
+          <div class="decision-controls">
+            <div class="decision-label">Decisión del equipo:</div>
+            <div class="decision-btn-group">
+              <button class="vote-btn" onclick="vote('sec-2', 'keep')"><span>✅</span>DEJAR</button>
+              <button class="vote-btn" onclick="vote('sec-2', 'remove')"><span>❌</span>QUITAR</button>
+              <button class="vote-btn" onclick="vote('sec-2', 'replace')"><span>🔄</span>CAMBIAR</button>
+              <button class="vote-btn" onclick="vote('sec-2', 'merge')"><span>🔗</span>UNIR</button>
+            </div>
+            <input type="text" class="notes-box" placeholder="Comentarios / sugerencias del equipo..." oninput="saveNote('sec-2', this.value)">
+          </div>
+        </div>
+      </div>
+
+      <!-- 03. Tecnología en 4 Pasos -->
+      <div class="section-card" id="card-sec-3" data-id="sec-3" data-cat="home">
+        <div class="card-head">
+          <div class="card-order-badge">03</div>
+          <div class="card-meta">
+            <div class="card-title">Tecnología en 4 Pasos (Resumen)</div>
+            <div class="card-route">Componente: HomeTechnologySection.tsx</div>
+          </div>
+        </div>
+        <div class="screenshot-box" onclick="openLightbox('./capturas/sec-3.png?v=1791892903257', 'Sección 03: Tecnología en 4 Pasos')">
+          <img src="./capturas/sec-3.png?v=1791892903257" alt="Tecnología 4 pasos">
+          <span class="zoom-hint">🔍 Ampliar foto real</span>
+        </div>
+        <div class="card-body">
+          <p class="card-desc">
+            4 columnas interactivas: 1. Escaneo Óptico, 2. Análisis Forense, 3. Medición Sub-Micrométrica, 4. Grado & Encapsulado.
+          </p>
+          <div class="card-details-list">
+            <div class="card-detail-item"><span class="bullet"></span> Al pulsar en cada paso se abre un modal técnico detallado.</div>
+          </div>
+          <div class="decision-controls">
+            <div class="decision-label">Decisión del equipo:</div>
+            <div class="decision-btn-group">
+              <button class="vote-btn" onclick="vote('sec-3', 'keep')"><span>✅</span>DEJAR</button>
+              <button class="vote-btn" onclick="vote('sec-3', 'remove')"><span>❌</span>QUITAR</button>
+              <button class="vote-btn" onclick="vote('sec-3', 'replace')"><span>🔄</span>CAMBIAR</button>
+              <button class="vote-btn" onclick="vote('sec-3', 'merge')"><span>🔗</span>UNIR</button>
+            </div>
+            <input type="text" class="notes-box" placeholder="Comentarios / sugerencias del equipo..." oninput="saveNote('sec-3', this.value)">
+          </div>
+        </div>
+      </div>
+
+      <!-- 04. Verificación de Certificado -->
+      <div class="section-card" id="card-sec-4" data-id="sec-4" data-cat="home">
+        <div class="card-head">
+          <div class="card-order-badge">04</div>
+          <div class="card-meta">
+            <div class="card-title">Módulo Verificación Rápida</div>
+            <div class="card-route">Componente: HomeVerificationModule.tsx</div>
+          </div>
+          <span class="duplicate-warning">⚠️ Repite /verify</span>
+        </div>
+        <div class="screenshot-box" onclick="openLightbox('./capturas/sec-4.png?v=1791892903257', 'Sección 04: Verificación Rápida de Certificado')">
+          <img src="./capturas/sec-4.png?v=1791892903257" alt="Módulo verificación certificado">
+          <span class="zoom-hint">🔍 Ampliar foto real</span>
+        </div>
+        <div class="card-body">
+          <p class="card-desc">
+            Buscador interactivo donde el usuario ingresa un código de slab y ve una previsualización forense.
+          </p>
+          <div class="card-details-list">
+            <div class="card-detail-item"><span class="bullet"></span> <strong>Pregunta:</strong> ¿Dejar este bloque en la Home o basta con el buscador del Navbar y la página <code>/verify</code>?</div>
+          </div>
+          <div class="decision-controls">
+            <div class="decision-label">Decisión del equipo:</div>
+            <div class="decision-btn-group">
+              <button class="vote-btn" onclick="vote('sec-4', 'keep')"><span>✅</span>DEJAR</button>
+              <button class="vote-btn" onclick="vote('sec-4', 'remove')"><span>❌</span>QUITAR</button>
+              <button class="vote-btn" onclick="vote('sec-4', 'replace')"><span>🔄</span>CAMBIAR</button>
+              <button class="vote-btn" onclick="vote('sec-4', 'merge')"><span>🔗</span>UNIR</button>
+            </div>
+            <input type="text" class="notes-box" placeholder="Comentarios / sugerencias del equipo..." oninput="saveNote('sec-4', this.value)">
+          </div>
+        </div>
+      </div>
+
+      <!-- 05. Tarifas -->
+      <div class="section-card" id="card-sec-5" data-id="sec-5" data-cat="home">
+        <div class="card-head">
+          <div class="card-order-badge">05</div>
+          <div class="card-meta">
+            <div class="card-title">Tarifas y Precios (Completa)</div>
+            <div class="card-route">Componente: LuxuryPricingSection.tsx</div>
+          </div>
+          <span class="duplicate-warning">⚠️ Idéntica a /pricing</span>
+        </div>
+        <div class="screenshot-box" onclick="openLightbox('./capturas/sec-5.png?v=1791892903257', 'Sección 05: Tarifas y Precios')">
+          <img src="./capturas/sec-5.png?v=1791892903257" alt="Tarifas y Precios">
+          <span class="zoom-hint">🔍 Ampliar foto real</span>
+        </div>
+        <div class="card-body">
+          <p class="card-desc">
+            Las 3 tarjetas completas de precios (Standard 15€, Express 28€, Walk-Through 45€).
+          </p>
+          <div class="card-details-list">
+            <div class="card-detail-item"><span class="bullet"></span> Es exactamente la misma sección que hay en <code>/pricing</code>. ¿Reducirla en la home a un banner más ligero?</div>
+          </div>
+          <div class="decision-controls">
+            <div class="decision-label">Decisión del equipo:</div>
+            <div class="decision-btn-group">
+              <button class="vote-btn" onclick="vote('sec-5', 'keep')"><span>✅</span>DEJAR</button>
+              <button class="vote-btn" onclick="vote('sec-5', 'remove')"><span>❌</span>QUITAR</button>
+              <button class="vote-btn" onclick="vote('sec-5', 'replace')"><span>🔄</span>CAMBIAR</button>
+              <button class="vote-btn" onclick="vote('sec-5', 'merge')"><span>🔗</span>UNIR</button>
+            </div>
+            <input type="text" class="notes-box" placeholder="Comentarios / sugerencias del equipo..." oninput="saveNote('sec-5', this.value)">
+          </div>
+        </div>
+      </div>
+
+      <!-- 06. Proceso de Envío -->
+      <div class="section-card" id="card-sec-6" data-id="sec-6" data-cat="home">
+        <div class="card-head">
+          <div class="card-order-badge">06</div>
+          <div class="card-meta">
+            <div class="card-title">Proceso de Envío / Lab Process</div>
+            <div class="card-route">Componente: TechnologySection.tsx</div>
+          </div>
+          <span class="duplicate-warning">⚠️ Repite /technology</span>
+        </div>
+        <div class="screenshot-box" onclick="openLightbox('./capturas/sec-6.png?v=1791892903257', 'Sección 06: Proceso de Envío')">
+          <img src="./capturas/sec-6.png?v=1791892903257" alt="Proceso de Envío">
+          <span class="zoom-hint">🔍 Ampliar foto real</span>
+        </div>
+        <div class="card-body">
+          <p class="card-desc">
+            Esquema paso a paso de lo que ocurre cuando el cliente envía su carta al laboratorio.
+          </p>
+          <div class="card-details-list">
+            <div class="card-detail-item"><span class="bullet"></span> Al tener ya la sección #3 ("Tecnología en 4 pasos"), se siente repetitivo.</div>
+          </div>
+          <div class="decision-controls">
+            <div class="decision-label">Decisión del equipo:</div>
+            <div class="decision-btn-group">
+              <button class="vote-btn" onclick="vote('sec-6', 'keep')"><span>✅</span>DEJAR</button>
+              <button class="vote-btn" onclick="vote('sec-6', 'remove')"><span>❌</span>QUITAR</button>
+              <button class="vote-btn" onclick="vote('sec-6', 'replace')"><span>🔄</span>CAMBIAR</button>
+              <button class="vote-btn" onclick="vote('sec-6', 'merge')"><span>🔗</span>UNIR</button>
+            </div>
+            <input type="text" class="notes-box" placeholder="Comentarios / sugerencias del equipo..." oninput="saveNote('sec-6', this.value)">
+          </div>
+        </div>
+      </div>
+
+      <!-- 07. Auditorías / Testimonios -->
+      <div class="section-card" id="card-sec-7" data-id="sec-7" data-cat="home">
+        <div class="card-head">
+          <div class="card-order-badge">07</div>
+          <div class="card-meta">
+            <div class="card-title">Auditorías / Testimonios</div>
+            <div class="card-route">Componente: VerifiedAuditsSection.tsx</div>
+          </div>
+          <span class="duplicate-warning" style="background: rgba(239,68,68,0.15); color: #F87171;">⚠️ Texto Mockup</span>
+        </div>
+        <div class="screenshot-box" onclick="openLightbox('./capturas/sec-7.png?v=1791892903257', 'Sección 07: Auditorías y Testimonios')">
+          <img src="./capturas/sec-7.png?v=1791892903257" alt="Auditorías y Testimonios">
+          <span class="zoom-hint">🔍 Ampliar foto real</span>
+        </div>
+        <div class="card-body">
+          <p class="card-desc">
+            Testimonios y citas de auditores expertos. Actualmente tiene textos genéricos sin personas reales.
+          </p>
+          <div class="card-details-list">
+            <div class="card-detail-item"><span class="bullet"></span> ¿Quitar hasta recopilar reseñas reales con fotos de coleccionistas o influencers?</div>
+          </div>
+          <div class="decision-controls">
+            <div class="decision-label">Decisión del equipo:</div>
+            <div class="decision-btn-group">
+              <button class="vote-btn" onclick="vote('sec-7', 'keep')"><span>✅</span>DEJAR</button>
+              <button class="vote-btn" onclick="vote('sec-7', 'remove')"><span>❌</span>QUITAR</button>
+              <button class="vote-btn" onclick="vote('sec-7', 'replace')"><span>🔄</span>CAMBIAR</button>
+              <button class="vote-btn" onclick="vote('sec-7', 'merge')"><span>🔗</span>UNIR</button>
+            </div>
+            <input type="text" class="notes-box" placeholder="Comentarios / sugerencias del equipo..." oninput="saveNote('sec-7', this.value)">
+          </div>
+        </div>
+      </div>
+
+      <!-- 08. Promo CTA -->
+      <div class="section-card" id="card-sec-8" data-id="sec-8" data-cat="home">
+        <div class="card-head">
+          <div class="card-order-badge">08</div>
+          <div class="card-meta">
+            <div class="card-title">Promo CTA (Entrega en Mano)</div>
+            <div class="card-route">Componente: PromoCTA.tsx</div>
+          </div>
+        </div>
+        <div class="screenshot-box" onclick="openLightbox('./capturas/sec-8.png?v=1791892903257', 'Sección 08: Promo CTA Dropoff')">
+          <img src="./capturas/sec-8.png?v=1791892903257" alt="Promo CTA">
+          <span class="zoom-hint">🔍 Ampliar foto real</span>
+        </div>
+        <div class="card-body">
+          <p class="card-desc">
+            Banner que anuncia puntos de entrega presencial en mano y enlaza a <code>/faq/dropoff</code>.
+          </p>
+          <div class="decision-controls">
+            <div class="decision-label">Decisión del equipo:</div>
+            <div class="decision-btn-group">
+              <button class="vote-btn" onclick="vote('sec-8', 'keep')"><span>✅</span>DEJAR</button>
+              <button class="vote-btn" onclick="vote('sec-8', 'remove')"><span>❌</span>QUITAR</button>
+              <button class="vote-btn" onclick="vote('sec-8', 'replace')"><span>🔄</span>CAMBIAR</button>
+              <button class="vote-btn" onclick="vote('sec-8', 'merge')"><span>🔗</span>UNIR</button>
+            </div>
+            <input type="text" class="notes-box" placeholder="Comentarios / sugerencias del equipo..." oninput="saveNote('sec-8', this.value)">
+          </div>
+        </div>
+      </div>
+
+      <!-- 09. FAQ Rápida -->
+      <div class="section-card" id="card-sec-9" data-id="sec-9" data-cat="home">
+        <div class="card-head">
+          <div class="card-order-badge">09</div>
+          <div class="card-meta">
+            <div class="card-title">FAQ Rápida (3 Preguntas)</div>
+            <div class="card-route">Componente: FAQSection.tsx</div>
+          </div>
+          <span class="duplicate-warning">⚠️ Resumen de /faq</span>
+        </div>
+        <div class="screenshot-box" onclick="openLightbox('./capturas/sec-9.png?v=1791892903257', 'Sección 09: FAQ Rápida')">
+          <img src="./capturas/sec-9.png?v=1791892903257" alt="FAQ Rápida">
+          <span class="zoom-hint">🔍 Ampliar foto real</span>
+        </div>
+        <div class="card-body">
+          <p class="card-desc">
+            Acordeón desplegable con las 3 dudas clave y botón hacia el centro de ayuda completo <code>/faq</code>.
+          </p>
+          <div class="decision-controls">
+            <div class="decision-label">Decisión del equipo:</div>
+            <div class="decision-btn-group">
+              <button class="vote-btn" onclick="vote('sec-9', 'keep')"><span>✅</span>DEJAR</button>
+              <button class="vote-btn" onclick="vote('sec-9', 'remove')"><span>❌</span>QUITAR</button>
+              <button class="vote-btn" onclick="vote('sec-9', 'replace')"><span>🔄</span>CAMBIAR</button>
+              <button class="vote-btn" onclick="vote('sec-9', 'merge')"><span>🔗</span>UNIR</button>
+            </div>
+            <input type="text" class="notes-box" placeholder="Comentarios / sugerencias del equipo..." oninput="saveNote('sec-9', this.value)">
+          </div>
+        </div>
+      </div>
+
+      <!-- 10. Live Lab Reels -->
+      <div class="section-card" id="card-sec-10" data-id="sec-10" data-cat="home">
+        <div class="card-head">
+          <div class="card-order-badge">10</div>
+          <div class="card-meta">
+            <div class="card-title">Live Lab Activity (Reels Redes)</div>
+            <div class="card-route">Componente: LiveLabActivitySection.tsx</div>
+          </div>
+          <span class="duplicate-warning" style="background: rgba(239,68,68,0.15); color: #F87171;">⚠️ Placeholders</span>
+        </div>
+        <div class="screenshot-box" onclick="openLightbox('./capturas/sec-10.png?v=1791892903257', 'Sección 10: Live Lab Reels')">
+          <img src="./capturas/sec-10.png?v=1791892903257" alt="Live Lab Reels">
+          <span class="zoom-hint">🔍 Ampliar foto real</span>
+        </div>
+        <div class="card-body">
+          <p class="card-desc">
+            Módulo simulando vídeos en vertical del laboratorio graduando cartas. Actualmente son fotos fijas.
+          </p>
+          <div class="card-details-list">
+            <div class="card-detail-item"><span class="bullet"></span> ¿Conectar feed real de Instagram o quitar hasta tener vídeos producidos?</div>
+          </div>
+          <div class="decision-controls">
+            <div class="decision-label">Decisión del equipo:</div>
+            <div class="decision-btn-group">
+              <button class="vote-btn" onclick="vote('sec-10', 'keep')"><span>✅</span>DEJAR</button>
+              <button class="vote-btn" onclick="vote('sec-10', 'remove')"><span>❌</span>QUITAR</button>
+              <button class="vote-btn" onclick="vote('sec-10', 'replace')"><span>🔄</span>CAMBIAR</button>
+              <button class="vote-btn" onclick="vote('sec-10', 'merge')"><span>🔗</span>UNIR</button>
+            </div>
+            <input type="text" class="notes-box" placeholder="Comentarios / sugerencias del equipo..." oninput="saveNote('sec-10', this.value)">
+          </div>
+        </div>
+      </div>
+
+      <!-- 11. Misión / Garantía -->
+      <div class="section-card" id="card-sec-11" data-id="sec-11" data-cat="home">
+        <div class="card-head">
+          <div class="card-order-badge">11</div>
+          <div class="card-meta">
+            <div class="card-title">Misión & Custodia Asegurada</div>
+            <div class="card-route">Componente: MissionBanner.tsx</div>
+          </div>
+          <span class="duplicate-warning">⚠️ Repite /about</span>
+        </div>
+        <div class="screenshot-box" onclick="openLightbox('./capturas/sec-11.png?v=1791892903257', 'Sección 11: Misión y Custodia')">
+          <img src="./capturas/sec-11.png?v=1791892903257" alt="Misión y Custodia">
+          <span class="zoom-hint">🔍 Ampliar foto real</span>
+        </div>
+        <div class="card-body">
+          <p class="card-desc">
+            Banner con la declaración de intenciones y garantía de custodia con seguro a todo riesgo.
+          </p>
+          <div class="decision-controls">
+            <div class="decision-label">Decisión del equipo:</div>
+            <div class="decision-btn-group">
+              <button class="vote-btn" onclick="vote('sec-11', 'keep')"><span>✅</span>DEJAR</button>
+              <button class="vote-btn" onclick="vote('sec-11', 'remove')"><span>❌</span>QUITAR</button>
+              <button class="vote-btn" onclick="vote('sec-11', 'replace')"><span>🔄</span>CAMBIAR</button>
+              <button class="vote-btn" onclick="vote('sec-11', 'merge')"><span>🔗</span>UNIR</button>
+            </div>
+            <input type="text" class="notes-box" placeholder="Comentarios / sugerencias del equipo..." oninput="saveNote('sec-11', this.value)">
+          </div>
+        </div>
+      </div>
+
+      <!-- 12. Newsletter -->
+      <div class="section-card" id="card-sec-12" data-id="sec-12" data-cat="home">
+        <div class="card-head">
+          <div class="card-order-badge">12</div>
+          <div class="card-meta">
+            <div class="card-title">Newsletter (Boletín VIP)</div>
+            <div class="card-route">Componente: NewsletterSection.tsx</div>
+          </div>
+        </div>
+        <div class="screenshot-box" onclick="openLightbox('./capturas/sec-12.png?v=1791892903257', 'Sección 12: Newsletter')">
+          <img src="./capturas/sec-12.png?v=1791892903257" alt="Newsletter">
+          <span class="zoom-hint">🔍 Ampliar foto real</span>
+        </div>
+        <div class="card-body">
+          <p class="card-desc">
+            Cajón de suscripción por email justo antes del footer.
+          </p>
+          <div class="decision-controls">
+            <div class="decision-label">Decisión del equipo:</div>
+            <div class="decision-btn-group">
+              <button class="vote-btn" onclick="vote('sec-12', 'keep')"><span>✅</span>DEJAR</button>
+              <button class="vote-btn" onclick="vote('sec-12', 'remove')"><span>❌</span>QUITAR</button>
+              <button class="vote-btn" onclick="vote('sec-12', 'replace')"><span>🔄</span>CAMBIAR</button>
+              <button class="vote-btn" onclick="vote('sec-12', 'merge')"><span>🔗</span>UNIR</button>
+            </div>
+            <input type="text" class="notes-box" placeholder="Comentarios / sugerencias del equipo..." oninput="saveNote('sec-12', this.value)">
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+
+    <!-- ============================================== -->
+    <!-- GRUPO 2: PÁGINAS DEL MENÚ PRINCIPAL (5) -->
+    <!-- ============================================== -->
+    <div class="group-header" data-category="pages">
+      <h3>📑 Páginas del Menú Principal</h3>
+      <span class="group-tag">Vistas completas de la aplicación</span>
+    </div>
+
+    <div class="cards-grid" data-category="pages">
+
+      <!-- /technology -->
+      <div class="section-card" id="card-pg-tech" data-id="pg-tech" data-cat="pages">
+        <div class="card-head">
+          <div class="card-order-badge">P1</div>
+          <div class="card-meta">
+            <div class="card-title">/technology — Tecnología</div>
+            <div class="card-route">Archivo: TechnologyPage.tsx</div>
+          </div>
+        </div>
+        <div class="screenshot-box" onclick="openLightbox('./capturas/pg-tech.png?v=1791892903257', 'Página: /technology')">
+          <img src="./capturas/pg-tech.png?v=1791892903257" alt="Página Tecnología">
+          <span class="zoom-hint">🔍 Ampliar foto real</span>
+        </div>
+        <div class="card-body">
+          <p class="card-desc">
+            Página profunda sobre el instrumental óptico, las cámaras microscópicas y los 4 pilares.
+          </p>
+          <div class="decision-controls">
+            <div class="decision-label">Decisión del equipo:</div>
+            <div class="decision-btn-group">
+              <button class="vote-btn" onclick="vote('pg-tech', 'keep')"><span>✅</span>DEJAR</button>
+              <button class="vote-btn" onclick="vote('pg-tech', 'remove')"><span>❌</span>QUITAR</button>
+              <button class="vote-btn" onclick="vote('pg-tech', 'replace')"><span>🔄</span>CAMBIAR</button>
+              <button class="vote-btn" onclick="vote('pg-tech', 'merge')"><span>🔗</span>UNIR</button>
+            </div>
+            <input type="text" class="notes-box" placeholder="Comentarios / sugerencias del equipo..." oninput="saveNote('pg-tech', this.value)">
+          </div>
+        </div>
+      </div>
+
+      <!-- /about -->
+      <div class="section-card" id="card-pg-about" data-id="pg-about" data-cat="pages">
+        <div class="card-head">
+          <div class="card-order-badge">P2</div>
+          <div class="card-meta">
+            <div class="card-title">/about — El Laboratorio</div>
+            <div class="card-route">Archivo: AboutPage.tsx</div>
+          </div>
+        </div>
+        <div class="screenshot-box" onclick="openLightbox('./capturas/pg-about.png?v=1791892903257', 'Página: /about')">
+          <img src="./capturas/pg-about.png?v=1791892903257" alt="Página About">
+          <span class="zoom-hint">🔍 Ampliar foto real</span>
+        </div>
+        <div class="card-body">
+          <p class="card-desc">
+            Historia, fundadores, filosofía y estándares de custodia del laboratorio Gorilla Grading.
+          </p>
+          <div class="decision-controls">
+            <div class="decision-label">Decisión del equipo:</div>
+            <div class="decision-btn-group">
+              <button class="vote-btn" onclick="vote('pg-about', 'keep')"><span>✅</span>DEJAR</button>
+              <button class="vote-btn" onclick="vote('pg-about', 'remove')"><span>❌</span>QUITAR</button>
+              <button class="vote-btn" onclick="vote('pg-about', 'replace')"><span>🔄</span>CAMBIAR</button>
+              <button class="vote-btn" onclick="vote('pg-about', 'merge')"><span>🔗</span>UNIR</button>
+            </div>
+            <input type="text" class="notes-box" placeholder="Comentarios / sugerencias del equipo..." oninput="saveNote('pg-about', this.value)">
+          </div>
+        </div>
+      </div>
+
+      <!-- /verify -->
+      <div class="section-card" id="card-pg-verify" data-id="pg-verify" data-cat="pages">
+        <div class="card-head">
+          <div class="card-order-badge">P3</div>
+          <div class="card-meta">
+            <div class="card-title">/verify — Verificar Certificado</div>
+            <div class="card-route">Archivo: VerificationPage.tsx</div>
+          </div>
+        </div>
+        <div class="screenshot-box" onclick="openLightbox('./capturas/pg-verify.png?v=1791892903257', 'Página: /verify')">
+          <img src="./capturas/pg-verify.png?v=1791892903257" alt="Página Verify">
+          <span class="zoom-hint">🔍 Ampliar foto real</span>
+        </div>
+        <div class="card-body">
+          <p class="card-desc">
+            Buscador dedicado de números de serie y visualizador forense de defectos en esquinas y bordes.
+          </p>
+          <div class="decision-controls">
+            <div class="decision-label">Decisión del equipo:</div>
+            <div class="decision-btn-group">
+              <button class="vote-btn" onclick="vote('pg-verify', 'keep')"><span>✅</span>DEJAR</button>
+              <button class="vote-btn" onclick="vote('pg-verify', 'remove')"><span>❌</span>QUITAR</button>
+              <button class="vote-btn" onclick="vote('pg-verify', 'replace')"><span>🔄</span>CAMBIAR</button>
+              <button class="vote-btn" onclick="vote('pg-verify', 'merge')"><span>🔗</span>UNIR</button>
+            </div>
+            <input type="text" class="notes-box" placeholder="Comentarios / sugerencias del equipo..." oninput="saveNote('pg-verify', this.value)">
+          </div>
+        </div>
+      </div>
+
+      <!-- /pricing -->
+      <div class="section-card" id="card-pg-pricing" data-id="pg-pricing" data-cat="pages">
+        <div class="card-head">
+          <div class="card-order-badge">P4</div>
+          <div class="card-meta">
+            <div class="card-title">/pricing — Tarifas</div>
+            <div class="card-route">Archivo: PricingPage.tsx</div>
+          </div>
+        </div>
+        <div class="screenshot-box" onclick="openLightbox('./capturas/pg-pricing.png?v=1791892903257', 'Página: /pricing')">
+          <img src="./capturas/pg-pricing.png?v=1791892903257" alt="Página Pricing">
+          <span class="zoom-hint">🔍 Ampliar foto real</span>
+        </div>
+        <div class="card-body">
+          <p class="card-desc">
+            Página completa de tarifas, desglose de suplementos por valor de carta y tiempos de entrega garantizados.
+          </p>
+          <div class="decision-controls">
+            <div class="decision-label">Decisión del equipo:</div>
+            <div class="decision-btn-group">
+              <button class="vote-btn" onclick="vote('pg-pricing', 'keep')"><span>✅</span>DEJAR</button>
+              <button class="vote-btn" onclick="vote('pg-pricing', 'remove')"><span>❌</span>QUITAR</button>
+              <button class="vote-btn" onclick="vote('pg-pricing', 'replace')"><span>🔄</span>CAMBIAR</button>
+              <button class="vote-btn" onclick="vote('pg-pricing', 'merge')"><span>🔗</span>UNIR</button>
+            </div>
+            <input type="text" class="notes-box" placeholder="Comentarios / sugerencias del equipo..." oninput="saveNote('pg-pricing', this.value)">
+          </div>
+        </div>
+      </div>
+
+      <!-- /track -->
+      <div class="section-card" id="card-pg-track" data-id="pg-track" data-cat="pages">
+        <div class="card-head">
+          <div class="card-order-badge">P5</div>
+          <div class="card-meta">
+            <div class="card-title">/track — Estado del Pedido</div>
+            <div class="card-route">Archivo: TrackingPage.tsx</div>
+          </div>
+        </div>
+        <div class="screenshot-box" onclick="openLightbox('./capturas/pg-track.png?v=1791892903257', 'Página: /track')">
+          <img src="./capturas/pg-track.png?v=1791892903257" alt="Página Track">
+          <span class="zoom-hint">🔍 Ampliar foto real</span>
+        </div>
+        <div class="card-body">
+          <p class="card-desc">
+            Seguimiento en tiempo real con línea de tiempo (Recibido ➔ En Inspección ➔ Encapsulado ➔ Enviado).
+          </p>
+          <div class="decision-controls">
+            <div class="decision-label">Decisión del equipo:</div>
+            <div class="decision-btn-group">
+              <button class="vote-btn" onclick="vote('pg-track', 'keep')"><span>✅</span>DEJAR</button>
+              <button class="vote-btn" onclick="vote('pg-track', 'remove')"><span>❌</span>QUITAR</button>
+              <button class="vote-btn" onclick="vote('pg-track', 'replace')"><span>🔄</span>CAMBIAR</button>
+              <button class="vote-btn" onclick="vote('pg-track', 'merge')"><span>🔗</span>UNIR</button>
+            </div>
+            <input type="text" class="notes-box" placeholder="Comentarios / sugerencias del equipo..." oninput="saveNote('pg-track', this.value)">
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+
+    <!-- ============================================== -->
+    <!-- GRUPO 3: LOS 4 PILARES CIENTÍFICOS (4) -->
+    <!-- ============================================== -->
+    <div class="group-header" data-category="pillars">
+      <h3>🏛️ Los 4 Pilares Científicos</h3>
+      <span class="group-tag">Sub-páginas accesibles desde la sección de Tecnología</span>
+    </div>
+
+    <div class="cards-grid" data-category="pillars">
+
+      <!-- /preserve -->
+      <div class="section-card" id="card-pil-pres" data-id="pil-pres" data-cat="pillars">
+        <div class="card-head">
+          <div class="card-order-badge">🏛️1</div>
+          <div class="card-meta">
+            <div class="card-title">/preserve — Preservar</div>
+            <div class="card-route">Archivo: PreservePage.tsx</div>
+          </div>
+        </div>
+        <div class="screenshot-box" onclick="openLightbox('./capturas/pil-pres.png?v=1791892903257', 'Pilar: Preservar')">
+          <img src="./capturas/pil-pres.png?v=1791892903257" alt="Pilar Preservar">
+          <span class="zoom-hint">🔍 Ampliar foto real</span>
+        </div>
+        <div class="card-body">
+          <p class="card-desc">Sellado ultrasónico hermético y protección de polímero contra rayos UV.</p>
+          <div class="decision-controls">
+            <div class="decision-label">Decisión del equipo:</div>
+            <div class="decision-btn-group">
+              <button class="vote-btn" onclick="vote('pil-pres', 'keep')"><span>✅</span>DEJAR</button>
+              <button class="vote-btn" onclick="vote('pil-pres', 'remove')"><span>❌</span>QUITAR</button>
+              <button class="vote-btn" onclick="vote('pil-pres', 'replace')"><span>🔄</span>CAMBIAR</button>
+              <button class="vote-btn" onclick="vote('pil-pres', 'merge')"><span>🔗</span>UNIR</button>
+            </div>
+            <input type="text" class="notes-box" placeholder="Comentarios / sugerencias del equipo..." oninput="saveNote('pil-pres', this.value)">
+          </div>
+        </div>
+      </div>
+
+      <!-- /authenticate -->
+      <div class="section-card" id="card-pil-auth" data-id="pil-auth" data-cat="pillars">
+        <div class="card-head">
+          <div class="card-order-badge">🏛️2</div>
+          <div class="card-meta">
+            <div class="card-title">/authenticate — Autenticar</div>
+            <div class="card-route">Archivo: AuthenticatePage.tsx</div>
+          </div>
+        </div>
+        <div class="screenshot-box" onclick="openLightbox('./capturas/pil-auth.png?v=1791892903257', 'Pilar: Autenticar')">
+          <img src="./capturas/pil-auth.png?v=1791892903257" alt="Pilar Autenticar">
+          <span class="zoom-hint">🔍 Ampliar foto real</span>
+        </div>
+        <div class="card-body">
+          <p class="card-desc">Análisis forense de tintas, tramas roseta y detección de falsificaciones.</p>
+          <div class="decision-controls">
+            <div class="decision-label">Decisión del equipo:</div>
+            <div class="decision-btn-group">
+              <button class="vote-btn" onclick="vote('pil-auth', 'keep')"><span>✅</span>DEJAR</button>
+              <button class="vote-btn" onclick="vote('pil-auth', 'remove')"><span>❌</span>QUITAR</button>
+              <button class="vote-btn" onclick="vote('pil-auth', 'replace')"><span>🔄</span>CAMBIAR</button>
+              <button class="vote-btn" onclick="vote('pil-auth', 'merge')"><span>🔗</span>UNIR</button>
+            </div>
+            <input type="text" class="notes-box" placeholder="Comentarios / sugerencias del equipo..." oninput="saveNote('pil-auth', this.value)">
+          </div>
+        </div>
+      </div>
+
+      <!-- /understand -->
+      <div class="section-card" id="card-pil-und" data-id="pil-und" data-cat="pillars">
+        <div class="card-head">
+          <div class="card-order-badge">🏛️3</div>
+          <div class="card-meta">
+            <div class="card-title">/understand — Comprender</div>
+            <div class="card-route">Archivo: UnderstandPage.tsx</div>
+          </div>
+        </div>
+        <div class="screenshot-box" onclick="openLightbox('./capturas/pil-und.png?v=1791892903257', 'Pilar: Comprender')">
+          <img src="./capturas/pil-und.png?v=1791892903257" alt="Pilar Comprender">
+          <span class="zoom-hint">🔍 Ampliar foto real</span>
+        </div>
+        <div class="card-body">
+          <p class="card-desc">Métricas objetivas y transparentes en micras que justifican cada nota.</p>
+          <div class="decision-controls">
+            <div class="decision-label">Decisión del equipo:</div>
+            <div class="decision-btn-group">
+              <button class="vote-btn" onclick="vote('pil-und', 'keep')"><span>✅</span>DEJAR</button>
+              <button class="vote-btn" onclick="vote('pil-und', 'remove')"><span>❌</span>QUITAR</button>
+              <button class="vote-btn" onclick="vote('pil-und', 'replace')"><span>🔄</span>CAMBIAR</button>
+              <button class="vote-btn" onclick="vote('pil-und', 'merge')"><span>🔗</span>UNIR</button>
+            </div>
+            <input type="text" class="notes-box" placeholder="Comentarios / sugerencias del equipo..." oninput="saveNote('pil-und', this.value)">
+          </div>
+        </div>
+      </div>
+
+      <!-- /belong -->
+      <div class="section-card" id="card-pil-bel" data-id="pil-bel" data-cat="pillars">
+        <div class="card-head">
+          <div class="card-order-badge">🏛️4</div>
+          <div class="card-meta">
+            <div class="card-title">/belong — Pertenecer</div>
+            <div class="card-route">Archivo: BelongPage.tsx</div>
+          </div>
+        </div>
+        <div class="screenshot-box" onclick="openLightbox('./capturas/pil-bel.png?v=1791892903257', 'Pilar: Pertenecer')">
+          <img src="./capturas/pil-bel.png?v=1791892903257" alt="Pilar Pertenecer">
+          <span class="zoom-hint">🔍 Ampliar foto real</span>
+        </div>
+        <div class="card-body">
+          <p class="card-desc">Comunidad exclusiva y registro digital de cartas certificadas.</p>
+          <div class="decision-controls">
+            <div class="decision-label">Decisión del equipo:</div>
+            <div class="decision-btn-group">
+              <button class="vote-btn" onclick="vote('pil-bel', 'keep')"><span>✅</span>DEJAR</button>
+              <button class="vote-btn" onclick="vote('pil-bel', 'remove')"><span>❌</span>QUITAR</button>
+              <button class="vote-btn" onclick="vote('pil-bel', 'replace')"><span>🔄</span>CAMBIAR</button>
+              <button class="vote-btn" onclick="vote('pil-bel', 'merge')"><span>🔗</span>UNIR</button>
+            </div>
+            <input type="text" class="notes-box" placeholder="Comentarios / sugerencias del equipo..." oninput="saveNote('pil-bel', this.value)">
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+
+    <!-- ============================================== -->
+    <!-- GRUPO 4: PÁGINAS HUÉRFANAS Y DUDAS (4) -->
+    <!-- ============================================== -->
+    <div class="group-header" data-category="orphans">
+      <h3>⚠️ Páginas Huérfanas y Prototipos en Duda</h3>
+      <span class="group-tag">Candidatas principales a eliminar o fusionar</span>
+    </div>
+
+    <div class="cards-grid" data-category="orphans">
+
+      <!-- /how-it-works -->
+      <div class="section-card" id="card-orph-hiw" data-id="orph-hiw" data-cat="orphans">
+        <div class="card-head">
+          <div class="card-order-badge">❓1</div>
+          <div class="card-meta">
+            <div class="card-title">/how-it-works — Cómo Funciona</div>
+            <div class="card-route">Archivo: HowItWorksPage.tsx</div>
+          </div>
+          <span class="duplicate-warning" style="background: rgba(239,68,68,0.15); color: #F87171;">Apenas Enlazada</span>
+        </div>
+        <div class="screenshot-box" onclick="openLightbox('./capturas/orph-hiw.png?v=1791892903257', 'Página: /how-it-works')">
+          <img src="./capturas/orph-hiw.png?v=1791892903257" alt="Página How it works">
+          <span class="zoom-hint">🔍 Ampliar foto real</span>
+        </div>
+        <div class="card-body">
+          <p class="card-desc">Solo se llega desde un botón secundario del banner PromoCTA. Repite lo que ya explica la Home.</p>
+          <div class="decision-controls">
+            <div class="decision-label">Decisión del equipo:</div>
+            <div class="decision-btn-group">
+              <button class="vote-btn" onclick="vote('orph-hiw', 'keep')"><span>✅</span>DEJAR</button>
+              <button class="vote-btn" onclick="vote('orph-hiw', 'remove')"><span>❌</span>QUITAR</button>
+              <button class="vote-btn" onclick="vote('orph-hiw', 'replace')"><span>🔄</span>CAMBIAR</button>
+              <button class="vote-btn" onclick="vote('orph-hiw', 'merge')"><span>🔗</span>UNIR</button>
+            </div>
+            <input type="text" class="notes-box" placeholder="Comentarios / sugerencias del equipo..." oninput="saveNote('orph-hiw', this.value)">
+          </div>
+        </div>
+      </div>
+
+      <!-- /services -->
+      <div class="section-card" id="card-orph-serv" data-id="orph-serv" data-cat="orphans">
+        <div class="card-head">
+          <div class="card-order-badge">❓2</div>
+          <div class="card-meta">
+            <div class="card-title">/services — Servicios</div>
+            <div class="card-route">Archivo: ServicesPage.tsx</div>
+          </div>
+          <span class="duplicate-warning" style="background: rgba(239,68,68,0.15); color: #F87171;">Sin Tráfico</span>
+        </div>
+        <div class="screenshot-box" onclick="openLightbox('./capturas/orph-serv.png?v=1791892903257', 'Página: /services')">
+          <img src="./capturas/orph-serv.png?v=1791892903257" alt="Página Services">
+          <span class="zoom-hint">🔍 Ampliar foto real</span>
+        </div>
+        <div class="card-body">
+          <p class="card-desc">Solo enlazada desde <code>/how-it-works</code>. La información ya está cubierta en <code>/pricing</code>.</p>
+          <div class="decision-controls">
+            <div class="decision-label">Decisión del equipo:</div>
+            <div class="decision-btn-group">
+              <button class="vote-btn" onclick="vote('orph-serv', 'keep')"><span>✅</span>DEJAR</button>
+              <button class="vote-btn" onclick="vote('orph-serv', 'remove')"><span>❌</span>QUITAR</button>
+              <button class="vote-btn" onclick="vote('orph-serv', 'replace')"><span>🔄</span>CAMBIAR</button>
+              <button class="vote-btn" onclick="vote('orph-serv', 'merge')"><span>🔗</span>UNIR</button>
+            </div>
+            <input type="text" class="notes-box" placeholder="Comentarios / sugerencias del equipo..." oninput="saveNote('orph-serv', this.value)">
+          </div>
+        </div>
+      </div>
+
+      <!-- /concepts -->
+      <div class="section-card" id="card-orph-conc" data-id="orph-conc" data-cat="orphans">
+        <div class="card-head">
+          <div class="card-order-badge">❓3</div>
+          <div class="card-meta">
+            <div class="card-title">/concepts — Comparativa Interna</div>
+            <div class="card-route">Archivo: ConceptsComparisonPage.tsx</div>
+          </div>
+          <span class="duplicate-warning" style="background: rgba(239,68,68,0.15); color: #F87171;">Resto Prototipo</span>
+        </div>
+        <div class="screenshot-box" onclick="openLightbox('./capturas/orph-conc.png?v=1791892903257', 'Página: /concepts')">
+          <img src="./capturas/orph-conc.png?v=1791892903257" alt="Página Concepts">
+          <span class="zoom-hint">🔍 Ampliar foto real</span>
+        </div>
+        <div class="card-body">
+          <p class="card-desc">Página de pruebas que compara 3 conceptos antiguos de diseño. Ningún enlace público apunta a ella.</p>
+          <div class="decision-controls">
+            <div class="decision-label">Decisión del equipo:</div>
+            <div class="decision-btn-group">
+              <button class="vote-btn" onclick="vote('orph-conc', 'keep')"><span>✅</span>DEJAR</button>
+              <button class="vote-btn" onclick="vote('orph-conc', 'remove')"><span>❌</span>QUITAR</button>
+              <button class="vote-btn" onclick="vote('orph-conc', 'replace')"><span>🔄</span>CAMBIAR</button>
+              <button class="vote-btn" onclick="vote('orph-conc', 'merge')"><span>🔗</span>UNIR</button>
+            </div>
+            <input type="text" class="notes-box" placeholder="Comentarios / sugerencias del equipo..." oninput="saveNote('orph-conc', this.value)">
+          </div>
+        </div>
+      </div>
+
+      <!-- /submit wizard -->
+      <div class="section-card" id="card-flow-sub" data-id="flow-sub" data-cat="orphans">
+        <div class="card-head">
+          <div class="card-order-badge">🛒</div>
+          <div class="card-meta">
+            <div class="card-title">/submit — Wizard de Envío de Cartas</div>
+            <div class="card-route">Archivo: SubmissionWizardPage.tsx</div>
+          </div>
+        </div>
+        <div class="screenshot-box" onclick="openLightbox('./capturas/flow-sub.png?v=1791892903257', 'Página: /submit Wizard')">
+          <img src="./capturas/flow-sub.png?v=1791892903257" alt="Página Submit Wizard">
+          <span class="zoom-hint">🔍 Ampliar foto real</span>
+        </div>
+        <div class="card-body">
+          <p class="card-desc">El proceso donde el cliente configura cuántas cartas envía, elige tipo de servicio y realiza el pago.</p>
+          <div class="decision-controls">
+            <div class="decision-label">Decisión del equipo:</div>
+            <div class="decision-btn-group">
+              <button class="vote-btn" onclick="vote('flow-sub', 'keep')"><span>✅</span>DEJAR</button>
+              <button class="vote-btn" onclick="vote('flow-sub', 'remove')"><span>❌</span>QUITAR</button>
+              <button class="vote-btn" onclick="vote('flow-sub', 'replace')"><span>🔄</span>CAMBIAR</button>
+              <button class="vote-btn" onclick="vote('flow-sub', 'merge')"><span>🔗</span>UNIR</button>
+            </div>
+            <input type="text" class="notes-box" placeholder="Comentarios / sugerencias del equipo..." oninput="saveNote('flow-sub', this.value)">
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- LIGHTBOX MODAL FOR REAL IMAGE INSPECTION -->
+  <div class="lightbox-overlay" id="lightbox" onclick="closeLightbox()">
+    <div class="lightbox-header" onclick="event.stopPropagation()">
+      <h4 id="lightbox-title">Captura en Alta Resolución</h4>
+      <button class="lightbox-close" onclick="closeLightbox()">Cerrar ✕</button>
+    </div>
+    <div class="lightbox-img-wrapper" onclick="event.stopPropagation()">
+      <img id="lightbox-img" src="" alt="Captura ampliada">
+    </div>
+  </div>
+
+  <!-- EXPORT ACTA MODAL -->
+  <div class="modal-overlay" id="exportModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>📋 Acta de Decisiones del Equipo — Gorilla Grading</h3>
+        <button class="modal-close" onclick="closeExportModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+          Resumen generado a partir de vuestra votación visual:
+        </p>
+        <textarea id="reportOutput" class="report-textarea" readonly></textarea>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="copyReportToClipboard()">📋 Copiar al Portapapeles</button>
+        <button class="btn btn-outline" onclick="downloadJSON()">💾 Descargar JSON</button>
+        <button class="btn btn-primary" onclick="window.print()">🖨️ Imprimir / Guardar en PDF</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast">Guardado con éxito</div>
+
+  <!-- JAVASCRIPT ENGINE -->
+  <script>
+    const ITEMS = [
+      { id: 'sec-1', name: 'Hero + Slab Inspector 3D', cat: 'home', type: 'Sección Home #01' },
+      { id: 'sec-2', name: 'Trusted by Collectors (Logos)', cat: 'home', type: 'Sección Home #02' },
+      { id: 'sec-3', name: 'Tecnología en 4 Pasos', cat: 'home', type: 'Sección Home #03' },
+      { id: 'sec-4', name: 'Módulo Verificación Rápida', cat: 'home', type: 'Sección Home #04 (⚠️ Duplica /verify)' },
+      { id: 'sec-5', name: 'Tarifas y Precios (Completa)', cat: 'home', type: 'Sección Home #05 (⚠️ Duplica /pricing)' },
+      { id: 'sec-6', name: 'Proceso de Envío / Lab Process', cat: 'home', type: 'Sección Home #06 (⚠️ Repite /technology)' },
+      { id: 'sec-7', name: 'Auditorías / Testimonios', cat: 'home', type: 'Sección Home #07 (⚠️ Mockup)' },
+      { id: 'sec-8', name: 'Promo CTA (Dropoff)', cat: 'home', type: 'Sección Home #08' },
+      { id: 'sec-9', name: 'FAQ Rápida (3 Preguntas)', cat: 'home', type: 'Sección Home #09' },
+      { id: 'sec-10', name: 'Live Lab Activity (Reels)', cat: 'home', type: 'Sección Home #10 (⚠️ Mockup)' },
+      { id: 'sec-11', name: 'Misión & Custodia Asegurada', cat: 'home', type: 'Sección Home #11' },
+      { id: 'sec-12', name: 'Newsletter (Boletín VIP)', cat: 'home', type: 'Sección Home #12' },
+
+      { id: 'pg-tech', name: '/technology — Tecnología', cat: 'pages', type: 'Página del Menú' },
+      { id: 'pg-about', name: '/about — El Laboratorio', cat: 'pages', type: 'Página del Menú' },
+      { id: 'pg-verify', name: '/verify — Verificar', cat: 'pages', type: 'Página del Menú' },
+      { id: 'pg-pricing', name: '/pricing — Tarifas', cat: 'pages', type: 'Página del Menú' },
+      { id: 'pg-track', name: '/track — Estado del Pedido', cat: 'pages', type: 'Página del Menú' },
+
+      { id: 'pil-pres', name: '/preserve — Preservar', cat: 'pillars', type: 'Pilar 1' },
+      { id: 'pil-auth', name: '/authenticate — Autenticar', cat: 'pillars', type: 'Pilar 2' },
+      { id: 'pil-und', name: '/understand — Comprender', cat: 'pillars', type: 'Pilar 3' },
+      { id: 'pil-bel', name: '/belong — Pertenecer', cat: 'pillars', type: 'Pilar 4' },
+
+      { id: 'orph-hiw', name: '/how-it-works — Cómo Funciona', cat: 'orphans', type: '⚠️ Huérfana' },
+      { id: 'orph-serv', name: '/services — Servicios', cat: 'orphans', type: '⚠️ Huérfana' },
+      { id: 'orph-conc', name: '/concepts — Comparativa Interna', cat: 'orphans', type: '⚠️ Prototipo' },
+      { id: 'flow-sub', name: '/submit — Wizard de Envío', cat: 'orphans', type: 'Flujo de Compra' }
+    ];
+
+    let votes = JSON.parse(localStorage.getItem('gorilla_real_votes') || '{}');
+    let notes = JSON.parse(localStorage.getItem('gorilla_real_notes') || '{}');
+
+    function init() {
+      renderVotesUI();
+      updateMetrics();
+    }
+
+    function vote(id, decision) {
+      if (votes[id] === decision) {
+        delete votes[id];
+      } else {
+        votes[id] = decision;
+      }
+      localStorage.setItem('gorilla_real_votes', JSON.stringify(votes));
+      renderVotesUI();
+      updateMetrics();
+      showToast('Voto guardado');
+    }
+
+    function saveNote(id, text) {
+      notes[id] = text;
+      localStorage.setItem('gorilla_real_notes', JSON.stringify(notes));
+    }
+
+    function renderVotesUI() {
+      ITEMS.forEach(item => {
+        const card = document.getElementById(`card-${item.id}`);
+        if (!card) return;
+
+        card.classList.remove('status-keep', 'status-remove', 'status-replace', 'status-merge');
+        const btns = card.querySelectorAll('.vote-btn');
+        btns.forEach(b => b.classList.remove('active-keep', 'active-remove', 'active-replace', 'active-merge'));
+
+        const choice = votes[item.id];
+        if (choice) {
+          card.classList.add(`status-${choice}`);
+          const activeBtn = card.querySelector(`.vote-btn:nth-child(${getBtnIndex(choice)})`);
+          if (activeBtn) activeBtn.classList.add(`active-${choice}`);
+        }
+
+        const noteInput = card.querySelector('.notes-box');
+        if (noteInput && notes[item.id]) {
+          noteInput.value = notes[item.id];
+        }
+      });
+    }
+
+    function getBtnIndex(choice) {
+      if (choice === 'keep') return 1;
+      if (choice === 'remove') return 2;
+      if (choice === 'replace') return 3;
+      if (choice === 'merge') return 4;
+      return 1;
+    }
+
+    function updateMetrics() {
+      let keep = 0, remove = 0, replace = 0, merge = 0;
+      ITEMS.forEach(it => {
+        const v = votes[it.id];
+        if (v === 'keep') keep++;
+        else if (v === 'remove') remove++;
+        else if (v === 'replace') replace++;
+        else if (v === 'merge') merge++;
+      });
+
+      const totalVoted = keep + remove + replace + merge;
+      const pending = ITEMS.length - totalVoted;
+      const pct = Math.round((totalVoted / ITEMS.length) * 100);
+
+      document.getElementById('count-keep').textContent = keep;
+      document.getElementById('count-remove').textContent = remove;
+      document.getElementById('count-replace').textContent = replace;
+      document.getElementById('count-merge').textContent = merge;
+      document.getElementById('count-pending').textContent = pending;
+
+      document.getElementById('progress-fill').style.width = pct + '%';
+      document.getElementById('progress-text').textContent = pct + '%';
+    }
+
+    // LIGHTBOX
+    function openLightbox(src, title) {
+      document.getElementById('lightbox-img').src = src;
+      document.getElementById('lightbox-title').textContent = title;
+      document.getElementById('lightbox').classList.add('open');
+    }
+
+    function closeLightbox() {
+      document.getElementById('lightbox').classList.remove('open');
+    }
+
+    // FILTER LOGIC
+    function setFilter(filter) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+
+      document.querySelectorAll('.section-card').forEach(card => {
+        const cat = card.getAttribute('data-cat');
+        const id = card.getAttribute('data-id');
+        const isVoted = !!votes[id];
+
+        if (filter === 'all') {
+          card.style.display = 'flex';
+        } else if (filter === 'pending') {
+          card.style.display = isVoted ? 'none' : 'flex';
+        } else {
+          card.style.display = (cat === filter) ? 'flex' : 'none';
+        }
+      });
+
+      document.querySelectorAll('.group-header').forEach(gh => {
+        const gCat = gh.getAttribute('data-category');
+        if (filter === 'all' || filter === 'pending') gh.style.display = 'flex';
+        else gh.style.display = (gCat === filter) ? 'flex' : 'none';
+      });
+    }
+
+    // SUGGESTED PRESET
+    function loadRecommendedPreset() {
+      if (!confirm('¿Cargar propuesta recomendada para debatir sobre ella? Podrás cambiar cualquier voto.')) return;
+
+      votes = {
+        'sec-1': 'keep',
+        'sec-2': 'keep',
+        'sec-3': 'keep',
+        'sec-4': 'replace',
+        'sec-5': 'replace',
+        'sec-6': 'merge',
+        'sec-7': 'remove',
+        'sec-8': 'keep',
+        'sec-9': 'keep',
+        'sec-10': 'remove',
+        'sec-11': 'merge',
+        'sec-12': 'keep',
+        'pg-tech': 'keep',
+        'pg-about': 'keep',
+        'pg-verify': 'keep',
+        'pg-pricing': 'keep',
+        'pg-track': 'keep',
+        'pil-pres': 'keep',
+        'pil-auth': 'keep',
+        'pil-und': 'keep',
+        'pil-bel': 'keep',
+        'orph-hiw': 'remove',
+        'orph-serv': 'remove',
+        'orph-conc': 'remove',
+        'flow-sub': 'keep'
+      };
+
+      notes['sec-4'] = 'Dejar solo un buscador compacto en la Home; no repetir toda la ficha forense que ya está en /verify.';
+      notes['sec-5'] = 'Reducir a un resumen visual en la Home con botón a /pricing.';
+      notes['sec-6'] = 'Fusionar con la sección de Tecnología para no repetir dos bloques de proceso seguidos.';
+      notes['sec-7'] = 'Ocultar hasta recopilar testimonios reales de coleccionistas con fotos.';
+      notes['sec-10'] = 'Ocultar hasta tener vídeos reales producidos en el laboratorio.';
+      notes['sec-11'] = 'Dejar este contenido dentro de /about.';
+      notes['orph-hiw'] = 'Redirigir a /technology y eliminar ruta huérfana.';
+      notes['orph-serv'] = 'Ya está cubierta por /pricing.';
+
+      localStorage.setItem('gorilla_real_votes', JSON.stringify(votes));
+      localStorage.setItem('gorilla_real_notes', JSON.stringify(notes));
+      renderVotesUI();
+      updateMetrics();
+      showToast('Propuesta sugerida cargada');
+    }
+
+    function resetVotes() {
+      if (!confirm('¿Reiniciar todos los votos y notas?')) return;
+      votes = {};
+      notes = {};
+      localStorage.removeItem('gorilla_real_votes');
+      localStorage.removeItem('gorilla_real_notes');
+      renderVotesUI();
+      updateMetrics();
+      showToast('Votos reiniciados');
+    }
+
+    // EXPORT & IMPORT
+    function openExportModal() {
+      const now = new Date().toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+      let lines = [];
+      lines.push('========================================================');
+      lines.push('🏛️ ACTA DE DECISIONES — GORILLA GRADING (CON FOTOS REALES)');
+      lines.push(`Fecha: ${now}`);
+      lines.push('========================================================\n');
+
+      let keep = 0, remove = 0, replace = 0, merge = 0, pending = 0;
+
+      ITEMS.forEach(it => {
+        const v = votes[it.id] || 'PENDIENTE';
+        const n = notes[it.id] ? ` | NOTA: "${notes[it.id]}"` : '';
+        const symbol = v === 'keep' ? '✅ DEJAR' : v === 'remove' ? '❌ ELIMINAR' : v === 'replace' ? '🔄 SUSTITUIR' : v === 'merge' ? '🔗 FUSIONAR' : '⏳ PENDIENTE';
+        lines.push(`[${symbol}] ${it.name} (${it.type})${n}`);
+
+        if (v === 'keep') keep++;
+        else if (v === 'remove') remove++;
+        else if (v === 'replace') replace++;
+        else if (v === 'merge') merge++;
+        else pending++;
+      });
+
+      lines.push('\n--------------------------------------------------------');
+      lines.push(`RESUMEN GLOBAL:`);
+      lines.push(`Total elementos: ${ITEMS.length}`);
+      lines.push(`- ✅ Mantener / Dejar: ${keep}`);
+      lines.push(`- ❌ Eliminar: ${remove}`);
+      lines.push(`- 🔄 Sustituir / Rediseñar: ${replace}`);
+      lines.push(`- 🔗 Fusionar: ${merge}`);
+      lines.push(`- ⏳ Pendientes: ${pending}`);
+      lines.push('--------------------------------------------------------');
+
+      document.getElementById('reportOutput').value = lines.join('\n');
+      document.getElementById('exportModal').classList.add('open');
+    }
+
+    function closeExportModal() {
+      document.getElementById('exportModal').classList.remove('open');
+    }
+
+    function copyReportToClipboard() {
+      const text = document.getElementById('reportOutput').value;
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('¡Copiado al portapapeles!');
+      });
+    }
+
+    function downloadJSON() {
+      const data = {
+        date: new Date().toISOString(),
+        votes: votes,
+        notes: notes
+      };
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `gorilla_decisiones_equipo_${Date.now()}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('JSON descargado');
+    }
+
+    function triggerImportJSON() {
+      document.getElementById('jsonFileInput').click();
+    }
+
+    function handleImportJSON(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const data = JSON.parse(e.target.result);
+          if (data.votes) votes = data.votes;
+          if (data.notes) notes = data.notes;
+          localStorage.setItem('gorilla_real_votes', JSON.stringify(votes));
+          localStorage.setItem('gorilla_real_notes', JSON.stringify(notes));
+          renderVotesUI();
+          updateMetrics();
+          showToast('✅ ¡Votos del compañero importados!');
+        } catch (err) {
+          alert('Error al leer el archivo JSON: ' + err.message);
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2500);
+    }
+
+    window.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>

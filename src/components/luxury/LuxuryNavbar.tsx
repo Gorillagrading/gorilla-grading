@@ -110,7 +110,7 @@ export const LuxuryNavbar: React.FC<LuxuryNavbarProps> = ({ onNavigate }) => {
     isLight ? 'text-[#4B5563] hover:text-[#111827]' : 'text-[#B8BFB5] hover:text-white'
   }`;
 
-  // Header background class — Solid white at top, smoothly transparent on scroll
+  // Header background class — Solid at top, sleek frosted glass on scroll
   const headerBgClass = isMobileMenuOpen
     ? (isLight 
         ? 'bg-white text-[#111827] border-b border-black/[0.06] shadow-sm' 
@@ -128,9 +128,7 @@ export const LuxuryNavbar: React.FC<LuxuryNavbarProps> = ({ onNavigate }) => {
       className={`sticky top-0 w-full transition-all duration-300 ${isMobileMenuOpen ? 'z-[10000]' : 'z-50'} ${headerBgClass}`}
       style={isMobileMenuOpen ? { backgroundColor: isLight ? '#FFFFFF' : '#0B0E0B' } : undefined}
     >
-      <div className={`max-w-[1440px] mx-auto px-6 lg:px-10 flex items-center justify-between gap-4 transition-all duration-300 ${
-        isScrolled ? 'h-16' : 'h-20'
-      }`}>
+      <div className="max-w-[1440px] mx-auto px-6 lg:px-10 flex items-center justify-between gap-4 h-20">
         
         {/* Brand Logo & Name */}
         <div 

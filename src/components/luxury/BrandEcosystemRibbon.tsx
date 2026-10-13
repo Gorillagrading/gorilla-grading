@@ -13,11 +13,9 @@ export const BrandEcosystemRibbon: React.FC = () => {
       name: 'Gundam', 
       component: (
         <img 
-          src="/images/logos/Gundam.png" 
+          src={isLight ? "/images/logos/Gundam_black.png" : "/images/logos/Gundam.png"} 
           alt="Gundam" 
-          className={`h-7 sm:h-8 max-w-[120px] sm:max-w-[130px] object-contain ${
-            isLight ? 'brightness-0 opacity-70' : 'opacity-85'
-          }`} 
+          className="h-7 sm:h-8 max-w-[120px] sm:max-w-[130px] object-contain opacity-90 hover:opacity-100 transition-opacity" 
         />
       )
     },
@@ -33,9 +31,7 @@ export const BrandEcosystemRibbon: React.FC = () => {
         <img 
           src="/images/logos/finalFantasy.png" 
           alt="Final Fantasy" 
-          className={`h-6 sm:h-7 max-w-[120px] sm:max-w-[130px] object-contain ${
-            isLight ? 'brightness-0 opacity-80' : 'opacity-90'
-          }`} 
+          className="h-6 sm:h-7 max-w-[120px] sm:max-w-[130px] object-contain opacity-90 hover:opacity-100 transition-opacity" 
         />
       ) 
     },
@@ -64,11 +60,9 @@ export const BrandEcosystemRibbon: React.FC = () => {
       name: 'Magic: The Gathering', 
       component: (
         <img 
-          src="/images/logos/magic-logo.webp" 
+          src={isLight ? "/images/logos/magic_black_text.png" : "/images/logos/magic-logo.webp"} 
           alt="Magic: The Gathering" 
-          className={`h-6 sm:h-7 max-w-[120px] sm:max-w-[130px] object-contain ${
-            isLight ? 'brightness-0 opacity-80' : 'opacity-90'
-          }`} 
+          className="h-6 sm:h-7 max-w-[120px] sm:max-w-[130px] object-contain opacity-95 hover:opacity-100 transition-opacity" 
         />
       )
     },
@@ -77,11 +71,9 @@ export const BrandEcosystemRibbon: React.FC = () => {
       name: 'One Piece', 
       component: (
         <img 
-          src="/images/logos/onepiece.png" 
+          src={isLight ? "/images/logos/onepiece.png" : "/images/logos/onepiece_white.png"} 
           alt="One Piece" 
-          className={`h-6 sm:h-7 max-w-[120px] sm:max-w-[130px] object-contain ${
-            isLight ? 'brightness-0 opacity-85' : 'invert opacity-85'
-          }`} 
+          className="h-6 sm:h-7 max-w-[120px] sm:max-w-[130px] object-contain opacity-90 hover:opacity-100 transition-opacity" 
         />
       ) 
     },
@@ -92,9 +84,7 @@ export const BrandEcosystemRibbon: React.FC = () => {
         <img 
           src="/images/logos/lorcana.png" 
           alt="Lorcana" 
-          className={`h-7 sm:h-8 max-w-[120px] sm:max-w-[130px] object-contain ${
-            isLight ? 'brightness-0 opacity-75' : 'brightness-0 invert opacity-90'
-          }`} 
+          className="h-7 sm:h-8 max-w-[120px] sm:max-w-[130px] object-contain opacity-95 hover:opacity-100 transition-opacity" 
         />
       ) 
     },
@@ -121,11 +111,9 @@ export const BrandEcosystemRibbon: React.FC = () => {
       name: 'Dragon Ball', 
       component: (
         <img 
-          src="/images/logos/DragonBall.png" 
+          src={isLight ? "/images/logos/DragonBall.png" : "/images/logos/DragonBall_white.png"} 
           alt="Dragon Ball" 
-          className={`h-7 sm:h-8 max-w-[120px] sm:max-w-[130px] object-contain ${
-            isLight ? 'brightness-0 opacity-85' : 'brightness-0 invert opacity-90'
-          }`} 
+          className="h-7 sm:h-8 max-w-[120px] sm:max-w-[130px] object-contain opacity-95 hover:opacity-100 transition-opacity" 
         />
       ) 
     },

@@ -34,6 +34,7 @@ import { FAQPreparePage } from './pages/FAQPreparePage';
 import { FAQDropoffPage } from './pages/FAQDropoffPage';
 import { FAQTurnaroundPage } from './pages/FAQTurnaroundPage';
 import { LoginPage } from './pages/LoginPage';
+import { TeamVisualMapPage } from './pages/TeamVisualMapPage';
 
 export const AppContent: React.FC = () => {
   const { isLoggedIn } = useAuth();
@@ -117,6 +118,8 @@ export const AppContent: React.FC = () => {
         return <LegalPage type="cookie-consent" onNavigate={handleNavigate} />;
       case '/legal-notice':
         return <LegalPage type="legal-notice" onNavigate={handleNavigate} />;
+      case '/mapa':
+        return <TeamVisualMapPage onNavigate={handleNavigate} />;
       default:
         if (currentPath.startsWith('/certificates/')) {
           const certId = currentPath.replace('/certificates/', '');
@@ -125,6 +128,10 @@ export const AppContent: React.FC = () => {
         return <NotFoundPage onNavigate={handleNavigate} />;
     }
   };
+
+  if (currentPath === '/mapa') {
+    return <TeamVisualMapPage onNavigate={handleNavigate} />;
+  }
 
   return (
     <div className={`min-h-screen flex flex-col font-sans transition-colors duration-300 relative ${

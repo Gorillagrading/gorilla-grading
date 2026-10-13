@@ -263,7 +263,7 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
   return (
     <section 
       id="hero"
-      className="relative w-full flex items-center overflow-hidden bg-transparent text-white pt-10 sm:pt-14 pb-4 sm:pb-6 select-none"
+      className="relative w-full min-h-[calc(100vh-5rem)] flex items-center justify-center overflow-hidden bg-transparent text-white py-8 lg:py-14 select-none"
     >
       
       {/* Background Architectural Lights - Gentle luxury depth without muddy green wash */}
@@ -295,7 +295,7 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut", delay: 0.1 }}
-            className={`font-['Nunito',sans-serif] font-[900] text-4xl sm:text-5xl md:text-6xl lg:text-[62px] xl:text-[68px] leading-[0.98] tracking-normal mb-6 sm:mb-8 uppercase select-none ${
+            className={`font-['Nunito',sans-serif] font-[900] text-4xl sm:text-5xl md:text-6xl lg:text-[66px] xl:text-[76px] 2xl:text-[82px] leading-[0.96] tracking-normal mb-6 sm:mb-8 uppercase select-none ${
               isLight ? 'text-[#0F172A]' : 'text-white'
             }`}
           >
@@ -322,7 +322,7 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
             transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
             className="relative mb-6 sm:mb-9"
           >
-            <p className="font-sans text-base sm:text-lg text-[#F4F6F0] max-w-[500px] leading-relaxed font-medium">
+            <p className="font-sans text-base sm:text-lg lg:text-xl text-[#F4F6F0] max-w-[540px] leading-relaxed font-medium">
               {t('ref.hero.desc')}
             </p>
           </motion.div>
@@ -375,7 +375,7 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut", delay: 0.4 }}
-            className={`w-full max-w-lg grid grid-cols-3 gap-2 sm:gap-3 pt-6 border-t ${
+            className={`w-full max-w-xl grid grid-cols-3 gap-2.5 sm:gap-3.5 pt-6 sm:pt-8 border-t ${
               isLight ? 'border-gray-300/80' : 'border-white/10'
             }`}
           >
@@ -461,7 +461,7 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
         <div className="lg:col-span-6 xl:col-span-6 flex flex-col items-center justify-center relative">
           
           {/* Inspector Controls Ribbon */}
-          <div className="w-full max-w-[540px] sm:max-w-[620px] lg:max-w-[700px] xl:max-w-[760px] flex items-center justify-between mb-3 px-2 font-mono text-[10px] text-gray-400">
+          <div className="w-full max-w-[540px] sm:max-w-[640px] lg:max-w-[740px] xl:max-w-[820px] 2xl:max-w-[880px] flex items-center justify-between mb-3 px-2 font-mono text-[10px] text-gray-400">
             <div className="flex items-center gap-2">
               <Crosshair className={`w-3.5 h-3.5 animate-spin ${isLight ? 'text-[#15803D]' : 'text-emerald-400'}`} style={{ animationDuration: '8s' }} />
               <span className={`uppercase tracking-normal font-bold ${isLight ? 'text-[#15803D]' : 'text-emerald-400/90'}`}>
@@ -505,7 +505,7 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
               if (isIntroPlaying) setIsIntroPlaying(false);
             }}
             style={{ perspective: 1200 }}
-            className="relative w-full max-w-[540px] sm:max-w-[620px] lg:max-w-[700px] xl:max-w-[760px] aspect-[1.48/1] flex items-center justify-center cursor-crosshair bg-transparent select-none"
+            className="relative w-full max-w-[540px] sm:max-w-[640px] lg:max-w-[740px] xl:max-w-[820px] 2xl:max-w-[880px] aspect-[1.48/1] flex items-center justify-center cursor-crosshair bg-transparent select-none"
           >
             {/* 3D Tilting Slab Wrapper - Pure floating stage, zero boxes or overlays */}
             <div
