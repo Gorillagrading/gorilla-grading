@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { LuxuryHero } from '../components/luxury/LuxuryHero';
-import { BrandEcosystemRibbon } from '../components/luxury/BrandEcosystemRibbon';
 import { HomeTechnologySection } from '../components/luxury/HomeTechnologySection';
 import { TechnologySection } from '../components/luxury/TechnologySection';
 import { HomeVerificationModule } from '../components/luxury/HomeVerificationModule';
@@ -29,10 +28,6 @@ export const LuxuryReferenceHomePage: React.FC<LuxuryReferenceHomePageProps> = (
         onOpenTechModal={() => setIsTechModalOpen(true)}
       />
 
-      {/* 2. Brand Ecosystem Ribbon (Trust Logos) */}
-      <ScrollReveal direction="up" delay={0.1}>
-        <BrandEcosystemRibbon />
-      </ScrollReveal>
 
       {/* 3. Core Laboratory Technology: Scan, Analyze, Measure, Grade */}
       <ScrollReveal direction="up" delay={0.1}>

@@ -109,11 +109,7 @@
 
 .animate-marquee {
   animation: marqueeInfinite 60s linear infinite;
-}
-
-/* Pause the marquee on hover */
-.animate-marquee:hover {
-  animation-play-state: paused;
+  animation-play-state: running !important;
 }
 
 @keyframes heartbeat {

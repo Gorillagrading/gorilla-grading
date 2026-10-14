@@ -227,88 +227,8 @@ export const PrecisionScrollDatum: React.FC = () => {
       )}
 
       {/* ═════════════════════════════════════════════════════════════════════
-          5. ESCÁNER LÁSER QUE BAJA LENTO Y LANZA RESULTADO EN LA MITAD DEL HERO
+          5. BASE METROLÓGICA Y COORDENADAS DISCRETAS EN ESQUINA
           ═════════════════════════════════════════════════════════════════════ */}
-      <style>{`
-        /* 1. Haz Láser pausado (18s) que barre el Hero verticalmente */
-        @keyframes heroLaserSweep {
-          0% {
-            top: 4vh;
-            opacity: 0;
-          }
-          4% {
-            opacity: 0.85;
-          }
-          92% {
-            opacity: 0.85;
-          }
-          96% {
-            top: 92vh;
-            opacity: 0;
-          }
-          100% {
-            top: 4vh;
-            opacity: 0;
-          }
-        }
-      `}</style>
-
-      {/* Scanner Assembly Container */}
-      <div className="absolute inset-0 w-full h-full pointer-events-none overflow-hidden">
-        
-        {/* =================================================================== */}
-        {/* LÍNEA LÁSER DINÁMICA: BAJA LENTO POR EL HERO (18 SEGUNDOS)          */}
-        {/* =================================================================== */}
-        <div 
-          className="w-full absolute left-0 right-0 pointer-events-none will-change-transform z-20"
-          style={{
-            animation: 'heroLaserSweep 18s cubic-bezier(0.4, 0, 0.2, 1) infinite',
-          }}
-        >
-          {/* Estela luminosa sutil degradada */}
-          <div 
-            className="w-full -mt-14 h-14 pointer-events-none"
-            style={{
-              background: isLight
-                ? 'linear-gradient(to top, rgba(34, 197, 94, 0.04) 0%, transparent 100%)'
-                : 'linear-gradient(to top, rgba(74, 222, 128, 0.06) 0%, transparent 100%)',
-              maskImage: 'linear-gradient(to top, black, transparent)',
-              WebkitMaskImage: 'linear-gradient(to top, black, transparent)'
-            }}
-          />
-
-          {/* Filamento Láser Ultrafino (1px) con indicadores sutiles en los extremos exteriores */}
-          <div className="relative w-full flex items-center">
-            {/* Indicador extremo izquierdo - Pegado al margen exterior */}
-            <div className="absolute left-3 sm:left-8 flex items-center opacity-40 select-none">
-              <span className="font-mono text-[6.5px] sm:text-[7px] tracking-[0.20em] text-[#16A34A] dark:text-[#4ADE80] font-bold uppercase">
-                [ ⌖ 1200 DPI ]
-              </span>
-            </div>
-
-            {/* Línea láser central de precisión */}
-            <div 
-              className="w-full h-[1px] opacity-70"
-              style={{
-                background: isLight
-                  ? 'linear-gradient(90deg, transparent 0%, rgba(22, 163, 74, 0.12) 12%, #16A34A 50%, rgba(22, 163, 74, 0.12) 88%, transparent 100%)'
-                  : 'linear-gradient(90deg, transparent 0%, rgba(74, 222, 128, 0.15) 12%, #4ADE80 50%, rgba(74, 222, 128, 0.15) 88%, transparent 100%)',
-                boxShadow: isLight
-                  ? '0 0 6px rgba(22, 163, 74, 0.3)'
-                  : '0 0 8px rgba(74, 222, 128, 0.35)',
-              }}
-            />
-
-            {/* Indicador extremo derecho - Pegado al margen exterior */}
-            <div className="absolute right-3 sm:right-8 flex items-center opacity-40 select-none">
-              <span className="font-mono text-[6.5px] sm:text-[7px] tracking-[0.20em] text-[#16A34A] dark:text-emerald-400 font-bold uppercase">
-                [ λ: 532nm ]
-              </span>
-            </div>
-          </div>
-        </div>
-
-      </div>
 
       {/* ═════════════════════════════════════════════════════════════════════
           6. COORDENADAS DISCRETAS EN ESQUINA (Puro Texto Sin Caja Ni Círculos)

@@ -58,30 +58,35 @@ export const TechnologySection: React.FC<TechnologySectionProps> = ({ onNavigate
         isLight ? 'bg-[#F1ECE5] text-[#1C201D]' : 'bg-[#14170F] text-white'
       }`}
     >
-      {/* Full Width Background Image */}
-      <div 
-        className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url('${isLight ? '/images/tecnoSeccion.png?v=7' : '/images/Dark/tecnoSeccion.png'}')` }}
-      />
+      {/* Full Width Background Video */}
+      <div className="absolute inset-0 z-0 overflow-hidden">
+        <video
+          key={isLight ? 'video-light' : 'video-dark'}
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="w-full h-full object-cover object-center pointer-events-none"
+          poster={isLight ? '/images/tecnoSeccion.png' : '/images/Dark/tecnoSeccion.png'}
+        >
+          <source src={isLight ? '/images/tecnoSeccion.mp4' : '/images/Dark/tecnoSeccion.mp4'} type="video/mp4" />
+        </video>
+      </div>
       
-      {/* Subtle overlay to ensure text is readable without muddying the clean background */}
+      {/* Sombra lateral para la versión clara (legibilidad de texto) y limpio en modo oscuro */}
       <div className="absolute inset-0 z-0 pointer-events-none">
-        <div className={`absolute inset-0 lg:hidden ${
-          isLight ? 'bg-[#F1ECE5]/85' : 'bg-[#14170F]/85'
-        }`} />
-        <div className="hidden lg:flex w-full h-full">
-          <div className={`w-2/5 bg-gradient-to-r ${
-            isLight 
-              ? 'from-[#F1ECE5] via-[#F1ECE5]/90 to-transparent' 
-              : 'from-[#14170F] via-[#14170F]/90 to-transparent'
-          }`} />
-          <div className="w-1/5" />
-          <div className={`w-2/5 bg-gradient-to-l ${
-            isLight 
-              ? 'from-[#F1ECE5] via-[#F1ECE5]/85 to-transparent' 
-              : 'from-[#14170F] via-[#14170F]/85 to-transparent'
-          }`} />
-        </div>
+        {isLight ? (
+          <>
+            <div className="absolute inset-0 lg:hidden bg-[#F1ECE5]/85" />
+            <div className="hidden lg:flex w-full h-full">
+              <div className="w-2/5 bg-gradient-to-r from-[#F1ECE5] via-[#F1ECE5]/90 to-transparent" />
+              <div className="w-1/5" />
+              <div className="w-2/5 bg-gradient-to-l from-[#F1ECE5] via-[#F1ECE5]/85 to-transparent" />
+            </div>
+          </>
+        ) : (
+          <div className="absolute inset-0 bg-black/25" />
+        )}
       </div>
 
       <div className="relative z-10 w-full max-w-[1400px] mx-auto px-6 lg:px-12 py-16 lg:py-24 min-h-[600px] flex items-center">

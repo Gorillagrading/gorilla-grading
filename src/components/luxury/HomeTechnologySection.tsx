@@ -136,15 +136,37 @@ export const HomeTechnologySection: React.FC<HomeTechnologySectionProps> = ({
                 }}
                 whileHover={{ scale: 1.015 }}
                 transition={{ scale: { duration: 0.25, ease: 'easeOut' } }}
-                className="relative w-full h-auto flex items-center justify-center bg-transparent pointer-events-auto"
+                className="relative w-full h-auto flex items-center justify-center bg-transparent pointer-events-auto overflow-hidden"
               >
-                {/* Seamless 4-Card Sequence Render - Perfectly matching section background */}
-                <img 
-                  src={isLight ? '/images/tecnologia_seamless.png' : '/images/Dark/tecnologia_seamless.png'} 
-                  alt={language === 'es' ? 'Secuencia tecnológica Gorilla Grading: Escaneo, Análisis, Medición y Graduación' : 'Gorilla Grading Technology Sequence: Scan, Analyze, Measure, Grade'}
+                {/* Seamless 4-Card Sequence Video */}
+                <video 
+                  key={isLight ? 'video-tech-light' : 'video-tech-dark'}
+                  src={isLight ? '/images/tecnologia_seamless.mp4' : '/images/tecnologia_seamless-DARK.mp4'} 
+                  autoPlay 
+                  loop 
+                  muted 
+                  playsInline 
                   className="w-full h-auto object-contain pointer-events-none select-none bg-transparent"
-                  loading="eager"
                 />
+
+                {/* Sombra interna perimetral responsive (ultra sutil en móvil para no tapar las cartas) */}
+                <style>{`
+                  .tech-video-shadow {
+                    box-shadow: ${isLight
+                      ? 'inset 0 0 10px 3px #ECE7DF, inset 0 0 18px 6px rgba(236,231,223,0.7)'
+                      : 'inset 0 0 10px 3px #414241, inset 0 0 18px 6px rgba(65,66,65,0.7)'
+                    };
+                  }
+                  @media (min-width: 640px) {
+                    .tech-video-shadow {
+                      box-shadow: ${isLight
+                        ? 'inset 0 0 25px 12px #ECE7DF, inset 0 0 50px 25px rgba(236,231,223,0.88)'
+                        : 'inset 0 0 25px 12px #414241, inset 0 0 50px 25px rgba(65,66,65,0.88)'
+                      };
+                    }
+                  }
+                `}</style>
+                <div className="absolute inset-0 pointer-events-none z-10 tech-video-shadow" />
               </motion.div>
             </div>
           </div>

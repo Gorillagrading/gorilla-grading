@@ -52,88 +52,88 @@ export const LuxuryPricingSection: React.FC<LuxuryPricingSectionProps> = ({ onNa
   // Industrial Service Levels (Tariff Matrix Data)
   const serviceLevels = [
     {
-      code: 'RCDM.00',
-      id: 'regular',
-      shortName: language === 'es' ? 'Regular' : 'Regular',
-      name: language === 'es' ? 'COLECCIONISTA REGULAR' : 'REGULAR COLLECTOR',
+      code: 'RCDM.01',
+      id: 'standard',
+      shortName: 'Standard',
+      name: 'STANDARD',
       purpose: language === 'es' 
-        ? 'Remesas de volumen, sets modernos y colecciones particulares.' 
-        : 'Volume submissions, modern sets, and personal binder collections.',
-      turnaround: language === 'es' ? '20 días hábiles' : '20 business days',
-      maxInsurance: '250 €',
-      maxInsuranceNum: 250,
+        ? 'Remesas regulares, sets modernos y colecciones particulares.' 
+        : 'Regular submissions, modern sets, and personal binder collections.',
+      turnaround: language === 'es' ? '10 días hábiles' : '10 business days',
+      maxInsurance: '500 €',
+      maxInsuranceNum: 500,
       scope: language === 'es' 
         ? 'Encapsulado sónico 35 kHz · Chip NFC de seguridad · Escaneo maestro 1200 DPI' 
         : '35 kHz ultrasonic encapsulation · NFC security chip · 1200 DPI master scan',
       bullets: language === 'es'
         ? ['Encapsulado ultrasónico 35 kHz', 'Chip de seguridad criptográfica NFC', 'Escaneo digital forense 1200 DPI']
         : ['35 kHz ultrasonic encapsulation', 'NFC cryptographic security chip', '1200 DPI master digital scan'],
-      price: 15,
+      price: 19,
       accentColor: '#3B82F6'
     },
     {
-      code: 'RCDM.01',
-      id: 'standard',
-      shortName: language === 'es' ? 'Estándar' : 'Standard',
-      name: language === 'es' ? 'PRECISIÓN ESTÁNDAR' : 'PRECISION STANDARD',
+      code: 'RCDM.02',
+      id: 'premium',
+      shortName: 'Premium',
+      name: 'PREMIUM',
       purpose: language === 'es' 
-        ? 'El estándar del mercado. Cartas de valor medio-alto con subgrados métricos.' 
+        ? 'El estándar del mercado. Cartas de valor medio-alto con 4 subgrados métricos.' 
         : 'The market standard. Mid-to-high value cards with micrometric subgrades.',
-      turnaround: language === 'es' ? '10 días hábiles' : '10 business days',
-      maxInsurance: '1.000 €',
-      maxInsuranceNum: 1000,
+      turnaround: language === 'es' ? '5 días hábiles' : '5 business days',
+      maxInsurance: '1.500 €',
+      maxInsuranceNum: 1500,
       scope: language === 'es' 
         ? '4 Subgrados láser 0.01mm · Escaneo forense 4K · Registro público en blockchain' 
         : '4 Laser 0.01mm subgrades · 4K forensic scan · Blockchain public registry',
       bullets: language === 'es'
         ? ['4 Subgrados ópticos (Centrado, Esquinas, Bordes, Superficie)', 'Escaneo micro-fotométrico 4K UHD', 'Certificación pública en Blockchain']
         : ['4 Optical Subgrades (Centering, Corners, Edges, Surface)', '4K UHD micro-photometric scan', 'Public Blockchain certification registry'],
-      price: 28,
+      price: 25,
       accentColor: '#16A34A'
     },
     {
-      code: 'RCDM.02',
+      code: 'RCDM.03',
       id: 'express',
       shortName: language === 'es' ? 'Exprés' : 'Express',
-      name: language === 'es' ? 'PRIORIDAD EXPRÉS' : 'PRIORITY EXPRESS',
+      name: 'EXPRESS',
       purpose: language === 'es' 
         ? 'Procesamiento en cola preferente para transacciones de mercado y eventos.' 
         : 'Priority queue routing for urgent transactions, market timing, and conventions.',
-      turnaround: language === 'es' ? '5 días hábiles' : '5 business days',
-      maxInsurance: '2.500 €',
-      maxInsuranceNum: 2500,
+      turnaround: language === 'es' ? '2 días hábiles' : '2 business days',
+      maxInsurance: '3.000 €',
+      maxInsuranceNum: 3000,
       scope: language === 'es' 
         ? 'Cola preferente de laboratorio · Auditoría óptica doble · Canal directo de soporte' 
         : 'Priority lab queue · Dual optical audit · Direct laboratory support channel',
       bullets: language === 'es'
-        ? ['Cola preferente acelerada (5 días)', 'Auditoría óptica doble por 2 inspectores', 'Canal directo de soporte prioritario']
-        : ['Accelerated priority queue (5 days)', 'Dual optical audit by 2 senior graders', 'Direct laboratory priority support'],
-      price: 65,
+        ? ['Cola preferente acelerada (2 días)', 'Auditoría óptica doble por 2 inspectores', 'Canal directo de soporte prioritario']
+        : ['Accelerated priority queue (2 days)', 'Dual optical audit by 2 senior graders', 'Direct laboratory priority support'],
+      price: 50,
       accentColor: '#EA580C'
     },
     {
-      code: 'RCDM.MASTER',
-      id: 'walkthrough',
-      shortName: language === 'es' ? 'Master' : 'Master',
-      name: language === 'es' ? 'PASE MAESTRO (WALK-THROUGH)' : 'MASTER WALK-THROUGH',
+      code: 'RCDM.EVENT',
+      id: 'event',
+      shortName: 'Event',
+      name: 'EVENT',
       purpose: language === 'es' 
-        ? 'Custodia acorazada y protocolo de guante blanco para piezas históricas y de museo.' 
-        : 'Armored vault custody and white-glove protocol for historic museum grails.',
-      turnaround: language === 'es' ? '48 horas' : '48 hours',
-      maxInsurance: language === 'es' ? 'Hasta 25.000 €' : 'Up to 25,000 €',
-      maxInsuranceNum: 25000,
+        ? 'Servicio exclusivo para eventos y ferias. Solo entrega presencial en pop ups.' 
+        : 'Exclusive service for events and fairs. In-person drop-off only at pop ups.',
+      turnaround: '48 h',
+      maxInsurance: '1.000 €',
+      maxInsuranceNum: 1000,
       scope: language === 'es' 
-        ? 'Auditoría presencial por Master Grader · Maletín blindado · Seguro en tránsito VIP' 
-        : 'In-person Master Grader audit · Armored case delivery · VIP transit insurance',
+        ? 'Solo entrega presencial en pop ups · Entrega rápida 48h · Encapsulado sónico' 
+        : 'In-person drop-off only at pop ups · 48h express turnaround · Sonic encapsulation',
       bullets: language === 'es'
-        ? ['Turnaround exprés 48h con Master Grader', 'Maletín hermético de seguridad incluido', 'Seguro de tránsito VIP hasta 25.000 €']
-        : ['48h VIP turnaround with Master Grader', 'Hermetic security case included', 'VIP transit insurance up to 25,000 €'],
-      price: 140,
+        ? ['Solo entrega presencial en pop ups', 'Graduación exprés presencial en 48 horas', 'Encapsulado sónico y chip criptográfico NFC']
+        : ['In-person drop-off only at pop ups', 'Express in-person 48h turnaround', 'Sonic encapsulation & cryptographic NFC chip'],
+      price: 15,
       accentColor: '#CA8A04'
     }
   ];
 
-  const currentLevel = serviceLevels.find(s => s.id === selectedTierId) || serviceLevels[1];
+  const currentLevel = serviceLevels.find(s => s.id === selectedTierId) || serviceLevels[0];
 
   // Bulk tier discounts for commercial volume
   const getBulkDiscountRate = (qty: number) => {
@@ -348,7 +348,6 @@ export const LuxuryPricingSection: React.FC<LuxuryPricingSectionProps> = ({ onNa
                 }`}>
                   <th className="py-3.5 px-6 font-bold">{language === 'es' ? 'NIVEL DE SERVICIO' : 'SERVICE TIER'}</th>
                   <th className="py-3.5 px-6 font-bold">{language === 'es' ? 'PLAZO DE RETORNO' : 'ESTIMATED TURNAROUND'}</th>
-                  <th className="py-3.5 px-6 font-bold">{language === 'es' ? 'COBERTURA ASEGURADA' : 'INSURANCE COVERAGE'}</th>
                   <th className="py-3.5 px-6 font-bold">{language === 'es' ? 'ALCANCE TÉCNICO' : 'TECHNICAL SCOPE'}</th>
                   <th className="py-3.5 px-6 font-bold text-right">{language === 'es' ? 'TARIFA / CARTA' : 'RATE / CARD'}</th>
                   <th className="py-3.5 px-6 font-bold text-center">{language === 'es' ? 'ACCIÓN' : 'ACTION'}</th>
@@ -361,8 +360,8 @@ export const LuxuryPricingSection: React.FC<LuxuryPricingSectionProps> = ({ onNa
 
                   // Distinctive neon tier colors for Dark Mode
                   const darkTierColor = 
-                    lvl.id === 'regular' ? '#60A5FA' : 
-                    lvl.id === 'standard' ? '#4ADE80' : 
+                    lvl.id === 'standard' ? '#60A5FA' : 
+                    lvl.id === 'premium' ? '#4ADE80' : 
                     lvl.id === 'express' ? '#FB923C' : '#FBBF24';
 
                   // Alternating background shades: 
@@ -374,9 +373,9 @@ export const LuxuryPricingSection: React.FC<LuxuryPricingSectionProps> = ({ onNa
                         : 'bg-gradient-to-r from-emerald-950/60 via-[#102917] to-[#0D1F13] shadow-[inset_0_0_24px_rgba(74,222,128,0.15)]') 
                     : (isLight 
                         ? (isEven ? 'bg-white' : 'bg-[#F2EFE8]')
-                        : (lvl.id === 'regular' 
+                        : (lvl.id === 'standard' 
                             ? 'bg-gradient-to-r from-blue-950/30 via-[#0F1722]/90 to-[#0C121B]' 
-                            : lvl.id === 'standard' 
+                            : lvl.id === 'premium' 
                             ? 'bg-gradient-to-r from-emerald-950/30 via-[#0E1C12]/90 to-[#0A160E]' 
                             : lvl.id === 'express' 
                             ? 'bg-gradient-to-r from-orange-950/30 via-[#1F150E]/90 to-[#170F0A]' 
@@ -425,11 +424,6 @@ export const LuxuryPricingSection: React.FC<LuxuryPricingSectionProps> = ({ onNa
                           />
                           <span>{lvl.turnaround}</span>
                         </div>
-                      </td>
-
-                      {/* Max Insurance */}
-                      <td className={`py-4 px-6 font-bold text-[13px] ${isLight ? 'text-gray-900' : 'text-gray-100'}`}>
-                        {lvl.maxInsurance}
                       </td>
 
                       {/* Scope */}
@@ -572,10 +566,10 @@ export const LuxuryPricingSection: React.FC<LuxuryPricingSectionProps> = ({ onNa
                   <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
                   <div className="min-w-0">
                     <span className="block font-mono text-[9px] uppercase tracking-wider text-gray-700 dark:text-gray-300">
-                      {language === 'es' ? 'Seguro hasta' : 'Insurance up to'}
+                      {language === 'es' ? 'Certificación' : 'Certification'}
                     </span>
                     <span className="block font-sans text-xs font-bold truncate text-current">
-                      {currentLevel.maxInsurance}
+                      {language === 'es' ? 'Sónica 35 kHz' : 'Sonic 35 kHz'}
                     </span>
                   </div>
                 </div>
@@ -807,7 +801,7 @@ export const LuxuryPricingSection: React.FC<LuxuryPricingSectionProps> = ({ onNa
                 <span className="text-gray-400">/</span>
                 <span>{language === 'es' ? `Plazo: ${currentLevel.turnaround}` : `Turnaround: ${currentLevel.turnaround}`}</span>
                 <span className="text-gray-400">/</span>
-                <span>{language === 'es' ? `Cobertura: hasta ${totalInsuredCoverage.toLocaleString()} €` : `Insurance: up to ${totalInsuredCoverage.toLocaleString()} €`}</span>
+                <span>{language === 'es' ? 'Envío asegurado 100%' : '100% Insured Transit'}</span>
               </div>
             </div>
 

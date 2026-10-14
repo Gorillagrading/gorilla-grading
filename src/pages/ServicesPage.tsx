@@ -10,14 +10,14 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ onNavigate }) => {
 
   const tiers = [
     {
-      id: 'regular',
-      name: language === 'es' ? 'Collector Regular' : 'Collector Regular',
+      id: 'standard',
+      name: 'Standard',
       tagline: language === 'es'
         ? 'Diseñado para sets modernos de expansión, colecciones personales y envíos por volumen.'
         : 'Engineered for modern sets, expansion binders, and personal collections.',
-      price: '15',
-      turnaround: language === 'es' ? '20 Días Laborables' : '20 Business Days',
-      maxValue: '€250',
+      price: '19',
+      turnaround: language === 'es' ? '10 Días Hábiles' : '10 Business Days',
+      maxValue: '€500',
       badge: null,
       featured: false,
       features: [
@@ -29,14 +29,14 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ onNavigate }) => {
       ]
     },
     {
-      id: 'standard',
-      name: language === 'es' ? 'Precision Standard' : 'Precision Standard',
+      id: 'premium',
+      name: 'Premium',
       tagline: language === 'es'
-        ? 'El estándar recomendado para cartas de valor medio y piezas emblemáticas.'
-        : 'The recommended standard for mid-to-high value cards and iconic holos.',
-      price: '28',
-      turnaround: language === 'es' ? '10 Días Laborables' : '10 Business Days',
-      maxValue: '€1.000',
+        ? 'El estándar recomendado para cartas de valor medio y piezas emblemáticas con subgrados.'
+        : 'The recommended standard for mid-to-high value cards and iconic holos with subgrades.',
+      price: '25',
+      turnaround: language === 'es' ? '5 Días Hábiles' : '5 Business Days',
+      maxValue: '€1.500',
       badge: t('pricing.badgePopular'),
       featured: true,
       features: [
@@ -49,13 +49,13 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ onNavigate }) => {
     },
     {
       id: 'express',
-      name: language === 'es' ? 'Priority Express' : 'Priority Express',
+      name: 'Express',
       tagline: language === 'es'
         ? 'Procesamiento acelerado en cola preferente para torneos y grading de alta demanda.'
         : 'Accelerated queue in high-security vault for tournaments and urgent market liquidity.',
-      price: '65',
-      turnaround: language === 'es' ? '5 Días Laborables' : '5 Business Days',
-      maxValue: '€5.000',
+      price: '50',
+      turnaround: language === 'es' ? '2 Días Hábiles' : '2 Business Days',
+      maxValue: '€3.000',
       badge: language === 'es' ? 'ALTA PRIORIDAD' : 'PRIORITY QUEUE',
       featured: false,
       features: [
@@ -67,32 +67,32 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ onNavigate }) => {
       ]
     },
     {
-      id: 'walkthrough',
-      name: language === 'es' ? 'Master Walk-Through' : 'Master Walk-Through',
+      id: 'event',
+      name: 'Event',
       tagline: language === 'es'
-        ? 'Tratamiento exclusivo de guante blanco para piezas históricas y vintage grails.'
-        : 'Exclusive white-glove protocol for historic vintage grails and six-figure holy grails.',
-      price: '140',
-      turnaround: language === 'es' ? '48 Horas / Show Drop-Off' : '48 Hours / Show Drop-Off',
-      maxValue: '€25.000',
-      badge: t('pricing.badgeVip'),
+        ? 'Servicio exclusivo para eventos y pop-ups. Solo entrega presencial en pop ups.'
+        : 'Exclusive service for events and pop-ups. In-person drop-off only at pop ups.',
+      price: '15',
+      turnaround: '48 h',
+      maxValue: '€1.000',
+      badge: language === 'es' ? 'POP UP PRESENCIAL' : 'POP UP IN-PERSON',
       featured: false,
       features: [
-        t('pricing.feat.dualAudit'),
-        t('pricing.feat.subgrades'),
-        t('pricing.feat.scans'),
+        language === 'es' ? 'Solo entrega presencial en pop ups' : 'In-person drop-off only at pop ups',
+        language === 'es' ? 'Entrega exprés en mano en 48 horas' : 'Express 48h in-person turnaround',
         t('pricing.feat.slab'),
-        language === 'es' ? 'Estuche blindado de transporte incluido' : 'Reinforced armored vault transport case'
+        t('pricing.feat.nfc'),
+        t('pricing.feat.scans')
       ]
     }
   ];
 
   const tiersWithTheme = tiers.map(t => {
     switch(t.id) {
-      case 'regular': return { ...t, color: '#8CA5B8', shortName: 'REGULAR' };
-      case 'standard': return { ...t, color: '#48C765', shortName: 'STANDARD' };
+      case 'standard': return { ...t, color: '#3B82F6', shortName: 'STANDARD' };
+      case 'premium': return { ...t, color: '#48C765', shortName: 'PREMIUM' };
       case 'express': return { ...t, color: '#F97316', shortName: 'EXPRESS' };
-      case 'walkthrough': return { ...t, color: '#D4AF37', shortName: 'MASTER' };
+      case 'event': return { ...t, color: '#D4AF37', shortName: 'EVENT' };
       default: return { ...t, color: '#48C765', shortName: 'TIER' };
     }
   });
@@ -100,35 +100,35 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ onNavigate }) => {
   const comparisonRows = [
     {
       feature: language === 'es' ? 'Centrado por Calibre Láser (0.01 mm)' : 'Laser Caliper Centering (0.01mm)',
-      regular: true, standard: true, express: true, walkthrough: true
+      standard: true, premium: true, express: true, event: true
     },
     {
       feature: language === 'es' ? '4 Sub-grados en décimas (Centrado, Esquinas, Bordes, Superficie)' : '4-Quadrant Subgrades (0.1 decimal scale)',
-      regular: false, standard: true, express: true, walkthrough: true
+      standard: false, premium: true, express: true, event: false
     },
     {
       feature: language === 'es' ? 'Mapeo microscópico de defectos a 40x' : '40x Darkfield microscopic defect mapping',
-      regular: false, standard: true, express: true, walkthrough: true
+      standard: false, premium: true, express: true, event: false
     },
     {
       feature: language === 'es' ? 'Encapsulado sónico hermético a 35 kHz (Acrílico UV 99.4%)' : '35kHz Ultrasonic Hermetic Seal (99.4% UV Acrylic)',
-      regular: true, standard: true, express: true, walkthrough: true
+      standard: true, premium: true, express: true, event: true
     },
     {
       feature: language === 'es' ? 'Chip Criptográfico NFC con enlace al Registro Internacional' : 'Cryptographic NFC chip linked to International Registry',
-      regular: true, standard: true, express: true, walkthrough: true
+      standard: true, premium: true, express: true, event: true
     },
     {
       feature: language === 'es' ? 'Cola preferente en cámara acorazada climatizada' : 'Priority queue in climate-controlled vault',
-      regular: false, standard: false, express: true, walkthrough: true
+      standard: false, premium: false, express: true, event: true
     },
     {
-      feature: language === 'es' ? 'Doble peritaje independiente por Conservador Jefe' : 'Independent dual audit by Senior Conservator',
-      regular: false, standard: false, express: false, walkthrough: true
+      feature: language === 'es' ? 'Solo entrega presencial en pop ups / eventos' : 'In-person drop-off only at pop ups / events',
+      standard: false, premium: false, express: false, event: true
     },
     {
       feature: language === 'es' ? 'Seguro de transporte a todo riesgo incluido' : 'Full replacement transit insurance included',
-      regular: true, standard: true, express: true, walkthrough: true
+      standard: true, premium: true, express: true, event: true
     }
   ];
 
@@ -272,20 +272,20 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ onNavigate }) => {
               <thead>
                 <tr className="border-b border-white/[0.08] text-mono text-[11px] tracking-wider text-[#A4ACA1] uppercase">
                   <th className="py-4 pr-6 font-semibold">{language === 'es' ? 'Especificación Técnica' : 'Technical Specification'}</th>
-                  <th className="py-4 px-4 text-center">Collector</th>
-                  <th className="py-4 px-4 text-center text-[#48C765]">Standard</th>
+                  <th className="py-4 px-4 text-center">Standard</th>
+                  <th className="py-4 px-4 text-center text-[#48C765]">Premium</th>
                   <th className="py-4 px-4 text-center">Express</th>
-                  <th className="py-4 pl-4 text-center">Walk-Through</th>
+                  <th className="py-4 pl-4 text-center">Event</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/[0.04]">
                 {comparisonRows.map((row, idx) => (
                   <tr key={idx} className="hover:bg-white/[0.02] transition-colors">
                     <td className="py-4 pr-6 text-[#E0E5DC] font-medium">{row.feature}</td>
-                    <td className="py-4 px-4 text-center">{row.regular ? <span className="text-[#48C765] font-bold">✓</span> : <span className="text-gray-600">—</span>}</td>
                     <td className="py-4 px-4 text-center">{row.standard ? <span className="text-[#48C765] font-bold">✓</span> : <span className="text-gray-600">—</span>}</td>
+                    <td className="py-4 px-4 text-center">{row.premium ? <span className="text-[#48C765] font-bold">✓</span> : <span className="text-gray-600">—</span>}</td>
                     <td className="py-4 px-4 text-center">{row.express ? <span className="text-[#48C765] font-bold">✓</span> : <span className="text-gray-600">—</span>}</td>
-                    <td className="py-4 pl-4 text-center">{row.walkthrough ? <span className="text-[#48C765] font-bold">✓</span> : <span className="text-gray-600">—</span>}</td>
+                    <td className="py-4 pl-4 text-center">{row.event ? <span className="text-[#48C765] font-bold">✓</span> : <span className="text-gray-600">—</span>}</td>
                   </tr>
                 ))}
               </tbody>

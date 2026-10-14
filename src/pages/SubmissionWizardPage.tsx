@@ -29,7 +29,7 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
     const params = new URLSearchParams(window.location.search);
     const tierId = params.get('tier');
     if (tierId) {
-      const found = MOCK_SERVICES.find(s => s.id === tierId);
+      const found = MOCK_SERVICES.find(s => s.id === tierId || (tierId === 'regular' && s.id === 'standard') || (tierId === 'walkthrough' && s.id === 'event'));
       if (found) return found;
     }
     return null;
@@ -39,7 +39,7 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
     const params = new URLSearchParams(window.location.search);
     const qty = parseInt(params.get('qty') || '0', 10);
     const tierId = params.get('tier');
-    const tier = (tierId ? MOCK_SERVICES.find(s => s.id === tierId) : null) || MOCK_SERVICES.find(s => s.id === 'standard') || MOCK_SERVICES[1];
+    const tier = (tierId ? MOCK_SERVICES.find(s => s.id === tierId || (tierId === 'regular' && s.id === 'standard') || (tierId === 'walkthrough' && s.id === 'event')) : null) || MOCK_SERVICES[0];
 
     if (qty > 0) {
       return Array.from({ length: qty }, (_, i) => ({
@@ -74,7 +74,7 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
     const qtyParam = params.get('qty');
 
     if (tierId) {
-      const found = MOCK_SERVICES.find(s => s.id === tierId);
+      const found = MOCK_SERVICES.find(s => s.id === tierId || (tierId === 'regular' && s.id === 'standard') || (tierId === 'walkthrough' && s.id === 'event'));
       if (found) {
         setSelectedTier(found);
       }
@@ -87,7 +87,7 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
         setNewCardQuantity(String(qty));
         setItems(prevItems => {
           if (prevItems.length === 0) {
-            const currentTier = (tierId ? MOCK_SERVICES.find(s => s.id === tierId) : null) || selectedTier || MOCK_SERVICES[1];
+            const currentTier = (tierId ? MOCK_SERVICES.find(s => s.id === tierId || (tierId === 'regular' && s.id === 'standard') || (tierId === 'walkthrough' && s.id === 'event')) : null) || selectedTier || MOCK_SERVICES[0];
             return Array.from({ length: qty }, (_, i) => ({
               id: `preset-${Date.now()}-${i}`,
               cardName: language === 'es' ? `Carta #${i + 1} (${currentTier.name})` : `Card #${i + 1} (${currentTier.name})`,
@@ -273,73 +273,73 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
         {currentStep === 1 && (() => {
           const serviceLevels = [
             {
-              code: 'RCDM.00',
-              id: 'regular',
-              name: language === 'es' ? 'COLECCIONISTA REGULAR' : 'REGULAR COLLECTOR',
+              code: 'RCDM.01',
+              id: 'standard',
+              name: 'STANDARD',
               purpose: language === 'es' 
-                ? 'Remesas de volumen, sets modernos y colecciones particulares.' 
-                : 'Volume submissions, modern sets, and personal binder collections.',
-              turnaround: language === 'es' ? '20 días hábiles' : '20 business days',
-              maxInsurance: '250 €',
-              maxInsuranceNum: 250,
+                ? 'Remesas regulares, sets modernos y colecciones particulares.' 
+                : 'Regular submissions, modern sets, and personal binder collections.',
+              turnaround: language === 'es' ? '10 días hábiles' : '10 business days',
+              maxInsurance: '500 €',
+              maxInsuranceNum: 500,
               scope: language === 'es' 
                 ? 'Encapsulado sónico 35 kHz · Chip NFC de seguridad · Escaneo maestro 1200 DPI' 
                 : '35 kHz ultrasonic encapsulation · NFC security chip · 1200 DPI master scan',
-              price: 15,
+              price: 19,
               accentColor: '#3B82F6'
             },
             {
-              code: 'RCDM.01',
-              id: 'standard',
-              name: language === 'es' ? 'PRECISIÓN ESTÁNDAR' : 'PRECISION STANDARD',
+              code: 'RCDM.02',
+              id: 'premium',
+              name: 'PREMIUM',
               purpose: language === 'es' 
-                ? 'El estándar del mercado. Cartas de valor medio-alto con subgrados métricos.' 
+                ? 'El estándar del mercado. Cartas de valor medio-alto con 4 subgrados métricos.' 
                 : 'The market standard. Mid-to-high value cards with micrometric subgrades.',
-              turnaround: language === 'es' ? '10 días hábiles' : '10 business days',
-              maxInsurance: '1.000 €',
-              maxInsuranceNum: 1000,
+              turnaround: language === 'es' ? '5 días hábiles' : '5 business days',
+              maxInsurance: '1.500 €',
+              maxInsuranceNum: 1500,
               scope: language === 'es' 
                 ? '4 Subgrados láser 0.01mm · Escaneo forense 4K · Registro público en blockchain' 
                 : '4 Laser 0.01mm subgrades · 4K forensic scan · Blockchain public registry',
-              price: 28,
+              price: 25,
               accentColor: '#16A34A'
             },
             {
-              code: 'RCDM.02',
+              code: 'RCDM.03',
               id: 'express',
-              name: language === 'es' ? 'PRIORIDAD EXPRÉS' : 'PRIORITY EXPRESS',
+              name: 'EXPRESS',
               purpose: language === 'es' 
                 ? 'Procesamiento en cola preferente para transacciones de mercado y eventos.' 
                 : 'Priority queue routing for urgent transactions, market timing, and conventions.',
-              turnaround: language === 'es' ? '5 días hábiles' : '5 business days',
-              maxInsurance: '2.500 €',
-              maxInsuranceNum: 2500,
+              turnaround: language === 'es' ? '2 días hábiles' : '2 business days',
+              maxInsurance: '3.000 €',
+              maxInsuranceNum: 3000,
               scope: language === 'es' 
                 ? 'Cola preferente de laboratorio · Auditoría óptica doble · Canal directo de soporte' 
                 : 'Priority lab queue · Dual optical audit · Direct laboratory support channel',
-              price: 65,
+              price: 50,
               accentColor: '#EA580C'
             },
             {
-              code: 'RCDM.MASTER',
-              id: 'walkthrough',
-              name: language === 'es' ? 'PASE MAESTRO (WALK-THROUGH)' : 'MASTER WALK-THROUGH',
+              code: 'RCDM.EVENT',
+              id: 'event',
+              name: 'EVENT',
               purpose: language === 'es' 
-                ? 'Custodia acorazada y protocolo de guante blanco para piezas históricas y de museo.' 
-                : 'Armored vault custody and white-glove protocol for historic museum grails.',
-              turnaround: language === 'es' ? '48 horas' : '48 hours',
-              maxInsurance: language === 'es' ? 'Hasta 25.000 €' : 'Up to 25,000 €',
-              maxInsuranceNum: 25000,
+                ? 'Servicio exclusivo para eventos y ferias. Solo entrega presencial en pop ups.' 
+                : 'Exclusive service for events and fairs. In-person drop-off only at pop ups.',
+              turnaround: '48 h',
+              maxInsurance: '1.000 €',
+              maxInsuranceNum: 1000,
               scope: language === 'es' 
-                ? 'Auditoría presencial por Master Grader · Maletín blindado · Seguro en tránsito VIP' 
-                : 'In-person Master Grader audit · Armored case delivery · VIP transit insurance',
-              price: 140,
+                ? 'Solo entrega presencial en pop ups · Entrega rápida 48h · Encapsulado sónico' 
+                : 'In-person drop-off only at pop ups · 48h express turnaround · Sonic encapsulation',
+              price: 15,
               accentColor: '#CA8A04'
             }
           ];
 
           const handleSelectTier = (lvlId: string) => {
-            const found = MOCK_SERVICES.find(s => s.id === lvlId) || MOCK_SERVICES[1];
+            const found = MOCK_SERVICES.find(s => s.id === lvlId) || MOCK_SERVICES[0];
             setSelectedTier(found);
             setCurrentStep(2);
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -395,7 +395,6 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
                       }`}>
                         <th className="py-3 px-6 font-semibold">{language === 'es' ? 'NIVEL DE SERVICIO' : 'SERVICE TIER'}</th>
                         <th className="py-3 px-6 font-semibold">{language === 'es' ? 'PLAZO DE RETORNO' : 'ESTIMATED TURNAROUND'}</th>
-                        <th className="py-3 px-6 font-semibold">{language === 'es' ? 'COBERTURA ASEGURADA' : 'INSURANCE COVERAGE'}</th>
                         <th className="py-3 px-6 font-semibold">{language === 'es' ? 'ALCANCE TÉCNICO' : 'TECHNICAL SCOPE'}</th>
                         <th className="py-3 px-6 font-semibold text-right">{language === 'es' ? 'TARIFA / CARTA' : 'RATE / CARD'}</th>
                         <th className="py-3 px-6 font-semibold text-center">{language === 'es' ? 'ACCIÓN' : 'ACTION'}</th>
@@ -408,8 +407,8 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
 
                         // Distinctive neon tier colors for Dark Mode
                         const darkTierColor = 
-                          lvl.id === 'regular' ? '#60A5FA' : 
-                          lvl.id === 'standard' ? '#4ADE80' : 
+                          lvl.id === 'standard' ? '#60A5FA' : 
+                          lvl.id === 'premium' ? '#4ADE80' : 
                           lvl.id === 'express' ? '#FB923C' : '#FBBF24';
 
                         const rowBg = isSelected 
@@ -418,9 +417,9 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
                               : 'bg-gradient-to-r from-emerald-950/60 via-[#102917] to-[#0D1F13] shadow-[inset_0_0_24px_rgba(74,222,128,0.15)]') 
                           : (isLight 
                               ? (isEven ? 'bg-white' : 'bg-[#F2EFE8]')
-                              : (lvl.id === 'regular' 
+                              : (lvl.id === 'standard' 
                                   ? 'bg-gradient-to-r from-blue-950/30 via-[#0F1722]/90 to-[#0C121B]' 
-                                  : lvl.id === 'standard' 
+                                  : lvl.id === 'premium' 
                                   ? 'bg-gradient-to-r from-emerald-950/30 via-[#0E1C12]/90 to-[#0A160E]' 
                                   : lvl.id === 'express' 
                                   ? 'bg-gradient-to-r from-orange-950/30 via-[#1F150E]/90 to-[#170F0A]' 
@@ -467,11 +466,6 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
                                 />
                                 <span>{lvl.turnaround}</span>
                               </div>
-                            </td>
-
-                            {/* Max Insurance */}
-                            <td className="py-4 px-6 font-medium text-gray-700 dark:text-gray-200">
-                              {lvl.maxInsurance}
                             </td>
 
                             {/* Scope */}
@@ -555,10 +549,6 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
                             <span className="text-gray-400">{language === 'es' ? 'PLAZO RETORNO:' : 'TURNAROUND:'}</span>
                             <span className="font-bold">{lvl.turnaround}</span>
                           </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-400">{language === 'es' ? 'VALOR ASEGURADO:' : 'INSURANCE COVERAGE:'}</span>
-                            <span>{lvl.maxInsurance}</span>
-                          </div>
                           <div className="pt-1 border-t border-gray-200 dark:border-white/5 font-sans text-[11px] text-gray-500">
                             {lvl.scope}
                           </div>
@@ -596,7 +586,7 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
                     {language === 'es' ? 'SERVICIO SELECCIONADO:' : 'SELECTED SERVICE:'}
                   </span>
                   <span className="font-['Nunito',sans-serif] text-base uppercase font-[900] text-[#16A34A] dark:text-[#4ADE80] tracking-normal">
-                    {selectedTier?.name || 'PRECISION STANDARD'} — {selectedTier?.priceEur || 28} €
+                    {selectedTier?.name || 'STANDARD'} — {selectedTier?.priceEur || 19} €
                   </span>
                 </div>
 

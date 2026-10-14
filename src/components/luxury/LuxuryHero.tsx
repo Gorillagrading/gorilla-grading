@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
+import { BrandEcosystemRibbon } from './BrandEcosystemRibbon';
 import { 
   ShieldCheck, 
   Crosshair, 
@@ -263,25 +264,233 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
   return (
     <section 
       id="hero"
-      className="relative w-full min-h-[calc(100vh-5rem)] flex items-center justify-center overflow-hidden bg-transparent text-white py-8 lg:py-14 select-none"
+      className="relative w-full lg:min-h-[calc(100vh-4.5rem)] flex flex-col justify-between overflow-hidden bg-transparent text-white pt-2 sm:pt-3 select-none"
     >
       
-      {/* Background Architectural Lights - Gentle luxury depth without muddy green wash */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
-        <div className="hidden lg:block absolute top-1/4 right-1/4 w-[600px] h-[600px] bg-[#48C765]/15 blur-[150px] rounded-full" />
+      {/* ═════════════════════════════════════════════════════════════════════
+          SISTEMA DE 3 ESCÁNERES ÓPTICOS INSTITUCIONALES (SIN ICONOS):
+          - BLANCO: desciende (baja) de arriba hacia abajo
+          - ROJO: barre lateralmente de izquierda a derecha
+          - ULTRAVIOLETA: asciende (sube) de abajo hacia arriba
+          - Al entrar a la web se activan en coreografía de precisión calibrada
+          ═════════════════════════════════════════════════════════════════════ */}
+      {/* ═════════════════════════════════════════════════════════════════════
+          SISTEMA DE 3 ESCÁNERES ÓPTICOS INSTITUCIONALES (SIN ICONOS):
+          - Movimiento lento, solemne y pausado de calibre metrológico profesional
+          - BLANCO: desciende (baja) de arriba hacia abajo (~9s)
+          - ROJO: barre lateralmente de izquierda a derecha (~9.5s)
+          - ULTRAVIOLETA: asciende (sube) de abajo hacia arriba (~9s)
+          - Ciclo total de 26s: barrido solemne de entrada seguido de reposo sereno
+          ═════════════════════════════════════════════════════════════════════ */}
+      <style>{`
+        /* 1. Escáner Blanco: Desciende lentamente de arriba hacia abajo (0s a 9s) */
+        @keyframes scannerBlancoBaja {
+          0% {
+            top: -2%;
+            opacity: 0;
+          }
+          1.5% {
+            opacity: 0.95;
+          }
+          32.5% {
+            opacity: 0.95;
+          }
+          34.5% {
+            top: 102%;
+            opacity: 0;
+          }
+          34.6%, 100% {
+            top: -2%;
+            opacity: 0;
+          }
+        }
+
+        /* 2. Escáner Rojo: Lateral pausado de izquierda a derecha (2.5s a 12s) */
+        @keyframes scannerRojoLateral {
+          0%, 9.5% {
+            left: -2%;
+            opacity: 0;
+          }
+          11.5% {
+            opacity: 0.90;
+          }
+          44% {
+            opacity: 0.90;
+          }
+          46% {
+            left: 102%;
+            opacity: 0;
+          }
+          46.1%, 100% {
+            left: -2%;
+            opacity: 0;
+          }
+        }
+
+        /* 3. Escáner Ultravioleta: Asciende lentamente de abajo hacia arriba (5s a 14s) */
+        @keyframes scannerUltravioletaSube {
+          0%, 19% {
+            top: 102%;
+            opacity: 0;
+          }
+          21% {
+            opacity: 0.95;
+          }
+          52% {
+            opacity: 0.95;
+          }
+          54% {
+            top: -2%;
+            opacity: 0;
+          }
+          54.1%, 100% {
+            top: 102%;
+            opacity: 0;
+          }
+        }
+      `}</style>
+
+      {/* Contenedor de Escáneres Ópticos (Z-20, no interactivo, estricta precisión) */}
+      <div className="absolute inset-0 pointer-events-none z-20 overflow-hidden">
+        
+        {/* ================================================================= */}
+        {/* ESCÁNER 1: BLANCO POLARIZADO (BAJA LENTO DE ARRIBA HACIA ABAJO)  */}
+        {/* ================================================================= */}
+        <div
+          className="absolute left-0 right-0 pointer-events-none will-change-transform"
+          style={{
+            animation: 'scannerBlancoBaja 26s cubic-bezier(0.25, 0.1, 0.25, 1.0) infinite',
+            opacity: 0
+          }}
+        >
+          {/* Estela sutil de luz blanca superior */}
+          <div
+            className="w-full h-10 -mt-10 pointer-events-none"
+            style={{
+              background: 'linear-gradient(to top, rgba(255,255,255,0.06) 0%, transparent 100%)',
+              maskImage: 'linear-gradient(to top, black, transparent)',
+              WebkitMaskImage: 'linear-gradient(to top, black, transparent)'
+            }}
+          />
+
+          {/* Línea Láser Blanca Polarizada */}
+          <div className="relative w-full flex items-center">
+            {/* Micro telemetría óptica derecha */}
+            <div className="absolute right-4 sm:right-10 flex items-center opacity-40 select-none">
+              <span className="font-mono text-[6px] sm:text-[6.5px] tracking-[0.25em] text-white font-bold uppercase">
+                [ 5500K · OPTICAL WHITE ]
+              </span>
+            </div>
+
+            {/* Filamento Láser Blanco Fino */}
+            <div
+              className="w-full h-[1px]"
+              style={{
+                background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.20) 8%, #FFFFFF 50%, rgba(255,255,255,0.20) 92%, transparent 100%)',
+                boxShadow: isLight
+                  ? '0 0 6px rgba(255,255,255,0.9), 0 0 14px rgba(148,163,184,0.3)'
+                  : '0 0 8px #FFFFFF, 0 0 16px rgba(255,255,255,0.5), 0 0 28px rgba(255,255,255,0.2)'
+              }}
+            />
+          </div>
+        </div>
+
+        {/* ================================================================= */}
+        {/* ESCÁNER 2: ROJO RUBÍ (BARRE LENTO DE IZQUIERDA A DERECHA)         */}
+        {/* ================================================================= */}
+        <div
+          className="absolute top-0 bottom-0 pointer-events-none will-change-transform"
+          style={{
+            animation: 'scannerRojoLateral 26s cubic-bezier(0.25, 0.1, 0.25, 1.0) infinite',
+            opacity: 0
+          }}
+        >
+          {/* Estela sutil de luz roja hacia la izquierda */}
+          <div
+            className="h-full w-10 -ml-10 pointer-events-none"
+            style={{
+              background: 'linear-gradient(to left, rgba(239,68,68,0.08) 0%, transparent 100%)',
+              maskImage: 'linear-gradient(to left, black, transparent)',
+              WebkitMaskImage: 'linear-gradient(to left, black, transparent)'
+            }}
+          />
+
+          {/* Línea Láser Roja */}
+          <div className="relative h-full flex flex-col justify-end pb-8">
+            {/* Micro telemetría óptica inferior */}
+            <div className="absolute bottom-6 left-3 select-none opacity-50">
+              <span className="font-mono text-[6px] sm:text-[6.5px] tracking-[0.25em] text-rose-400 font-bold uppercase whitespace-nowrap">
+                [ λ: 635nm · RUBY PROFILE ]
+              </span>
+            </div>
+
+            {/* Filamento Láser Rojo Fino */}
+            <div
+              className="h-full w-[1px]"
+              style={{
+                background: 'linear-gradient(180deg, transparent 0%, rgba(239,68,68,0.30) 8%, #FFFFFF 48%, #EF4444 52%, rgba(239,68,68,0.30) 92%, transparent 100%)',
+                boxShadow: isLight
+                  ? '0 0 6px #EF4444, 0 0 14px rgba(239,68,68,0.45)'
+                  : '0 0 8px #EF4444, 0 0 18px rgba(239,68,68,0.65), 0 0 32px rgba(220,38,38,0.35)'
+              }}
+            />
+          </div>
+        </div>
+
+        {/* ================================================================= */}
+        {/* ESCÁNER 3: ULTRAVIOLETA λ 395nm (ASCIENDE LENTO DE ABAJO A ARRIBA) */}
+        {/* ================================================================= */}
+        <div
+          className="absolute left-0 right-0 pointer-events-none will-change-transform"
+          style={{
+            animation: 'scannerUltravioletaSube 26s cubic-bezier(0.25, 0.1, 0.25, 1.0) infinite',
+            opacity: 0
+          }}
+        >
+          {/* Línea Láser Ultravioleta */}
+          <div className="relative w-full flex items-center">
+            {/* Micro telemetría óptica izquierda */}
+            <div className="absolute left-4 sm:left-10 flex items-center opacity-50 select-none">
+              <span className="font-mono text-[6px] sm:text-[6.5px] tracking-[0.25em] text-purple-300 font-bold uppercase">
+                [ λ: 395nm · UV FLUORESCENCE ]
+              </span>
+            </div>
+
+            {/* Filamento Láser Ultravioleta Fino */}
+            <div
+              className="w-full h-[1px]"
+              style={{
+                background: 'linear-gradient(90deg, transparent 0%, rgba(168,85,247,0.30) 8%, #FAF5FF 48%, #A855F7 52%, rgba(168,85,247,0.30) 92%, transparent 100%)',
+                boxShadow: isLight
+                  ? '0 0 6px #A855F7, 0 0 14px rgba(168,85,247,0.45)'
+                  : '0 0 8px #C084FC, 0 0 18px rgba(168,85,247,0.7), 0 0 35px rgba(126,34,206,0.4)'
+              }}
+            />
+          </div>
+
+          {/* Estela sutil de luz ultravioleta inferior */}
+          <div
+            className="w-full h-10 pointer-events-none"
+            style={{
+              background: 'linear-gradient(to bottom, rgba(168,85,247,0.08) 0%, transparent 100%)',
+              maskImage: 'linear-gradient(to bottom, black, transparent)',
+              WebkitMaskImage: 'linear-gradient(to bottom, black, transparent)'
+            }}
+          />
+        </div>
       </div>
 
-      <div className="relative z-10 max-w-[1440px] w-full mx-auto px-6 lg:px-12 grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 items-center">
+      <div className="relative z-10 max-w-[1440px] w-full mx-auto px-6 lg:px-12 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center flex-1 my-auto py-1 sm:py-2">
         
         {/* Left Editorial Column */}
-        <div className="lg:col-span-6 xl:col-span-6 flex flex-col justify-center items-center lg:items-start text-center lg:text-left pt-4 lg:pt-6">
+        <div className="lg:col-span-6 xl:col-span-6 flex flex-col justify-center items-center lg:items-start text-center lg:text-left pt-2 lg:pt-0">
           
           {/* Refined Technical Kicker - Pure Floating Editorial Typography (Zero Generic Box) */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
-            className="flex items-center justify-center lg:justify-start mb-4 sm:mb-6"
+            className="flex items-center justify-center lg:justify-start mb-3 sm:mb-4"
           >
             <span className={`font-['Nunito',sans-serif] text-xs font-bold tracking-normal uppercase select-none ${
               isLight ? 'text-[#15803D]' : 'text-[#22C55E]'
@@ -295,7 +504,7 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut", delay: 0.1 }}
-            className={`font-['Nunito',sans-serif] font-[900] text-4xl sm:text-5xl md:text-6xl lg:text-[66px] xl:text-[76px] 2xl:text-[82px] leading-[0.96] tracking-normal mb-6 sm:mb-8 uppercase select-none ${
+            className={`font-['Nunito',sans-serif] font-[900] text-3xl sm:text-4xl md:text-5xl lg:text-[46px] xl:text-[54px] 2xl:text-[62px] leading-[0.98] tracking-normal mb-4 sm:mb-5 uppercase select-none ${
               isLight ? 'text-[#0F172A]' : 'text-white'
             }`}
           >
@@ -320,9 +529,9 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
-            className="relative mb-6 sm:mb-9"
+            className="relative mb-4 sm:mb-5"
           >
-            <p className="font-sans text-base sm:text-lg lg:text-xl text-[#F4F6F0] max-w-[540px] leading-relaxed font-medium">
+            <p className="font-sans text-sm sm:text-base lg:text-lg text-[#F4F6F0] max-w-[520px] leading-relaxed font-medium">
               {t('ref.hero.desc')}
             </p>
           </motion.div>
@@ -332,12 +541,12 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut", delay: 0.3 }}
-            className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 sm:gap-6 mb-8 sm:mb-10 w-full sm:w-auto"
+            className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 sm:gap-4 mb-5 sm:mb-6 w-full sm:w-auto"
           >
             {/* Primary Capsule Button */}
             <button
               onClick={() => onNavigate && onNavigate('/submit')}
-              className="btn-gorilla-pill w-full sm:w-auto px-8 py-4 gap-2.5 group"
+              className="btn-gorilla-pill w-full sm:w-auto px-7 py-3.5 gap-2 group"
             >
               <span className="font-['Nunito',sans-serif] font-bold text-xs tracking-normal uppercase">
                 {t('ref.hero.ctaPrimary')}
@@ -357,7 +566,7 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
                   onNavigate('/technology');
                 }
               }}
-              className="btn-gorilla-pill-secondary w-full sm:w-auto px-7 py-3.5 gap-2.5 group cursor-pointer"
+              className="btn-gorilla-pill-secondary w-full sm:w-auto px-6 py-3 gap-2 group cursor-pointer"
             >
               <span className="font-['Nunito',sans-serif] text-xs font-bold tracking-normal uppercase">
                 {t('ref.hero.ctaSecondary')}
@@ -375,12 +584,12 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut", delay: 0.4 }}
-            className={`w-full max-w-xl grid grid-cols-3 gap-2.5 sm:gap-3.5 pt-6 sm:pt-8 border-t ${
+            className={`w-full max-w-xl grid grid-cols-3 gap-2 sm:gap-3 pt-4 sm:pt-5 border-t ${
               isLight ? 'border-gray-300/80' : 'border-white/10'
             }`}
           >
             {/* Badge 1: Calibre Óptico */}
-            <div className={`flex flex-col items-center sm:items-start p-3 border transition-all duration-200 ${
+            <div className={`flex flex-col items-center sm:items-start p-2.5 sm:p-3 border transition-all duration-200 ${
               isLight 
                 ? 'bg-white/90 border-gray-200/80 shadow-xs hover:border-gray-400' 
                 : 'bg-white/[0.03] border-white/10 hover:border-white/25 backdrop-blur-xs'
@@ -458,45 +667,9 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
         </div>
 
         {/* Right Column: 3D SLAB INSPECTOR HERO */}
-        <div className="lg:col-span-6 xl:col-span-6 flex flex-col items-center justify-center relative">
+        <div className="lg:col-span-6 xl:col-span-6 flex flex-col items-center justify-center relative w-full">
           
-          {/* Inspector Controls Ribbon */}
-          <div className="w-full max-w-[540px] sm:max-w-[640px] lg:max-w-[740px] xl:max-w-[820px] 2xl:max-w-[880px] flex items-center justify-between mb-3 px-2 font-mono text-[10px] text-gray-400">
-            <div className="flex items-center gap-2">
-              <Crosshair className={`w-3.5 h-3.5 animate-spin ${isLight ? 'text-[#15803D]' : 'text-emerald-400'}`} style={{ animationDuration: '8s' }} />
-              <span className={`uppercase tracking-normal font-bold ${isLight ? 'text-[#15803D]' : 'text-emerald-400/90'}`}>
-                SLAB INSPECTOR 3D
-              </span>
-            </div>
-
-            <div className="flex items-center gap-3">
-              {!isIntroPlaying && (
-                <>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIntroProgress(0);
-                      setActiveHotspot(null);
-                      setIsIntroPlaying(true);
-                    }}
-                    className="hover:text-emerald-400 underline uppercase tracking-wider cursor-pointer transition-colors"
-                  >
-                    {language === 'es' ? '▶ Repetir Intro' : '▶ Replay Intro'}
-                  </button>
-                  <span className="text-gray-600">|</span>
-                </>
-              )}
-              <button
-                type="button"
-                onClick={() => setShowHotspots(!showHotspots)}
-                className="hover:text-white underline uppercase tracking-wider cursor-pointer transition-colors"
-              >
-                {showHotspots ? (language === 'es' ? 'Ocultar Puntos' : 'Hide Hotspots') : (language === 'es' ? 'Mostrar Puntos' : 'Show Hotspots')}
-              </button>
-            </div>
-          </div>
-
-          {/* 3D Slab Interactive Viewport */}
+          {/* 3D Slab Interactive Viewport (Ampliado) */}
           <div
             ref={slabRef}
             onMouseMove={handleMouseMove}
@@ -505,12 +678,12 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
               if (isIntroPlaying) setIsIntroPlaying(false);
             }}
             style={{ perspective: 1200 }}
-            className="relative w-full max-w-[540px] sm:max-w-[640px] lg:max-w-[740px] xl:max-w-[820px] 2xl:max-w-[880px] aspect-[1.48/1] flex items-center justify-center cursor-crosshair bg-transparent select-none"
+            className="relative w-full max-w-[500px] sm:max-w-[620px] lg:max-w-[720px] xl:max-w-[820px] 2xl:max-w-[920px] aspect-[1.48/1] flex items-center justify-center cursor-crosshair bg-transparent select-none"
           >
             {/* 3D Tilting Slab Wrapper - Pure floating stage, zero boxes or overlays */}
             <div
               style={{
-                transform: `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(${isIntroPlaying ? 1.025 : 1})`,
+                transform: `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(${isIntroPlaying ? 1.08 : 1.05})`,
                 transition: isIntroPlaying ? 'transform 0.2s ease-out' : 'transform 0.12s ease-out',
                 transformStyle: 'preserve-3d'
               }}
@@ -759,14 +932,13 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
             </div>
           </div>
 
-          <div className={`mt-3 font-mono text-[10px] text-center ${
-            isLight ? 'text-gray-500' : 'text-gray-400'
-          }`}>
-            {language === 'es' ? 'Toca o mueve el cursor sobre el slab para inspeccionar reflejos y puntos forenses' : 'Tap or move cursor over the slab to inspect dynamic glare & forensic hotspots'}
-          </div>
-
         </div>
 
+      </div>
+
+      {/* Embedded Ecosystem Logos Ribbon - Integral part of the Hero, visible above the fold */}
+      <div className="relative z-30 w-full shrink-0">
+        <BrandEcosystemRibbon isHeroEmbedded={true} />
       </div>
 
     </section>

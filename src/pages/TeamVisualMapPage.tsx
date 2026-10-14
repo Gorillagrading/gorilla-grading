@@ -64,7 +64,7 @@ const ITEMS: MapItem[] = [
     cat: 'home',
     type: 'Sección Home #05',
     warning: '⚠️ Idéntica a la página /pricing',
-    desc: 'Las 3 tarjetas completas de precios (Standard 15€, Express 28€, Walk-Through 45€). ¿Reducirla en la home a un resumen ligero con enlace?',
+    desc: 'La matriz completa de precios (Standard 19€, Premium 25€, Express 50€, Event 15€). ¿Reducirla en la home a un resumen ligero con enlace?',
     image: '/capturas/sec-5.png'
   },
   {

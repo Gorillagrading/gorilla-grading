@@ -91,8 +91,8 @@ export const FAQPage: React.FC<FAQPageProps> = ({ onNavigate }) => {
       category: 'turnaround',
       qEs: '¿Qué niveles de velocidad de graduación existen?',
       qEn: 'What turnaround tiers are available?',
-      aEs: 'Ofrecemos cuatro niveles adaptados a cada necesidad: Servicio Estándar (15 a 20 días hábiles para colecciones regulares), Express (7 a 10 días hábiles con prioridad de escaneo óptico), Priority Ultra (48 a 72 horas para lanzamientos o eventos inmediatos) y Walk-Through 24h para piezas históricas de museo con custodia individualizada.',
-      aEn: 'We offer four distinct service tiers: Standard Service (15 to 20 business days for regular set submissions), Express (7 to 10 business days with optical queue priority), Priority Ultra (48 to 72 hours for immediate drops or trade events), and 24-hour Walk-Through for high-value museum grails with dedicated one-on-one custody.'
+      aEs: 'Ofrecemos cuatro niveles adaptados a cada necesidad: Standard (10 días hábiles | 19 € para remesas regulares y colecciones), Premium (5 días hábiles | 25 € con subgrados métricos y registro público), Express (2 días hábiles | 50 € con cola prioritaria acelerada) y Event (48 h | 15 €, exclusivo para entrega presencial en pop ups oficiales).',
+      aEn: 'We offer four distinct service tiers: Standard (10 business days | 19 € for regular sets and personal binders), Premium (5 business days | 25 € with metric subgrades and public registry), Express (2 business days | 50 € with accelerated lab priority queue), and Event (48 h | 15 €, exclusive for in-person drop-offs at official pop-ups).'
     },
 
     // In-person Dropoffs

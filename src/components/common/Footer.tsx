@@ -109,10 +109,10 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
               Grading Services
             </h4>
             <ul className="space-y-2 text-xs">
-              <li><button onClick={() => onNavigate('/services')} className="hover:text-gorilla-400 transition-colors">Standard (15 Days)</button></li>
-              <li><button onClick={() => onNavigate('/services')} className="hover:text-gorilla-400 transition-colors">Express (5 Days)</button></li>
-              <li><button onClick={() => onNavigate('/services')} className="hover:text-gorilla-400 transition-colors">Walk-Through (24h)</button></li>
-              <li><button onClick={() => onNavigate('/services')} className="hover:text-gorilla-400 transition-colors">Collector Bulk Tier</button></li>
+              <li><button onClick={() => onNavigate('/services')} className="hover:text-gorilla-400 transition-colors">Standard (10 Days)</button></li>
+              <li><button onClick={() => onNavigate('/services')} className="hover:text-gorilla-400 transition-colors">Premium (5 Days)</button></li>
+              <li><button onClick={() => onNavigate('/services')} className="hover:text-gorilla-400 transition-colors">Express (2 Days)</button></li>
+              <li><button onClick={() => onNavigate('/services')} className="hover:text-gorilla-400 transition-colors">Event (48h Pop-Up)</button></li>
               <li><button onClick={() => onNavigate('/services')} className="hover:text-gorilla-400 transition-colors">Re-Holder Service</button></li>
             </ul>
           </div>
