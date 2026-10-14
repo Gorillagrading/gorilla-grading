@@ -109,9 +109,9 @@ export const HomeVerificationModule: React.FC<HomeVerificationModuleProps> = ({ 
         
         {/* Module Header: Technical Lab Console Aesthetic */}
         <div className="flex flex-col items-center text-center max-w-3xl mx-auto mb-8 sm:mb-10">
-          {/* Main Dedicated Gorilla Verify Sub-Brand Logo (Dynamic Forensic Animation) */}
-          <div className="mb-4 sm:mb-5">
-            <VerifyLogo shieldSize="w-28 h-28 sm:w-36 sm:h-36 lg:w-40 lg:h-40" />
+          {/* Main Dedicated Gorilla Verify Sub-Brand Logo (Forensic Floating Shield) */}
+          <div className="mb-6 sm:mb-8">
+            <VerifyLogo size="w-44 h-44 sm:w-56 sm:h-56 lg:w-64 lg:h-64" />
           </div>
 
           <h2 className="flex items-center gap-2 font-mono text-[10px] sm:text-[11px] tracking-[0.25em] uppercase text-gray-500 mb-4 sm:mb-5">
