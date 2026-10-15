@@ -139,7 +139,7 @@ export const BrandEcosystemRibbon: React.FC<BrandEcosystemRibbonProps> = ({ isHe
   return (
     <div 
       id="brands" 
-      className={`w-full select-none overflow-hidden relative transition-colors duration-300 py-3 sm:py-3.5 lg:py-4 border-t ${
+      className={`w-full select-none overflow-hidden relative transition-colors duration-300 py-3 sm:py-3.5 lg:py-4 border-y ${
         isLight ? 'bg-[#F5F8F5] border-[#E2E8F0]' : 'bg-[#111712] border-white/[0.08]'
       }`}
     >

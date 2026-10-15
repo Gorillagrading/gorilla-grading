@@ -10,7 +10,7 @@ interface TechnologyPageProps {
 export const TechnologyPage: React.FC<TechnologyPageProps> = ({ onNavigate }) => {
   return (
     <div className="w-full min-h-screen bg-[#454545] text-white flex flex-col">
-      <TechnologySection onNavigate={onNavigate} />
+      <TechnologySection onNavigate={onNavigate} showExploreButton={false} />
       <LuxuryAboutSection onNavigate={onNavigate} />
       <CardAnalysisPillars onNavigate={onNavigate} />
     </div>

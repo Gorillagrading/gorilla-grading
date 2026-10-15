@@ -90,7 +90,7 @@ export const HomeVerificationModule: React.FC<HomeVerificationModuleProps> = ({ 
   return (
     <section 
       id="verify-module"
-      className={`relative w-full py-16 lg:py-24 px-5 lg:px-10 border-b select-none transition-colors duration-300 ${
+      className={`relative w-full min-h-screen flex flex-col justify-center py-16 sm:py-20 lg:py-24 px-5 lg:px-10 border-b select-none transition-colors duration-300 ${
         isLight 
           ? 'bg-white/40 backdrop-blur-md text-[#111827] border-[#E5E7EB]' 
           : 'bg-[#181B18]/40 backdrop-blur-md text-white border-white/[0.08]'
@@ -105,16 +105,16 @@ export const HomeVerificationModule: React.FC<HomeVerificationModuleProps> = ({ 
         }}
       />
 
-      <div className="relative z-10 max-w-[1400px] mx-auto">
+      <div className="relative z-10 w-full max-w-[1400px] mx-auto flex flex-col justify-center">
         
         {/* Module Header: Technical Lab Console Aesthetic */}
         <div className="flex flex-col items-center text-center max-w-3xl mx-auto mb-8 sm:mb-10">
-          {/* Main Dedicated Gorilla Verify Sub-Brand Logo (Forensic Floating Shield) */}
-          <div className="mb-6 sm:mb-8">
-            <VerifyLogo size="w-64 h-64 sm:w-80 sm:h-80 lg:w-96 lg:h-96" />
+          {/* Main Dedicated Gorilla Verify Sub-Brand Logo (Forensic Floating Badge) */}
+          <div className="mb-4 sm:mb-5">
+            <VerifyLogo size="w-full max-w-[260px] sm:max-w-[290px] lg:max-w-[320px] h-14 sm:h-16 lg:h-18" />
           </div>
 
-          <h2 className="flex items-center gap-2 font-mono text-[10px] sm:text-[11px] tracking-[0.25em] uppercase text-gray-500 mb-4 sm:mb-5">
+          <h2 className="flex items-center gap-2 font-mono text-[11px] sm:text-xs tracking-[0.28em] uppercase text-gray-500 mb-6 sm:mb-7">
             <span>
               {language === 'es' 
                 ? '[ EXPEDIENTE PÚBLICO DE VERIFICACIÓN · SERIE AUDITORÍA 2026 ]' 
@@ -122,8 +122,8 @@ export const HomeVerificationModule: React.FC<HomeVerificationModuleProps> = ({ 
             </span>
           </h2>
 
-          {/* Verification Features with Green Check Icon (Including Verify Certificate item) */}
-          <div className="inline-flex flex-col items-start gap-2.5 sm:gap-3 text-left">
+          {/* Verification Features with Green Check Icon in 2-Column Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 sm:gap-x-12 gap-y-3 sm:gap-y-3.5 max-w-2xl mx-auto text-left w-full px-2 sm:px-0">
             {(language === 'es' ? [
               'Verificar Certificado.',
               'Consulta instantánea para compradores y vendedores del mercado secundario.',
@@ -135,11 +135,11 @@ export const HomeVerificationModule: React.FC<HomeVerificationModuleProps> = ({ 
               'Access cryptographic history.',
               'Laser Audit data and 1200 DPI master scan.'
             ]).map((text, idx) => (
-              <div key={idx} className="flex items-center gap-2.5 sm:gap-3">
+              <div key={idx} className="flex items-center gap-3">
                 <img 
                   src="/images/verified-check.svg" 
                   alt="Verified" 
-                  className="w-4 h-4 sm:w-[18px] sm:h-[18px] shrink-0 object-contain" 
+                  className="w-4 h-4 sm:w-5 sm:h-5 shrink-0 object-contain" 
                 />
                 <span className={`font-sans text-xs sm:text-sm font-medium leading-relaxed ${
                   isLight ? 'text-gray-800' : 'text-neutral-100'
@@ -152,7 +152,7 @@ export const HomeVerificationModule: React.FC<HomeVerificationModuleProps> = ({ 
         </div>
 
         {/* Forensic Search Console */}
-        <div className="max-w-3xl mx-auto mb-10">
+        <div className="max-w-3xl sm:max-w-4xl mx-auto mb-10 w-full">
           <form 
             onSubmit={(e) => { e.preventDefault(); handleVerify(); }}
             className={`relative flex flex-col sm:flex-row items-stretch p-2 border shadow-lg transition-all duration-300 ${

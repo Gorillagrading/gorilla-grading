@@ -6,6 +6,7 @@ import { GradedCard } from '../types';
 import { SlabCard } from '../components/common/SlabCard';
 import { DefectInspector } from '../components/common/DefectInspector';
 import { Search, ShieldCheck, ArrowRight } from 'lucide-react';
+import { VerifyLogo } from '../components/luxury/VerifyLogo';
 
 interface VerificationPageProps {
   onNavigate: (path: string) => void;
@@ -33,7 +34,11 @@ export const VerificationPage: React.FC<VerificationPageProps> = ({ onNavigate }
     if (found) {
       setActiveCard(found);
     } else {
-      setErrorMsg(`No certificate found matching "${query}".`);
+      setErrorMsg(
+        language === 'es' 
+          ? `No se encontró ningún certificado con el código "${query}".` 
+          : `No certificate found matching "${query}".`
+      );
     }
   };
 
@@ -42,64 +47,115 @@ export const VerificationPage: React.FC<VerificationPageProps> = ({ onNavigate }
       isLight ? 'bg-[#FAF9F6] text-gray-950' : 'bg-[#0E120E] text-white'
     } flex flex-col pt-24 sm:pt-32 pb-20 sm:pb-32 px-4 sm:px-6 lg:px-12 font-sans selection:bg-[#48C765] selection:text-[#14170F]`}>
       
-      {/* Editorial Search Section */}
-      <div className={`w-full max-w-[1400px] mx-auto mb-12 sm:mb-20 flex flex-col md:flex-row md:items-end justify-between gap-8 sm:gap-12 border-b pb-10 sm:pb-16 ${
-        isLight ? 'border-gray-200' : 'border-white/10'
+      {/* Central Forensic Search Console */}
+      <div className={`w-full max-w-[1000px] mx-auto text-center flex flex-col items-center mb-12 sm:mb-16 ${
+        activeCard ? 'border-b pb-10 sm:pb-14 ' + (isLight ? 'border-gray-200' : 'border-white/10') : ''
       }`}>
-        <div className="flex flex-col max-w-2xl w-full">
-          <div className="flex items-center gap-2.5 text-[#16A34A] dark:text-[#48C765] font-mono text-[10px] tracking-[0.2em] uppercase mb-3 sm:mb-4">
-            <ShieldCheck className="w-4 h-4 shrink-0" />
-            <span>{language === 'es' ? 'Autenticación Internacional' : 'International Authentication'}</span>
-          </div>
-          <h1 className={`font-['Nunito',sans-serif] text-2xl sm:text-3xl font-[900] uppercase tracking-normal mb-6 sm:mb-8 ${
-            isLight ? 'text-gray-950' : 'text-white'
-          }`}>
-            {t('verify.title')}
-          </h1>
-          
-          <form onSubmit={handleSearch} className="relative w-full max-w-lg group">
-            <input
-              type="text"
-              placeholder="ENTER CERTIFICATE ID (e.g. GG-892401)"
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              className={`w-full bg-transparent border-b-2 px-0 py-3 text-base sm:text-lg placeholder-current/30 focus:outline-none transition-colors font-mono uppercase tracking-widest pr-12 ${
-                isLight 
-                  ? 'border-gray-300 text-gray-950 focus:border-[#16A34A]' 
-                  : 'border-white/20 text-white focus:border-[#48C765]'
-              }`}
-            />
-            <button 
-              type="submit"
-              className={`absolute right-2 top-1/2 -translate-y-1/2 transition-colors cursor-pointer ${
-                isLight ? 'text-gray-400 hover:text-[#16A34A]' : 'text-white/50 hover:text-[#48C765]'
-              }`}
-            >
-              <ArrowRight className="w-6 h-6" />
-            </button>
-          </form>
-          {errorMsg && (
-            <span className="text-red-500 font-mono text-[10px] tracking-widest uppercase mt-4">
-              {errorMsg}
-            </span>
-          )}
+        
+        {/* Gorilla Verify Sub-Brand Badge */}
+        <div className="mb-5 sm:mb-6">
+          <VerifyLogo size="w-full max-w-[260px] sm:max-w-[320px] lg:max-w-[360px] h-14 sm:h-16 lg:h-18" />
         </div>
 
-        <div className={`flex flex-col gap-2.5 font-mono text-[10px] tracking-[0.2em] uppercase ${
-          isLight ? 'text-gray-600' : 'text-white/50'
+        {/* Technical Eyebrow */}
+        <div className="inline-flex items-center gap-2 font-mono text-[10px] sm:text-[11px] tracking-[0.25em] uppercase text-[#16A34A] dark:text-[#4ADE80] mb-3">
+          <ShieldCheck className="w-4 h-4 shrink-0" />
+          <span>
+            {language === 'es' 
+              ? 'EXPEDIENTE PÚBLICO · AUTENTICACIÓN CRIPTOGRÁFICA' 
+              : 'PUBLIC REGISTRY · CRYPTOGRAPHIC AUTHENTICATION'}
+          </span>
+        </div>
+
+        {/* Headline */}
+        <h1 className={`font-['Nunito',sans-serif] text-2xl sm:text-3xl md:text-4xl font-[900] uppercase tracking-normal mb-3 sm:mb-4 ${
+          isLight ? 'text-gray-950' : 'text-white'
         }`}>
-          <span className={isLight ? 'text-gray-400 font-semibold' : 'text-white/30'}>
-            {language === 'es' ? 'Búsquedas Recientes' : 'Recent Searches'}
+          {t('verify.title')}
+        </h1>
+
+        {/* Subtext description */}
+        <p className={`text-xs sm:text-sm max-w-xl mx-auto mb-6 sm:mb-8 font-sans ${
+          isLight ? 'text-gray-600' : 'text-gray-400'
+        }`}>
+          {language === 'es'
+            ? 'Consulte instantáneamente los datos de auditoría óptica a 1200 DPI, historial de sub-grados y certificado criptográfico oficial registrado en el ledger de Gorilla.'
+            : 'Instantly query 1200 DPI master optical audit scans, subgrade records, and official cryptographic certificates verified on the Gorilla ledger.'}
+        </p>
+
+        {/* Futuristic Search Form */}
+        <form onSubmit={handleSearch} className="relative w-full max-w-2xl mx-auto mb-5 sm:mb-6">
+          <div className={`relative flex items-center rounded-2xl border transition-all duration-300 ${
+            isLight 
+              ? 'bg-white/80 border-gray-200 focus-within:border-[#16A34A] focus-within:ring-4 focus-within:ring-[#16A34A]/10 shadow-[0_8px_30px_rgba(0,0,0,0.04)]' 
+              : 'bg-[#141814]/80 border-white/10 focus-within:border-[#4ADE80] focus-within:ring-4 focus-within:ring-[#4ADE80]/15 shadow-[0_8px_30px_rgba(0,0,0,0.5)]'
+          } backdrop-blur-md px-4 py-2 sm:py-2.5`}>
+            
+            <Search className={`w-5 h-5 shrink-0 mr-3 transition-colors ${
+              isLight ? 'text-gray-400' : 'text-gray-500'
+            }`} />
+            
+            <input
+              type="text"
+              placeholder={language === 'es' ? 'INGRESE ID DE CERTIFICADO (EJ. GG-892401)' : 'ENTER CERTIFICATE ID (E.G. GG-892401)'}
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              className={`w-full bg-transparent py-2 text-sm sm:text-base font-mono uppercase tracking-widest focus:outline-none placeholder:font-mono placeholder:text-xs sm:placeholder:text-sm ${
+                isLight ? 'text-gray-950 placeholder:text-gray-400' : 'text-white placeholder:text-gray-500'
+              }`}
+            />
+
+            {searchInput && (
+              <button
+                type="button"
+                onClick={() => { setSearchInput(''); setErrorMsg(''); }}
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-xs px-2 py-1 font-mono uppercase mr-1 cursor-pointer"
+                title={language === 'es' ? 'Limpiar búsqueda' : 'Clear search'}
+              >
+                ✕
+              </button>
+            )}
+
+            <button
+              type="submit"
+              className="btn-gorilla-square px-5 py-2 sm:py-2.5 text-xs font-bold tracking-normal shrink-0 gap-1.5 cursor-pointer shadow-sm"
+            >
+              <span>{language === 'es' ? 'Verificar' : 'Verify'}</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          {errorMsg && (
+            <div className="mt-3 py-2 px-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 font-mono text-[11px] tracking-wide text-center">
+              {errorMsg}
+            </div>
+          )}
+        </form>
+
+        {/* Quick Searches Centered Pills */}
+        <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-2.5 font-mono">
+          <span className={`text-[10px] tracking-[0.2em] uppercase mr-1 ${
+            isLight ? 'text-gray-400' : 'text-white/40'
+          }`}>
+            {language === 'es' ? 'Búsquedas de ejemplo:' : 'Example searches:'}
           </span>
           {MOCK_POPULAR_SEARCHES.map((cert) => (
             <button
               key={cert}
+              type="button"
               onClick={() => {
                 setSearchInput(cert);
+                setErrorMsg('');
                 const found = MOCK_GRADED_CARDS.find(c => c.certNumber === cert);
                 if (found) setActiveCard(found);
               }}
-              className="text-left hover:text-[#16A34A] dark:hover:text-[#48C765] transition-colors cursor-pointer"
+              className={`px-3 py-1 rounded-lg border font-mono text-[11px] tracking-wider transition-all duration-200 cursor-pointer ${
+                activeCard?.certNumber === cert
+                  ? 'bg-[#16A34A] text-white border-[#16A34A] shadow-sm font-bold'
+                  : isLight
+                    ? 'bg-white/70 hover:bg-white text-gray-700 hover:text-[#16A34A] border-gray-200 hover:border-[#16A34A]/40 shadow-xs'
+                    : 'bg-white/5 hover:bg-white/10 text-white/70 hover:text-[#4ADE80] border-white/10 hover:border-[#4ADE80]/40'
+              }`}
             >
               {cert}
             </button>

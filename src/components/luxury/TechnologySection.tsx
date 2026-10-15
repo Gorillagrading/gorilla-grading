@@ -4,9 +4,13 @@ import { useTheme } from '../../context/ThemeContext';
 
 interface TechnologySectionProps {
   onNavigate?: (path: string) => void;
+  showExploreButton?: boolean;
 }
 
-export const TechnologySection: React.FC<TechnologySectionProps> = ({ onNavigate }) => {
+export const TechnologySection: React.FC<TechnologySectionProps> = ({ 
+  onNavigate,
+  showExploreButton = true
+}) => {
   const { language } = useLanguage();
   const { theme } = useTheme();
   const [activeStep, setActiveStep] = React.useState(-1);
@@ -120,15 +124,17 @@ export const TechnologySection: React.FC<TechnologySectionProps> = ({ onNavigate
               </p>
             </div>
             
-            <button
-              onClick={() => onNavigate ? onNavigate('/technology') : window.location.href = '/technology'}
-              className="btn-gorilla-pill px-8 py-3.5 text-xs font-bold tracking-normal gap-2 shadow-lg group w-fit mx-auto lg:mx-0"
-            >
-              <span>{language === 'es' ? 'Conoce la tecnología' : 'Explore Technology'}</span>
-              <svg className="w-4 h-4 ml-1 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-              </svg>
-            </button>
+            {showExploreButton && (typeof window === 'undefined' || window.location.pathname !== '/technology') && (
+              <button
+                onClick={() => onNavigate ? onNavigate('/technology') : window.location.href = '/technology'}
+                className="btn-gorilla-pill px-8 py-3.5 text-xs font-bold tracking-normal gap-2 shadow-lg group w-fit mx-auto lg:mx-0"
+              >
+                <span>{language === 'es' ? 'Conoce la tecnología' : 'Explore Technology'}</span>
+                <svg className="w-4 h-4 ml-1 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                </svg>
+              </button>
+            )}
           </div>
 
           {/* Empty spacer for center image focus */}

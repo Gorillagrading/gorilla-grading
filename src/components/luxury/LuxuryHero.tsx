@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
 import { BrandEcosystemRibbon } from './BrandEcosystemRibbon';
@@ -18,16 +18,6 @@ import {
 interface LuxuryHeroProps {
   onNavigate?: (path: string) => void;
   onOpenTechModal?: () => void;
-}
-
-interface Hotspot {
-  id: string;
-  x: number; // percentage
-  y: number; // percentage
-  title: string;
-  metric: string;
-  desc: string;
-  category: string;
 }
 
 // After Effects Diamond Star Lens Flare Component (Zero background box, pure light physics)
@@ -79,9 +69,8 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
 
   const heroImageSrc = '/images/alakazam_hero.png?v=6';
 
-  // 10s After Effects Level Cinematic Optical Pipeline (100% transparent, zero box)
-  const [isIntroPlaying, setIsIntroPlaying] = useState(true);
-  const [introProgress, setIntroProgress] = useState(0); // 0 to 100%
+  // Continuous Cinematic Optical Metrology Pipeline (Infinite, solemn, 60fps)
+  const [introProgress, setIntroProgress] = useState(0); // 0 to 100% loop
   const [glint1, setGlint1] = useState(0); // Gem Mint 10 badge diamond flare
   const [glint2, setGlint2] = useState(0); // Ultrasonic weld diamond flare
   const [glint3, setGlint3] = useState(0); // Cryptographic QR diamond flare
@@ -89,182 +78,83 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
   const [sonicWaveOpacity, setSonicWaveOpacity] = useState(0);
   const [rotateX, setRotateX] = useState(0);
   const [rotateY, setRotateY] = useState(0);
-  const [glarePosition, setGlarePosition] = useState({ x: 50, y: 50 });
-  const [activeHotspot, setActiveHotspot] = useState<Hotspot | null>(null);
-  const [showHotspots, setShowHotspots] = useState(true);
-  const slabRef = useRef<HTMLDivElement>(null);
+  const [rotateZ, setRotateZ] = useState(0);
+  const [translateY, setTranslateY] = useState(0);
+  const [translateZ, setTranslateZ] = useState(0);
+  const [scale, setScale] = useState(1.05);
 
-  // 10-second automatic high-end cinematic sequence on initial visit
+  // High-Energy 3D Cinematic Motion & Metrology Choreography (Fluid 60fps)
   useEffect(() => {
-    if (!isIntroPlaying) return;
+    let animationFrameId: number;
+    const cycleDuration = 13000; // 13.0 seconds dynamic, alive, captivating cycle
 
-    const startTime = Date.now();
-    const duration = 10000; // Exactly 10.0 seconds
+    const render = () => {
+      const now = performance.now();
+      const t = (now % cycleDuration) / cycleDuration; // 0.0 to 1.0 continuous loop
+      const p = t * Math.PI * 2;
+      setIntroProgress(t * 100);
 
-    const timer = setInterval(() => {
-      const elapsed = Date.now() - startTime;
-      const progress = Math.min((elapsed / duration) * 100, 100);
-      setIntroProgress(progress);
+      // Pronounced 3D Cinematic Motion with Rich Momentum:
+      // RotY: Wide, dramatic 3D sweep between -19° and +19°
+      const targetRotY = Math.sin(p) * 18.2 + Math.sin(p * 2) * 2.8;
+      // RotX: Dynamic vertical inclination between -11° and +10°
+      const targetRotX = Math.cos(p) * 10.2 + Math.sin(p * 2) * 1.8;
+      // RotZ: Natural organic gyroscopic roll between -3.2° and +3.2°
+      const targetRotZ = Math.sin(p) * 3.0;
 
-      const t = progress / 100;
+      // Real 3D Levitation & Depth Breathing:
+      const targetTranslateY = Math.sin(p * 2) * 14;
+      const targetTranslateZ = Math.cos(p) * 26 + 12;
+      const targetScale = 1.05 + Math.sin(p * 2) * 0.035;
 
-      // 4-Act After Effects Cinematography & Camera Choreography
-      let targetRotY = 0;
-      let targetRotX = 0;
-      let g1 = 0;
-      let g2 = 0;
-      let g3 = 0;
+      // Choreographed light glints (brilliant diamond flares as light catches angles):
+      // Glint 1: Grade 10 badge fires when turned to front left (~t = 0.22 - 0.28)
+      const pGlint1 = Math.max(0, 1 - Math.abs(t - 0.24) / 0.045);
+      const g1 = Math.pow(pGlint1, 2.2);
+
+      // Glint 2: Ultrasonic acoustic weld on center edge (~t = 0.48 - 0.54)
+      const pGlint2 = Math.max(0, 1 - Math.abs(t - 0.50) / 0.045);
+      const g2 = Math.pow(pGlint2, 2.2);
+
+      // Glint 3: Cryptographic QR code & ledger on reverse slab (~t = 0.74 - 0.80)
+      const pGlint3 = Math.max(0, 1 - Math.abs(t - 0.76) / 0.045);
+      const g3 = Math.pow(pGlint3, 2.2);
+
+      // Ultrasonic pulse down the 4mm acrylic weld during center tilt (t = 0.38 to 0.62)
       let sWaveY = 0;
       let sWaveOp = 0;
-
-      if (t < 0.34) {
-        // Act I: Front Slab Holographic & Grade 10 Diamond Lens Flare
-        const p1 = t / 0.34;
-        const ease1 = Math.sin(p1 * Math.PI);
-        targetRotY = -7.2 * ease1;
-        targetRotX = -3.2 * ease1;
-        // Diamond Anamorphic Star Glint peaks at p1 ~ 0.58 (~2.0s)
-        const glintPhase = Math.max(0, 1 - Math.abs(p1 - 0.58) / 0.22);
-        g1 = Math.pow(glintPhase, 3);
-      } else if (t < 0.68) {
-        // Act II: Middle Slab Ultrasonic Molecular Edge Profile & Sonic Wave
-        const p2 = (t - 0.34) / 0.34;
-        const ease2 = Math.sin(p2 * Math.PI);
-        targetRotY = 6.8 * ease2;
-        targetRotX = 2.6 * ease2;
-        // Ultrasonic molecular pulse traces down the 4mm acrylic weld
-        sWaveY = 8 + p2 * 84;
-        sWaveOp = Math.sin(p2 * Math.PI);
-        // Diamond Star Glint on Ultrasonic seal reticle peaks at p2 ~ 0.50 (~5.1s)
-        const glintPhase2 = Math.max(0, 1 - Math.abs(p2 - 0.50) / 0.20);
-        g2 = Math.pow(glintPhase2, 3);
-      } else if (t < 0.88) {
-        // Act III: Back Slab Cryptographic Ledger & QR Code Inspection
-        const p3 = (t - 0.68) / 0.20;
-        const ease3 = Math.sin(p3 * Math.PI);
-        targetRotY = -4.5 * ease3;
-        targetRotX = -1.8 * ease3;
-        // Diamond Star Glint on QR code peaks at p3 ~ 0.50 (~7.8s)
-        const glintPhase3 = Math.max(0, 1 - Math.abs(p3 - 0.50) / 0.22);
-        g3 = Math.pow(glintPhase3, 3);
-      } else {
-        // Act IV: Hermite Eased Deceleration to Rest (8.8s to 10.0s)
-        const p4 = (t - 0.88) / 0.12;
-        const settleDecel = Math.pow(1 - p4, 2);
-        targetRotY = -1.5 * settleDecel;
-        targetRotX = -0.6 * settleDecel;
+      if (t >= 0.38 && t <= 0.62) {
+        const pSonic = (t - 0.38) / 0.24;
+        sWaveY = 8 + pSonic * 84;
+        sWaveOp = Math.sin(pSonic * Math.PI);
       }
 
       setRotateY(targetRotY);
       setRotateX(targetRotX);
+      setRotateZ(targetRotZ);
+      setTranslateY(targetTranslateY);
+      setTranslateZ(targetTranslateZ);
+      setScale(targetScale);
       setGlint1(g1);
       setGlint2(g2);
       setGlint3(g3);
       setSonicWaveY(sWaveY);
       setSonicWaveOpacity(sWaveOp);
 
-      setGlarePosition({
-        x: Math.round(15 + t * 70),
-        y: Math.round(30 + Math.sin(t * Math.PI * 2) * 18)
-      });
+      animationFrameId = requestAnimationFrame(render);
+    };
 
-      if (elapsed >= duration) {
-        clearInterval(timer);
-        setIsIntroPlaying(false);
-        setRotateX(0);
-        setRotateY(0);
-        setGlint1(0);
-        setGlint2(0);
-        setGlint3(0);
-        setSonicWaveOpacity(0);
-        setGlarePosition({ x: 50, y: 50 });
-      }
-    }, 20);
+    animationFrameId = requestAnimationFrame(render);
 
-    return () => clearInterval(timer);
-  }, [isIntroPlaying]);
-
-  const hotspots: Hotspot[] = [
-    {
-      id: 'centering',
-      x: 21,
-      y: 52,
-      category: language === 'es' ? 'CENTRADO Y SUPERFICIE' : 'OPTICAL CENTERING & FOIL',
-      title: language === 'es' ? 'Centrado Óptico Sub-Píxel' : 'Sub-Pixel Optical Centering',
-      metric: language === 'es' ? 'Simetría 50/50 · Gem Mint' : '50/50 Symmetry · Gem Mint',
-      desc: language === 'es' 
-        ? 'Peritaje digital que verifica la simetría perimetral del marco y la ausencia de defectos en el foil.' 
-        : 'Digital analysis confirming border perimeter symmetry and absence of foil anomalies.'
-    },
-    {
-      id: 'corner',
-      x: 21,
-      y: 18,
-      category: language === 'es' ? 'ETIQUETA OFICIAL GGI' : 'OFFICIAL GGI LABEL',
-      title: language === 'es' ? 'Calificación 10 Gem Mint' : 'Grade 10 Gem Mint',
-      metric: language === 'es' ? 'Holografía y Código Interno' : 'Holographic & Internal Code',
-      desc: language === 'es' 
-        ? 'Etiqueta de seguridad de alta resolución con metadatos oficiales y código único de certificación.' 
-        : 'High-resolution security label with official metadata and unique certification registry code.'
-    },
-    {
-      id: 'sonic',
-      x: 48,
-      y: 45,
-      category: language === 'es' ? 'CIERRE HERMÉTICO SÓNICO' : 'ULTRASONIC FUSION',
-      title: language === 'es' ? 'Sellado Ultrasónico de Cantos' : 'Ultrasonic Edge Fusion',
-      metric: language === 'es' ? 'Cápsula 100% Estanca' : '100% Hermetic Acrylic Weld',
-      desc: language === 'es' 
-        ? 'Fusión molecular de acrílico sin adhesivos químicos, aislando la pieza contra el polvo y la humedad.' 
-        : 'Molecular acoustic acrylic weld without glues, fully sealing the specimen against humidity.'
-    },
-    {
-      id: 'uv',
-      x: 77,
-      y: 18,
-      category: language === 'es' ? 'REVERSO Y REGISTRO QR' : 'BACK REVERSE & QR LEDGER',
-      title: language === 'es' ? 'Verificación Criptográfica' : 'Cryptographic Verification',
-      metric: language === 'es' ? 'NFC & Ledger Blockchain' : 'NFC & Blockchain Ledger',
-      desc: language === 'es' 
-        ? 'Dorso oficial con código QR vinculado al libro mayor público de autenticidad Gorilla Verify.' 
-        : 'Official back label featuring QR code linked to the Gorilla Verify ledger of authenticity.'
-    }
-  ];
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (isIntroPlaying) {
-      setIsIntroPlaying(false);
-    }
-    if (!slabRef.current) return;
-    const rect = slabRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
-
-    const rX = ((y - centerY) / centerY) * -12;
-    const rY = ((x - centerX) / centerX) * 14;
-
-    setRotateX(rX);
-    setRotateY(rY);
-    setGlarePosition({
-      x: Math.round((x / rect.width) * 100),
-      y: Math.round((y / rect.height) * 100)
-    });
-  };
-
-  const handleMouseLeave = () => {
-    if (isIntroPlaying) return;
-    setRotateX(0);
-    setRotateY(0);
-    setGlarePosition({ x: 50, y: 50 });
-  };
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, []);
 
   return (
     <section 
       id="hero"
-      className="relative w-full lg:min-h-[calc(100vh-4.5rem)] flex flex-col justify-between overflow-hidden bg-transparent text-white pt-2 sm:pt-3 select-none"
+      className="relative w-full min-h-[calc(100vh-5rem)] flex flex-col justify-between overflow-hidden bg-transparent text-white pt-2 sm:pt-4 pb-12 sm:pb-16 lg:pb-20 select-none"
     >
       
       {/* ═════════════════════════════════════════════════════════════════════
@@ -554,29 +444,17 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
               <span className="ml-1 text-sm font-bold transition-transform duration-300 group-hover:translate-x-1.5">→</span>
             </button>
 
-            {/* Secondary Action: Smooth Scroll to 3D Technology Overview Section */}
-            <a
-              href="#technology-overview"
-              onClick={(e) => {
-                e.preventDefault();
-                const target = document.getElementById('technology-overview');
-                if (target) {
-                  target.scrollIntoView({ behavior: 'smooth' });
-                } else if (onNavigate) {
-                  onNavigate('/technology');
-                }
-              }}
+            {/* Secondary Action: Navigate directly to Technology Page */}
+            <button
+              type="button"
+              onClick={() => onNavigate && onNavigate('/technology')}
               className="btn-gorilla-pill-secondary w-full sm:w-auto px-6 py-3 gap-2 group cursor-pointer"
             >
               <span className="font-['Nunito',sans-serif] text-xs font-bold tracking-normal uppercase">
                 {t('ref.hero.ctaSecondary')}
               </span>
-              <div className="flex items-center justify-center pl-[2px] transition-transform duration-300 group-hover:translate-y-0.5">
-                <svg className="w-2.5 h-2.5 text-gray-400 group-hover:text-white transition-colors" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M7 10l5 5 5-5z" />
-                </svg>
-              </div>
-            </a>
+              <span className="ml-0.5 text-sm font-bold transition-transform duration-300 group-hover:translate-x-1">→</span>
+            </button>
           </motion.div>
 
           {/* 3 Scientific Rigor Badges */}
@@ -669,46 +547,76 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
         {/* Right Column: 3D SLAB INSPECTOR HERO */}
         <div className="lg:col-span-6 xl:col-span-6 flex flex-col items-center justify-center relative w-full">
           
-          {/* 3D Slab Interactive Viewport (Ampliado) */}
+          {/* 3D Slab Continuous Metrology Stage (Pronounced 3D Perspective & Motion) */}
           <div
-            ref={slabRef}
-            onMouseMove={handleMouseMove}
-            onMouseLeave={handleMouseLeave}
-            onClick={() => {
-              if (isIntroPlaying) setIsIntroPlaying(false);
-            }}
-            style={{ perspective: 1200 }}
-            className="relative w-full max-w-[500px] sm:max-w-[620px] lg:max-w-[720px] xl:max-w-[820px] 2xl:max-w-[920px] aspect-[1.48/1] flex items-center justify-center cursor-crosshair bg-transparent select-none"
+            style={{ perspective: 900 }}
+            className="relative w-full max-w-[500px] sm:max-w-[620px] lg:max-w-[720px] xl:max-w-[820px] 2xl:max-w-[920px] aspect-[1.48/1] flex items-center justify-center bg-transparent select-none pointer-events-none"
           >
-            {/* 3D Tilting Slab Wrapper - Pure floating stage, zero boxes or overlays */}
+            {/* 3D Depth Aura Behind Slab (Separates slab from background in physical Z-space) */}
+            <div
+              className="absolute pointer-events-none rounded-full blur-[75px] transition-transform duration-75"
+              style={{
+                width: '88%',
+                height: '78%',
+                background: isLight 
+                  ? 'radial-gradient(circle, rgba(34,197,94,0.30) 0%, rgba(16,185,129,0.12) 50%, transparent 72%)'
+                  : 'radial-gradient(circle, rgba(72,199,101,0.45) 0%, rgba(34,197,94,0.18) 52%, transparent 75%)',
+                transform: `translate3d(${-rotateY * 2.2}px, ${-rotateX * 1.8}px, -70px)`,
+              }}
+            />
+
+            {/* 3D Tilting Slab Wrapper - Pure floating stage with rich 3D levitation, roll & depth */}
             <div
               style={{
-                transform: `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(${isIntroPlaying ? 1.08 : 1.05})`,
-                transition: isIntroPlaying ? 'transform 0.2s ease-out' : 'transform 0.12s ease-out',
-                transformStyle: 'preserve-3d'
+                transform: `translateY(${translateY}px) translateZ(${translateZ}px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) rotateZ(${rotateZ}deg) scale(${scale})`,
+                transition: 'transform 0.05s linear',
+                transformStyle: 'preserve-3d',
+                filter: isLight 
+                  ? `drop-shadow(${-rotateY * 2.2}px ${20 + rotateX * 1.5}px ${32 + Math.abs(rotateY) * 1.2}px rgba(0,0,0,0.16))`
+                  : `drop-shadow(${-rotateY * 3.0}px ${24 + rotateX * 2.0}px ${46 + Math.abs(rotateY) * 1.5}px rgba(0,0,0,0.80))`
               }}
-              className="relative w-full h-full flex items-center justify-center bg-transparent pointer-events-auto"
+              className="relative w-full h-full flex items-center justify-center bg-transparent pointer-events-none"
             >
               {/* Slab Artwork Image - Pure transparent PNG, zero square box */}
               <img 
                 src={heroImageSrc}
                 alt="Gorilla Grading Certified Slab"
-                className={`w-full h-full object-contain pointer-events-none transition-all duration-300 filter contrast-[1.06] brightness-[1.08] sm:brightness-[1.04] ${
-                  isLight 
-                    ? 'drop-shadow-[0_16px_28px_rgba(0,0,0,0.10)]' 
-                    : 'drop-shadow-[0_25px_45px_rgba(0,0,0,0.65)]'
-                }`}
+                className={`w-full h-full object-contain pointer-events-none transition-all duration-300 filter contrast-[1.06] brightness-[1.08] sm:brightness-[1.04]`}
               />
 
-              {/* Dynamic Laser Metrology Scanning Line (during 10s intro) */}
-              {isIntroPlaying && (
+              {/* Optical Acrylic Specular Glass Reflection Beam (Travels across acrylic as it tilts) */}
+              <div
+                className="absolute inset-0 pointer-events-none rounded-[16px] overflow-hidden z-25"
+                style={{
+                  mixBlendMode: isLight ? 'overlay' : 'screen',
+                }}
+              >
+                <div
+                  className="w-full h-full"
+                  style={{
+                    opacity: 0.28 + Math.abs(Math.sin((introProgress / 100) * Math.PI * 2)) * 0.42,
+                    background: `linear-gradient(${108 + rotateY * 2.2}deg, 
+                      transparent 18%, 
+                      rgba(255,255,255,0.02) 32%, 
+                      rgba(255,255,255,0.70) 50%, 
+                      rgba(72,199,101,0.30) 54%, 
+                      rgba(255,255,255,0.02) 68%, 
+                      transparent 82%)`,
+                    transform: `translateX(${-rotateY * 4.2}%) translateY(${-rotateX * 2.5}%)`,
+                    filter: 'blur(0.8px)'
+                  }}
+                />
+              </div>
+
+              {/* Dynamic Laser Metrology Scanning Line (periodic graceful sweep during first 32% of each cycle) */}
+              {introProgress <= 32 && (
                 <div
                   className="absolute top-[6%] bottom-[6%] w-[1.5px] pointer-events-none z-20"
                   style={{
-                    left: `${14 + (introProgress / 100) * 72}%`,
+                    left: `${14 + (introProgress / 32) * 72}%`,
                     background: 'linear-gradient(to bottom, transparent, rgba(72,199,101,0.85) 20%, #A7F3D0 50%, rgba(72,199,101,0.85) 80%, transparent)',
                     boxShadow: '0 0 12px rgba(72,199,101,0.9), 0 0 24px rgba(72,199,101,0.45)',
-                    opacity: Math.sin((introProgress / 100) * Math.PI)
+                    opacity: Math.sin((introProgress / 32) * Math.PI)
                   }}
                 />
               )}
@@ -727,21 +635,17 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
                 <div
                   className="w-full h-full transition-opacity duration-300"
                   style={{
-                    opacity: isIntroPlaying
-                      ? Math.max(0.15, Math.sin((introProgress / 100) * Math.PI) * 0.85)
-                      : 0.35,
-                    background: `linear-gradient(${115 + rotateY * 4}deg, 
+                    opacity: 0.38 + Math.abs(Math.sin((introProgress / 100) * Math.PI * 2)) * 0.52,
+                    background: `linear-gradient(${115 + rotateY * 5.5}deg, 
                       transparent 10%, 
-                      rgba(236, 72, 153, 0.28) 25%, 
-                      rgba(59, 130, 246, 0.38) 40%, 
-                      rgba(255, 255, 255, 0.75) 50%, 
-                      rgba(52, 211, 153, 0.42) 60%, 
-                      rgba(251, 191, 36, 0.38) 75%, 
+                      rgba(236, 72, 153, 0.32) 25%, 
+                      rgba(59, 130, 246, 0.45) 40%, 
+                      rgba(255, 255, 255, 0.85) 50%, 
+                      rgba(52, 211, 153, 0.48) 60%, 
+                      rgba(251, 191, 36, 0.42) 75%, 
                       transparent 90%)`,
-                    transform: isIntroPlaying
-                      ? `translateX(${-60 + (introProgress / 100) * 140}%)`
-                      : `translateX(${rotateY * 3}%) translateY(${rotateX * 2}%)`,
-                    filter: 'contrast(1.3) brightness(1.2)'
+                    transform: `translateX(${rotateY * 4.2}%) translateY(${rotateX * 3.0}%)`,
+                    filter: 'contrast(1.35) brightness(1.25)'
                   }}
                 />
               </div>
@@ -760,11 +664,9 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
                 <div
                   className="w-full h-full"
                   style={{
-                    opacity: isIntroPlaying ? Math.sin((introProgress / 100) * Math.PI) * 0.65 : 0.25,
-                    background: `linear-gradient(110deg, transparent 30%, rgba(255,255,255,0.75) 50%, transparent 70%)`,
-                    transform: isIntroPlaying
-                      ? `translateX(${-80 + (introProgress / 100) * 180}%)`
-                      : `translateX(${rotateY * 2}%)`
+                    opacity: 0.28 + Math.abs(Math.sin((introProgress / 100) * Math.PI * 2 + 0.5)) * 0.50,
+                    background: `linear-gradient(110deg, transparent 28%, rgba(255,255,255,0.85) 50%, transparent 72%)`,
+                    transform: `translateX(${rotateY * 3.8}%)`
                   }}
                 />
               </div>
@@ -783,15 +685,15 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
                   <div
                     className="w-3.5 h-3.5 -ml-[7px] -mt-[7px] rounded-full bg-emerald-200 blur-[0.6px]"
                     style={{
-                      boxShadow: '0 0 12px #48C765, 0 0 24px #10B981, 0 0 36px #059669'
+                      boxShadow: '0 0 14px #48C765, 0 0 28px #10B981, 0 0 40px #059669'
                     }}
                   />
                   {/* Transverse Crosshair Metrology Bar */}
                   <div
-                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 sm:w-16 h-[1.5px]"
+                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 sm:w-18 h-[1.5px]"
                     style={{
                       background: 'linear-gradient(90deg, transparent, #48C765 25%, #ffffff 50%, #48C765 75%, transparent)',
-                      boxShadow: '0 0 10px #48C765'
+                      boxShadow: '0 0 12px #48C765'
                     }}
                   />
                 </div>
@@ -811,19 +713,15 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
                 <div
                   className="w-full h-full transition-opacity duration-300"
                   style={{
-                    opacity: isIntroPlaying
-                      ? Math.max(0.1, Math.sin((introProgress / 100) * Math.PI) * 0.7)
-                      : 0.25,
-                    background: `linear-gradient(${130 + rotateY * 3}deg, 
+                    opacity: 0.28 + Math.abs(Math.cos((introProgress / 100) * Math.PI * 2)) * 0.50,
+                    background: `linear-gradient(${130 + rotateY * 4.5}deg, 
                       transparent 20%, 
-                      rgba(59, 130, 246, 0.35) 40%, 
-                      rgba(255, 255, 255, 0.65) 50%, 
-                      rgba(245, 158, 11, 0.35) 60%, 
+                      rgba(59, 130, 246, 0.40) 40%, 
+                      rgba(255, 255, 255, 0.75) 50%, 
+                      rgba(245, 158, 11, 0.40) 60%, 
                       transparent 80%)`,
-                    transform: isIntroPlaying
-                      ? `translateX(${-70 + (introProgress / 100) * 150}%)`
-                      : `translateX(${rotateY * 3}%)`,
-                    filter: 'contrast(1.2)'
+                    transform: `translateX(${rotateY * 3.8}%)`,
+                    filter: 'contrast(1.25)'
                   }}
                 />
               </div>
@@ -833,102 +731,6 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
               <StarGlint x={50.7} y={45} intensity={glint2} color="#34D399" />
               <StarGlint x={84.2} y={15} intensity={glint3} color="#6EE7B7" />
 
-              {/* Interactive Inspection Hotspots */}
-              {showHotspots && !isIntroPlaying && hotspots.map((spot) => {
-                const isActive = activeHotspot?.id === spot.id;
-
-                return (
-                  <div
-                    key={spot.id}
-                    style={{
-                      left: `${spot.x}%`,
-                      top: `${spot.y}%`,
-                      transform: 'translate(-50%, -50%) translateZ(40px)'
-                    }}
-                    className="absolute z-30"
-                    onMouseEnter={() => setActiveHotspot(spot)}
-                    onClick={() => setActiveHotspot(isActive ? null : spot)}
-                  >
-                    {/* Precision Metrology Reticle Node - Optical Glass Without Black Box */}
-                    <div className="relative cursor-pointer group/node">
-                      <div className={`w-6 h-6 flex items-center justify-center rounded-full border transition-all duration-200 ${
-                        isActive 
-                          ? 'border-amber-400 bg-amber-400/30 shadow-[0_0_15px_rgba(251,191,36,0.7)] scale-110' 
-                          : (isLight 
-                              ? 'border-[#16A34A] bg-white/70 backdrop-blur-md shadow-sm group-hover/node:border-black group-hover/node:scale-115' 
-                              : 'border-[#48C765] bg-black/40 backdrop-blur-md group-hover/node:border-white group-hover/node:scale-115')
-                      }`}>
-                        <span className={`font-mono text-[11px] font-extrabold leading-none ${
-                          isActive 
-                            ? 'text-amber-500' 
-                            : (isLight ? 'text-[#16A34A]' : 'text-[#48C765]')
-                        }`}>
-                          +
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-
-              {/* Active Hotspot HUD Dossier Tooltip */}
-              <AnimatePresence>
-                {activeHotspot && (
-                  <motion.div
-                    key={activeHotspot.id}
-                    initial={{ opacity: 0, scale: 0.9, y: 10 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    style={{
-                      left: activeHotspot.x > 65 ? 'auto' : activeHotspot.x < 35 ? '10px' : '50%',
-                      right: activeHotspot.x > 65 ? '10px' : 'auto',
-                      top: activeHotspot.y > 50 ? 'auto' : `${Math.min(activeHotspot.y + 6, 50)}%`,
-                      bottom: activeHotspot.y > 50 ? `${Math.max(100 - activeHotspot.y + 6, 8)}%` : 'auto',
-                      transform: activeHotspot.x >= 35 && activeHotspot.x <= 65 
-                        ? 'translate(-50%, 0) translateZ(50px)' 
-                        : 'translateZ(50px)'
-                    }}
-                    className={`absolute z-40 w-[240px] sm:w-64 max-w-[calc(100%-20px)] p-3 sm:p-3.5 border backdrop-blur-xl text-left font-mono pointer-events-auto shadow-2xl ${
-                      isLight 
-                        ? 'border-gray-300 bg-white/95 text-gray-900 shadow-xl' 
-                        : 'border-[#48C765]/60 bg-[#121613]/95 text-white shadow-[0_15px_35px_rgba(0,0,0,0.9)]'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between pb-1.5 mb-1.5 border-b border-current/10">
-                      <span className={`text-[9px] uppercase tracking-normal font-bold ${
-                        isLight ? 'text-[#16A34A]' : 'text-[#48C765]'
-                      }`}>
-                        {activeHotspot.category}
-                      </span>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); setActiveHotspot(null); }}
-                        className={`text-xs px-1 ${isLight ? 'text-gray-400 hover:text-black' : 'text-gray-400 hover:text-white'}`}
-                      >
-                        ✕
-                      </button>
-                    </div>
-
-                    <div className={`font-['Nunito',sans-serif] text-sm uppercase font-[900] tracking-normal mb-0.5 ${
-                      isLight ? 'text-gray-950' : 'text-white'
-                    }`}>
-                      {activeHotspot.title}
-                    </div>
-
-                    <div className={`text-[11px] font-bold mb-1.5 ${
-                      isLight ? 'text-amber-600' : 'text-amber-300'
-                    }`}>
-                      {activeHotspot.metric}
-                    </div>
-
-                    <p className={`font-sans text-[11px] leading-relaxed ${
-                      isLight ? 'text-gray-600' : 'text-gray-300'
-                    }`}>
-                      {activeHotspot.desc}
-                    </p>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
             </div>
           </div>
 
@@ -937,7 +739,7 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
       </div>
 
       {/* Embedded Ecosystem Logos Ribbon - Integral part of the Hero, visible above the fold */}
-      <div className="relative z-30 w-full shrink-0">
+      <div className="relative z-30 w-full shrink-0 mt-6 sm:mt-8">
         <BrandEcosystemRibbon isHeroEmbedded={true} />
       </div>
 
