@@ -141,11 +141,17 @@ export const HomeTechnologySection: React.FC<HomeTechnologySectionProps> = ({
                 {/* Seamless 4-Card Sequence Video */}
                 <video 
                   key={isLight ? 'video-tech-light' : 'video-tech-dark'}
-                  src={isLight ? '/images/tecnologia_seamless.mp4' : '/images/tecnologia_seamless-DARK.mp4'} 
+                  src={isLight ? '/images/tecnologia_seamless.mp4' : '/images/tecnologia_seamless_Dark.mp4'} 
                   autoPlay 
                   loop 
                   muted 
                   playsInline 
+                  onLoadedMetadata={(e) => {
+                    // Ritmo pausado y elegante para poder apreciar las 4 fases de inspección
+                    if (isLight) {
+                      e.currentTarget.playbackRate = 0.75;
+                    }
+                  }}
                   className="w-full h-auto object-contain pointer-events-none select-none bg-transparent"
                 />
 
