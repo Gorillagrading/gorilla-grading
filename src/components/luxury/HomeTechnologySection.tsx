@@ -32,6 +32,7 @@ export const HomeTechnologySection: React.FC<HomeTechnologySectionProps> = ({
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!containerRef.current) return;
+    if (typeof window !== 'undefined' && window.matchMedia && !window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
     const rect = containerRef.current.getBoundingClientRect();
     const xPct = (e.clientX - rect.left) / rect.width - 0.5;
     const yPct = (e.clientY - rect.top) / rect.height - 0.5;
@@ -123,7 +124,7 @@ export const HomeTechnologySection: React.FC<HomeTechnologySectionProps> = ({
               onMouseMove={handleMouseMove}
               onMouseLeave={handleMouseLeave}
               onClick={handleExplore}
-              className="relative w-full max-w-[920px] cursor-pointer select-none bg-transparent"
+              className="relative w-full max-w-[920px] cursor-pointer select-none bg-transparent touch-pan-y"
               style={{ perspective: 1400 }}
               title={language === 'es' ? 'Haz clic para explorar el protocolo en detalle' : 'Click to explore full protocol'}
             >

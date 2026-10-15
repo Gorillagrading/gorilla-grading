@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
@@ -20,13 +20,17 @@ interface LuxuryHeroProps {
   onOpenTechModal?: () => void;
 }
 
-// After Effects Diamond Star Lens Flare Component (Zero background box, pure light physics)
-const StarGlint: React.FC<{ x: number; y: number; intensity: number; color?: string }> = ({ x, y, intensity, color = '#48C765' }) => {
-  if (intensity <= 0.02) return null;
+// After Effects Diamond Star Lens Flare Component (Zero background box, pure light physics, 100% GPU CSS animation)
+const StarGlint: React.FC<{ x: number; y: number; animationClass: string; color?: string }> = ({ 
+  x, 
+  y, 
+  animationClass, 
+  color = '#48C765' 
+}) => {
   return (
     <div 
-      className="absolute pointer-events-none -translate-x-1/2 -translate-y-1/2 z-30 transition-opacity duration-75 select-none"
-      style={{ left: `${x}%`, top: `${y}%`, opacity: intensity }}
+      className={`absolute pointer-events-none -translate-x-1/2 -translate-y-1/2 z-30 select-none ${animationClass}`}
+      style={{ left: `${x}%`, top: `${y}%` }}
     >
       {/* Horizontal Anamorphic Flare Beam */}
       <div 
@@ -69,133 +73,19 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
 
   const heroImageSrc = '/images/alakazam_hero.png?v=9';
 
-  // Continuous Cinematic Optical Metrology Pipeline (Infinite, solemn, 60fps)
-  const [introProgress, setIntroProgress] = useState(0); // 0 to 100% loop
-  const [glint1, setGlint1] = useState(0); // Gem Mint 10 badge diamond flare
-  const [glint2, setGlint2] = useState(0); // Ultrasonic weld diamond flare
-  const [glint3, setGlint3] = useState(0); // Cryptographic QR diamond flare
-  const [sonicWaveY, setSonicWaveY] = useState(0); // Ultrasonic wave position %
-  const [sonicWaveOpacity, setSonicWaveOpacity] = useState(0);
-  const [rotateX, setRotateX] = useState(0);
-  const [rotateY, setRotateY] = useState(0);
-  const [rotateZ, setRotateZ] = useState(0);
-  const [translateY, setTranslateY] = useState(0);
-  const [translateZ, setTranslateZ] = useState(0);
-  const [scale, setScale] = useState(1.05);
-
-  // High-Energy 3D Cinematic Motion & Metrology Choreography (Fluid 60fps)
-  useEffect(() => {
-    let animationFrameId: number;
-    const cycleDuration = 13000; // 13.0 seconds dynamic, alive, captivating cycle
-
-    const render = () => {
-      const now = performance.now();
-      const t = (now % cycleDuration) / cycleDuration; // 0.0 to 1.0 continuous loop
-      const p = t * Math.PI * 2;
-      setIntroProgress(t * 100);
-
-      // Pronounced 3D Cinematic Motion with Rich Momentum:
-      // RotY: Wide, dramatic 3D sweep between -19° and +19°
-      const targetRotY = Math.sin(p) * 18.2 + Math.sin(p * 2) * 2.8;
-      // RotX: Dynamic vertical inclination between -11° and +10°
-      const targetRotX = Math.cos(p) * 10.2 + Math.sin(p * 2) * 1.8;
-      // RotZ: Natural organic gyroscopic roll between -3.2° and +3.2°
-      const targetRotZ = Math.sin(p) * 3.0;
-
-      // Real 3D Levitation & Depth Breathing:
-      const targetTranslateY = Math.sin(p * 2) * 14;
-      const targetTranslateZ = Math.cos(p) * 26 + 12;
-      const targetScale = 1.05 + Math.sin(p * 2) * 0.035;
-
-      // Choreographed light glints (brilliant diamond flares as light catches angles):
-      // Glint 1: Grade 10 badge fires when turned to front left (~t = 0.22 - 0.28)
-      const pGlint1 = Math.max(0, 1 - Math.abs(t - 0.24) / 0.045);
-      const g1 = Math.pow(pGlint1, 2.2);
-
-      // Glint 2: Ultrasonic acoustic weld on center edge (~t = 0.48 - 0.54)
-      const pGlint2 = Math.max(0, 1 - Math.abs(t - 0.50) / 0.045);
-      const g2 = Math.pow(pGlint2, 2.2);
-
-      // Glint 3: Cryptographic QR code & ledger on reverse slab (~t = 0.74 - 0.80)
-      const pGlint3 = Math.max(0, 1 - Math.abs(t - 0.76) / 0.045);
-      const g3 = Math.pow(pGlint3, 2.2);
-
-      // Ultrasonic pulse down the 4mm acrylic weld during center tilt (t = 0.38 to 0.62)
-      let sWaveY = 0;
-      let sWaveOp = 0;
-      if (t >= 0.38 && t <= 0.62) {
-        const pSonic = (t - 0.38) / 0.24;
-        sWaveY = 8 + pSonic * 84;
-        sWaveOp = Math.sin(pSonic * Math.PI);
-      }
-
-      setRotateY(targetRotY);
-      setRotateX(targetRotX);
-      setRotateZ(targetRotZ);
-      setTranslateY(targetTranslateY);
-      setTranslateZ(targetTranslateZ);
-      setScale(targetScale);
-      setGlint1(g1);
-      setGlint2(g2);
-      setGlint3(g3);
-      setSonicWaveY(sWaveY);
-      setSonicWaveOpacity(sWaveOp);
-
-      animationFrameId = requestAnimationFrame(render);
-    };
-
-    animationFrameId = requestAnimationFrame(render);
-
-    return () => {
-      cancelAnimationFrame(animationFrameId);
-    };
-  }, []);
-
   return (
     <section 
       id="hero"
-      className="relative w-full min-h-[calc(100vh-5rem)] flex flex-col justify-between overflow-hidden bg-transparent text-white pt-2 sm:pt-4 pb-12 sm:pb-16 lg:pb-20 select-none"
+      className="relative w-full min-h-[calc(100vh-5rem)] flex flex-col justify-between overflow-hidden bg-transparent text-white pt-2 sm:pt-4 pb-12 sm:pb-16 lg:pb-20 select-none touch-pan-y"
     >
       
       {/* ═════════════════════════════════════════════════════════════════════
-          SISTEMA DE 3 ESCÁNERES ÓPTICOS INSTITUCIONALES (SIN ICONOS):
-          - BLANCO: desciende (baja) de arriba hacia abajo
-          - ROJO: barre lateralmente de izquierda a derecha
-          - ULTRAVIOLETA: asciende (sube) de abajo hacia arriba
-          - Al entrar a la web se activan en coreografía de precisión calibrada
-          ═════════════════════════════════════════════════════════════════════ */}
-      {/* ═════════════════════════════════════════════════════════════════════
-          SISTEMA DE 3 ESCÁNERES ÓPTICOS INSTITUCIONALES (SIN ICONOS):
-          - Movimiento lento, solemne y pausado de calibre metrológico profesional
-          - BLANCO: desciende (baja) de arriba hacia abajo (~9s)
-          - ROJO: barre lateralmente de izquierda a derecha (~9.5s)
-          - ULTRAVIOLETA: asciende (sube) de abajo hacia arriba (~9s)
-          - Ciclo total de 26s: barrido solemne de entrada seguido de reposo sereno
+          SISTEMA DE ESCÁNERES ÓPTICOS + ANIMACIÓN 3D DE PLACA TIPO VÍDEO
+          - Ejecutado 100% en el compositor GPU de forma autónoma
+          - Cero carga en hilo JS, sin temblores en móvil y sin interferencias táctiles
           ═════════════════════════════════════════════════════════════════════ */}
       <style>{`
-        /* 1. Escáner Blanco: Desciende lentamente de arriba hacia abajo (0s a 9s) */
-        @keyframes scannerBlancoBaja {
-          0% {
-            top: -2%;
-            opacity: 0;
-          }
-          1.5% {
-            opacity: 0.95;
-          }
-          32.5% {
-            opacity: 0.95;
-          }
-          34.5% {
-            top: 102%;
-            opacity: 0;
-          }
-          34.6%, 100% {
-            top: -2%;
-            opacity: 0;
-          }
-        }
-
-        /* 2. Escáner Rojo: Lateral pausado de izquierda a derecha (2.5s a 12s) */
+        /* 1. Escáner Rojo: Lateral pausado de izquierda a derecha (2.5s a 12s) */
         @keyframes scannerRojoLateral {
           0%, 9.5% {
             left: -2%;
@@ -238,55 +128,219 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
             opacity: 0;
           }
         }
+
+        /* 4. Movimiento 3D Cinemático de la Placa / Slab (Compositor GPU 100% Fluido - Cero Temblores) */
+        @keyframes heroSlabCinematicMotion {
+          0% {
+            transform: translate3d(0px, 0px, 34px) rotateX(10deg) rotateY(0deg) rotateZ(0deg) scale(1.04);
+          }
+          12.5% {
+            transform: translate3d(0px, 10px, 26px) rotateX(7.5deg) rotateY(15deg) rotateZ(2deg) scale(1.07);
+          }
+          25% {
+            transform: translate3d(0px, 14px, 12px) rotateX(0deg) rotateY(18.2deg) rotateZ(3deg) scale(1.085);
+          }
+          37.5% {
+            transform: translate3d(0px, 10px, -4px) rotateX(-7.5deg) rotateY(10deg) rotateZ(2deg) scale(1.07);
+          }
+          50% {
+            transform: translate3d(0px, 0px, -14px) rotateX(-10deg) rotateY(0deg) rotateZ(0deg) scale(1.04);
+          }
+          62.5% {
+            transform: translate3d(0px, -10px, -4px) rotateX(-7.5deg) rotateY(-15deg) rotateZ(-2deg) scale(1.02);
+          }
+          75% {
+            transform: translate3d(0px, -14px, 12px) rotateX(0deg) rotateY(-18.2deg) rotateZ(-3deg) scale(1.015);
+          }
+          87.5% {
+            transform: translate3d(0px, -10px, 26px) rotateX(7.5deg) rotateY(-10deg) rotateZ(-2deg) scale(1.02);
+          }
+          100% {
+            transform: translate3d(0px, 0px, 34px) rotateX(10deg) rotateY(0deg) rotateZ(0deg) scale(1.04);
+          }
+        }
+
+        @media (max-width: 639px) {
+          @keyframes heroSlabCinematicMotion {
+            0% {
+              transform: translate3d(0px, 0px, 18px) rotateX(6deg) rotateY(0deg) rotateZ(0deg) scale(1.02);
+            }
+            12.5% {
+              transform: translate3d(0px, 6px, 14px) rotateX(4.5deg) rotateY(10deg) rotateZ(1.5deg) scale(1.04);
+            }
+            25% {
+              transform: translate3d(0px, 9px, 8px) rotateX(0deg) rotateY(12deg) rotateZ(2deg) scale(1.05);
+            }
+            37.5% {
+              transform: translate3d(0px, 6px, -2px) rotateX(-4.5deg) rotateY(7deg) rotateZ(1.5deg) scale(1.04);
+            }
+            50% {
+              transform: translate3d(0px, 0px, -8px) rotateX(-6deg) rotateY(0deg) rotateZ(0deg) scale(1.02);
+            }
+            62.5% {
+              transform: translate3d(0px, -6px, -2px) rotateX(-4.5deg) rotateY(-10deg) rotateZ(-1.5deg) scale(1.01);
+            }
+            75% {
+              transform: translate3d(0px, -9px, 8px) rotateX(0deg) rotateY(-12deg) rotateZ(-2deg) scale(1.005);
+            }
+            87.5% {
+              transform: translate3d(0px, -6px, 14px) rotateX(4.5deg) rotateY(-7deg) rotateZ(-1.5deg) scale(1.01);
+            }
+            100% {
+              transform: translate3d(0px, 0px, 18px) rotateX(6deg) rotateY(0deg) rotateZ(0deg) scale(1.02);
+            }
+          }
+        }
+
+        /* 5. Aura de Profundidad 3D */
+        @keyframes heroDepthAuraMotion {
+          0%, 100% {
+            transform: translate3d(0px, -18px, -70px);
+            opacity: 0.65;
+          }
+          25% {
+            transform: translate3d(-38px, 0px, -70px);
+            opacity: 0.90;
+          }
+          50% {
+            transform: translate3d(0px, 18px, -70px);
+            opacity: 0.65;
+          }
+          75% {
+            transform: translate3d(38px, 0px, -70px);
+            opacity: 0.90;
+          }
+        }
+
+        /* 6. Brillo Holográfico Arcoíris Carta Frontal */
+        @keyframes heroFoilFrontSheen {
+          0%, 100% {
+            opacity: 0.40;
+            transform: translate3d(0%, 8%, 0);
+          }
+          25% {
+            opacity: 0.90;
+            transform: translate3d(22%, 0%, 0);
+          }
+          50% {
+            opacity: 0.45;
+            transform: translate3d(0%, -8%, 0);
+          }
+          75% {
+            opacity: 0.88;
+            transform: translate3d(-22%, 0%, 0);
+          }
+        }
+
+        /* 7. Shimmer Metálico Etiqueta Grado 10 */
+        @keyframes heroLabelFrontShimmer {
+          0%, 100% {
+            opacity: 0.28;
+            transform: translate3d(-18%, 0, 0);
+          }
+          25% {
+            opacity: 0.82;
+            transform: translate3d(20%, 0, 0);
+          }
+          50% {
+            opacity: 0.32;
+            transform: translate3d(0%, 0, 0);
+          }
+          75% {
+            opacity: 0.74;
+            transform: translate3d(-20%, 0, 0);
+          }
+        }
+
+        /* 8. Brillo Iridiscente Carta Trasera */
+        @keyframes heroFoilReverseSheen {
+          0%, 100% {
+            opacity: 0.30;
+            transform: translate3d(0%, 0, 0);
+          }
+          25% {
+            opacity: 0.45;
+            transform: translate3d(16%, 0, 0);
+          }
+          50% {
+            opacity: 0.35;
+            transform: translate3d(0%, 0, 0);
+          }
+          75% {
+            opacity: 0.82;
+            transform: translate3d(-16%, 0, 0);
+          }
+        }
+
+        /* 9. Destellos de Luz Diamante (Star Glints) */
+        @keyframes heroStarGlint1 {
+          0%, 20% { opacity: 0; transform: translate(-50%, -50%) scale(0.4); }
+          24% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+          28%, 100% { opacity: 0; transform: translate(-50%, -50%) scale(0.4); }
+        }
+
+        @keyframes heroStarGlint2 {
+          0%, 46% { opacity: 0; transform: translate(-50%, -50%) scale(0.4); }
+          50% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+          54%, 100% { opacity: 0; transform: translate(-50%, -50%) scale(0.4); }
+        }
+
+        @keyframes heroStarGlint3 {
+          0%, 72% { opacity: 0; transform: translate(-50%, -50%) scale(0.4); }
+          76% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+          80%, 100% { opacity: 0; transform: translate(-50%, -50%) scale(0.4); }
+        }
+
+        .hero-slab-animated {
+          animation: heroSlabCinematicMotion 13s ease-in-out infinite;
+          will-change: transform;
+          transform-style: preserve-3d;
+          -webkit-transform-style: preserve-3d;
+          backface-visibility: hidden;
+          -webkit-backface-visibility: hidden;
+        }
+
+        .hero-aura-animated {
+          animation: heroDepthAuraMotion 13s ease-in-out infinite;
+          will-change: transform, opacity;
+        }
+
+        .hero-foil-animated {
+          animation: heroFoilFrontSheen 13s ease-in-out infinite;
+          will-change: transform, opacity;
+        }
+
+        .hero-label-animated {
+          animation: heroLabelFrontShimmer 13s ease-in-out infinite;
+          will-change: transform, opacity;
+        }
+
+        .hero-reverse-animated {
+          animation: heroFoilReverseSheen 13s ease-in-out infinite;
+          will-change: transform, opacity;
+        }
+
+        .hero-glint-1-animated {
+          animation: heroStarGlint1 13s ease-in-out infinite;
+          will-change: transform, opacity;
+        }
+
+        .hero-glint-2-animated {
+          animation: heroStarGlint2 13s ease-in-out infinite;
+          will-change: transform, opacity;
+        }
+
+        .hero-glint-3-animated {
+          animation: heroStarGlint3 13s ease-in-out infinite;
+          will-change: transform, opacity;
+        }
       `}</style>
 
       {/* Contenedor de Escáneres Ópticos (Z-20, no interactivo, estricta precisión) */}
       <div className="absolute inset-0 pointer-events-none z-20 overflow-hidden">
         
         {/* ================================================================= */}
-        {/* ESCÁNER 1: BLANCO POLARIZADO (BAJA LENTO DE ARRIBA HACIA ABAJO)  */}
-        {/* ================================================================= */}
-        <div
-          className="absolute left-0 right-0 pointer-events-none will-change-transform"
-          style={{
-            animation: 'scannerBlancoBaja 26s cubic-bezier(0.25, 0.1, 0.25, 1.0) infinite',
-            opacity: 0
-          }}
-        >
-          {/* Estela sutil de luz blanca superior */}
-          <div
-            className="w-full h-10 -mt-10 pointer-events-none"
-            style={{
-              background: 'linear-gradient(to top, rgba(255,255,255,0.06) 0%, transparent 100%)',
-              maskImage: 'linear-gradient(to top, black, transparent)',
-              WebkitMaskImage: 'linear-gradient(to top, black, transparent)'
-            }}
-          />
-
-          {/* Línea Láser Blanca Polarizada */}
-          <div className="relative w-full flex items-center">
-            {/* Micro telemetría óptica derecha */}
-            <div className="absolute right-4 sm:right-10 flex items-center opacity-40 select-none">
-              <span className="font-mono text-[6px] sm:text-[6.5px] tracking-[0.25em] text-white font-bold uppercase">
-                [ 5500K · OPTICAL WHITE ]
-              </span>
-            </div>
-
-            {/* Filamento Láser Blanco Fino */}
-            <div
-              className="w-full h-[1px]"
-              style={{
-                background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.20) 8%, #FFFFFF 50%, rgba(255,255,255,0.20) 92%, transparent 100%)',
-                boxShadow: isLight
-                  ? '0 0 6px rgba(255,255,255,0.9), 0 0 14px rgba(148,163,184,0.3)'
-                  : '0 0 8px #FFFFFF, 0 0 16px rgba(255,255,255,0.5), 0 0 28px rgba(255,255,255,0.2)'
-              }}
-            />
-          </div>
-        </div>
-
-        {/* ================================================================= */}
-        {/* ESCÁNER 2: ROJO RUBÍ (BARRE LENTO DE IZQUIERDA A DERECHA)         */}
+        {/* ESCÁNER ROJO RUBÍ (BARRE LENTO DE IZQUIERDA A DERECHA)            */}
         {/* ================================================================= */}
         <div
           className="absolute top-0 bottom-0 pointer-events-none will-change-transform"
@@ -299,9 +353,7 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
           <div
             className="h-full w-10 -ml-10 pointer-events-none"
             style={{
-              background: 'linear-gradient(to left, rgba(239,68,68,0.08) 0%, transparent 100%)',
-              maskImage: 'linear-gradient(to left, black, transparent)',
-              WebkitMaskImage: 'linear-gradient(to left, black, transparent)'
+              background: 'linear-gradient(to left, rgba(239,68,68,0.08) 0%, transparent 100%)'
             }}
           />
 
@@ -328,7 +380,7 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
         </div>
 
         {/* ================================================================= */}
-        {/* ESCÁNER 3: ULTRAVIOLETA λ 395nm (ASCIENDE LENTO DE ABAJO A ARRIBA) */}
+        {/* ESCÁNER ULTRAVIOLETA λ 395nm (ASCIENDE LENTO DE ABAJO A ARRIBA)    */}
         {/* ================================================================= */}
         <div
           className="absolute left-0 right-0 pointer-events-none will-change-transform"
@@ -362,9 +414,7 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
           <div
             className="w-full h-10 pointer-events-none"
             style={{
-              background: 'linear-gradient(to bottom, rgba(168,85,247,0.08) 0%, transparent 100%)',
-              maskImage: 'linear-gradient(to bottom, black, transparent)',
-              WebkitMaskImage: 'linear-gradient(to bottom, black, transparent)'
+              background: 'linear-gradient(to bottom, rgba(168,85,247,0.08) 0%, transparent 100%)'
             }}
           />
         </div>
@@ -545,47 +595,49 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
         </div>
 
         {/* Right Column: 3D SLAB INSPECTOR HERO */}
-        <div className="lg:col-span-6 xl:col-span-6 flex flex-col items-center justify-center relative w-full">
+        <div className="lg:col-span-6 xl:col-span-6 flex flex-col items-center justify-center relative w-full pointer-events-none select-none touch-pan-y">
           
-          {/* 3D Slab Continuous Metrology Stage (Pronounced 3D Perspective & Motion) */}
+          {/* 3D Slab Continuous Metrology Stage (Pronounced 3D Perspective & Motion - 100% GPU Autonomous Video-Like) */}
           <div
-            style={{ perspective: 900 }}
+            style={{ perspective: 1000 }}
             className="relative w-full max-w-[500px] sm:max-w-[620px] lg:max-w-[720px] xl:max-w-[820px] 2xl:max-w-[920px] aspect-[1.48/1] flex items-center justify-center bg-transparent select-none pointer-events-none"
           >
             {/* 3D Depth Aura Behind Slab (Separates slab from background in physical Z-space) */}
             <div
-              className="absolute pointer-events-none rounded-full blur-[75px] transition-transform duration-75"
+              className={`hero-aura-animated absolute pointer-events-none rounded-full blur-[75px] select-none ${
+                isLight 
+                  ? 'bg-gradient-to-r from-emerald-500/25 via-green-500/15 to-transparent' 
+                  : 'bg-gradient-to-r from-[#48C765]/40 via-emerald-500/20 to-transparent'
+              }`}
               style={{
                 width: '88%',
                 height: '78%',
-                background: isLight 
-                  ? 'radial-gradient(circle, rgba(34,197,94,0.30) 0%, rgba(16,185,129,0.12) 50%, transparent 72%)'
-                  : 'radial-gradient(circle, rgba(72,199,101,0.45) 0%, rgba(34,197,94,0.18) 52%, transparent 75%)',
-                transform: `translate3d(${-rotateY * 2.2}px, ${-rotateX * 1.8}px, -70px)`,
               }}
             />
 
             {/* 3D Tilting Slab Wrapper - Pure floating stage with rich 3D levitation, roll & depth */}
             <div
-              style={{
-                transform: `translateY(${translateY}px) translateZ(${translateZ}px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) rotateZ(${rotateZ}deg) scale(${scale})`,
-                transition: 'transform 0.05s linear',
-                transformStyle: 'preserve-3d',
-              }}
-              className="relative w-full h-full flex items-center justify-center bg-transparent pointer-events-none"
+              className="hero-slab-animated relative w-full h-full flex items-center justify-center bg-transparent pointer-events-none select-none"
             >
               {/* Slab Artwork Image - Pure transparent PNG with contoured drop-shadow */}
               <img 
                 src={heroImageSrc}
                 alt="Gorilla Grading Certified Slab"
-                className={`w-full h-full object-contain pointer-events-none transition-all duration-300 ${
+                draggable={false}
+                loading="eager"
+                decoding="async"
+                className={`w-full h-full object-contain pointer-events-none select-none transition-filter duration-300 ${
                   isLight
                     ? 'filter drop-shadow-[0_18px_30px_rgba(0,0,0,0.15)]'
                     : 'filter drop-shadow-[0_22px_40px_rgba(0,0,0,0.85)]'
                 }`}
+                style={{
+                  WebkitTouchCallout: 'none',
+                  userSelect: 'none',
+                  WebkitUserSelect: 'none',
+                  pointerEvents: 'none',
+                }}
               />
-
-
 
               {/* Front Slab: Secret Rare Rainbow Holographic Foil Sheen (Directly bounded to card artwork) */}
               <div
@@ -599,18 +651,16 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
                 }}
               >
                 <div
-                  className="w-full h-full transition-opacity duration-300"
+                  className="hero-foil-animated w-full h-full"
                   style={{
-                    opacity: 0.38 + Math.abs(Math.sin((introProgress / 100) * Math.PI * 2)) * 0.52,
-                    background: `linear-gradient(${115 + rotateY * 5.5}deg, 
+                    background: `linear-gradient(118deg, 
                       transparent 10%, 
-                      rgba(236, 72, 153, 0.32) 25%, 
-                      rgba(59, 130, 246, 0.45) 40%, 
-                      rgba(255, 255, 255, 0.85) 50%, 
-                      rgba(52, 211, 153, 0.48) 60%, 
-                      rgba(251, 191, 36, 0.42) 75%, 
+                      rgba(236, 72, 153, 0.35) 25%, 
+                      rgba(59, 130, 246, 0.48) 40%, 
+                      rgba(255, 255, 255, 0.88) 50%, 
+                      rgba(52, 211, 153, 0.50) 60%, 
+                      rgba(251, 191, 36, 0.45) 75%, 
                       transparent 90%)`,
-                    transform: `translateX(${rotateY * 4.2}%) translateY(${rotateX * 3.0}%)`,
                     filter: 'contrast(1.35) brightness(1.25)'
                   }}
                 />
@@ -628,42 +678,14 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
                 }}
               >
                 <div
-                  className="w-full h-full"
+                  className="hero-label-animated w-full h-full"
                   style={{
-                    opacity: 0.28 + Math.abs(Math.sin((introProgress / 100) * Math.PI * 2 + 0.5)) * 0.50,
-                    background: `linear-gradient(110deg, transparent 28%, rgba(255,255,255,0.85) 50%, transparent 72%)`,
-                    transform: `translateX(${rotateY * 3.8}%)`
+                    background: `linear-gradient(110deg, transparent 25%, rgba(255,255,255,0.88) 50%, transparent 75%)`
                   }}
                 />
               </div>
 
-              {/* Middle Slab: Ultrasonic Molecular Edge Scanner & Acoustic Pulse */}
-              {sonicWaveOpacity > 0.05 && (
-                <div
-                  className="absolute pointer-events-none z-30 -translate-x-1/2"
-                  style={{
-                    left: '50.7%',
-                    top: `${Math.max(6, Math.min(94, sonicWaveY))}%`,
-                    opacity: sonicWaveOpacity
-                  }}
-                >
-                  {/* Center Emerald Laser Bead */}
-                  <div
-                    className="w-3.5 h-3.5 -ml-[7px] -mt-[7px] rounded-full bg-emerald-200 blur-[0.6px]"
-                    style={{
-                      boxShadow: '0 0 14px #48C765, 0 0 28px #10B981, 0 0 40px #059669'
-                    }}
-                  />
-                  {/* Transverse Crosshair Metrology Bar */}
-                  <div
-                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 sm:w-18 h-[1.5px]"
-                    style={{
-                      background: 'linear-gradient(90deg, transparent, #48C765 25%, #ffffff 50%, #48C765 75%, transparent)',
-                      boxShadow: '0 0 12px #48C765'
-                    }}
-                  />
-                </div>
-              )}
+
 
               {/* Back Slab: Reverse Card Iridescent Holographic Sheen */}
               <div
@@ -677,25 +699,23 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
                 }}
               >
                 <div
-                  className="w-full h-full transition-opacity duration-300"
+                  className="hero-reverse-animated w-full h-full"
                   style={{
-                    opacity: 0.28 + Math.abs(Math.cos((introProgress / 100) * Math.PI * 2)) * 0.50,
-                    background: `linear-gradient(${130 + rotateY * 4.5}deg, 
+                    background: `linear-gradient(132deg, 
                       transparent 20%, 
-                      rgba(59, 130, 246, 0.40) 40%, 
-                      rgba(255, 255, 255, 0.75) 50%, 
-                      rgba(245, 158, 11, 0.40) 60%, 
+                      rgba(59, 130, 246, 0.42) 40%, 
+                      rgba(255, 255, 255, 0.78) 50%, 
+                      rgba(245, 158, 11, 0.42) 60%, 
                       transparent 80%)`,
-                    transform: `translateX(${rotateY * 3.8}%)`,
                     filter: 'contrast(1.25)'
                   }}
                 />
               </div>
 
               {/* After Effects Diamond Anamorphic Star Glints */}
-              <StarGlint x={18.2} y={15} intensity={glint1} color="#A7F3D0" />
-              <StarGlint x={50.7} y={45} intensity={glint2} color="#34D399" />
-              <StarGlint x={84.2} y={15} intensity={glint3} color="#6EE7B7" />
+              <StarGlint x={18.2} y={15} animationClass="hero-glint-1-animated" color="#A7F3D0" />
+              <StarGlint x={50.7} y={45} animationClass="hero-glint-2-animated" color="#34D399" />
+              <StarGlint x={84.2} y={15} animationClass="hero-glint-3-animated" color="#6EE7B7" />
 
             </div>
           </div>
