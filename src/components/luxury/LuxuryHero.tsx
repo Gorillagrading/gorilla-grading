@@ -67,7 +67,7 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
   const { theme } = useTheme();
   const isLight = theme === 'light';
 
-  const heroImageSrc = '/images/alakazam_hero.png?v=6';
+  const heroImageSrc = '/images/alakazam_hero.png?v=9';
 
   // Continuous Cinematic Optical Metrology Pipeline (Infinite, solemn, 60fps)
   const [introProgress, setIntroProgress] = useState(0); // 0 to 100% loop
@@ -571,55 +571,21 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
                 transform: `translateY(${translateY}px) translateZ(${translateZ}px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) rotateZ(${rotateZ}deg) scale(${scale})`,
                 transition: 'transform 0.05s linear',
                 transformStyle: 'preserve-3d',
-                filter: isLight 
-                  ? `drop-shadow(${-rotateY * 2.2}px ${20 + rotateX * 1.5}px ${32 + Math.abs(rotateY) * 1.2}px rgba(0,0,0,0.16))`
-                  : `drop-shadow(${-rotateY * 3.0}px ${24 + rotateX * 2.0}px ${46 + Math.abs(rotateY) * 1.5}px rgba(0,0,0,0.80))`
               }}
               className="relative w-full h-full flex items-center justify-center bg-transparent pointer-events-none"
             >
-              {/* Slab Artwork Image - Pure transparent PNG, zero square box */}
+              {/* Slab Artwork Image - Pure transparent PNG with contoured drop-shadow */}
               <img 
                 src={heroImageSrc}
                 alt="Gorilla Grading Certified Slab"
-                className={`w-full h-full object-contain pointer-events-none transition-all duration-300 filter contrast-[1.06] brightness-[1.08] sm:brightness-[1.04]`}
+                className={`w-full h-full object-contain pointer-events-none transition-all duration-300 ${
+                  isLight
+                    ? 'filter drop-shadow-[0_18px_30px_rgba(0,0,0,0.15)]'
+                    : 'filter drop-shadow-[0_22px_40px_rgba(0,0,0,0.85)]'
+                }`}
               />
 
-              {/* Optical Acrylic Specular Glass Reflection Beam (Travels across acrylic as it tilts) */}
-              <div
-                className="absolute inset-0 pointer-events-none rounded-[16px] overflow-hidden z-25"
-                style={{
-                  mixBlendMode: isLight ? 'overlay' : 'screen',
-                }}
-              >
-                <div
-                  className="w-full h-full"
-                  style={{
-                    opacity: 0.28 + Math.abs(Math.sin((introProgress / 100) * Math.PI * 2)) * 0.42,
-                    background: `linear-gradient(${108 + rotateY * 2.2}deg, 
-                      transparent 18%, 
-                      rgba(255,255,255,0.02) 32%, 
-                      rgba(255,255,255,0.70) 50%, 
-                      rgba(72,199,101,0.30) 54%, 
-                      rgba(255,255,255,0.02) 68%, 
-                      transparent 82%)`,
-                    transform: `translateX(${-rotateY * 4.2}%) translateY(${-rotateX * 2.5}%)`,
-                    filter: 'blur(0.8px)'
-                  }}
-                />
-              </div>
 
-              {/* Dynamic Laser Metrology Scanning Line (periodic graceful sweep during first 32% of each cycle) */}
-              {introProgress <= 32 && (
-                <div
-                  className="absolute top-[6%] bottom-[6%] w-[1.5px] pointer-events-none z-20"
-                  style={{
-                    left: `${14 + (introProgress / 32) * 72}%`,
-                    background: 'linear-gradient(to bottom, transparent, rgba(72,199,101,0.85) 20%, #A7F3D0 50%, rgba(72,199,101,0.85) 80%, transparent)',
-                    boxShadow: '0 0 12px rgba(72,199,101,0.9), 0 0 24px rgba(72,199,101,0.45)',
-                    opacity: Math.sin((introProgress / 32) * Math.PI)
-                  }}
-                />
-              )}
 
               {/* Front Slab: Secret Rare Rainbow Holographic Foil Sheen (Directly bounded to card artwork) */}
               <div
