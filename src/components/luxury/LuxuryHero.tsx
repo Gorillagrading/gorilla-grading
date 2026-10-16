@@ -76,7 +76,7 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
   return (
     <section 
       id="hero"
-      className="relative w-full flex flex-col overflow-hidden bg-transparent text-white pt-2 sm:pt-4 pb-0 select-none touch-pan-y"
+      className="relative w-full min-h-[calc(100vh-5rem-38px)] flex flex-col justify-between overflow-hidden bg-transparent text-white pt-2 sm:pt-4 pb-0 select-none touch-pan-y"
     >
       
       {/* ═════════════════════════════════════════════════════════════════════
@@ -360,7 +360,7 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
         </div>
       </div>
 
-      <div className="relative z-10 max-w-[1440px] w-full mx-auto px-6 lg:px-12 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center py-4 sm:py-6">
+      <div className="relative z-10 max-w-[1440px] w-full mx-auto px-6 lg:px-12 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center flex-1 my-auto py-4 sm:py-6">
         
         {/* Left Editorial Column */}
         <div className="lg:col-span-6 xl:col-span-6 flex flex-col justify-center items-center lg:items-start text-center lg:text-left pt-2 lg:pt-0">
@@ -663,7 +663,7 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
       </div>
 
       {/* Embedded Ecosystem Logos Ribbon - Integral part of the Hero, visible above the fold */}
-      <div className="relative z-30 w-full shrink-0 mt-4 sm:mt-6 mb-0">
+      <div className="relative z-30 w-full shrink-0 mt-auto">
         <BrandEcosystemRibbon isHeroEmbedded={true} />
       </div>
 
