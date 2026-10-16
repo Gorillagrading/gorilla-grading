@@ -26,62 +26,6 @@ export const GorillaVerifyLogo: React.FC<VerifyLogoProps> = ({
 
   return (
     <div className={`relative inline-flex flex-col items-center justify-center select-none ${className}`}>
-      <style>{`
-        /* Forensic Laser Scan Beam - Lateral Left to Right (8.5s Stately Cycle: ~4.2s slow sweep + ~4.3s pause) */
-        @keyframes gvLaserSweepLateral {
-          0% {
-            left: -8%;
-            opacity: 0;
-          }
-          3% {
-            opacity: 1;
-          }
-          48% {
-            left: 106%;
-            opacity: 1;
-          }
-          52% {
-            left: 110%;
-            opacity: 0;
-          }
-          100% {
-            left: -8%;
-            opacity: 0;
-          }
-        }
-
-        /* Luminous Scan Trail Lateral */
-        @keyframes gvLaserTrailLateral {
-          0% {
-            left: -24%;
-            opacity: 0;
-          }
-          4% {
-            opacity: 0.55;
-          }
-          48% {
-            left: 90%;
-            opacity: 0.55;
-          }
-          52% {
-            left: 94%;
-            opacity: 0;
-          }
-          100% {
-            left: -24%;
-            opacity: 0;
-          }
-        }
-
-        .gv-laser-line-lateral {
-          animation: gvLaserSweepLateral 8.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-        }
-
-        .gv-laser-trail-lateral {
-          animation: gvLaserTrailLateral 8.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-        }
-      `}</style>
-
       {/* Main Container - Grounded and Stable (No Pendulum Float) */}
       <div className={`relative flex items-center justify-center cursor-pointer group ${containerDimensions}`}>
         
@@ -136,27 +80,6 @@ export const GorillaVerifyLogo: React.FC<VerifyLogoProps> = ({
             </svg>
           </div>
 
-          {/* Forensic Laser Scanner Overlay — Slow lateral sweep across the badge */}
-          <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-lg">
-            
-            {/* Luminous Lateral Scan Trail */}
-            <div 
-              className="absolute top-0 bottom-0 w-24 gv-laser-trail-lateral pointer-events-none"
-              style={{
-                background: 'linear-gradient(to left, rgba(34,197,94,0.45) 0%, rgba(34,197,94,0.08) 60%, transparent 100%)'
-              }}
-            />
-
-            {/* Neon Green Lateral Laser Beam Line */}
-            <div 
-              className="absolute top-0 bottom-0 w-[3px] gv-laser-line-lateral pointer-events-none"
-              style={{
-                background: 'linear-gradient(180deg, transparent 0%, #4ADE80 20%, #FFFFFF 50%, #4ADE80 80%, transparent 100%)',
-                boxShadow: '0 0 14px 3px #22C55E, 0 0 28px 5px rgba(74,222,128,0.85)'
-              }}
-            />
-          </div>
-
         </div>
 
       </div>
@@ -166,4 +89,3 @@ export const GorillaVerifyLogo: React.FC<VerifyLogoProps> = ({
 
 export const VerifyLogo = GorillaVerifyLogo;
 export default GorillaVerifyLogo;
-

@@ -85,27 +85,6 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
           - Cero carga en hilo JS, sin temblores en móvil y sin interferencias táctiles
           ═════════════════════════════════════════════════════════════════════ */}
       <style>{`
-        /* 1. Escáner Rojo: Lateral pausado de izquierda a derecha (2.5s a 12s) */
-        @keyframes scannerRojoLateral {
-          0%, 9.5% {
-            left: -2%;
-            opacity: 0;
-          }
-          11.5% {
-            opacity: 0.90;
-          }
-          44% {
-            opacity: 0.90;
-          }
-          46% {
-            left: 102%;
-            opacity: 0;
-          }
-          46.1%, 100% {
-            left: -2%;
-            opacity: 0;
-          }
-        }
 
         /* 3. Escáner Ultravioleta: Asciende lentamente de abajo hacia arriba (5s a 14s) */
         @keyframes scannerUltravioletaSube {
@@ -339,45 +318,6 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
       {/* Contenedor de Escáneres Ópticos (Z-20, no interactivo, estricta precisión) */}
       <div className="absolute inset-0 pointer-events-none z-20 overflow-hidden">
         
-        {/* ================================================================= */}
-        {/* ESCÁNER ROJO RUBÍ (BARRE LENTO DE IZQUIERDA A DERECHA)            */}
-        {/* ================================================================= */}
-        <div
-          className="absolute top-0 bottom-0 pointer-events-none will-change-transform"
-          style={{
-            animation: 'scannerRojoLateral 26s cubic-bezier(0.25, 0.1, 0.25, 1.0) infinite',
-            opacity: 0
-          }}
-        >
-          {/* Estela sutil de luz roja hacia la izquierda */}
-          <div
-            className="h-full w-10 -ml-10 pointer-events-none"
-            style={{
-              background: 'linear-gradient(to left, rgba(239,68,68,0.08) 0%, transparent 100%)'
-            }}
-          />
-
-          {/* Línea Láser Roja */}
-          <div className="relative h-full flex flex-col justify-end pb-8">
-            {/* Micro telemetría óptica inferior */}
-            <div className="absolute bottom-6 left-3 select-none opacity-50">
-              <span className="font-mono text-[6px] sm:text-[6.5px] tracking-[0.25em] text-rose-400 font-bold uppercase whitespace-nowrap">
-                [ λ: 635nm · RUBY PROFILE ]
-              </span>
-            </div>
-
-            {/* Filamento Láser Rojo Fino */}
-            <div
-              className="h-full w-[1px]"
-              style={{
-                background: 'linear-gradient(180deg, transparent 0%, rgba(239,68,68,0.30) 8%, #FFFFFF 48%, #EF4444 52%, rgba(239,68,68,0.30) 92%, transparent 100%)',
-                boxShadow: isLight
-                  ? '0 0 6px #EF4444, 0 0 14px rgba(239,68,68,0.45)'
-                  : '0 0 8px #EF4444, 0 0 18px rgba(239,68,68,0.65), 0 0 32px rgba(220,38,38,0.35)'
-              }}
-            />
-          </div>
-        </div>
 
         {/* ================================================================= */}
         {/* ESCÁNER ULTRAVIOLETA λ 395nm (ASCIENDE LENTO DE ABAJO A ARRIBA)    */}
