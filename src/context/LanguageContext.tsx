@@ -245,7 +245,7 @@ export const translations = {
     // Verification
     'verify.title': 'Verificar Certificado Gorilla',
     'verify.subtitle': 'Autentica la procedencia del slab, consulta la telemetría a 40x y comprueba el registro criptográfico.',
-    'verify.placeholder': 'Introduce el Nº de Certificado (ej. GG-892401) o nombre...',
+    'verify.placeholder': 'Introduce el Nº de Certificado (ej. GGI-892401) o nombre...',
     'verify.scanQR': 'Escanear QR con Cámara',
     'verify.officialGrade': 'Nota Oficial',
     'verify.subCentering': 'Centrado',
@@ -519,7 +519,7 @@ export const translations = {
     // Verification
     'verify.title': 'Verify Gorilla Certificate',
     'verify.subtitle': 'Authenticate slab provenance, inspect 40x optical defect telemetry, and verify cryptographic security seals.',
-    'verify.placeholder': 'Enter Certificate Number (e.g. GG-892401) or name...',
+    'verify.placeholder': 'Enter Certificate Number (e.g. GGI-892401) or name...',
     'verify.scanQR': 'Scan QR via Camera',
     'verify.officialGrade': 'Official Grade',
     'verify.subCentering': 'Centering',

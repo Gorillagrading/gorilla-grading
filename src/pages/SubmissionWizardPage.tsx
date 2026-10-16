@@ -20,6 +20,11 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
   const { theme } = useTheme();
   const isLight = theme === 'light';
 
+  const [isFromConfigureShipment, setIsFromConfigureShipment] = useState<boolean>(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('fromConfig') === 'true';
+  });
+
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3 | 4>(() => {
     const params = new URLSearchParams(window.location.search);
     return params.get('tier') || params.get('qty') ? 2 : 1;
@@ -72,6 +77,11 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
     const params = new URLSearchParams(window.location.search);
     const tierId = params.get('tier');
     const qtyParam = params.get('qty');
+    const fromConfigParam = params.get('fromConfig');
+
+    if (fromConfigParam === 'true') {
+      setIsFromConfigureShipment(true);
+    }
 
     if (tierId) {
       const found = MOCK_SERVICES.find(s => s.id === tierId || (tierId === 'regular' && s.id === 'standard') || (tierId === 'walkthrough' && s.id === 'event'));
@@ -86,7 +96,7 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
       if (qty > 0) {
         setNewCardQuantity(String(qty));
         setItems(prevItems => {
-          if (prevItems.length === 0) {
+          if (prevItems.length === 0 || fromConfigParam === 'true') {
             const currentTier = (tierId ? MOCK_SERVICES.find(s => s.id === tierId || (tierId === 'regular' && s.id === 'standard') || (tierId === 'walkthrough' && s.id === 'event')) : null) || selectedTier || MOCK_SERVICES[0];
             return Array.from({ length: qty }, (_, i) => ({
               id: `preset-${Date.now()}-${i}`,
@@ -395,6 +405,7 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
                       }`}>
                         <th className="py-3 px-6 font-semibold">{language === 'es' ? 'NIVEL DE SERVICIO' : 'SERVICE TIER'}</th>
                         <th className="py-3 px-6 font-semibold">{language === 'es' ? 'PLAZO DE RETORNO' : 'ESTIMATED TURNAROUND'}</th>
+                        <th className="py-3 px-6 font-semibold">{language === 'es' ? 'SEGURO MÁXIMO' : 'MAX INSURANCE'}</th>
                         <th className="py-3 px-6 font-semibold">{language === 'es' ? 'ALCANCE TÉCNICO' : 'TECHNICAL SCOPE'}</th>
                         <th className="py-3 px-6 font-semibold text-right">{language === 'es' ? 'TARIFA / CARTA' : 'RATE / CARD'}</th>
                         <th className="py-3 px-6 font-semibold text-center">{language === 'es' ? 'ACCIÓN' : 'ACTION'}</th>
@@ -466,6 +477,24 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
                                 />
                                 <span>{lvl.turnaround}</span>
                               </div>
+                            </td>
+
+                            {/* Max Insurance */}
+                            <td className={`py-4 px-6 font-bold ${isLight ? 'text-gray-900' : 'text-white'}`}>
+                              <div className="flex items-center gap-1.5">
+                                <ShieldCheck 
+                                  className="w-3.5 h-3.5 shrink-0 text-emerald-500" 
+                                  style={{
+                                    color: !isLight ? darkTierColor : undefined
+                                  }}
+                                />
+                                <span>{lvl.maxInsurance}</span>
+                              </div>
+                              <span className={`block font-mono text-[9px] font-normal mt-0.5 ${
+                                isLight ? 'text-gray-500' : 'text-gray-400'
+                              }`}>
+                                {language === 'es' ? 'cobertura / carta' : 'coverage / card'}
+                              </span>
                             </td>
 
                             {/* Scope */}
@@ -631,10 +660,16 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
             <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 mb-6">
               <div>
                 <h2 className={`font-['Nunito',sans-serif] text-xl sm:text-2xl uppercase font-[900] tracking-normal mb-1 ${isLight ? 'text-[#1C201D]' : 'text-white'}`}>
-                  {language === 'es' ? 'Suma tus cartas' : 'Add your cards'}
+                  {isFromConfigureShipment
+                    ? (language === 'es' ? 'Configuración de tus cartas' : 'Configure your cards')
+                    : (language === 'es' ? 'Suma tus cartas' : 'Add your cards')}
                 </h2>
                 <p className={`text-xs font-sans ${isLight ? 'text-[#656E63]' : 'text-[#A4ACA1]'}`}>
-                  {items.length > 0
+                  {isFromConfigureShipment
+                    ? (language === 'es'
+                        ? `Hemos generado tus ${items.length} cuadros para el nivel ${selectedTier?.name || ''}. Haz clic en cada uno para personalizar los datos de la carta.`
+                        : `We have set up your ${items.length} card slots for ${selectedTier?.name || ''} tier. Click any box to configure card details.`)
+                    : items.length > 0
                     ? (language === 'es' 
                         ? `${items.length} ${items.length === 1 ? 'carta añadida' : 'cartas añadidas'} · ${selectedTier?.name || ''}`
                         : `${items.length} ${items.length === 1 ? 'card added' : 'cards added'} · ${selectedTier?.name || ''}`)
@@ -652,141 +687,84 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
               )}
             </div>
 
-            {/* Professional Mini-Form */}
-            <form onSubmit={handleAddCard} className={`w-full p-6 mb-8 flex flex-col gap-6 border ${
-              isLight ? 'bg-white border-[#E5DEC9] shadow-sm' : 'bg-[#151A15] border-white/10 shadow-lg'
-            }`}>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                
-                {/* TCG / Collection */}
-                <div className="flex flex-col gap-1">
-                  <label className={`text-[10px] uppercase font-mono tracking-widest ${isLight ? 'text-[#6B7268]' : 'text-[#A4ACA1]'}`}>
-                    {language === 'es' ? 'Colección / TCG' : 'TCG / Collection'}
-                  </label>
-                  <select 
-                    value={newCardGame}
-                    onChange={e => setNewCardGame(e.target.value)}
-                    className={`w-full px-3 py-2 text-sm rounded-none transition-colors focus:outline-none ${
-                      isLight 
-                        ? 'bg-[#FAF7F2] border border-[#DCD5C3] text-[#1C201D] focus:border-[#2D9A46] focus:bg-white' 
-                        : 'bg-[#2B302B] border border-white/5 text-white focus:border-[#48C765]'
-                    }`}
-                  >
-                    <option value="Pokemon">Pokémon TCG</option>
-                    <option value="Magic">Magic: The Gathering</option>
-                    <option value="Yu-Gi-Oh!">Yu-Gi-Oh!</option>
-                    <option value="Sports">Sports Cards</option>
-                    <option value="One Piece">One Piece TCG</option>
-                    <option value="Lorcana">Disney Lorcana</option>
-                    <option value="Other">Other / Misc</option>
-                  </select>
-                </div>
+            {/* Professional Mini-Form: solo se muestra en modo regular, NO cuando viene de configure shipment */}
+            {!isFromConfigureShipment && (
+              <form onSubmit={handleAddCard} className={`w-full p-6 mb-8 flex flex-col gap-6 border ${
+                isLight ? 'bg-white border-[#E5DEC9] shadow-sm' : 'bg-[#151A15] border-white/10 shadow-lg'
+              }`}>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  
+                  {/* TCG / Collection */}
+                  <div className="flex flex-col gap-1">
+                    <label className={`text-[10px] uppercase font-mono tracking-widest ${isLight ? 'text-[#6B7268]' : 'text-[#A4ACA1]'}`}>
+                      {language === 'es' ? 'Colección / TCG' : 'TCG / Collection'}
+                    </label>
+                    <select 
+                      value={newCardGame}
+                      onChange={e => setNewCardGame(e.target.value)}
+                      className={`w-full px-3 py-2 text-sm rounded-none transition-colors focus:outline-none ${
+                        isLight 
+                          ? 'bg-[#FAF7F2] border border-[#DCD5C3] text-[#1C201D] focus:border-[#2D9A46] focus:bg-white' 
+                          : 'bg-[#2B302B] border border-white/5 text-white focus:border-[#48C765]'
+                      }`}
+                    >
+                      <option value="Pokemon">Pokémon TCG</option>
+                      <option value="Magic">Magic: The Gathering</option>
+                      <option value="Yu-Gi-Oh!">Yu-Gi-Oh!</option>
+                      <option value="Sports">Sports Cards</option>
+                      <option value="One Piece">One Piece TCG</option>
+                      <option value="Lorcana">Disney Lorcana</option>
+                      <option value="Other">Other / Misc</option>
+                    </select>
+                  </div>
 
-                {/* Year */}
-                <div className="flex flex-col gap-1">
-                  <label className={`text-[10px] uppercase font-mono tracking-widest ${isLight ? 'text-[#6B7268]' : 'text-[#A4ACA1]'}`}>
-                    {language === 'es' ? 'Año' : 'Year'}
-                  </label>
-                  <input 
-                    type="number" 
-                    placeholder="e.g. 1999" 
-                    value={newCardYear}
-                    onChange={e => setNewCardYear(e.target.value)}
-                    className={`w-full px-3 py-2 text-sm rounded-none transition-colors focus:outline-none ${
-                      isLight 
-                        ? 'bg-[#FAF7F2] border border-[#DCD5C3] text-[#1C201D] placeholder:text-[#9A9E96] focus:border-[#2D9A46] focus:bg-white' 
-                        : 'bg-[#2B302B] border border-white/5 text-white focus:border-[#48C765]'
-                    }`}
-                  />
-                </div>
-
-                {/* Set / Edition */}
-                <div className="flex flex-col gap-1 lg:col-span-2">
-                  <label className={`text-[10px] uppercase font-mono tracking-widest ${isLight ? 'text-[#6B7268]' : 'text-[#A4ACA1]'}`}>
-                    {language === 'es' ? 'Nombre del Set / Expansión' : 'Set / Expansion Name'}
-                  </label>
-                  <input 
-                    type="text" 
-                    placeholder="e.g. Base Set" 
-                    value={newCardSet}
-                    onChange={e => setNewCardSet(e.target.value)}
-                    className={`w-full px-3 py-2 text-sm rounded-none transition-colors focus:outline-none ${
-                      isLight 
-                        ? 'bg-[#FAF7F2] border border-[#DCD5C3] text-[#1C201D] placeholder:text-[#9A9E96] focus:border-[#2D9A46] focus:bg-white' 
-                        : 'bg-[#2B302B] border border-white/5 text-white focus:border-[#48C765]'
-                    }`}
-                  />
-                </div>
-
-                {/* Card Name */}
-                <div className="flex flex-col gap-1 lg:col-span-2">
-                  <label className={`text-[10px] uppercase font-mono tracking-widest ${isLight ? 'text-[#6B7268]' : 'text-[#A4ACA1]'}`}>
-                    {language === 'es' ? 'Nombre de la carta' : 'Card Name'}
-                  </label>
-                  <input 
-                    type="text" 
-                    placeholder="e.g. Charizard Holo 1st Edition" 
-                    value={newCardName}
-                    onChange={e => setNewCardName(e.target.value)}
-                    className={`w-full px-3 py-2 text-sm rounded-none transition-colors focus:outline-none ${
-                      isLight 
-                        ? 'bg-[#FAF7F2] border border-[#DCD5C3] text-[#1C201D] placeholder:text-[#9A9E96] focus:border-[#2D9A46] focus:bg-white' 
-                        : 'bg-[#2B302B] border border-white/5 text-white focus:border-[#48C765]'
-                    }`}
-                    required
-                  />
-                </div>
-
-                {/* Rarity / Variant */}
-                <div className="flex flex-col gap-1">
-                  <label className={`text-[10px] uppercase font-mono tracking-widest ${isLight ? 'text-[#6B7268]' : 'text-[#A4ACA1]'}`}>
-                    {language === 'es' ? 'Rareza / Variante' : 'Rarity / Variant'}
-                  </label>
-                  <input 
-                    type="text" 
-                    placeholder="e.g. Secret Rare, Holo" 
-                    value={newCardRarity}
-                    onChange={e => setNewCardRarity(e.target.value)}
-                    className={`w-full px-3 py-2 text-sm rounded-none transition-colors focus:outline-none ${
-                      isLight 
-                        ? 'bg-[#FAF7F2] border border-[#DCD5C3] text-[#1C201D] placeholder:text-[#9A9E96] focus:border-[#2D9A46] focus:bg-white' 
-                        : 'bg-[#2B302B] border border-white/5 text-white focus:border-[#48C765]'
-                    }`}
-                  />
-                </div>
-
-                {/* Quantity */}
-                <div className="flex flex-col gap-1">
-                  <label className={`text-[10px] uppercase font-mono tracking-widest ${isLight ? 'text-[#6B7268]' : 'text-[#A4ACA1]'}`}>
-                    {language === 'es' ? 'Cantidad' : 'Quantity'}
-                  </label>
-                  <input 
-                    type="number" 
-                    min="1"
-                    placeholder="1" 
-                    value={newCardQuantity}
-                    onChange={e => setNewCardQuantity(e.target.value)}
-                    className={`w-full px-3 py-2 text-sm rounded-none transition-colors focus:outline-none ${
-                      isLight 
-                        ? 'bg-[#FAF7F2] border border-[#DCD5C3] text-[#1C201D] focus:border-[#2D9A46] focus:bg-white' 
-                        : 'bg-[#2B302B] border border-white/5 text-white focus:border-[#48C765]'
-                    }`}
-                  />
-                </div>
-
-                {/* Declared Value */}
-                <div className="flex flex-col gap-1">
-                  <label className={`text-[10px] uppercase font-mono tracking-widest ${isLight ? 'text-[#6B7268]' : 'text-[#A4ACA1]'}`}>
-                    {language === 'es' ? 'Valor Declarado ud. (€)' : 'Declared Value ea. (€)'}
-                  </label>
-                  <div className="relative">
-                    <span className={`absolute left-3 top-2 text-sm ${isLight ? 'text-[#6B7268]' : 'text-[#A4ACA1]'}`}>€</span>
+                  {/* Year */}
+                  <div className="flex flex-col gap-1">
+                    <label className={`text-[10px] uppercase font-mono tracking-widest ${isLight ? 'text-[#6B7268]' : 'text-[#A4ACA1]'}`}>
+                      {language === 'es' ? 'Año' : 'Year'}
+                    </label>
                     <input 
                       type="number" 
-                      placeholder="e.g. 500" 
-                      value={newDeclaredValue}
-                      onChange={e => setNewDeclaredValue(e.target.value)}
-                      className={`w-full pl-7 pr-3 py-2 text-sm rounded-none transition-colors focus:outline-none ${
+                      placeholder="e.g. 1999" 
+                      value={newCardYear}
+                      onChange={e => setNewCardYear(e.target.value)}
+                      className={`w-full px-3 py-2 text-sm rounded-none transition-colors focus:outline-none ${
+                        isLight 
+                          ? 'bg-[#FAF7F2] border border-[#DCD5C3] text-[#1C201D] placeholder:text-[#9A9E96] focus:border-[#2D9A46] focus:bg-white' 
+                          : 'bg-[#2B302B] border border-white/5 text-white focus:border-[#48C765]'
+                      }`}
+                    />
+                  </div>
+
+                  {/* Set / Expansion */}
+                  <div className="flex flex-col gap-1 lg:col-span-2">
+                    <label className={`text-[10px] uppercase font-mono tracking-widest ${isLight ? 'text-[#6B7268]' : 'text-[#A4ACA1]'}`}>
+                      {language === 'es' ? 'Nombre del Set / Expansión' : 'Set / Expansion Name'}
+                    </label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g. Base Set" 
+                      value={newCardSet}
+                      onChange={e => setNewCardSet(e.target.value)}
+                      className={`w-full px-3 py-2 text-sm rounded-none transition-colors focus:outline-none ${
+                        isLight 
+                          ? 'bg-[#FAF7F2] border border-[#DCD5C3] text-[#1C201D] placeholder:text-[#9A9E96] focus:border-[#2D9A46] focus:bg-white' 
+                          : 'bg-[#2B302B] border border-white/5 text-white focus:border-[#48C765]'
+                      }`}
+                    />
+                  </div>
+
+                  {/* Card Name */}
+                  <div className="flex flex-col gap-1 lg:col-span-2">
+                    <label className={`text-[10px] uppercase font-mono tracking-widest ${isLight ? 'text-[#6B7268]' : 'text-[#A4ACA1]'}`}>
+                      {language === 'es' ? 'Nombre de la carta' : 'Card Name'}
+                    </label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g. Charizard Holo 1st Edition" 
+                      value={newCardName}
+                      onChange={e => setNewCardName(e.target.value)}
+                      className={`w-full px-3 py-2 text-sm rounded-none transition-colors focus:outline-none ${
                         isLight 
                           ? 'bg-[#FAF7F2] border border-[#DCD5C3] text-[#1C201D] placeholder:text-[#9A9E96] focus:border-[#2D9A46] focus:bg-white' 
                           : 'bg-[#2B302B] border border-white/5 text-white focus:border-[#48C765]'
@@ -794,20 +772,79 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
                       required
                     />
                   </div>
-                </div>
 
-              </div>
-              
-              <div className={`flex justify-end pt-3 border-t mt-2 ${isLight ? 'border-[#E5DEC9]' : 'border-white/5'}`}>
-                <button 
-                  type="submit" 
-                  className="btn-gorilla-square px-6 py-2.5 text-xs font-extrabold uppercase tracking-normal flex items-center gap-2 shadow-md"
-                >
-                  <Plus className="w-4 h-4 text-white" />
-                  <span>{language === 'es' ? 'Añadir a la orden' : 'Add to Order'}</span>
-                </button>
-              </div>
-            </form>
+                  {/* Rarity / Variant */}
+                  <div className="flex flex-col gap-1">
+                    <label className={`text-[10px] uppercase font-mono tracking-widest ${isLight ? 'text-[#6B7268]' : 'text-[#A4ACA1]'}`}>
+                      {language === 'es' ? 'Rareza / Variante' : 'Rarity / Variant'}
+                    </label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g. Secret Rare, Holo" 
+                      value={newCardRarity}
+                      onChange={e => setNewCardRarity(e.target.value)}
+                      className={`w-full px-3 py-2 text-sm rounded-none transition-colors focus:outline-none ${
+                        isLight 
+                          ? 'bg-[#FAF7F2] border border-[#DCD5C3] text-[#1C201D] placeholder:text-[#9A9E96] focus:border-[#2D9A46] focus:bg-white' 
+                          : 'bg-[#2B302B] border border-white/5 text-white focus:border-[#48C765]'
+                      }`}
+                    />
+                  </div>
+
+                  {/* Quantity */}
+                  <div className="flex flex-col gap-1">
+                    <label className={`text-[10px] uppercase font-mono tracking-widest ${isLight ? 'text-[#6B7268]' : 'text-[#A4ACA1]'}`}>
+                      {language === 'es' ? 'Cantidad' : 'Quantity'}
+                    </label>
+                    <input 
+                      type="number" 
+                      min="1"
+                      placeholder="1" 
+                      value={newCardQuantity}
+                      onChange={e => setNewCardQuantity(e.target.value)}
+                      className={`w-full px-3 py-2 text-sm rounded-none transition-colors focus:outline-none ${
+                        isLight 
+                          ? 'bg-[#FAF7F2] border border-[#DCD5C3] text-[#1C201D] focus:border-[#2D9A46] focus:bg-white' 
+                          : 'bg-[#2B302B] border border-white/5 text-white focus:border-[#48C765]'
+                      }`}
+                    />
+                  </div>
+
+                  {/* Declared Value */}
+                  <div className="flex flex-col gap-1">
+                    <label className={`text-[10px] uppercase font-mono tracking-widest ${isLight ? 'text-[#6B7268]' : 'text-[#A4ACA1]'}`}>
+                      {language === 'es' ? 'Valor Declarado ud. (€)' : 'Declared Value ea. (€)'}
+                    </label>
+                    <div className="relative">
+                      <span className={`absolute left-3 top-2 text-sm ${isLight ? 'text-[#6B7268]' : 'text-[#A4ACA1]'}`}>€</span>
+                      <input 
+                        type="number" 
+                        placeholder="e.g. 500" 
+                        value={newDeclaredValue}
+                        onChange={e => setNewDeclaredValue(e.target.value)}
+                        className={`w-full pl-7 pr-3 py-2 text-sm rounded-none transition-colors focus:outline-none ${
+                          isLight 
+                            ? 'bg-[#FAF7F2] border border-[#DCD5C3] text-[#1C201D] placeholder:text-[#9A9E96] focus:border-[#2D9A46] focus:bg-white' 
+                            : 'bg-[#2B302B] border border-white/5 text-white focus:border-[#48C765]'
+                        }`}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                </div>
+                
+                <div className={`flex justify-end pt-3 border-t mt-2 ${isLight ? 'border-[#E5DEC9]' : 'border-white/5'}`}>
+                  <button 
+                    type="submit" 
+                    className="btn-gorilla-square px-6 py-2.5 text-xs font-extrabold uppercase tracking-normal flex items-center gap-2 shadow-md"
+                  >
+                    <Plus className="w-4 h-4 text-white" />
+                    <span>{language === 'es' ? 'Añadir a la orden' : 'Add to Order'}</span>
+                  </button>
+                </div>
+              </form>
+            )}
 
             {/* Horizontal Card Gallery */}
             {items.length > 0 && (
@@ -816,9 +853,40 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
                   <span className={`font-mono text-xs uppercase tracking-wider font-semibold ${isLight ? 'text-gray-700' : 'text-gray-300'}`}>
                     {language === 'es' ? 'Cartas en la orden (haz clic para editar datos o valor):' : 'Cards in order (click to edit card data or value):'}
                   </span>
-                  <span className={`font-mono text-[11px] ${isLight ? 'text-gray-500' : 'text-gray-400'}`}>
-                    {items.length} {items.length === 1 ? (language === 'es' ? 'carta' : 'card') : (language === 'es' ? 'cartas' : 'cards')}
-                  </span>
+                  <div className="flex items-center gap-3">
+                    <span className={`font-mono text-[11px] ${isLight ? 'text-gray-500' : 'text-gray-400'}`}>
+                      {items.length} {items.length === 1 ? (language === 'es' ? 'carta' : 'card') : (language === 'es' ? 'cartas' : 'cards')}
+                    </span>
+                    {isFromConfigureShipment && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const nextIdx = items.length + 1;
+                          const tierName = selectedTier?.name || 'Standard';
+                          const newItem: OrderItem = {
+                            id: `preset-${Date.now()}-${items.length}`,
+                            cardName: language === 'es' ? `Carta #${nextIdx} (${tierName})` : `Card #${nextIdx} (${tierName})`,
+                            game: 'Pokemon',
+                            set: 'Base Set',
+                            declaredValue: 100,
+                            serviceTierId: selectedTier?.id || 'standard',
+                            notes: '',
+                            frontImagePreview: 'https://images.unsplash.com/photo-1613771404784-3a5686aa2be3?auto=format&fit=crop&w=400&q=80'
+                          };
+                          setItems(prev => [...prev, newItem]);
+                          setEditingItem(newItem);
+                        }}
+                        className={`px-2.5 py-1 text-[11px] font-mono font-bold border transition-colors flex items-center gap-1 cursor-pointer ${
+                          isLight 
+                            ? 'border-gray-300 bg-gray-50 text-gray-800 hover:border-black hover:bg-white' 
+                            : 'border-white/15 bg-white/5 text-gray-200 hover:border-white hover:bg-white/10'
+                        }`}
+                      >
+                        <Plus className="w-3 h-3" />
+                        <span>{language === 'es' ? 'Añadir otra' : 'Add another'}</span>
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3.5">

@@ -21,7 +21,7 @@ export const MissionBanner: React.FC<MissionBannerProps> = ({ onNavigate }) => {
   }, []);
 
   return (
-    <section className="relative w-full bg-[#383838] text-white overflow-hidden select-none min-h-[500px] flex items-center border-y border-white/[0.04]">
+    <section className="relative w-full bg-[#383838] text-white overflow-hidden select-none min-h-[360px] flex items-center border-y border-white/[0.04]">
       
       {/* The Box Image with CSS Mask for perfect edge blending */}
       <img 
@@ -39,7 +39,7 @@ export const MissionBanner: React.FC<MissionBannerProps> = ({ onNavigate }) => {
       {/* Mobile-only dark overlay to ensure text is readable */}
       <div className="absolute inset-0 bg-[#454545]/85 lg:hidden z-0 pointer-events-none" />
 
-      <div className="relative z-10 w-full max-w-[1400px] mx-auto px-6 lg:px-12 py-16 flex flex-col lg:flex-row items-center gap-12 lg:gap-8">
+      <div className="relative z-10 w-full max-w-[1400px] mx-auto px-6 lg:px-12 py-10 sm:py-12 lg:py-14 flex flex-col lg:flex-row items-center gap-12 lg:gap-8">
         
         {/* Empty left half to reserve space for the absolute positioned image */}
         <div className="hidden lg:block lg:w-[40%] shrink-0"></div>

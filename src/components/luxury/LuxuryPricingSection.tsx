@@ -154,7 +154,7 @@ export const LuxuryPricingSection: React.FC<LuxuryPricingSectionProps> = ({ onNa
   return (
     <section 
       id="pricing" 
-      className={`relative w-full py-16 lg:py-24 px-5 lg:px-12 border-b select-none transition-colors duration-300 ${
+      className={`relative w-full py-10 sm:py-12 lg:py-14 px-5 lg:px-12 border-b select-none transition-colors duration-300 ${
         isLight 
           ? 'bg-transparent text-[#111827] border-[#E5E7EB]' 
           : 'bg-transparent text-white border-white/[0.08]'
@@ -348,6 +348,7 @@ export const LuxuryPricingSection: React.FC<LuxuryPricingSectionProps> = ({ onNa
                 }`}>
                   <th className="py-3.5 px-6 font-bold">{language === 'es' ? 'NIVEL DE SERVICIO' : 'SERVICE TIER'}</th>
                   <th className="py-3.5 px-6 font-bold">{language === 'es' ? 'PLAZO DE RETORNO' : 'ESTIMATED TURNAROUND'}</th>
+                  <th className="py-3.5 px-6 font-bold">{language === 'es' ? 'SEGURO MÁXIMO' : 'MAX INSURANCE'}</th>
                   <th className="py-3.5 px-6 font-bold">{language === 'es' ? 'ALCANCE TÉCNICO' : 'TECHNICAL SCOPE'}</th>
                   <th className="py-3.5 px-6 font-bold text-right">{language === 'es' ? 'TARIFA / CARTA' : 'RATE / CARD'}</th>
                   <th className="py-3.5 px-6 font-bold text-center">{language === 'es' ? 'ACCIÓN' : 'ACTION'}</th>
@@ -424,6 +425,24 @@ export const LuxuryPricingSection: React.FC<LuxuryPricingSectionProps> = ({ onNa
                           />
                           <span>{lvl.turnaround}</span>
                         </div>
+                      </td>
+
+                      {/* Max Insurance / Cobertura */}
+                      <td className={`py-4 px-6 font-extrabold ${isLight ? 'text-gray-900' : 'text-white'}`}>
+                        <div className="flex items-center gap-1.5">
+                          <ShieldCheck 
+                            className="w-3.5 h-3.5 shrink-0 text-emerald-500" 
+                            style={{
+                              color: !isLight ? darkTierColor : undefined
+                            }}
+                          />
+                          <span>{lvl.maxInsurance}</span>
+                        </div>
+                        <span className={`block font-mono text-[9.5px] font-normal mt-0.5 ${
+                          isLight ? 'text-gray-500' : 'text-gray-400'
+                        }`}>
+                          {language === 'es' ? 'cobertura / carta' : 'coverage / card'}
+                        </span>
                       </td>
 
                       {/* Scope */}
@@ -566,10 +585,10 @@ export const LuxuryPricingSection: React.FC<LuxuryPricingSectionProps> = ({ onNa
                   <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
                   <div className="min-w-0">
                     <span className="block font-mono text-[9px] uppercase tracking-wider text-gray-700 dark:text-gray-300">
-                      {language === 'es' ? 'Certificación' : 'Certification'}
+                      {language === 'es' ? 'Seguro máx.' : 'Max insurance'}
                     </span>
                     <span className="block font-sans text-xs font-bold truncate text-current">
-                      {language === 'es' ? 'Sónica 35 kHz' : 'Sonic 35 kHz'}
+                      {currentLevel.maxInsurance}
                     </span>
                   </div>
                 </div>
@@ -679,7 +698,7 @@ export const LuxuryPricingSection: React.FC<LuxuryPricingSectionProps> = ({ onNa
                 {/* Mobile Direct Action Button */}
                 <button
                   type="button"
-                  onClick={() => onNavigate && onNavigate(`/submit?tier=${selectedTierId}&qty=${cardCount}`)}
+                  onClick={() => onNavigate && onNavigate(`/submit?tier=${selectedTierId || currentLevel.id}&qty=${cardCount}&fromConfig=true`)}
                   className="btn-gorilla-pill w-full mt-3 py-3 px-4 text-xs font-extrabold tracking-wider flex items-center justify-center gap-2 shadow-lg"
                 >
                   <span>
@@ -837,7 +856,7 @@ export const LuxuryPricingSection: React.FC<LuxuryPricingSectionProps> = ({ onNa
 
               <button
                 type="button"
-                onClick={() => onNavigate && onNavigate(`/submit?tier=${selectedTierId}&qty=${cardCount}`)}
+                onClick={() => onNavigate && onNavigate(`/submit?tier=${selectedTierId || currentLevel.id}&qty=${cardCount}&fromConfig=true`)}
                 className="btn-gorilla-pill w-full py-3.5 sm:py-4 px-6 sm:px-8 text-xs font-bold tracking-normal gap-2 shadow-lg"
               >
                 <span>{language === 'es' ? `Configurar envío (${cardCount} ${cardCount === 1 ? 'carta' : 'cartas'}) →` : `Configure shipment (${cardCount} ${cardCount === 1 ? 'card' : 'cards'}) →`}</span>

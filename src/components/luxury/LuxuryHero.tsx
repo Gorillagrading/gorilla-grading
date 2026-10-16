@@ -76,7 +76,7 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
   return (
     <section 
       id="hero"
-      className="relative w-full min-h-[calc(100vh-5rem)] flex flex-col justify-between overflow-hidden bg-transparent text-white pt-2 sm:pt-4 pb-12 sm:pb-16 lg:pb-20 select-none touch-pan-y"
+      className="relative w-full flex flex-col overflow-hidden bg-transparent text-white pt-2 sm:pt-4 pb-0 select-none touch-pan-y"
     >
       
       {/* ═════════════════════════════════════════════════════════════════════
@@ -360,7 +360,7 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
         </div>
       </div>
 
-      <div className="relative z-10 max-w-[1440px] w-full mx-auto px-6 lg:px-12 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center flex-1 my-auto py-1 sm:py-2">
+      <div className="relative z-10 max-w-[1440px] w-full mx-auto px-6 lg:px-12 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center py-4 sm:py-6">
         
         {/* Left Editorial Column */}
         <div className="lg:col-span-6 xl:col-span-6 flex flex-col justify-center items-center lg:items-start text-center lg:text-left pt-2 lg:pt-0">
@@ -425,7 +425,7 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
           >
             {/* Primary Capsule Button */}
             <button
-              onClick={() => onNavigate && onNavigate('/submit')}
+              onClick={() => onNavigate && onNavigate('/pricing')}
               className="btn-gorilla-pill w-full sm:w-auto px-7 py-3.5 gap-2 group"
             >
               <span className="font-['Nunito',sans-serif] font-bold text-xs tracking-normal uppercase">
@@ -625,8 +625,6 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
                 />
               </div>
 
-
-
               {/* Back Slab: Reverse Card Iridescent Holographic Sheen */}
               <div
                 className="absolute pointer-events-none rounded-[6px] overflow-hidden z-10"
@@ -665,7 +663,7 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
       </div>
 
       {/* Embedded Ecosystem Logos Ribbon - Integral part of the Hero, visible above the fold */}
-      <div className="relative z-30 w-full shrink-0 mt-6 sm:mt-8">
+      <div className="relative z-30 w-full shrink-0 mt-4 sm:mt-6 mb-0">
         <BrandEcosystemRibbon isHeroEmbedded={true} />
       </div>
 

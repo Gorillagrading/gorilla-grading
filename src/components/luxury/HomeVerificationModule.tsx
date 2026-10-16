@@ -34,9 +34,9 @@ export const HomeVerificationModule: React.FC<HomeVerificationModuleProps> = ({ 
   const [isSearching, setIsSearching] = useState(false);
 
   const demoCodes = [
-    { code: 'GG-892401', label: 'Charizard 1st Ed (10 GEM MINT)' },
-    { code: 'GG-774102', label: 'Pikachu Illustrator (10 PRISTINE)' },
-    { code: 'GG-652901', label: 'Umbreon VMAX (9.5 GEM MINT)' },
+    { code: 'GGI-892401', label: 'Charizard 1st Ed (10 GEM MINT)' },
+    { code: 'GGI-774102', label: 'Pikachu Illustrator (10 PRISTINE)' },
+    { code: 'GGI-652901', label: 'Umbreon VMAX (9.5 GEM MINT)' },
   ];
 
   const handleVerify = (codeToVerify?: string) => {
@@ -53,6 +53,9 @@ export const HomeVerificationModule: React.FC<HomeVerificationModuleProps> = ({ 
       const found = MOCK_GRADED_CARDS.find(
         c => c.certNumber.toUpperCase() === query || 
              c.certNumber.toUpperCase().replace('-', '') === query.replace('-', '') ||
+             c.certNumber.toUpperCase().replace('GGI', 'GG') === query ||
+             c.certNumber.toUpperCase() === query.replace('GG-', 'GGI-') ||
+             c.certNumber.toUpperCase().replace('GGI-', '') === query.replace('GG-', '').replace('GGI-', '') ||
              c.name.toUpperCase().includes(query)
       );
 
@@ -90,7 +93,7 @@ export const HomeVerificationModule: React.FC<HomeVerificationModuleProps> = ({ 
   return (
     <section 
       id="verify-module"
-      className={`relative w-full min-h-screen flex flex-col justify-center py-16 sm:py-20 lg:py-24 px-5 lg:px-10 border-b select-none transition-colors duration-300 ${
+      className={`relative w-full flex flex-col justify-center py-10 sm:py-12 lg:py-14 px-5 lg:px-10 border-b select-none transition-colors duration-300 ${
         isLight 
           ? 'bg-white/40 backdrop-blur-md text-[#111827] border-[#E5E7EB]' 
           : 'bg-[#181B18]/40 backdrop-blur-md text-white border-white/[0.08]'
@@ -111,7 +114,7 @@ export const HomeVerificationModule: React.FC<HomeVerificationModuleProps> = ({ 
         <div className="flex flex-col items-center text-center max-w-3xl mx-auto mb-8 sm:mb-10">
           {/* Main Dedicated Gorilla Verify Sub-Brand Logo (Forensic Floating Badge) */}
           <div className="mb-4 sm:mb-5">
-            <VerifyLogo size="w-full max-w-[260px] sm:max-w-[290px] lg:max-w-[320px] h-14 sm:h-16 lg:h-18" />
+            <VerifyLogo size="w-full max-w-[280px] sm:max-w-[340px] lg:max-w-[380px] h-[78px] sm:h-[94px] lg:h-[110px]" />
           </div>
 
           <h2 className="flex items-center gap-2 font-mono text-[11px] sm:text-xs tracking-[0.28em] uppercase text-gray-500 mb-6 sm:mb-7">
@@ -171,7 +174,7 @@ export const HomeVerificationModule: React.FC<HomeVerificationModuleProps> = ({ 
               type="text"
               value={inputVal}
               onChange={(e) => setInputVal(e.target.value)}
-              placeholder="E.G. GG-892401"
+              placeholder="E.G. GGI-892401"
               className={`flex-1 w-full bg-transparent px-3 py-3.5 sm:py-3 font-mono text-sm sm:text-base tracking-[0.18em] uppercase font-bold outline-none placeholder:font-sans placeholder:normal-case placeholder:tracking-normal placeholder:font-normal ${
                 isLight 
                   ? 'text-[#111827] placeholder-gray-400' 
@@ -312,74 +315,71 @@ export const HomeVerificationModule: React.FC<HomeVerificationModuleProps> = ({ 
             {/* Spec Sheet Main Grid */}
             <div className="p-6 sm:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center">
               
-              {/* Left Column: Slab / Card High-Res Visualizer */}
+              {/* Left Column: Pure Card High-Res Visualizer (Without Slab) */}
               <div className="lg:col-span-4 flex flex-col items-center justify-center">
-                <div className="relative group w-full max-w-[280px] sm:max-w-[320px] aspect-[2.5/3.5] flex items-center justify-center p-3 rounded-xl border border-white/20 bg-gradient-to-b from-white/10 via-white/5 to-transparent backdrop-blur-md shadow-2xl">
-                  
-                  {/* Acrylic Gloss Reflection */}
-                  <div className="absolute inset-0 rounded-xl pointer-events-none bg-gradient-to-tr from-transparent via-white/[0.12] to-transparent" />
-                  
-                  {/* Card Visual Content */}
-                  <div className={`relative w-full h-full rounded-lg overflow-hidden flex flex-col items-center justify-between p-2.5 transition-colors ${
-                    isLight ? 'bg-gray-100 border border-gray-300' : 'bg-black/40 border border-white/10'
-                  }`}>
-                    
-                    {/* Slab Top Label Preview */}
-                    <div className="w-full bg-white text-black p-2 rounded-t flex items-center justify-between shadow-md">
-                      <div>
-                        <div className="font-['Nunito',sans-serif] font-[900] text-xs tracking-wider uppercase text-black leading-tight">
-                          GORILLA GRADING
-                        </div>
-                        <div className="font-mono text-[9px] text-gray-600 font-bold truncate max-w-[130px]">
-                          {selectedCard.name}
-                        </div>
-                        <div className="font-mono text-[8px] text-gray-500">
-                          {selectedCard.set} ({selectedCard.year})
-                        </div>
-                      </div>
+                <div 
+                  onClick={() => onNavigate(`/certificates/${selectedCard.certNumber}`)}
+                  className="relative group w-full max-w-[280px] sm:max-w-[310px] aspect-[2.5/3.5] rounded-[18px] overflow-hidden cursor-pointer shadow-[0_20px_50px_rgba(0,0,0,0.6)] hover:shadow-[0_25px_60px_rgba(34,197,94,0.3)] border border-white/20 hover:border-[#22C55E]/70 transition-all duration-300 bg-[#141714]"
+                >
+                  {/* High-Resolution Raw Card Scan Image */}
+                  <img 
+                    src={isFlipped ? selectedCard.backImage : selectedCard.frontImage}
+                    alt={selectedCard.name}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
+                  />
 
-                      <div className="text-right">
-                        <div className="font-['Nunito',sans-serif] font-[900] text-xl text-black leading-none">
-                          {selectedCard.grade}
-                        </div>
-                        <div className="font-mono text-[8px] uppercase tracking-wider font-extrabold text-[#16A34A]">
-                          {selectedCard.gradeLabel}
-                        </div>
-                      </div>
-                    </div>
+                  {/* Luxury Card Edge Specular Highlight */}
+                  <div className="absolute inset-0 pointer-events-none rounded-[18px] ring-1 ring-inset ring-white/25" />
 
-                    {/* Card Scan Image */}
-                    <div className={`relative flex-1 w-full my-2 overflow-hidden rounded flex items-center justify-center transition-colors ${
-                      isLight ? 'bg-white border border-gray-200' : 'bg-black/60'
-                    }`}>
-                      <img 
-                        src={isFlipped ? selectedCard.backImage : selectedCard.frontImage}
-                        alt={selectedCard.name}
-                        className="w-full h-full object-contain filter drop-shadow-[0_8px_16px_rgba(0,0,0,0.6)] transition-all duration-300 group-hover:scale-105"
-                      />
+                  {/* Dynamic Holographic Specular Glare across card face */}
+                  <div 
+                    className="absolute inset-0 pointer-events-none opacity-20 group-hover:opacity-70 transition-opacity duration-300 hologram-iridescent"
+                    style={{
+                      maskImage: 'radial-gradient(circle at center, black 65%, transparent 100%)'
+                    }}
+                  />
 
-                      {/* Forensic Overlay Reticle */}
-                      <div className="absolute inset-0 pointer-events-none border border-[#48C765]/20 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <div className="absolute top-1/2 left-0 right-0 h-[1px] bg-[#48C765]/30" />
-                        <div className="absolute top-0 bottom-0 left-1/2 w-[1px] bg-[#48C765]/30" />
-                        <span className="absolute bottom-1 right-1 font-mono text-[8px] text-[#48C765] bg-black/80 px-1">
-                          0.01mm OPTICAL GRID
-                        </span>
-                      </div>
-                    </div>
+                  {/* Top Left Floating Certified Grade Chip */}
+                  <div className="absolute top-3 left-3 z-20 flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-black/85 backdrop-blur-md border border-white/20 shadow-lg">
+                    <ShieldCheck className="w-3.5 h-3.5 text-[#22C55E]" />
+                    <span className="font-['Nunito',sans-serif] font-black text-xs text-white tracking-tight">
+                      GGI {selectedCard.grade}
+                    </span>
+                  </div>
 
-                    {/* Ultrasonic Sealing Bar & NFC Emblem */}
-                    <div className="w-full flex items-center justify-between font-mono text-[8px] text-white/60 px-1">
-                      <span>35 kHz HERMETIC SEAL</span>
-                      <span>NFC PROTECTED</span>
-                    </div>
+                  {/* Top Right Floating Cert ID Pill */}
+                  <div className="absolute top-3 right-3 z-20 px-2 py-1 rounded-md bg-black/75 backdrop-blur-md border border-white/10 font-mono text-[9px] text-[#A4ACA1] tracking-wider uppercase">
+                    {selectedCard.certNumber}
+                  </div>
 
+                  {/* Forensic Optical Reticle */}
+                  <div className="absolute inset-0 pointer-events-none border border-[#48C765]/20 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="absolute top-1/2 left-0 right-0 h-[1px] bg-[#48C765]/35" />
+                    <div className="absolute top-0 bottom-0 left-1/2 w-[1px] bg-[#48C765]/35" />
+                    <span className="absolute bottom-2 right-2 font-mono text-[8px] text-[#48C765] bg-black/90 px-1.5 py-0.5 rounded border border-[#48C765]/30">
+                      0.01mm OPTICAL GRID
+                    </span>
+                  </div>
+
+                  {/* Quick Flip Hover Hint Overlay */}
+                  <div className="absolute bottom-2 left-2 z-20 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsFlipped(!isFlipped);
+                      }}
+                      className="px-2.5 py-1 rounded bg-black/80 backdrop-blur-md border border-white/20 text-[10px] font-mono text-white flex items-center gap-1.5 hover:bg-black transition-colors"
+                    >
+                      <RotateCw className="w-3 h-3 text-[#22C55E]" />
+                      <span>{isFlipped ? (language === 'es' ? 'Anverso' : 'Front') : (language === 'es' ? 'Reverso' : 'Back')}</span>
+                    </button>
                   </div>
                 </div>
 
                 <div className="mt-4 flex items-center gap-2 font-mono text-[10px] text-gray-400">
                   <Maximize2 className="w-3 h-3 text-[#48C765]" />
-                  <span>{language === 'es' ? 'Escaneo maestro óptico a 1200 DPI' : '1200 DPI Master Optical Scan'}</span>
+                  <span>{language === 'es' ? 'Escaneo maestro óptico a 1200 DPI · Sin Slab' : '1200 DPI Master Optical Scan · Raw Card'}</span>
                 </div>
               </div>
 

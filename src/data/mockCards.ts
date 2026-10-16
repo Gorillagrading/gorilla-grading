@@ -3,7 +3,7 @@ import { GradedCard } from '../types';
 export const MOCK_GRADED_CARDS: GradedCard[] = [
   {
     id: 'gg-cert-001',
-    certNumber: 'GG-892401',
+    certNumber: 'GGI-892401',
     name: 'Charizard — Holo 1st Edition',
     set: 'Base Set (Shadowless)',
     year: 1999,
@@ -86,7 +86,7 @@ export const MOCK_GRADED_CARDS: GradedCard[] = [
   },
   {
     id: 'gg-cert-002',
-    certNumber: 'GG-774102',
+    certNumber: 'GGI-774102',
     name: 'Pikachu Illustrator — Trophy Promo',
     set: 'CoroCoro Illustration Contest',
     year: 1998,
@@ -138,7 +138,7 @@ export const MOCK_GRADED_CARDS: GradedCard[] = [
   },
   {
     id: 'gg-cert-003',
-    certNumber: 'GG-901552',
+    certNumber: 'GGI-901552',
     name: 'Black Lotus — Alpha Edition',
     set: 'Limited Edition Alpha',
     year: 1993,
@@ -211,7 +211,7 @@ export const MOCK_GRADED_CARDS: GradedCard[] = [
   },
   {
     id: 'gg-cert-004',
-    certNumber: 'GG-632918',
+    certNumber: 'GGI-632918',
     name: 'Shanks — Manga Alternate Art Secret Rare',
     set: 'Romance Dawn (OP-01)',
     year: 2022,
@@ -264,8 +264,8 @@ export const MOCK_GRADED_CARDS: GradedCard[] = [
 ];
 
 export const MOCK_POPULAR_SEARCHES = [
-  'GG-892401',
-  'GG-774102',
-  'GG-901552',
-  'GG-632918'
+  'GGI-892401',
+  'GGI-774102',
+  'GGI-901552',
+  'GGI-632918'
 ];

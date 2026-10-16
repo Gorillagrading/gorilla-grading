@@ -54,7 +54,7 @@ export const VerificationPage: React.FC<VerificationPageProps> = ({ onNavigate }
         
         {/* Gorilla Verify Sub-Brand Badge */}
         <div className="mb-5 sm:mb-6">
-          <VerifyLogo size="w-full max-w-[260px] sm:max-w-[320px] lg:max-w-[360px] h-14 sm:h-16 lg:h-18" />
+          <VerifyLogo size="w-full max-w-[280px] sm:max-w-[340px] lg:max-w-[380px] h-[78px] sm:h-[94px] lg:h-[110px]" />
         </div>
 
         {/* Technical Eyebrow */}
@@ -97,7 +97,7 @@ export const VerificationPage: React.FC<VerificationPageProps> = ({ onNavigate }
             
             <input
               type="text"
-              placeholder={language === 'es' ? 'INGRESE ID DE CERTIFICADO (EJ. GG-892401)' : 'ENTER CERTIFICATE ID (E.G. GG-892401)'}
+              placeholder={language === 'es' ? 'INGRESE ID DE CERTIFICADO (EJ. GGI-892401)' : 'ENTER CERTIFICATE ID (E.G. GGI-892401)'}
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               className={`w-full bg-transparent py-2 text-sm sm:text-base font-mono uppercase tracking-widest focus:outline-none placeholder:font-mono placeholder:text-xs sm:placeholder:text-sm ${
@@ -173,7 +173,7 @@ export const VerificationPage: React.FC<VerificationPageProps> = ({ onNavigate }
               {/* Subtle background glow */}
               <div className="absolute inset-0 bg-[#48C765]/5 blur-[80px] pointer-events-none opacity-40 group-hover:opacity-80 transition-opacity" />
               <div className="relative z-10 flex justify-center">
-                <SlabCard card={activeCard} size="md" />
+                <SlabCard card={activeCard} size="md" variant="card-only" onInspect={() => onNavigate('/certificates/demo')} />
               </div>
             </div>
             
@@ -181,7 +181,7 @@ export const VerificationPage: React.FC<VerificationPageProps> = ({ onNavigate }
               onClick={() => onNavigate('/certificates/demo')}
               className="btn-gorilla-square mx-auto mt-2 px-6 py-2.5 text-xs font-extrabold tracking-normal gap-2 shadow-md cursor-pointer"
             >
-              <span>{language === 'es' ? 'Ver Certificado Completo' : 'View Full Certificate'}</span>
+              <span>{language === 'es' ? 'Ver Dossier con Slab 3D' : 'View Dossier with 3D Slab'}</span>
               <span>→</span>
             </button>
           </div>

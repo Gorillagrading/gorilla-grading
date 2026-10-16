@@ -18,7 +18,7 @@ export const NewsletterSection: React.FC = () => {
   };
 
   return (
-    <section className="relative z-10 w-full bg-transparent py-20 px-6 lg:px-12 flex justify-center">
+    <section className="relative z-10 w-full bg-transparent py-10 sm:py-12 lg:py-14 px-6 lg:px-12 flex justify-center">
       <div className={`w-full max-w-[800px] border p-8 md:p-12 relative overflow-hidden flex flex-col items-center text-center transition-all ${
         isLight 
           ? 'bg-white/80 backdrop-blur-md border-[#DCD5C8] shadow-xl' 

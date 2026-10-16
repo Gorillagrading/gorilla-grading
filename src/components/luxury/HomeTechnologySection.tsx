@@ -56,7 +56,7 @@ export const HomeTechnologySection: React.FC<HomeTechnologySectionProps> = ({
   return (
     <section 
       id="technology-overview"
-      className={`relative w-full min-h-screen flex items-center overflow-hidden select-none transition-colors duration-500 py-16 sm:py-20 lg:py-24 border-b ${
+      className={`relative w-full flex items-center overflow-hidden select-none transition-colors duration-500 py-10 sm:py-12 lg:py-14 border-b ${
         isLight 
           ? 'bg-[#ECE7DF] text-[#14170F] border-[#DDD5C7]' 
           : 'bg-[#414241] text-white border-white/10'

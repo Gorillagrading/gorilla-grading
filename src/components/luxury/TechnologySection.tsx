@@ -93,24 +93,24 @@ export const TechnologySection: React.FC<TechnologySectionProps> = ({
         )}
       </div>
 
-      <div className="relative z-10 w-full max-w-[1400px] mx-auto px-6 lg:px-12 py-16 lg:py-24 min-h-[600px] flex items-center">
+      <div className="relative z-10 w-full max-w-[1400px] mx-auto px-6 lg:px-12 py-10 sm:py-12 lg:py-14 min-h-0 flex items-center">
         
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 w-full items-center">
           
           {/* Left Copy Overlay */}
           <div className="lg:col-span-5 flex flex-col justify-center items-center lg:items-start text-center lg:text-left opacity-100">
             <p className={`font-mono text-[10px] tracking-[0.2em] uppercase mb-4 text-center lg:text-left ${
-              isLight ? 'text-[#6B7268]' : 'text-[#A4ACA1]'
+              isLight ? 'text-[#15803D] font-bold' : 'text-[#4ADE80] font-bold'
             }`}>
               {language === 'es' ? 'EL PROCESO' : 'SUBMISSION PROCESS'}
             </p>
             <h2 className={`font-['Nunito',sans-serif] font-[900] text-4xl sm:text-5xl lg:text-[46px] xl:text-[52px] tracking-normal uppercase leading-[1.05] mb-5 whitespace-pre-line text-center lg:text-left ${
-              isLight ? 'text-[#1C201D]' : 'text-white'
+              isLight ? 'text-[#14170F]' : 'text-white'
             }`}>
               {language === 'es' ? 'CÓMO FUNCIONA' : 'HOW IT WORKS'}
             </h2>
             <div className={`font-sans text-sm sm:text-base max-w-[360px] font-normal leading-relaxed mb-8 mx-auto lg:mx-0 text-center lg:text-left ${
-              isLight ? 'text-[#555C54]' : 'text-[#A4ACA1]'
+              isLight ? 'text-[#2B322C]' : 'text-[#C8D2C5]'
             }`}>
               <p className={`font-bold mb-2 tracking-wide uppercase ${
                 isLight ? 'text-[#14170F]' : 'text-white'
@@ -153,7 +153,7 @@ export const TechnologySection: React.FC<TechnologySectionProps> = ({
                 return (
                   <div 
                     key={step.id} 
-                    className={`flex gap-6 py-5 px-6 border-b relative transition-all duration-300 ease-out transform ${
+                    className={`flex gap-5 sm:gap-6 py-5 px-6 border-b relative transition-all duration-300 ease-out transform ${
                       isLight ? 'border-black/10' : 'border-white/5'
                     } ${
                       isRevealed ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
@@ -174,21 +174,21 @@ export const TechnologySection: React.FC<TechnologySectionProps> = ({
                       style={{ 
                         color: isCurrent 
                           ? (isLight ? '#15803D' : '#48C765') 
-                          : (isLight ? '#525B51' : '#A4ACA1') 
+                          : (isLight ? '#2B322C' : '#A4ACA1') 
                       }}
                     >
                       {step.id}
                     </span>
                     <div>
                       <h4 
-                        className="font-sans font-bold text-sm tracking-widest uppercase mb-1"
+                        className="font-sans font-bold text-sm tracking-normal uppercase mb-1"
                         style={{ color: isLight ? '#14170F' : '#FFFFFF' }}
                       >
                         {step.title}
                       </h4>
                       <p 
                         className="text-xs leading-relaxed font-medium"
-                        style={{ color: isLight ? '#474E46' : '#C8D2C5' }}
+                        style={{ color: isLight ? '#2B322C' : '#C8D2C5' }}
                       >
                         {step.desc}
                       </p>

@@ -22,7 +22,7 @@ interface CertificateDetailPageProps {
 
 export const CertificateDetailPage: React.FC<CertificateDetailPageProps> = ({ 
   onNavigate, 
-  certId = 'GG-892401' 
+  certId = 'GGI-892401' 
 }) => {
   const { theme } = useTheme();
   const isLight = theme === 'light';

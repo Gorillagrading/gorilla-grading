@@ -9,7 +9,7 @@ export const PromoCTA: React.FC<PromoCTAProps> = ({ onNavigate }) => {
   const { language } = useLanguage();
 
   return (
-    <section className="w-full bg-[#2B302B] text-white py-14 lg:py-16 px-6 lg:px-12 relative overflow-hidden border-y border-white/[0.04]">
+    <section className="w-full bg-[#2B302B] text-white py-10 sm:py-12 lg:py-14 px-6 lg:px-12 relative overflow-hidden border-y border-white/[0.04]">
       {/* Background graphic */}
       <div className="absolute inset-0 z-0 pointer-events-none opacity-20">
         <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-[#48C765]/20 to-transparent blur-3xl" />

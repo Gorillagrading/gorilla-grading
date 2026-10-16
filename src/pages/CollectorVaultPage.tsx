@@ -990,28 +990,47 @@ export const CollectorVaultPage: React.FC<CollectorVaultPageProps> = ({ onNaviga
                     <SlabCard
                       card={card}
                       size="sm"
+                      variant="card-only"
                       onInspect={() => onNavigate('/certificates/demo')}
                     />
                     <div className={`w-full mt-6 border rounded-xl p-4 flex items-center justify-between transition-colors shadow-sm ${
                       isLight ? 'bg-white border-[#E2DBD0]' : 'bg-[#383838] border-[#4E4E4E]'
                     }`}>
-                      <div className="flex flex-col">
-                        <span className="font-mono text-[9px] text-[#A4ACA1] uppercase tracking-widest mb-1">
-                          {language === 'es' ? 'Valuación' : 'Valuation'}
-                        </span>
-                        <span className="font-['Nunito',sans-serif] text-lg text-white font-[900]">
-                          €{card.declaredValueEur.toLocaleString()}
-                        </span>
+                      <div className="flex flex-col pr-2 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="font-mono text-[9px] px-1.5 py-0.5 rounded bg-[#16A34A]/15 text-[#16A34A] dark:text-[#4ADE80] font-black border border-[#16A34A]/25">
+                            GGI {card.grade}
+                          </span>
+                          <span className="font-mono text-[10px] text-[#A4ACA1] uppercase truncate">
+                            {card.set}
+                          </span>
+                        </div>
+                        <h4 className={`font-['Nunito',sans-serif] font-bold text-sm truncate ${
+                          isLight ? 'text-[#14170F]' : 'text-white'
+                        }`}>
+                          {card.name}
+                        </h4>
+                        <div className="mt-2 flex items-baseline gap-2">
+                          <span className="font-mono text-[9px] text-[#A4ACA1] uppercase tracking-widest">
+                            {language === 'es' ? 'Valuación:' : 'Valuation:'}
+                          </span>
+                          <span className={`font-['Nunito',sans-serif] text-base font-[900] ${
+                            isLight ? 'text-[#14170F]' : 'text-white'
+                          }`}>
+                            €{card.declaredValueEur.toLocaleString()}
+                          </span>
+                        </div>
                       </div>
                       <button
                         onClick={() => onNavigate('/certificates/demo')}
-                        className={`w-8 h-8 flex items-center justify-center border rounded-full transition-colors ${
+                        className={`w-9 h-9 shrink-0 flex items-center justify-center border rounded-full transition-colors ${
                           isLight 
-                            ? 'border-[#D8D2C5] text-neutral-600 hover:border-[#15803D] hover:text-[#15803D]' 
-                            : 'border-[#4E4E4E] bg-[#2A2A2A] text-[#A4ACA1] hover:border-[#61B663] hover:text-[#61B663]'
+                            ? 'border-[#D8D2C5] text-neutral-600 hover:border-[#15803D] hover:text-[#15803D] hover:bg-neutral-50' 
+                            : 'border-[#4E4E4E] bg-[#2A2A2A] text-[#A4ACA1] hover:border-[#61B663] hover:text-[#61B663] hover:bg-[#333333]'
                         }`}
+                        title={language === 'es' ? 'Ver Dossier con Slab 3D' : 'View Dossier with 3D Slab'}
                       >
-                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                         </svg>
                       </button>
