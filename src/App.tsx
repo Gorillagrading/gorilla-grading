@@ -33,6 +33,7 @@ import { BelongPage } from './pages/BelongPage';
 import { FAQPreparePage } from './pages/FAQPreparePage';
 import { FAQDropoffPage } from './pages/FAQDropoffPage';
 import { FAQTurnaroundPage } from './pages/FAQTurnaroundPage';
+import { EventsCalendarPage } from './pages/EventsCalendarPage';
 import { LoginPage } from './pages/LoginPage';
 import { TeamVisualMapPage } from './pages/TeamVisualMapPage';
 
@@ -44,15 +45,35 @@ export const AppContent: React.FC = () => {
   });
 
   const handleNavigate = (path: string) => {
-    const pathname = path.split('?')[0];
+    const [pathAndQuery, hash] = path.split('#');
+    const pathname = pathAndQuery.split('?')[0] || '/';
     setCurrentPath(pathname);
     window.history.pushState({}, '', path);
-    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+
+    if (hash) {
+      setTimeout(() => {
+        const el = document.getElementById(hash);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth' });
+        } else {
+          window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+        }
+      }, 100);
+    } else {
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    }
   };
 
   useEffect(() => {
     const handlePopState = () => {
       setCurrentPath(window.location.pathname || '/');
+      if (window.location.hash) {
+        const hash = window.location.hash.substring(1);
+        setTimeout(() => {
+          const el = document.getElementById(hash);
+          if (el) el.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+      }
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
@@ -93,6 +114,10 @@ export const AppContent: React.FC = () => {
         return <FAQDropoffPage onNavigate={handleNavigate} />;
       case '/faq/turnaround':
         return <FAQTurnaroundPage onNavigate={handleNavigate} />;
+      case '/events':
+      case '/events-calendar':
+      case '/calendario-eventos':
+        return <EventsCalendarPage onNavigate={handleNavigate} />;
       case '/submit':
         return <SubmissionWizardPage onNavigate={handleNavigate} />;
       case '/verify':

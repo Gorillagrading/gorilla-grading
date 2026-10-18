@@ -214,7 +214,7 @@ export const translations = {
     'hybrid.tag': 'MODELO 04: BASE HÍBRIDA — DIRECCIÓN ESTRATÉGICA RECOMENDADA',
     'hybrid.heroTitle': 'Graduación óptica de precisión.',
     'hybrid.heroSubtitle': 'Velocidad europea y protección sónica de grado militar.',
-    'hybrid.heroDesc': 'El estándar de referencia para coleccionistas europeos. Centrado láser de 0.01mm, telemetría microscópica de defectos y slabs acrílicos ultrasónicos—respaldados por plazos reales de 5 a 15 días y cero aduanas.',
+    'hybrid.heroDesc': 'El estándar de referencia para coleccionistas a nivel internacional. Centrado láser de 0.01mm, telemetría microscópica de defectos y slabs acrílicos ultrasónicos—respaldados por plazos reales de 5 a 15 días con seguro integral.',
     'hybrid.trustLaser': 'LÁSER 0.01mm',
     'hybrid.trustLaserSub': 'Centrado Objetivo',
     'hybrid.trustInsured': 'SEGURO UE',
@@ -350,9 +350,9 @@ export const translations = {
 
     // Section 04 Mission (Authoritative Institutional Manifesto)
     'ref.mission.eyebrow': 'OUR MISSION',
-    'ref.mission.title': 'EUROPE’S DEFINITIVE NUMISMATIC & OPTICAL STANDARD',
+    'ref.mission.title': 'THE DEFINITIVE NUMISMATIC & OPTICAL GLOBAL STANDARD',
     'ref.mission.title2': 'FOR A STRONGER COLLECTING FUTURE',
-    'ref.mission.desc': 'Replacing subjective guesswork and transatlantic customs friction with reproducible optical metrology, immutable digital provenance, and laboratory rigor. Engineered in Europe to safeguard collector heritage.',
+    'ref.mission.desc': 'Replacing subjective guesswork with reproducible optical metrology, immutable digital provenance, and laboratory rigor. Engineered to international standards to safeguard collector heritage.',
     'ref.mission.desc2': 'We believe in a transparent, accessible and trustworthy collectibles market. Gorilla Grading is built for collectors, by collectors, with a long-term vision.',
     'ref.mission.cta': 'DISCOVER OUR LAB',
     'ref.mission.btn1': 'Our Mission',

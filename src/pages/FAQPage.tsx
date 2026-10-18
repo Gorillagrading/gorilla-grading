@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
+import { useTheme } from '../context/ThemeContext';
 import { ArrowLeft, Search, ChevronDown, Package, Clock, MapPin, Cpu, Shield, MessageSquare, ExternalLink } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -21,6 +22,8 @@ interface FAQItem {
 
 export const FAQPage: React.FC<FAQPageProps> = ({ onNavigate }) => {
   const { language } = useLanguage();
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [openIds, setOpenIds] = useState<Record<string, boolean>>({
@@ -177,17 +180,25 @@ export const FAQPage: React.FC<FAQPageProps> = ({ onNavigate }) => {
   });
 
   return (
-    <div className="min-h-screen bg-[#454545] text-white pt-24 pb-24 px-6 lg:px-12 selection:bg-[#48C765] selection:text-black relative overflow-hidden flex flex-col">
+    <div className={`min-h-screen pt-24 pb-24 px-6 lg:px-12 selection:bg-[#48C765] selection:text-black relative overflow-hidden flex flex-col transition-colors duration-300 ${
+      isLight ? 'bg-[#ECE5D8] text-[#14170F]' : 'bg-[#454545] text-white'
+    }`}>
       {/* Background glow effects */}
-      <div className="absolute top-1/4 left-0 w-[600px] h-[600px] bg-[#48C765]/[0.02] blur-[150px] pointer-events-none rounded-full" />
-      <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-white/[0.01] blur-[120px] pointer-events-none rounded-full" />
+      <div className={`absolute top-1/4 left-0 w-[600px] h-[600px] blur-[150px] pointer-events-none rounded-full ${
+        isLight ? 'bg-[#15803D]/[0.03]' : 'bg-[#48C765]/[0.02]'
+      }`} />
+      <div className={`absolute bottom-0 right-0 w-[500px] h-[500px] blur-[120px] pointer-events-none rounded-full ${
+        isLight ? 'bg-black/[0.02]' : 'bg-white/[0.01]'
+      }`} />
 
       <div className="max-w-[1240px] w-full mx-auto relative z-10">
         
         {/* Navigation back */}
         <button 
-          onClick={() => onNavigate('/')}
-          className="mb-10 text-[#A4ACA1] hover:text-white flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest transition-colors w-fit"
+          onClick={() => onNavigate('/#faq')}
+          className={`mb-10 flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest transition-colors w-fit ${
+            isLight ? 'text-[#4A5048] hover:text-[#14170F]' : 'text-[#A4ACA1] hover:text-white'
+          }`}
         >
           <ArrowLeft size={14} />
           {language === 'es' ? 'Volver al Inicio' : 'Back to Home'}
@@ -196,17 +207,23 @@ export const FAQPage: React.FC<FAQPageProps> = ({ onNavigate }) => {
         {/* Header */}
         <div className="flex flex-col mb-12 animate-fade-in-up">
           <div className="flex items-center gap-3 mb-4">
-            <span className="w-8 h-[1px] bg-[#48C765]"></span>
-            <span className="font-mono text-[10px] font-bold tracking-[0.25em] text-[#48C765] uppercase">
+            <span className={`w-8 h-[1px] ${isLight ? 'bg-[#15803D]' : 'bg-[#48C765]'}`}></span>
+            <span className={`font-mono text-[10px] font-bold tracking-[0.25em] uppercase ${
+              isLight ? 'text-[#15803D]' : 'text-[#48C765]'
+            }`}>
               {language === 'es' ? 'CENTRO OFICIAL DE AYUDA' : 'OFFICIAL HELP HUB'}
             </span>
           </div>
 
-          <h1 className="font-['Nunito',sans-serif] font-[900] text-4xl sm:text-5xl lg:text-6xl uppercase tracking-normal leading-[1.05] text-white mb-6">
+          <h1 className={`font-['Nunito',sans-serif] font-[900] text-4xl sm:text-5xl lg:text-6xl uppercase tracking-normal leading-[1.05] mb-6 ${
+            isLight ? 'text-[#14170F]' : 'text-white'
+          }`}>
             {language === 'es' ? 'Preguntas Frecuentes' : 'Frequently Asked Questions'}
           </h1>
 
-          <p className="font-sans text-sm sm:text-base text-[#A4ACA1] max-w-3xl leading-relaxed text-justify">
+          <p className={`font-sans text-sm sm:text-base max-w-3xl leading-relaxed text-justify ${
+            isLight ? 'text-[#4A5048]' : 'text-[#A4ACA1]'
+          }`}>
             {language === 'es'
               ? 'Encuentra explicaciones detalladas y respuestas técnicas sobre cada aspecto de nuestro ecosistema: desde el empaque correcto de piezas coleccionables hasta los protocolos de escaneo microscópico, tiempos de entrega garantizados y coberturas de seguro integral.'
               : 'Find detailed answers and technical explanations on every aspect of our ecosystem: from the correct packaging of collectibles to microscopic scanning protocols, guaranteed turnaround times, and comprehensive insurance coverages.'}
@@ -221,13 +238,17 @@ export const FAQPage: React.FC<FAQPageProps> = ({ onNavigate }) => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={language === 'es' ? 'Buscar dudas (ej. centrado, Card Saver, seguro, plazos)...' : 'Search questions (e.g. centering, Card Saver, insurance, turnaround)...'}
-              className="w-full bg-[#161B16] border border-white/10 focus:border-[#48C765]/60 pl-12 pr-4 py-3.5 text-white text-sm focus:outline-none transition-colors"
+              className={`w-full pl-12 pr-4 py-3.5 text-sm focus:outline-none transition-colors border ${
+                isLight 
+                  ? 'bg-[#EAE2D5] border-black/15 text-[#14170F] placeholder-black/40 focus:border-[#15803D]' 
+                  : 'bg-[#161B16] border-white/10 text-white placeholder-white/30 focus:border-[#48C765]/60'
+              }`}
             />
-            <Search size={18} className="absolute left-4 text-[#A4ACA1]" />
+            <Search size={18} className={`absolute left-4 ${isLight ? 'text-[#4A5048]' : 'text-[#A4ACA1]'}`} />
             {searchQuery && (
               <button 
                 onClick={() => setSearchQuery('')}
-                className="absolute right-4 font-mono text-xs text-[#A4ACA1] hover:text-white"
+                className={`absolute right-4 font-mono text-xs ${isLight ? 'text-[#4A5048] hover:text-[#14170F]' : 'text-[#A4ACA1] hover:text-white'}`}
               >
                 ✕
               </button>
@@ -236,7 +257,9 @@ export const FAQPage: React.FC<FAQPageProps> = ({ onNavigate }) => {
         </div>
 
         {/* Category Filter Tabs */}
-        <div className="flex flex-wrap gap-2 mb-12 border-b border-white/10 pb-6">
+        <div className={`flex flex-wrap gap-2 mb-12 border-b pb-6 ${
+          isLight ? 'border-black/[0.08]' : 'border-white/10'
+        }`}>
           {categories.map((cat) => {
             const isSelected = selectedCategory === cat.id;
             const Icon = cat.icon;
@@ -246,8 +269,12 @@ export const FAQPage: React.FC<FAQPageProps> = ({ onNavigate }) => {
                 onClick={() => setSelectedCategory(cat.id)}
                 className={`px-4 py-2.5 rounded-none font-mono text-xs uppercase tracking-wider transition-all flex items-center gap-2 border ${
                   isSelected
-                    ? 'bg-[#48C765] text-[#14170F] font-bold border-[#48C765] shadow-[0_0_15px_rgba(72,199,101,0.2)]'
-                    : 'bg-[#161B16] text-[#A4ACA1] border-white/10 hover:border-white/25 hover:text-white'
+                    ? (isLight 
+                        ? 'bg-[#15803D] text-white font-bold border-[#15803D] shadow-sm' 
+                        : 'bg-[#48C765] text-[#14170F] font-bold border-[#48C765] shadow-[0_0_15px_rgba(72,199,101,0.2)]')
+                    : (isLight 
+                        ? 'bg-[#F2ECE1] text-[#4A5048] border-black/10 hover:border-black/25 hover:text-[#14170F]' 
+                        : 'bg-[#161B16] text-[#A4ACA1] border-white/10 hover:border-white/25 hover:text-white')
                 }`}
               >
                 {Icon && <Icon size={14} />}
@@ -260,15 +287,21 @@ export const FAQPage: React.FC<FAQPageProps> = ({ onNavigate }) => {
         {/* FAQ Accordion List */}
         <div className="flex flex-col gap-4 mb-16">
           {filteredFaqs.length === 0 ? (
-            <div className="p-12 bg-[#2B302B] border border-white/10 text-center flex flex-col items-center">
-              <p className="font-sans text-sm text-[#A4ACA1] mb-4">
+            <div className={`p-12 border text-center flex flex-col items-center ${
+              isLight ? 'bg-[#F2ECE1] border-black/[0.08]' : 'bg-[#2B302B] border-white/10'
+            }`}>
+              <p className={`font-sans text-sm mb-4 ${isLight ? 'text-[#4A5048]' : 'text-[#A4ACA1]'}`}>
                 {language === 'es' 
                   ? 'No se encontraron preguntas que coincidan con tu búsqueda.' 
                   : 'No questions matched your search criteria.'}
               </p>
               <button
                 onClick={() => { setSearchQuery(''); setSelectedCategory('all'); }}
-                className="px-4 py-2 bg-white/5 border border-white/10 text-xs font-mono uppercase text-white hover:bg-white/10"
+                className={`px-4 py-2 text-xs font-mono uppercase border ${
+                  isLight 
+                    ? 'bg-black/5 border-black/15 text-[#14170F] hover:bg-black/10' 
+                    : 'bg-white/5 border-white/10 text-white hover:bg-white/10'
+                }`}
               >
                 {language === 'es' ? 'Restablecer Filtros' : 'Reset Filters'}
               </button>
@@ -279,19 +312,27 @@ export const FAQPage: React.FC<FAQPageProps> = ({ onNavigate }) => {
               return (
                 <div 
                   key={faq.id}
-                  className="bg-[#2B302B] border border-white/[0.06] hover:border-white/15 transition-all"
+                  className={`border transition-all ${
+                    isLight 
+                      ? 'bg-[#F2ECE1] border-black/[0.08] hover:border-black/20 shadow-sm' 
+                      : 'bg-[#2B302B] border-white/[0.06] hover:border-white/15'
+                  }`}
                 >
                   <button
                     onClick={() => toggleFAQ(faq.id)}
                     className="w-full p-6 sm:p-7 text-left flex items-start justify-between gap-6 cursor-pointer select-none group"
                   >
                     <span className={`font-['Nunito',sans-serif] text-lg sm:text-xl font-[900] uppercase tracking-normal transition-colors ${
-                      isOpen ? 'text-[#48C765]' : 'text-white group-hover:text-[#48C765]'
+                      isOpen 
+                        ? (isLight ? 'text-[#15803D]' : 'text-[#48C765]') 
+                        : (isLight ? 'text-[#14170F] group-hover:text-[#15803D]' : 'text-white group-hover:text-[#48C765]')
                     }`}>
                       {language === 'es' ? faq.qEs : faq.qEn}
                     </span>
                     <div className={`shrink-0 w-8 h-8 rounded-none border flex items-center justify-center transition-all ${
-                      isOpen ? 'border-[#48C765] bg-[#48C765]/10 text-[#48C765]' : 'border-white/15 text-[#A4ACA1]'
+                      isOpen 
+                        ? (isLight ? 'border-black bg-black text-white' : 'border-white/20 bg-white/10 text-white') 
+                        : (isLight ? 'border-black/15 text-[#4A5048]' : 'border-white/15 text-[#A4ACA1]')
                     }`}>
                       <ChevronDown size={16} className={`transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
                     </div>
@@ -306,8 +347,12 @@ export const FAQPage: React.FC<FAQPageProps> = ({ onNavigate }) => {
                         transition={{ duration: 0.3 }}
                         className="overflow-hidden"
                       >
-                        <div className="px-6 pb-6 sm:px-7 sm:pb-7 pt-2 border-t border-white/5 flex flex-col gap-4">
-                          <p className="font-sans text-sm text-[#A4ACA1] leading-relaxed text-justify">
+                        <div className={`px-6 pb-6 sm:px-7 sm:pb-7 pt-2 border-t flex flex-col gap-4 ${
+                          isLight ? 'border-black/[0.06]' : 'border-white/5'
+                        }`}>
+                          <p className={`font-sans text-sm leading-relaxed text-justify ${
+                            isLight ? 'text-[#4A5048]' : 'text-[#A4ACA1]'
+                          }`}>
                             {language === 'es' ? faq.aEs : faq.aEn}
                           </p>
 
@@ -331,20 +376,32 @@ export const FAQPage: React.FC<FAQPageProps> = ({ onNavigate }) => {
         </div>
 
         {/* Bottom Banner: Direct to Contact Form */}
-        <div className="bg-[#161B16] border border-[#48C765]/30 p-8 sm:p-10 flex flex-col sm:flex-row items-center justify-between gap-8 relative overflow-hidden shadow-2xl">
-          <div className="absolute top-0 right-0 w-48 h-48 bg-[#48C765]/5 blur-3xl pointer-events-none" />
+        <div className={`border p-8 sm:p-10 flex flex-col sm:flex-row items-center justify-between gap-8 relative overflow-hidden ${
+          isLight 
+            ? 'bg-[#F2ECE1] border-black/[0.1] shadow-md' 
+            : 'bg-[#161B16] border-[#48C765]/30 shadow-2xl'
+        }`}>
+          <div className={`absolute top-0 right-0 w-48 h-48 blur-3xl pointer-events-none ${
+            isLight ? 'bg-[#15803D]/10' : 'bg-[#48C765]/5'
+          }`} />
 
           <div className="flex flex-col gap-2 max-w-xl">
             <div className="flex items-center gap-2">
-              <MessageSquare size={18} className="text-[#48C765]" />
-              <span className="font-mono text-xs tracking-wider uppercase text-[#48C765] font-bold">
+              <MessageSquare size={18} className={isLight ? 'text-[#15803D]' : 'text-[#48C765]'} />
+              <span className={`font-mono text-xs tracking-wider uppercase font-bold ${
+                isLight ? 'text-[#15803D]' : 'text-[#48C765]'
+              }`}>
                 {language === 'es' ? '¿PREGUNTA NO RESUELTA?' : 'UNRESOLVED QUESTION?'}
               </span>
             </div>
-            <h3 className="font-['Nunito',sans-serif] text-xl sm:text-2xl uppercase text-white font-[900] tracking-normal">
+            <h3 className={`font-['Nunito',sans-serif] text-xl sm:text-2xl uppercase font-[900] tracking-normal ${
+              isLight ? 'text-[#14170F]' : 'text-white'
+            }`}>
               {language === 'es' ? 'Contacta con Nuestros Especialistas de Laboratorio' : 'Contact Our Dedicated Laboratory Team'}
             </h3>
-            <p className="font-sans text-xs text-[#A4ACA1] leading-relaxed text-justify">
+            <p className={`font-sans text-xs leading-relaxed text-justify ${
+              isLight ? 'text-[#4A5048]' : 'text-[#A4ACA1]'
+            }`}>
               {language === 'es'
                 ? 'Si tienes una consulta personalizada sobre cartas atípicas, autógrafos verificados o necesitas presupuesto para lotes de gran volumen, envíanos un formulario de contacto y te atenderemos en menos de 24 horas.'
                 : 'If you have a customized inquiry regarding error cards, verified autos, or require high-volume bulk grading proposals, reach out via our contact form for a response in under 24 hours.'}

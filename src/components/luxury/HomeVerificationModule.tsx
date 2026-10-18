@@ -318,58 +318,143 @@ export const HomeVerificationModule: React.FC<HomeVerificationModuleProps> = ({ 
               {/* Left Column: Pure Card High-Res Visualizer (Without Slab) */}
               <div className="lg:col-span-4 flex flex-col items-center justify-center">
                 <div 
+                  className="relative group w-full max-w-[280px] sm:max-w-[310px] aspect-[2.5/3.5] cursor-pointer"
+                  style={{ perspective: '1200px' }}
                   onClick={() => onNavigate(`/certificates/${selectedCard.certNumber}`)}
-                  className="relative group w-full max-w-[280px] sm:max-w-[310px] aspect-[2.5/3.5] rounded-[18px] overflow-hidden cursor-pointer shadow-[0_20px_50px_rgba(0,0,0,0.6)] hover:shadow-[0_25px_60px_rgba(34,197,94,0.3)] border border-white/20 hover:border-[#22C55E]/70 transition-all duration-300 bg-[#141714]"
                 >
-                  {/* High-Resolution Raw Card Scan Image */}
-                  <img 
-                    src={isFlipped ? selectedCard.backImage : selectedCard.frontImage}
-                    alt={selectedCard.name}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
-                  />
-
-                  {/* Luxury Card Edge Specular Highlight */}
-                  <div className="absolute inset-0 pointer-events-none rounded-[18px] ring-1 ring-inset ring-white/25" />
-
-                  {/* Dynamic Holographic Specular Glare across card face */}
-                  <div 
-                    className="absolute inset-0 pointer-events-none opacity-20 group-hover:opacity-70 transition-opacity duration-300 hologram-iridescent"
+                  <div
+                    className="relative w-full h-full rounded-[18px] transition-transform duration-700 shadow-[0_20px_50px_rgba(0,0,0,0.6)] hover:shadow-[0_25px_60px_rgba(34,197,94,0.3)] border border-white/20 hover:border-[#22C55E]/70"
                     style={{
-                      maskImage: 'radial-gradient(circle at center, black 65%, transparent 100%)'
+                      transformStyle: 'preserve-3d',
+                      transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
                     }}
-                  />
+                  >
+                    {/* FRONT FACE */}
+                    <div 
+                      className="absolute inset-0 w-full h-full rounded-[18px] overflow-hidden bg-[#141714]"
+                      style={{ backfaceVisibility: 'hidden' }}
+                    >
+                      <img 
+                        src={selectedCard.frontImage}
+                        alt={`${selectedCard.name} - Front`}
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
+                      />
+                      
+                      {/* Luxury Card Edge Specular Highlight */}
+                      <div className="absolute inset-0 pointer-events-none rounded-[18px] ring-1 ring-inset ring-white/25" />
 
-                  {/* Top Left Floating Certified Grade Chip */}
-                  <div className="absolute top-3 left-3 z-20 flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-black/85 backdrop-blur-md border border-white/20 shadow-lg">
-                    <ShieldCheck className="w-3.5 h-3.5 text-[#22C55E]" />
-                    <span className="font-['Nunito',sans-serif] font-black text-xs text-white tracking-tight">
-                      GGI {selectedCard.grade}
-                    </span>
-                  </div>
+                      {/* Dynamic Holographic Specular Glare across card face */}
+                      <div 
+                        className="absolute inset-0 pointer-events-none opacity-20 group-hover:opacity-70 transition-opacity duration-300 hologram-iridescent"
+                        style={{
+                          maskImage: 'radial-gradient(circle at center, black 65%, transparent 100%)'
+                        }}
+                      />
 
-                  {/* Top Right Floating Cert ID Pill */}
-                  <div className="absolute top-3 right-3 z-20 px-2 py-1 rounded-md bg-black/75 backdrop-blur-md border border-white/10 font-mono text-[9px] text-[#A4ACA1] tracking-wider uppercase">
-                    {selectedCard.certNumber}
-                  </div>
+                      {/* Top Left Floating Certified Grade Chip */}
+                      <div 
+                        className={`absolute top-3 left-3 z-20 flex items-center gap-1.5 px-2.5 py-1 rounded-md backdrop-blur-md border shadow-md transition-colors ${
+                          isLight
+                            ? 'bg-white/95 border-black/15 shadow-black/10'
+                            : 'bg-black/85 border-white/20 shadow-black/40'
+                        }`}
+                      >
+                        <ShieldCheck className={`w-3.5 h-3.5 ${isLight ? 'text-[#16A34A]' : 'text-[#22C55E]'}`} />
+                        <span 
+                          className="font-['Nunito',sans-serif] font-black text-xs tracking-tight"
+                          style={{ color: isLight ? '#111827' : '#FFFFFF' }}
+                        >
+                          GGI {selectedCard.grade}
+                        </span>
+                      </div>
 
-                  {/* Forensic Optical Reticle */}
-                  <div className="absolute inset-0 pointer-events-none border border-[#48C765]/20 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <div className="absolute top-1/2 left-0 right-0 h-[1px] bg-[#48C765]/35" />
-                    <div className="absolute top-0 bottom-0 left-1/2 w-[1px] bg-[#48C765]/35" />
-                    <span className="absolute bottom-2 right-2 font-mono text-[8px] text-[#48C765] bg-black/90 px-1.5 py-0.5 rounded border border-[#48C765]/30">
-                      0.01mm OPTICAL GRID
-                    </span>
+                      {/* Top Right Floating Cert ID Pill */}
+                      <div 
+                        className={`absolute top-3 right-3 z-20 px-2 py-1 rounded-md backdrop-blur-md border font-mono text-[9px] tracking-wider uppercase font-bold transition-colors shadow-md ${
+                          isLight
+                            ? 'bg-white/95 border-black/15 shadow-black/10'
+                            : 'bg-black/80 border-white/15 shadow-black/40'
+                        }`}
+                        style={{ color: isLight ? '#1F2937' : '#E5E7EB' }}
+                      >
+                        {selectedCard.certNumber}
+                      </div>
+
+                      {/* Forensic Optical Reticle */}
+                      <div className="absolute inset-0 pointer-events-none border border-[#48C765]/20 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="absolute top-1/2 left-0 right-0 h-[1px] bg-[#48C765]/35" />
+                        <div className="absolute top-0 bottom-0 left-1/2 w-[1px] bg-[#48C765]/35" />
+                        <span className="absolute bottom-2 right-2 font-mono text-[8px] text-[#48C765] bg-black/90 px-1.5 py-0.5 rounded border border-[#48C765]/30">
+                          0.01mm OPTICAL GRID
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* BACK FACE */}
+                    <div 
+                      className="absolute inset-0 w-full h-full rounded-[18px] overflow-hidden bg-[#141714]"
+                      style={{ 
+                        backfaceVisibility: 'hidden',
+                        transform: 'rotateY(180deg)'
+                      }}
+                    >
+                      <img 
+                        src={selectedCard.backImage}
+                        alt={`${selectedCard.name} - Back`}
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
+                      />
+                      
+                      {/* Luxury Card Edge Specular Highlight */}
+                      <div className="absolute inset-0 pointer-events-none rounded-[18px] ring-1 ring-inset ring-white/25" />
+
+                      {/* Top Left Floating Certified Back Chip */}
+                      <div 
+                        className={`absolute top-3 left-3 z-20 flex items-center gap-1.5 px-2.5 py-1 rounded-md backdrop-blur-md border shadow-md transition-colors ${
+                          isLight
+                            ? 'bg-white/95 border-black/15 shadow-black/10'
+                            : 'bg-black/85 border-white/20 shadow-black/40'
+                        }`}
+                      >
+                        <ShieldCheck className={`w-3.5 h-3.5 ${isLight ? 'text-[#16A34A]' : 'text-[#22C55E]'}`} />
+                        <span 
+                          className="font-['Nunito',sans-serif] font-black text-xs tracking-tight"
+                          style={{ color: isLight ? '#111827' : '#FFFFFF' }}
+                        >
+                          {language === 'es' ? 'REVERSO' : 'REVERSE'}
+                        </span>
+                      </div>
+
+                      {/* Top Right Floating Cert ID Pill */}
+                      <div 
+                        className={`absolute top-3 right-3 z-20 px-2 py-1 rounded-md backdrop-blur-md border font-mono text-[9px] tracking-wider uppercase font-bold transition-colors shadow-md ${
+                          isLight
+                            ? 'bg-white/95 border-black/15 shadow-black/10'
+                            : 'bg-black/80 border-white/15 shadow-black/40'
+                        }`}
+                        style={{ color: isLight ? '#1F2937' : '#E5E7EB' }}
+                      >
+                        {selectedCard.certNumber}
+                      </div>
+
+                      {/* Back Forensic Indicator */}
+                      <div className="absolute bottom-3 left-3 right-3 z-20 flex items-center justify-between pointer-events-none">
+                        <span className="font-mono text-[9px] px-2 py-0.5 rounded bg-black/80 border border-white/15 text-emerald-400">
+                          {language === 'es' ? 'AUDITORÍA DE CENTRADO TRASERO' : 'REAR CENTERING AUDIT'}
+                        </span>
+                      </div>
+                    </div>
+
                   </div>
 
                   {/* Quick Flip Hover Hint Overlay */}
-                  <div className="absolute bottom-2 left-2 z-20 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="absolute bottom-2 left-2 z-30 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
                         setIsFlipped(!isFlipped);
                       }}
-                      className="px-2.5 py-1 rounded bg-black/80 backdrop-blur-md border border-white/20 text-[10px] font-mono text-white flex items-center gap-1.5 hover:bg-black transition-colors"
+                      className="px-2.5 py-1 rounded bg-black/80 backdrop-blur-md border border-white/20 text-[10px] font-mono text-white flex items-center gap-1.5 hover:bg-black transition-colors cursor-pointer"
                     >
                       <RotateCw className="w-3 h-3 text-[#22C55E]" />
                       <span>{isFlipped ? (language === 'es' ? 'Anverso' : 'Front') : (language === 'es' ? 'Reverso' : 'Back')}</span>

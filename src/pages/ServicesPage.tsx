@@ -1,5 +1,6 @@
 import React from 'react';
 import { useLanguage } from '../context/LanguageContext';
+import { useTheme } from '../context/ThemeContext';
 
 interface ServicesPageProps {
   onNavigate: (path: string) => void;
@@ -7,6 +8,8 @@ interface ServicesPageProps {
 
 export const ServicesPage: React.FC<ServicesPageProps> = ({ onNavigate }) => {
   const { t, language } = useLanguage();
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
 
   const tiers = [
     {
@@ -133,22 +136,34 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ onNavigate }) => {
   ];
 
   return (
-    <div className="w-full min-h-screen bg-[#454545] text-white py-16 px-6 lg:px-12 select-none">
+    <div className={`w-full min-h-screen py-16 px-6 lg:px-12 select-none transition-colors duration-300 ${
+      isLight ? 'bg-[#ECE5D8] text-[#14170F]' : 'bg-[#454545] text-white'
+    }`}>
       <div className="max-w-[1400px] mx-auto">
         
         {/* Header Banner */}
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-none bg-white/[0.04] border border-white/10 text-[#48C765] font-mono text-[11px] font-bold tracking-[0.25em] uppercase mb-4">
-            <span className="w-1.5 h-1.5 rounded-none bg-[#48C765]" />
+          <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-none border font-mono text-[11px] font-bold tracking-[0.25em] uppercase mb-4 ${
+            isLight 
+              ? 'bg-[#15803D]/10 border-[#15803D]/30 text-[#15803D]' 
+              : 'bg-white/[0.04] border-white/10 text-[#48C765]'
+          }`}>
+            <span className={`w-1.5 h-1.5 rounded-none ${isLight ? 'bg-[#15803D]' : 'bg-[#48C765]'}`} />
             <span>{t('pricing.kicker')}</span>
           </div>
 
-          <h1 className="font-['Nunito',sans-serif] font-[900] text-4xl sm:text-5xl text-white uppercase tracking-normal leading-[1.05] mb-5">
+          <h1 className={`font-['Nunito',sans-serif] font-[900] text-4xl sm:text-5xl uppercase tracking-normal leading-[1.05] mb-5 ${
+            isLight ? 'text-[#14170F]' : 'text-white'
+          }`}>
             {language === 'es' ? 'TARIFAS Y NIVELES DE ' : 'GRADING TIERS & '}
-            <span className="text-[#48C765]">{language === 'es' ? 'SERVICIO' : 'PRICING'}</span>
+            <span className={isLight ? 'text-[#15803D]' : 'text-[#48C765]'}>
+              {language === 'es' ? 'SERVICIO' : 'PRICING'}
+            </span>
           </h1>
 
-          <p className="font-sans text-base text-[#A4ACA1] max-w-2xl mx-auto leading-relaxed font-normal">
+          <p className={`font-sans text-base max-w-2xl mx-auto leading-relaxed font-normal ${
+            isLight ? 'text-[#4A5048]' : 'text-[#A4ACA1]'
+          }`}>
             {t('pricing.desc')}
           </p>
         </div>
@@ -257,12 +272,18 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ onNavigate }) => {
         </div>
 
         {/* Detailed Technical Comparison Matrix */}
-        <div className="rounded-none bg-[#0E130F] border border-white/[0.08] p-8 lg:p-10 mb-20">
+        <div className={`rounded-none border p-8 lg:p-10 mb-20 transition-colors duration-300 ${
+          isLight ? 'bg-[#F2ECE1] border-black/[0.08] shadow-sm' : 'bg-[#0E130F] border-white/[0.08]'
+        }`}>
           <div className="mb-8">
-            <span className="font-mono text-xs font-bold tracking-[0.25em] text-[#48C765] uppercase block mb-2">
+            <span className={`font-mono text-xs font-bold tracking-[0.25em] uppercase block mb-2 ${
+              isLight ? 'text-[#15803D]' : 'text-[#48C765]'
+            }`}>
               {language === 'es' ? 'AUDITORÍA COMPARATIVA' : 'FEATURE COMPARISON MATRIX'}
             </span>
-            <h2 className="font-['Nunito',sans-serif] font-[900] text-lg sm:text-xl text-white uppercase tracking-normal">
+            <h2 className={`font-['Nunito',sans-serif] font-[900] text-lg sm:text-xl uppercase tracking-normal ${
+              isLight ? 'text-[#14170F]' : 'text-white'
+            }`}>
               {language === 'es' ? 'Desglose Técnico por Nivel de Graduación' : 'Technical Breakdown by Service Tier'}
             </h2>
           </div>
@@ -270,22 +291,24 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ onNavigate }) => {
           <div className="overflow-x-auto">
             <table className="w-full text-left font-sans text-xs">
               <thead>
-                <tr className="border-b border-white/[0.08] text-mono text-[11px] tracking-wider text-[#A4ACA1] uppercase">
+                <tr className={`border-b text-mono text-[11px] tracking-wider uppercase ${
+                  isLight ? 'border-black/[0.08] text-[#4A5048]' : 'border-white/[0.08] text-[#A4ACA1]'
+                }`}>
                   <th className="py-4 pr-6 font-semibold">{language === 'es' ? 'Especificación Técnica' : 'Technical Specification'}</th>
                   <th className="py-4 px-4 text-center">Standard</th>
-                  <th className="py-4 px-4 text-center text-[#48C765]">Premium</th>
+                  <th className={`py-4 px-4 text-center ${isLight ? 'text-[#15803D]' : 'text-[#48C765]'}`}>Premium</th>
                   <th className="py-4 px-4 text-center">Express</th>
                   <th className="py-4 pl-4 text-center">Event</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/[0.04]">
+              <tbody className={`divide-y ${isLight ? 'divide-black/[0.05]' : 'divide-white/[0.04]'}`}>
                 {comparisonRows.map((row, idx) => (
-                  <tr key={idx} className="hover:bg-white/[0.02] transition-colors">
-                    <td className="py-4 pr-6 text-[#E0E5DC] font-medium">{row.feature}</td>
-                    <td className="py-4 px-4 text-center">{row.standard ? <span className="text-[#48C765] font-bold">✓</span> : <span className="text-gray-600">—</span>}</td>
-                    <td className="py-4 px-4 text-center">{row.premium ? <span className="text-[#48C765] font-bold">✓</span> : <span className="text-gray-600">—</span>}</td>
-                    <td className="py-4 px-4 text-center">{row.express ? <span className="text-[#48C765] font-bold">✓</span> : <span className="text-gray-600">—</span>}</td>
-                    <td className="py-4 pl-4 text-center">{row.event ? <span className="text-[#48C765] font-bold">✓</span> : <span className="text-gray-600">—</span>}</td>
+                  <tr key={idx} className={isLight ? 'hover:bg-black/[0.02] transition-colors' : 'hover:bg-white/[0.02] transition-colors'}>
+                    <td className={`py-4 pr-6 font-medium ${isLight ? 'text-[#14170F]' : 'text-[#E0E5DC]'}`}>{row.feature}</td>
+                    <td className="py-4 px-4 text-center">{row.standard ? <span className={isLight ? 'text-[#15803D] font-bold' : 'text-[#48C765] font-bold'}>✓</span> : <span className={isLight ? 'text-gray-400' : 'text-gray-600'}>—</span>}</td>
+                    <td className="py-4 px-4 text-center">{row.premium ? <span className={isLight ? 'text-[#15803D] font-bold' : 'text-[#48C765] font-bold'}>✓</span> : <span className={isLight ? 'text-gray-400' : 'text-gray-600'}>—</span>}</td>
+                    <td className="py-4 px-4 text-center">{row.express ? <span className={isLight ? 'text-[#15803D] font-bold' : 'text-[#48C765] font-bold'}>✓</span> : <span className={isLight ? 'text-gray-400' : 'text-gray-600'}>—</span>}</td>
+                    <td className="py-4 pl-4 text-center">{row.event ? <span className={isLight ? 'text-[#15803D] font-bold' : 'text-[#48C765] font-bold'}>✓</span> : <span className={isLight ? 'text-gray-400' : 'text-gray-600'}>—</span>}</td>
                   </tr>
                 ))}
               </tbody>
@@ -293,18 +316,28 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ onNavigate }) => {
           </div>
         </div>
 
-        {/* European Customs & Armored Transit Strip */}
-        <div className="rounded-none bg-gradient-to-r from-[#121E15] via-[#0E1611] to-[#121E15] border border-[#48C765]/30 p-8 lg:p-12 flex flex-col lg:flex-row items-center justify-between gap-8">
+        {/* Customs & Armored Transit Strip */}
+        <div className={`rounded-none border p-8 lg:p-12 flex flex-col lg:flex-row items-center justify-between gap-8 transition-colors duration-300 ${
+          isLight 
+            ? 'bg-[#EAE2D5] border-[#15803D]/40 shadow-sm' 
+            : 'bg-gradient-to-r from-[#121E15] via-[#0E1611] to-[#121E15] border-[#48C765]/30'
+        }`}>
           <div className="max-w-2xl">
-            <span className="font-mono text-xs font-bold tracking-[0.25em] text-[#48C765] uppercase mb-2 block">
+            <span className={`font-mono text-xs font-bold tracking-[0.25em] uppercase mb-2 block ${
+              isLight ? 'text-[#15803D]' : 'text-[#48C765]'
+            }`}>
               {language === 'es' ? 'GARANTÍA DE TRANSPORTE Y PROPIEDAD' : 'CHAIN OF CUSTODY GUARANTEE'}
             </span>
-            <h3 className="font-['Nunito',sans-serif] font-[900] text-lg sm:text-xl text-white uppercase tracking-normal mb-3">
+            <h3 className={`font-['Nunito',sans-serif] font-[900] text-lg sm:text-xl uppercase tracking-normal mb-3 ${
+              isLight ? 'text-[#14170F]' : 'text-white'
+            }`}>
               {language === 'es' 
                 ? 'Protección Integral y Cobertura Internacional Asegurada' 
                 : 'Comprehensive Protection Across International Transit'}
             </h3>
-            <p className="font-sans text-xs sm:text-sm text-[#A4ACA1] leading-relaxed">
+            <p className={`font-sans text-xs sm:text-sm leading-relaxed ${
+              isLight ? 'text-[#4A5048]' : 'text-[#A4ACA1]'
+            }`}>
               {language === 'es'
                 ? 'Todos los envíos se gestionan mediante contratos directos con mensajería blindada (GLS Express / DHL Express) con firma obligatoria, seguro de reposición del 100% y sin intermediarios aduaneros.'
                 : 'All shipments are managed under direct contracts with certified armored carriers (GLS / DHL Express) featuring mandatory signature, 100% replacement insurance, and zero customs paperwork.'}

@@ -196,6 +196,16 @@
 /* Dark panels bg-[#2B302B] */
 .light-theme .bg-\[\#2B302B\] {
   background-color: #FAF8F5 !important;
+  color: #14170F !important;
+}
+
+.light-theme .bg-\[\#2B302B\] h2,
+.light-theme .bg-\[\#2B302B\] .text-white {
+  color: #14170F !important;
+}
+
+.light-theme .bg-\[\#2B302B\] p {
+  color: #4A5048 !important;
 }
 
 /* Darker panels bg-[#2F3430] */
@@ -274,6 +284,17 @@
 /* Primary white text → dark charcoal */
 .light-theme .text-white {
   color: #1A1D1A !important;
+}
+
+/* Maintain white text on explicitly dark pills, chips, and colored buttons in light theme */
+.light-theme [class*="bg-black"] .text-white,
+.light-theme [class*="bg-[#1"] .text-white,
+.light-theme [class*="bg-[#0"] .text-white,
+.light-theme .btn-gorilla-pill,
+.light-theme .btn-gorilla-square,
+.light-theme .btn-gorilla-pill span,
+.light-theme .btn-gorilla-square span {
+  color: #FFFFFF !important;
 }
 
 /* Light off-white text → dark charcoal */

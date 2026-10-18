@@ -40,7 +40,7 @@ export const MOCK_GRADED_CARDS: GradedCard[] = [
       }
     },
     frontImage: 'https://images.unsplash.com/photo-1613771404721-1f92d799e49f?auto=format&fit=crop&w=800&q=85',
-    backImage: 'https://images.unsplash.com/photo-1613771404721-1f92d799e49f?auto=format&fit=crop&w=800&q=85',
+    backImage: 'https://tcg.pokemon.com/assets/img/global/tcg-card-back-2x.jpg',
     defects: [
       {
         id: 'd1',
@@ -123,7 +123,7 @@ export const MOCK_GRADED_CARDS: GradedCard[] = [
       }
     },
     frontImage: 'https://images.unsplash.com/photo-1613771404721-1f92d799e49f?auto=format&fit=crop&w=800&q=85',
-    backImage: 'https://images.unsplash.com/photo-1613771404721-1f92d799e49f?auto=format&fit=crop&w=800&q=85',
+    backImage: 'https://tcg.pokemon.com/assets/img/global/tcg-card-back-2x.jpg',
     defects: [],
     population: {
       totalGraded: 4,
@@ -175,7 +175,7 @@ export const MOCK_GRADED_CARDS: GradedCard[] = [
       }
     },
     frontImage: 'https://images.unsplash.com/photo-1613771404721-1f92d799e49f?auto=format&fit=crop&w=800&q=85',
-    backImage: 'https://images.unsplash.com/photo-1613771404721-1f92d799e49f?auto=format&fit=crop&w=800&q=85',
+    backImage: 'https://tcg.pokemon.com/assets/img/global/tcg-card-back-2x.jpg',
     defects: [
       {
         id: 'd4',
@@ -248,7 +248,7 @@ export const MOCK_GRADED_CARDS: GradedCard[] = [
       }
     },
     frontImage: 'https://images.unsplash.com/photo-1613771404721-1f92d799e49f?auto=format&fit=crop&w=800&q=85',
-    backImage: 'https://images.unsplash.com/photo-1613771404721-1f92d799e49f?auto=format&fit=crop&w=800&q=85',
+    backImage: 'https://tcg.pokemon.com/assets/img/global/tcg-card-back-2x.jpg',
     defects: [],
     population: {
       totalGraded: 64,

@@ -25,9 +25,19 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
     return params.get('fromConfig') === 'true';
   });
 
+  const [wizardCardCount, setWizardCardCount] = useState<number>(() => {
+    const params = new URLSearchParams(window.location.search);
+    const qty = parseInt(params.get('qty') || '0', 10);
+    return qty > 0 ? qty : 10;
+  });
+
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3 | 4>(() => {
     const params = new URLSearchParams(window.location.search);
-    return params.get('tier') || params.get('qty') ? 2 : 1;
+    const stepParam = params.get('step');
+    if (stepParam === '2') return 2;
+    if (stepParam === '3') return 3;
+    if (stepParam === '4') return 4;
+    return 1;
   });
 
   const [selectedTier, setSelectedTier] = useState<ServiceTier | null>(() => {
@@ -37,7 +47,7 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
       const found = MOCK_SERVICES.find(s => s.id === tierId || (tierId === 'regular' && s.id === 'standard') || (tierId === 'walkthrough' && s.id === 'event'));
       if (found) return found;
     }
-    return null;
+    return MOCK_SERVICES[0];
   }); 
   
   const [items, setItems] = useState<OrderItem[]>(() => {
@@ -78,9 +88,15 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
     const tierId = params.get('tier');
     const qtyParam = params.get('qty');
     const fromConfigParam = params.get('fromConfig');
+    const stepParam = params.get('step');
 
     if (fromConfigParam === 'true') {
       setIsFromConfigureShipment(true);
+    }
+
+    if (stepParam) {
+      const s = parseInt(stepParam, 10);
+      if (s >= 1 && s <= 4) setCurrentStep(s as any);
     }
 
     if (tierId) {
@@ -88,12 +104,12 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
       if (found) {
         setSelectedTier(found);
       }
-      setCurrentStep(2);
     }
 
     if (qtyParam) {
       const qty = parseInt(qtyParam, 10);
       if (qty > 0) {
+        setWizardCardCount(qty);
         setNewCardQuantity(String(qty));
         setItems(prevItems => {
           if (prevItems.length === 0 || fromConfigParam === 'true') {
@@ -351,9 +367,42 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
           const handleSelectTier = (lvlId: string) => {
             const found = MOCK_SERVICES.find(s => s.id === lvlId) || MOCK_SERVICES[0];
             setSelectedTier(found);
+          };
+
+          const handleProceedToStep2 = () => {
+            const targetQty = Math.max(1, wizardCardCount);
+            const currentTier = selectedTier || MOCK_SERVICES[0];
+            
+            const presetItems: OrderItem[] = Array.from({ length: targetQty }, (_, i) => ({
+              id: `preset-${Date.now()}-${i}`,
+              cardName: language === 'es' ? `Carta #${i + 1} (${currentTier.name})` : `Card #${i + 1} (${currentTier.name})`,
+              game: 'Pokemon',
+              set: 'Base Set',
+              declaredValue: 100,
+              serviceTierId: currentTier.id,
+              notes: '',
+              frontImagePreview: 'https://images.unsplash.com/photo-1613771404784-3a5686aa2be3?auto=format&fit=crop&w=400&q=80'
+            }));
+            
+            setItems(presetItems);
+            setIsFromConfigureShipment(true);
             setCurrentStep(2);
             window.scrollTo({ top: 0, behavior: 'smooth' });
           };
+
+          const currentSelectedLevel = serviceLevels.find(s => s.id === (selectedTier?.id || 'standard')) || serviceLevels[0];
+
+          const getBulkDiscountRate = (qty: number) => {
+            if (qty >= 50) return 0.12; // 12%
+            if (qty >= 25) return 0.08; // 8%
+            if (qty >= 10) return 0.05; // 5%
+            return 0;
+          };
+
+          const calcDiscountRate = getBulkDiscountRate(wizardCardCount);
+          const baseUnitPrice = currentSelectedLevel.price;
+          const calculatedUnitPrice = Math.round(baseUnitPrice * (1 - calcDiscountRate));
+          const calculatedTotalAmount = calculatedUnitPrice * wizardCardCount;
 
           return (
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -606,6 +655,168 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
 
               </div>
 
+              {/* ESTIMACIÓN DE REMESA (Volume Estimation Calculator) */}
+              <div className={`w-full border p-4 sm:p-8 lg:p-10 mb-8 transition-colors ${
+                isLight ? 'bg-white border-[#E5E7EB]' : 'bg-[#181B18] border-white/10'
+              }`}>
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 sm:gap-6 pb-4 sm:pb-6 border-b border-gray-100 dark:border-white/5">
+                  <div>
+                    <h3 className="font-['Nunito',sans-serif] text-lg sm:text-2xl font-[900] uppercase tracking-normal">
+                      {language === 'es' ? 'CALCULAR TARIFA POR CANTIDAD DE CARTAS' : 'VOLUME ESTIMATION'}
+                    </h3>
+                    <p className={`mt-1 font-sans text-xs max-w-xl leading-relaxed ${
+                      isLight ? 'text-gray-700' : 'text-gray-200'
+                    }`}>
+                      {language === 'es'
+                        ? 'Descuentos por volumen: 5% a partir de 10 cartas, 8% desde 25 cartas y 12% para más de 50 cartas.'
+                        : 'Bulk discounts: 5% for 10+ cards, 8% for 25+ cards, and 12% for 50+ cards.'}
+                    </p>
+                  </div>
+
+                  {/* Service Level Switcher */}
+                  <div className={`p-1 border flex items-center gap-1 flex-wrap ${
+                    isLight ? 'bg-gray-50 border-gray-200' : 'bg-black/40 border-white/15'
+                  }`}>
+                    {serviceLevels.map((lvl) => {
+                      const isActive = (selectedTier?.id || 'standard') === lvl.id;
+                      return (
+                        <button
+                          key={lvl.id}
+                          type="button"
+                          onClick={() => handleSelectTier(lvl.id)}
+                          className={`px-2.5 py-1 sm:px-3 sm:py-1.5 font-mono text-[11px] sm:text-xs transition-colors cursor-pointer ${
+                            isActive
+                              ? (isLight ? 'bg-white text-black font-bold shadow-xs border border-gray-200' : 'bg-white/20 text-white font-bold')
+                              : (isLight ? 'text-gray-600 hover:text-black' : 'text-gray-300 hover:text-white')
+                          }`}
+                        >
+                          {lvl.name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Main interactive area: Volume buttons & Real-time result */}
+                <div className="pt-4 sm:pt-6 grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-center">
+                  
+                  {/* Left: Volume selector buttons + custom input */}
+                  <div className="lg:col-span-7 space-y-3 sm:space-y-4">
+                    <span className={`font-mono text-[11px] sm:text-xs uppercase tracking-wider font-semibold block ${
+                      isLight ? 'text-gray-700' : 'text-gray-200'
+                    }`}>
+                      {language === 'es' ? 'Selecciona o introduce la cantidad de cartas:' : 'Select or enter number of cards:'}
+                    </span>
+
+                    <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                      {[1, 5, 10, 25, 50, 100].map((vol) => {
+                        const isSelected = wizardCardCount === vol;
+                        return (
+                          <button
+                            key={vol}
+                            type="button"
+                            onClick={() => setWizardCardCount(vol)}
+                            className={`px-3 py-1.5 sm:px-4 sm:py-2 font-mono text-xs font-bold transition-colors cursor-pointer border ${
+                              isSelected
+                                ? 'border-[#16A34A] bg-[#16A34A] text-white'
+                                : (isLight ? 'border-gray-300 bg-gray-50 text-gray-800 hover:border-gray-500' : 'border-white/15 bg-white/5 text-gray-100 hover:border-white/30')
+                            }`}
+                          >
+                            {vol} {vol === 1 ? (language === 'es' ? 'carta' : 'card') : (language === 'es' ? 'cartas' : 'cards')}
+                          </button>
+                        );
+                      })}
+
+                      {/* Direct Stepper Input */}
+                      <div className={`flex items-center border ml-auto ${
+                        isLight ? 'border-gray-300 bg-gray-50' : 'border-white/15 bg-white/5'
+                      }`}>
+                        <button
+                          type="button"
+                          onClick={() => setWizardCardCount(Math.max(1, wizardCardCount - 1))}
+                          className={`w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center font-mono font-bold text-sm cursor-pointer ${
+                            isLight ? 'hover:bg-gray-200 text-black' : 'hover:bg-white/10 text-white'
+                          }`}
+                        >
+                          -
+                        </button>
+                        <input
+                          type="number"
+                          min={1}
+                          max={1000}
+                          value={wizardCardCount}
+                          onChange={(e) => setWizardCardCount(Math.max(1, parseInt(e.target.value) || 1))}
+                          className="w-12 sm:w-14 text-center font-mono text-xs sm:text-sm font-bold bg-transparent outline-none text-current"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setWizardCardCount(Math.min(1000, wizardCardCount + 1))}
+                          className={`w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center font-mono font-bold text-sm cursor-pointer ${
+                            isLight ? 'hover:bg-gray-200 text-black' : 'hover:bg-white/10 text-white'
+                          }`}
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className={`font-mono text-[11px] sm:text-xs pt-2 flex flex-wrap items-center gap-2 sm:gap-3 ${
+                      isLight ? 'text-gray-700' : 'text-gray-200'
+                    }`}>
+                      <span className="font-semibold">{language === 'es' ? `Servicio: ${currentSelectedLevel.name}` : `Service: ${currentSelectedLevel.name}`}</span>
+                      <span className="text-gray-400">/</span>
+                      <span>{language === 'es' ? `Plazo: ${currentSelectedLevel.turnaround}` : `Turnaround: ${currentSelectedLevel.turnaround}`}</span>
+                      <span className="text-gray-400">/</span>
+                      <span>{language === 'es' ? 'Envío asegurado 100%' : '100% Insured Transit'}</span>
+                    </div>
+                  </div>
+
+                  {/* Right: Clean Price Display & Action */}
+                  <div className={`lg:col-span-5 p-4 sm:p-6 border flex flex-col justify-between gap-4 ${
+                    isLight ? 'bg-gray-50/90 border-gray-200' : 'bg-black/40 border-white/15'
+                  }`}>
+                    <div className="flex items-baseline justify-between">
+                      <div>
+                        <span className={`font-mono text-[10px] sm:text-[11px] uppercase tracking-wider block font-semibold ${
+                          isLight ? 'text-gray-700' : 'text-gray-300'
+                        }`}>
+                          {language === 'es' ? 'Total estimado' : 'Estimated total'}
+                        </span>
+                        <span className={`font-mono text-xs font-semibold ${
+                          isLight ? 'text-gray-800' : 'text-gray-200'
+                        }`}>
+                          {calculatedUnitPrice} € / {language === 'es' ? 'carta' : 'card'} {calcDiscountRate > 0 && `(-${Math.round(calcDiscountRate * 100)}%)`}
+                        </span>
+                      </div>
+
+                      <div className="text-right">
+                        <span className="font-['Nunito',sans-serif] text-3xl sm:text-5xl font-[900] tracking-tight">
+                          {calculatedTotalAmount} €
+                        </span>
+                        <span className={`block font-mono text-[10px] font-medium mt-0.5 ${
+                          isLight ? 'text-gray-700' : 'text-gray-300'
+                        }`}>
+                          {language === 'es' ? 'IVA 21% y seguro incluidos' : 'VAT 21% & insurance included'}
+                        </span>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={handleProceedToStep2}
+                      className="btn-gorilla-pill w-full py-3.5 sm:py-4 px-6 sm:px-8 text-xs font-bold tracking-normal gap-2 shadow-lg"
+                    >
+                      <span>
+                        {language === 'es' 
+                          ? `CONFIGURAR ENVÍO (${wizardCardCount} ${wizardCardCount === 1 ? 'CARTA' : 'CARTAS'}) →` 
+                          : `CONFIGURE SHIPMENT (${wizardCardCount} ${wizardCardCount === 1 ? 'CARD' : 'CARDS'}) →`}
+                      </span>
+                    </button>
+                  </div>
+
+                </div>
+              </div>
+
               {/* Action bar to continue to Step 2 */}
               <div className={`p-4 sm:p-5 border flex flex-col sm:flex-row items-center justify-between gap-4 mb-6 ${
                 isLight ? 'bg-white border-[#E5E7EB]' : 'bg-[#181B18] border-white/10'
@@ -615,19 +826,20 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
                     {language === 'es' ? 'SERVICIO SELECCIONADO:' : 'SELECTED SERVICE:'}
                   </span>
                   <span className="font-['Nunito',sans-serif] text-base uppercase font-[900] text-[#16A34A] dark:text-[#4ADE80] tracking-normal">
-                    {selectedTier?.name || 'STANDARD'} — {selectedTier?.priceEur || 19} €
+                    {selectedTier?.name || 'STANDARD'} — {calculatedUnitPrice} € / {language === 'es' ? 'carta' : 'card'} ({wizardCardCount} {wizardCardCount === 1 ? (language === 'es' ? 'carta' : 'card') : (language === 'es' ? 'cartas' : 'cards')})
                   </span>
                 </div>
 
                 <button
                   type="button"
-                  onClick={() => {
-                    setCurrentStep(2);
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                  }}
+                  onClick={handleProceedToStep2}
                   className="btn-gorilla-square w-full sm:w-auto px-8 py-3 text-xs font-extrabold tracking-normal uppercase flex items-center justify-center gap-2 shadow-lg"
                 >
-                  <span>{language === 'es' ? 'CONTINUAR AL PASO 02 (CARTAS)' : 'CONTINUE TO STEP 02 (CARDS)'}</span>
+                  <span>
+                    {language === 'es' 
+                      ? `CONTINUAR AL PASO 02 (${wizardCardCount} ${wizardCardCount === 1 ? 'CARTA' : 'CARTAS'})` 
+                      : `CONTINUE TO STEP 02 (${wizardCardCount} ${wizardCardCount === 1 ? 'CARD' : 'CARDS'})`}
+                  </span>
                   <span className="text-sm">→</span>
                 </button>
               </div>

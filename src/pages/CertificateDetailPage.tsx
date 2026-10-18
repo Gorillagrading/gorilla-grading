@@ -46,7 +46,14 @@ export const CertificateDetailPage: React.FC<CertificateDetailPageProps> = ({
         isLight ? 'border-gray-200' : 'border-white/10'
       }`}>
         <button
-          onClick={() => onNavigate('/verify')}
+          type="button"
+          onClick={() => {
+            if (onNavigate) {
+              onNavigate(`/verify?cert=${card.certNumber}`);
+            } else {
+              window.location.href = `/verify?cert=${card.certNumber}`;
+            }
+          }}
           className={`inline-flex items-center gap-2 text-xs font-mono transition-colors cursor-pointer ${
             isLight ? 'text-gray-600 hover:text-emerald-600' : 'text-gray-400 hover:text-emerald-400'
           }`}

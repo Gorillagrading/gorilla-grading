@@ -46,9 +46,12 @@ export const FAQSection: React.FC<FAQSectionProps> = ({ onNavigate }) => {
   ];
 
   return (
-    <section className={`w-full py-10 sm:py-12 lg:py-14 px-6 lg:px-12 border-b transition-colors duration-300 ${
-      isLight ? 'bg-[#ECE7DF] text-[#1C201D] border-black/[0.06]' : 'bg-[#14170F] text-white border-white/[0.04]'
-    }`}>
+    <section 
+      id="faq"
+      className={`w-full py-10 sm:py-12 lg:py-14 px-6 lg:px-12 border-b transition-colors duration-300 scroll-mt-20 ${
+        isLight ? 'bg-[#ECE7DF] text-[#1C201D] border-black/[0.06]' : 'bg-[#14170F] text-white border-white/[0.04]'
+      }`}
+    >
       <div className="max-w-[1000px] mx-auto flex flex-col md:flex-row gap-12 lg:gap-20">
         
         {/* Left Col: Header - Centered on mobile, left-aligned on desktop */}

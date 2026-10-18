@@ -275,15 +275,15 @@ export const HowItWorksPage: React.FC<HowItWorksPageProps> = ({ onNavigate }) =>
               isLight ? 'text-[#1A1D1A]' : 'text-white'
             }`}>
               {language === 'es' 
-                ? 'Nuestra Misión: Erradicar la Subjetividad Ocular en Europa' 
-                : 'Our Mission: Eliminating Ocular Subjectivity in Europe'}
+                ? 'Nuestra Misión: Erradicar la Subjetividad Ocular en el Coleccionismo Internacional' 
+                : 'Our Mission: Eliminating Ocular Subjectivity Worldwide'}
             </h3>
             <p className={`font-sans text-xs sm:text-sm leading-relaxed mb-4 ${
               isLight ? 'text-[#4A5048]' : 'text-[#A4ACA1]'
             }`}>
               {language === 'es'
-                ? 'Durante décadas, los coleccionistas europeos han dependido de empresas transatlánticas con aranceles aduaneros abusivos, meses de espera y criterios de graduación opacos e irreproducibles. Gorilla Grading nace para ofrecer la certeza científica de la óptica de precisión con soberanía logística europea.'
-                : 'For decades, European collectors have endured punitive customs duties, months of carrier delays, and opaque, subjective grading criteria. Gorilla Grading was founded to deliver scientific certainty via optical metrology backed by seamless European logistics.'}
+                ? 'Durante décadas, los coleccionistas han dependido de procesos manuales con criterios de graduación opacos, meses de espera e irreproducibilidad. Gorilla Grading nace para ofrecer la certeza científica de la óptica de precisión, trazabilidad criptográfica y máxima custodia para coleccionistas de todo el mundo.'
+                : 'For decades, collectors have endured opaque, subjective grading criteria, inconsistent turnarounds, and lack of reproducible data. Gorilla Grading was founded to deliver scientific certainty via optical metrology, cryptographic traceability, and uncompromising custody for collectors worldwide.'}
             </p>
           </div>
 

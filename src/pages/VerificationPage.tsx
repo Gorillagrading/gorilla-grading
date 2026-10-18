@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import { MOCK_GRADED_CARDS, MOCK_POPULAR_SEARCHES } from '../data/mockCards';
@@ -16,9 +16,40 @@ export const VerificationPage: React.FC<VerificationPageProps> = ({ onNavigate }
   const { t, language } = useLanguage();
   const { theme } = useTheme();
   const isLight = theme === 'light';
-  const [searchInput, setSearchInput] = useState('');
-  const [activeCard, setActiveCard] = useState<GradedCard | null>(null);
+  
+  const [searchInput, setSearchInput] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('cert') || '';
+  });
+
+  const [activeCard, setActiveCard] = useState<GradedCard | null>(() => {
+    const params = new URLSearchParams(window.location.search);
+    const certParam = params.get('cert');
+    if (certParam) {
+      const query = certParam.trim().toUpperCase();
+      return MOCK_GRADED_CARDS.find(
+        c => c.certNumber.toUpperCase() === query || c.name.toUpperCase().includes(query)
+      ) || null;
+    }
+    return null;
+  });
+
   const [errorMsg, setErrorMsg] = useState('');
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const certParam = params.get('cert');
+    if (certParam) {
+      const query = certParam.trim().toUpperCase();
+      const found = MOCK_GRADED_CARDS.find(
+        c => c.certNumber.toUpperCase() === query || c.name.toUpperCase().includes(query)
+      );
+      if (found) {
+        setSearchInput(found.certNumber);
+        setActiveCard(found);
+      }
+    }
+  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();

@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { GradedCard } from '../../types';
 import { useLanguage } from '../../context/LanguageContext';
+import { useTheme } from '../../context/ThemeContext';
 import { ShieldCheck, QrCode, Sparkles, RefreshCw, Eye, Award } from 'lucide-react';
 
 interface SlabCardProps {
@@ -19,6 +20,8 @@ export const SlabCard: React.FC<SlabCardProps> = ({
   variant = 'slab'
 }) => {
   const { t, language } = useLanguage();
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
   const [isFlipped, setIsFlipped] = useState(false);
   const [rotateX, setRotateX] = useState(0);
   const [rotateY, setRotateY] = useState(0);
@@ -96,15 +99,31 @@ export const SlabCard: React.FC<SlabCardProps> = ({
           <div className="absolute inset-0 pointer-events-none rounded-[18px] ring-1 ring-inset ring-white/25" />
 
           {/* Top Left Floating Certified Grade Chip */}
-          <div className="absolute top-3 left-3 z-20 flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-black/80 backdrop-blur-md border border-white/20 shadow-lg">
-            <ShieldCheck className="w-3.5 h-3.5 text-[#22C55E]" />
-            <span className="font-['Nunito',sans-serif] font-black text-xs text-white tracking-tight">
-              GGI {card.grade}
+          <div 
+            className={`absolute top-3 left-3 z-20 flex items-center gap-1.5 px-2.5 py-1 rounded-md backdrop-blur-md border shadow-md transition-colors ${
+              isLight
+                ? 'bg-white/95 border-black/15 shadow-black/10'
+                : 'bg-black/85 border-white/20 shadow-black/40'
+            }`}
+          >
+            <ShieldCheck className={`w-3.5 h-3.5 ${isLight ? 'text-[#16A34A]' : 'text-[#22C55E]'}`} />
+            <span 
+              className="font-['Nunito',sans-serif] font-black text-xs tracking-tight"
+              style={{ color: isLight ? '#111827' : '#FFFFFF' }}
+            >
+              {isFlipped ? (language === 'es' ? 'REVERSO' : 'REVERSE') : `GGI ${card.grade}`}
             </span>
           </div>
 
           {/* Top Right Floating Cert ID Pill */}
-          <div className="absolute top-3 right-3 z-20 px-2 py-1 rounded-md bg-black/70 backdrop-blur-md border border-white/10 font-mono text-[9px] text-[#A4ACA1] tracking-wider uppercase">
+          <div 
+            className={`absolute top-3 right-3 z-20 px-2 py-1 rounded-md backdrop-blur-md border font-mono text-[9px] tracking-wider uppercase font-bold transition-colors shadow-md ${
+              isLight
+                ? 'bg-white/95 border-black/15 shadow-black/10'
+                : 'bg-black/80 border-white/15 shadow-black/40'
+            }`}
+            style={{ color: isLight ? '#1F2937' : '#E5E7EB' }}
+          >
             {card.certNumber || card.id}
           </div>
 
@@ -141,8 +160,10 @@ export const SlabCard: React.FC<SlabCardProps> = ({
 
         {/* Helper caption underneath */}
         {interactive && (
-          <div className="mt-3 text-center text-[#A4ACA1] text-[11px] flex items-center gap-2 font-mono">
-            <Sparkles className="w-3.5 h-3.5 text-[#22C55E]" />
+          <div className={`mt-3 text-center text-[11px] flex items-center gap-2 font-mono ${
+            isLight ? 'text-neutral-600' : 'text-[#A4ACA1]'
+          }`}>
+            <Sparkles className="w-3.5 h-3.5 text-[#15803D] dark:text-[#22C55E]" />
             <span>
               {language === 'es' 
                 ? 'Carta 3D Interactiva · Clic para ver en Dossier con Slab' 
@@ -297,7 +318,9 @@ export const SlabCard: React.FC<SlabCardProps> = ({
 
       {/* Helper caption underneath */}
       {interactive && (
-        <div className="mt-3 text-center text-slate-400 text-[11px] flex items-center gap-2 font-mono">
+        <div className={`mt-3 text-center text-[11px] flex items-center gap-2 font-mono ${
+          isLight ? 'text-neutral-600' : 'text-slate-400'
+        }`}>
           <Sparkles className="w-3.5 h-3.5 text-gorilla-neon" />
           <span>Slab 3D Interactivo • Mueve el cursor para examinar refracción y brillo</span>
         </div>
