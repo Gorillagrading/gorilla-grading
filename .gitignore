@@ -28,3 +28,12 @@ scratch/
 img/
 *.zip
 WhatsApp*/
+
+# Variables de entorno (solo .env.example se versiona)
+.env
+.env.*
+!.env.example
+
+# Configuración local de Vercel y TypeScript
+.vercel
+*.tsbuildinfo
