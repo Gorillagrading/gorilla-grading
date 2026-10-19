@@ -7,7 +7,7 @@ interface DefectInspectorProps {
   card: GradedCard;
 }
 
-type TabType = 'Global' | 'Centering' | 'Corners' | 'Edges' | 'Surface';
+type TabType = 'Global' | 'Centering' | 'Corners' | 'Edges' | 'Surface' | 'SlabLabels';
 
 export const DefectInspector: React.FC<DefectInspectorProps> = ({ card }) => {
   const { language } = useLanguage();
@@ -16,17 +16,20 @@ export const DefectInspector: React.FC<DefectInspectorProps> = ({ card }) => {
   const [activeTab, setActiveTab] = useState<TabType>('Global');
   const [selectedDefect, setSelectedDefect] = useState<CardDefect | null>(null);
 
-  const tabs: { id: TabType; label: string; score: number }[] = [
+  const tabs: { id: TabType; label: string; score?: number }[] = [
     { id: 'Global', label: 'Global', score: card.grade },
     { id: 'Centering', label: 'Centering', score: card.subgrades.centering.score },
     { id: 'Corners', label: 'Corners', score: card.subgrades.corners.score },
     { id: 'Edges', label: 'Edges', score: card.subgrades.edges.score },
     { id: 'Surface', label: 'Surface', score: card.subgrades.surface.score },
+    { id: 'SlabLabels', label: language === 'es' ? 'Etiquetas Slab' : 'Slab Labels', score: undefined },
   ];
 
-  const visibleDefects = activeTab === 'Global'
-    ? card.defects
-    : card.defects.filter(d => d.category === activeTab);
+  const visibleDefects = activeTab === 'SlabLabels'
+    ? []
+    : activeTab === 'Global'
+      ? card.defects
+      : card.defects.filter(d => d.category === activeTab);
 
   return (
     <div className={`w-full flex flex-col border-t pt-5 ${
@@ -64,30 +67,135 @@ export const DefectInspector: React.FC<DefectInspectorProps> = ({ card }) => {
                   : (isLight ? 'border-transparent text-gray-500 hover:text-gray-900 font-semibold' : 'border-transparent text-gray-400 hover:text-white')
               }`}
             >
-              {label} ({score.toFixed(1)})
+              {label} {score !== undefined && `(${score.toFixed(1)})`}
             </button>
           );
         })}
       </div>
 
       {/* Main Layout: Map + Details */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+      <div className={`grid ${activeTab === 'SlabLabels' ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1 md:grid-cols-2'} gap-6 items-start`}>
 
-        {/* Original Slab Label Image */}
-        <div className={`relative w-full max-w-[380px] mx-auto md:mx-0 border p-0 overflow-hidden ${
-          isLight ? 'border-gray-300 bg-white shadow-sm' : 'border-white/10 bg-[#0E120E]'
-        }`}>
-          {/* Original Slab Label Front Image */}
-          <img
-            src="/images/slab/gorilla_label_front_template.jpg"
-            alt="Original Gorilla Grading Slab Label"
-            className="w-full h-auto object-cover"
-          />
-        </div>
+        {/* The Card Blueprint or Slab Labels */}
+        {activeTab === 'SlabLabels' ? (
+          <div className="flex flex-col gap-4">
+            {/* Front Slab Label */}
+            <div className={`border p-4 ${isLight ? 'border-gray-300 bg-white shadow-sm' : 'border-white/10 bg-[#0E120E]'}`}>
+              <p className={`font-mono text-[9px] tracking-[0.2em] uppercase font-bold mb-3 ${
+                isLight ? 'text-gray-500' : 'text-gray-400'
+              }`}>
+                {language === 'es' ? 'Etiqueta Frontal' : 'Front Label'}
+              </p>
+              <div className={`relative w-full aspect-[3/2] overflow-hidden rounded ${isLight ? 'bg-gray-50' : 'bg-[#1A1E1A]'}`}>
+                <img
+                  src="/images/slab/gorilla_label_front_template.jpg"
+                  alt="Front Slab Label"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
 
-        {/* Selected Defect Info (Editorial Style) */}
+            {/* Back Slab Label */}
+            <div className={`border p-4 ${isLight ? 'border-gray-300 bg-white shadow-sm' : 'border-white/10 bg-[#0E120E]'}`}>
+              <p className={`font-mono text-[9px] tracking-[0.2em] uppercase font-bold mb-3 ${
+                isLight ? 'text-gray-500' : 'text-gray-400'
+              }`}>
+                {language === 'es' ? 'Etiqueta Trasera' : 'Back Label'}
+              </p>
+              <div className={`relative w-full aspect-[3/2] overflow-hidden rounded ${isLight ? 'bg-gray-50' : 'bg-[#1A1E1A]'}`}>
+                <img
+                  src="/images/slab/gorilla_label_back_original.jpg"
+                  alt="Back Slab Label"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className={`relative w-full max-w-[280px] mx-auto md:mx-0 aspect-[2.5/3.5] border p-3 ${
+            isLight ? 'border-gray-300 bg-white shadow-sm' : 'border-white/10 bg-[#0E120E]'
+          }`}>
+            {/* Corner brackets */}
+            <div className={`absolute top-0 left-0 w-4 h-4 border-t border-l ${isLight ? 'border-gray-500' : 'border-white/40'}`} />
+            <div className={`absolute top-0 right-0 w-4 h-4 border-t border-r ${isLight ? 'border-gray-500' : 'border-white/40'}`} />
+            <div className={`absolute bottom-0 left-0 w-4 h-4 border-b border-l ${isLight ? 'border-gray-500' : 'border-white/40'}`} />
+            <div className={`absolute bottom-0 right-0 w-4 h-4 border-b border-r ${isLight ? 'border-gray-500' : 'border-white/40'}`} />
+
+            {/* Grid lines */}
+            <div className={`absolute top-1/2 left-0 right-0 border-t border-dashed ${isLight ? 'border-gray-200' : 'border-white/10'}`} />
+            <div className={`absolute left-1/2 top-0 bottom-0 border-l border-dashed ${isLight ? 'border-gray-200' : 'border-white/10'}`} />
+
+            {/* The Image (Desaturated) */}
+            <div className={`relative w-full h-full overflow-hidden ${isLight ? 'bg-gray-100' : 'bg-[#2A2E2A]'}`}>
+              <img
+                src={card.frontImage}
+                alt={card.name}
+                className="w-full h-full object-cover opacity-40 grayscale contrast-125"
+              />
+
+              {/* Defect Markers */}
+              {visibleDefects.map((defect) => {
+                const isSelected = selectedDefect?.id === defect.id;
+
+                return (
+                  <button
+                    key={defect.id}
+                    onClick={() => setSelectedDefect(defect)}
+                    className="absolute -translate-x-1/2 -translate-y-1/2 z-20 group cursor-pointer"
+                    style={{ left: `${defect.x}%`, top: `${defect.y}%` }}
+                  >
+                    {/* Minimal Crosshair marker */}
+                    <div className={`relative flex items-center justify-center w-6 h-6 transition-transform ${isSelected ? 'scale-125' : ''}`}>
+                      <div className={`absolute w-full h-[1px] ${isSelected ? 'bg-[#EF4444]' : 'bg-[#22C55E]'}`} />
+                      <div className={`absolute h-full w-[1px] ${isSelected ? 'bg-[#EF4444]' : 'bg-[#22C55E]'}`} />
+                      <div className={`w-1.5 h-1.5 rounded-none z-10 ${isSelected ? 'bg-[#EF4444]' : 'bg-[#22C55E]'}`} />
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Selected Defect Info (Editorial Style) or Slab Info */}
         <div className="flex flex-col">
-          {selectedDefect ? (
+          {activeTab === 'SlabLabels' ? (
+            <div className={`h-full flex flex-col gap-5 p-4 sm:p-6 border border-dashed ${
+              isLight ? 'border-gray-200 bg-gray-50/50' : 'border-white/10 bg-white/[0.01]'
+            }`}>
+              <div>
+                <h4 className={`font-['Space_Grotesk',sans-serif] text-lg font-bold uppercase leading-tight mb-3 ${
+                  isLight ? 'text-gray-950' : 'text-white'
+                }`}>
+                  {language === 'es' ? 'Etiquetas del Slab' : 'Slab Labels'}
+                </h4>
+                <p className={`font-sans text-sm leading-relaxed ${
+                  isLight ? 'text-gray-700' : 'text-gray-300'
+                }`}>
+                  {language === 'es'
+                    ? 'Las etiquetas originales del slab frontal y trasero utilizadas para esta tarjeta de grado. Estas etiquetas contienen información crítica de autenticación y certificación.'
+                    : 'Original front and back slab labels used for this graded card. These labels contain critical authentication and certification information.'}
+                </p>
+              </div>
+
+              <div className={`mt-4 p-4 border rounded ${
+                isLight ? 'bg-white border-gray-200' : 'bg-white/[0.03] border-white/10'
+              }`}>
+                <span className={`font-mono text-[10px] tracking-widest uppercase font-semibold block mb-2 ${
+                  isLight ? 'text-gray-600' : 'text-gray-400'
+                }`}>
+                  {language === 'es' ? 'Referencia' : 'Reference'}
+                </span>
+                <p className={`font-sans text-xs ${
+                  isLight ? 'text-gray-600' : 'text-gray-400'
+                }`}>
+                  {language === 'es'
+                    ? 'Utiliza estas imágenes como referencia para verificar la autenticidad de las etiquetas del slab.'
+                    : 'Use these images as a reference to verify the authenticity of the slab labels.'}
+                </p>
+              </div>
+            </div>
+          ) : selectedDefect ? (
             <div className="flex flex-col gap-5">
               <div className={`pb-3 border-b flex items-center justify-between ${
                 isLight ? 'border-gray-200' : 'border-white/10'
