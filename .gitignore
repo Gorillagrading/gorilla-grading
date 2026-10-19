@@ -40,3 +40,6 @@ WhatsApp*/
 
 # Configuración local de Claude Code
 .claude/
+
+# Recursos de diseño comprimidos que sí se versionan
+!design-assets/**/*.zip
