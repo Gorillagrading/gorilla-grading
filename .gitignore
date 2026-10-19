@@ -37,3 +37,6 @@ WhatsApp*/
 # Configuración local de Vercel y TypeScript
 .vercel
 *.tsbuildinfo
+
+# Configuración local de Claude Code
+.claude/
