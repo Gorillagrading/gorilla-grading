@@ -34,7 +34,7 @@ export const HomeVerificationModule: React.FC<HomeVerificationModuleProps> = ({ 
   const [isSearching, setIsSearching] = useState(false);
 
   const demoCodes = [
-    { code: 'GGI-892401', label: 'Charizard 1st Ed (10 GEM MINT)' },
+    { code: 'GGI-892401', label: 'Cade Cunningham (9.5 GEM MINT)' },
     { code: 'GGI-774102', label: 'Pikachu Illustrator (10 PRISTINE)' },
     { code: 'GGI-652901', label: 'Umbreon VMAX (9.5 GEM MINT)' },
   ];

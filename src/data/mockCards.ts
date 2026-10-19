@@ -4,12 +4,12 @@ export const MOCK_GRADED_CARDS: GradedCard[] = [
   {
     id: 'gg-cert-001',
     certNumber: 'GGI-892401',
-    name: 'Charizard — Holo 1st Edition',
-    set: 'Base Set (Shadowless)',
-    year: 1999,
-    cardNumber: '4/102',
-    rarity: 'Rare Holo',
-    game: 'Pokemon',
+    name: 'Cade Cunningham — Hard Wired',
+    set: 'NBA Hoops (Detroit Pistons)',
+    year: 2024,
+    cardNumber: 'HW-12',
+    rarity: 'Holo Insert',
+    game: 'Sports',
     language: 'English',
     grade: 9.5,
     gradeLabel: 'Gem Mint 10',
@@ -17,14 +17,14 @@ export const MOCK_GRADED_CARDS: GradedCard[] = [
       centering: {
         score: 9.5,
         frontRatio: '51/49 L/R, 50/50 T/B',
-        backRatio: '52/48 L/R, 51/49 T/B',
-        description: 'Optical laser measurement shows sub-millimeter precision alignment exceeding 99th percentile for Base Set.'
+        backRatio: '50/50 L/R, 51/49 T/B',
+        description: 'Optical laser measurement shows sub-millimeter precision alignment exceeding 99th percentile for Hard Wired series.'
       },
       corners: {
         score: 9.5,
         frontScore: 9.5,
         backScore: 9.5,
-        description: 'Microscopic radius inspection reveals microscopic fiber fray on top-right rear corner (<0.04mm).'
+        description: 'Microscopic radius inspection confirms 90° micro-die cut with flawless edge beveling.'
       },
       edges: {
         score: 10.0,
@@ -36,11 +36,11 @@ export const MOCK_GRADED_CARDS: GradedCard[] = [
         score: 9.5,
         frontScore: 9.5,
         backScore: 9.5,
-        description: 'High-gloss holographic finish preserved. One single faint hairline scratch detectable only under 45° specular reflection.'
+        description: 'High-gloss holographic finish preserved. Clean refractive foil without micro-scratches.'
       }
     },
-    frontImage: 'https://images.unsplash.com/photo-1613771404721-1f92d799e49f?auto=format&fit=crop&w=800&q=85',
-    backImage: 'https://tcg.pokemon.com/assets/img/global/tcg-card-back-2x.jpg',
+    frontImage: '/images/cards/cade_cunningham_front.jpg',
+    backImage: '/images/cards/cade_cunningham_back.jpg',
     defects: [
       {
         id: 'd1',
@@ -81,7 +81,7 @@ export const MOCK_GRADED_CARDS: GradedCard[] = [
     certDate: '2026-08-14',
     verifier: 'Gorilla Lab Madrid (Station #04 - Optical Tech ID: M-802)',
     securityHash: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
-    declaredValueEur: 14500,
+    declaredValueEur: 450,
     isAuthentic: true
   },
   {

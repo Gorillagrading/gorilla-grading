@@ -90,8 +90,8 @@ export const DefectInspector: React.FC<DefectInspectorProps> = ({ card }) => {
             {/* The Image (Desaturated) */}
             <div className={`relative w-full h-full overflow-hidden ${isLight ? 'bg-gray-100' : 'bg-[#2A2E2A]'}`}>
               <img
-                src="/images/slab/gorilla_label_front_template.jpg"
-                alt="Original Gorilla Grading Slab Label"
+                src={card.frontImage}
+                alt={card.name}
                 className="w-full h-full object-cover"
               />
 

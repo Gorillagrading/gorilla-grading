@@ -233,7 +233,7 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
 
   return (
     <div className={`w-full min-h-screen pt-24 pb-32 transition-colors duration-300 ${isLight ? 'bg-[#F3EFE6] text-[#1A1D1A]' : 'bg-[#454545] text-white'}`}>
-      <div className="max-w-[1000px] mx-auto px-6 lg:px-12">
+      <div className="max-w-[1400px] mx-auto px-6 lg:px-12">
         
         {/* Breadcrumb & Header */}
         <div className={`mb-6 font-mono text-[10px] uppercase tracking-widest flex items-center gap-2 ${isLight ? 'text-[#6B7268]' : 'text-[#A4ACA1]'}`}>

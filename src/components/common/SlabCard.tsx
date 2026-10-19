@@ -200,63 +200,13 @@ export const SlabCard: React.FC<SlabCardProps> = ({
           }}
         />
 
-        {/* TOP SLAB WHITE LABEL */}
-        <div className="relative mb-3.5 p-3 border shadow-sm bg-white text-black font-sans flex flex-col justify-between" style={{ minHeight: '90px' }}>
-          {/* Subtle noise texture */}
-          <div className="absolute inset-0 bg-[url('/images/noise.png')] opacity-[0.03] pointer-events-none" />
-
-          {!isFlipped ? (
-            /* FRONT LABEL */
-            <div className="flex justify-between items-stretch relative z-10 w-full h-full">
-              {/* Left Column */}
-              <div className="flex flex-col justify-between items-start">
-                <div className="flex items-center gap-1 font-black text-xl leading-none tracking-tighter">
-                   <ShieldCheck className="w-5 h-5 text-black" fill="black" stroke="white" />
-                   GGI
-                </div>
-                <div className="text-[42px] font-black leading-[0.8] mt-2 mb-1 tracking-tighter">
-                  {card.grade === 10 ? '10' : card.grade.toFixed(1)}
-                </div>
-                <div className="text-[10px] tracking-tight font-medium uppercase text-black/80">
-                  {card.certNumber}
-                </div>
-              </div>
-
-              {/* Right Column */}
-              <div className="flex flex-col justify-between items-end text-right w-2/3">
-                <div className="flex flex-col items-end leading-[1.15] w-full">
-                  <div className="text-[11px] font-bold uppercase truncate w-full">{card.year} {card.game}</div>
-                  <div className="text-[10px] uppercase text-black/90 truncate w-full">{card.language} / {card.rarity}</div>
-                  <div className="text-[12px] font-black uppercase mt-1 truncate w-full">{card.name}</div>
-                </div>
-                
-                {/* Subgrades Grid */}
-                <div className="grid grid-cols-2 gap-x-3 gap-y-0 text-[9px] uppercase font-semibold mt-3 text-right">
-                  <div>CENTERING {card.subgrades.centering.score.toFixed(1)}</div>
-                  <div>CORNERS {card.subgrades.corners.score.toFixed(1)}</div>
-                  <div>EDGES {card.subgrades.edges.score.toFixed(1)}</div>
-                  <div>SURFACE {card.subgrades.surface.score.toFixed(1)}</div>
-                </div>
-              </div>
-            </div>
-          ) : (
-            /* BACK LABEL */
-            <div className="flex justify-between items-center relative z-10 w-full h-full px-1">
-              <div className="flex items-center gap-3">
-                <ShieldCheck className="w-12 h-12 text-black" fill="black" stroke="white" />
-                <div className="flex flex-col leading-none">
-                  <span className="font-black text-xl tracking-tighter">GORILA GRADING</span>
-                  <span className="text-[11px] tracking-widest font-medium mt-1">International</span>
-                </div>
-              </div>
-              <div className="w-14 h-14 bg-white border-2 border-black rounded-md p-1 flex items-center justify-center relative">
-                 <QrCode className="w-full h-full text-black" />
-                 <div className="absolute inset-0 m-auto w-4 h-4 bg-white flex items-center justify-center">
-                   <ShieldCheck className="w-3.5 h-3.5 text-black" fill="black" stroke="white" />
-                 </div>
-              </div>
-            </div>
-          )}
+        {/* TOP SLAB ORIGINAL GORILLA LABEL */}
+        <div className="relative mb-3.5 rounded-[4px] overflow-hidden border border-black/40 shadow-sm w-full select-none aspect-[659/243] bg-white">
+          <img
+            src={isFlipped ? "/images/slab/gorilla_label_back_original.jpg" : "/images/slab/gorilla_label_front_template.jpg"}
+            alt={isFlipped ? "Gorilla Grading Original Back Label" : "Gorilla Grading Original Front Label"}
+            className="w-full h-full object-cover"
+          />
         </div>
 
         {/* CARD PROTAGONIST RECESSED CRADLE */}
