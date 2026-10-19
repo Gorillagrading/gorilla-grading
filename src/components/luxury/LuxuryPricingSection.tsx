@@ -471,11 +471,6 @@ export const LuxuryPricingSection: React.FC<LuxuryPricingSectionProps> = ({ onNa
                           onClick={(e) => {
                             e.stopPropagation();
                             setSelectedTierId(lvl.id);
-                            if (onNavigate) {
-                              onNavigate(`/submit?tier=${lvl.id}`);
-                            } else {
-                              window.location.href = `/submit?tier=${lvl.id}`;
-                            }
                           }}
                           className={
                             isSelected
@@ -698,7 +693,7 @@ export const LuxuryPricingSection: React.FC<LuxuryPricingSectionProps> = ({ onNa
                 {/* Mobile Direct Action Button */}
                 <button
                   type="button"
-                  onClick={() => onNavigate && onNavigate(`/submit?tier=${selectedTierId || currentLevel.id}&qty=${cardCount}&fromConfig=true`)}
+                  onClick={() => onNavigate && onNavigate(`/submit?tier=${selectedTierId || currentLevel.id}&qty=${cardCount}&fromConfig=true&step=2`)}
                   className="btn-gorilla-pill w-full mt-3 py-3 px-4 text-xs font-extrabold tracking-wider flex items-center justify-center gap-2 shadow-lg"
                 >
                   <span>
@@ -728,29 +723,6 @@ export const LuxuryPricingSection: React.FC<LuxuryPricingSectionProps> = ({ onNa
                   ? 'Descuentos por volumen: 5% a partir de 10 cartas, 8% desde 25 cartas y 12% para más de 50 cartas.'
                   : 'Bulk discounts: 5% for 10+ cards, 8% for 25+ cards, and 12% for 50+ cards.'}
               </p>
-            </div>
-
-            {/* Service Level Switcher - Clean tabs without dots */}
-            <div className={`p-1 border flex items-center gap-1 flex-wrap ${
-              isLight ? 'bg-gray-50 border-gray-200' : 'bg-black/40 border-white/15'
-            }`}>
-              {serviceLevels.map((lvl) => {
-                const isActive = selectedTierId === lvl.id;
-                return (
-                  <button
-                    key={lvl.id}
-                    type="button"
-                    onClick={() => setSelectedTierId(lvl.id)}
-                    className={`px-2.5 py-1 sm:px-3 sm:py-1.5 font-mono text-[11px] sm:text-xs transition-colors cursor-pointer ${
-                      isActive
-                        ? (isLight ? 'bg-white text-black font-bold shadow-xs border border-gray-200' : 'bg-white/20 text-white font-bold')
-                        : (isLight ? 'text-gray-600 hover:text-black' : 'text-gray-300 hover:text-white')
-                    }`}
-                  >
-                    {lvl.shortName}
-                  </button>
-                );
-              })}
             </div>
           </div>
 
@@ -856,7 +828,7 @@ export const LuxuryPricingSection: React.FC<LuxuryPricingSectionProps> = ({ onNa
 
               <button
                 type="button"
-                onClick={() => onNavigate && onNavigate(`/submit?tier=${selectedTierId || currentLevel.id}&qty=${cardCount}&fromConfig=true`)}
+                onClick={() => onNavigate && onNavigate(`/submit?tier=${selectedTierId || currentLevel.id}&qty=${cardCount}&fromConfig=true&step=2`)}
                 className="btn-gorilla-pill w-full py-3.5 sm:py-4 px-6 sm:px-8 text-xs font-bold tracking-normal gap-2 shadow-lg"
               >
                 <span>{language === 'es' ? `Configurar envío (${cardCount} ${cardCount === 1 ? 'carta' : 'cartas'}) →` : `Configure shipment (${cardCount} ${cardCount === 1 ? 'card' : 'cards'}) →`}</span>
