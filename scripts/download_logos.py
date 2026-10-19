@@ -1,8 +1,13 @@
+# Uso: python scripts/download_logos.py  (descarga los logos de los juegos desde Wikimedia)
+import sys
+from pathlib import Path
+
+OUT_DIR = Path(__file__).resolve().parent.parent / "public" / "images" / "logos"
 import os
 import urllib.request
 import time
 
-out_dir = r"public\images\logos"
+out_dir = str(OUT_DIR)
 os.makedirs(out_dir, exist_ok=True)
 
 logos = {

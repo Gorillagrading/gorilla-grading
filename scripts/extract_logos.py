@@ -1,8 +1,13 @@
+# Uso: python scripts/extract_logos.py <imagen_origen>
+import sys
+from pathlib import Path
+
+OUT_DIR = Path(__file__).resolve().parent.parent / "public" / "images" / "logos"
 import os
 from PIL import Image
 
-src_path = r"C:\Users\jesus\.gemini\antigravity-ide\brain\912c2c6c-654a-4b34-bc59-03e2874277ac\.user_uploaded\media_1790083815678.jpg"
-out_dir = r"public\images\logos"
+src_path = sys.argv[1]
+out_dir = str(OUT_DIR)
 os.makedirs(out_dir, exist_ok=True)
 
 img = Image.open(src_path)

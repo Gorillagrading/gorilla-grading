@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const directory = 'c:/Users/jesus/Documents/Gorilla Granding/Gorilla_Grading_Prototypes_From_Scratch/src';
+const directory = path.resolve(__dirname, '..', 'src');
 
 const reverseMappings = [
   // Backgrounds
