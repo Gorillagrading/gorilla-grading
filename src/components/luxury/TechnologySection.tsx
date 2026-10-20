@@ -144,10 +144,10 @@ export const TechnologySection: React.FC<TechnologySectionProps> = ({
 
           {/* Right Steps - Open layout without box, with enhanced text legibility */}
           <div className={`lg:col-span-4 flex flex-col justify-center lg:pl-10 ${
-            isLight ? '[text-shadow:0_0_12px_rgba(241,236,229,0.6)]' : ''
+            isLight ? '[text-shadow:0_1px_10px_rgba(0,0,0,0.7)]' : ''
           }`}>
             <div className={`flex flex-col border-l overflow-hidden ${
-              isLight ? 'border-black/20' : 'border-white/10'
+              isLight ? 'border-white/25' : 'border-white/10'
             }`}>
               
               {steps.map((step, index) => {
@@ -158,7 +158,7 @@ export const TechnologySection: React.FC<TechnologySectionProps> = ({
                   <div 
                     key={step.id} 
                     className={`flex gap-5 sm:gap-6 py-5 px-6 border-b relative transition-all duration-300 ease-out opacity-100 translate-y-0 ${
-                      isLight ? 'border-black/10' : 'border-white/5'
+                      isLight ? 'border-white/15' : 'border-white/5'
                     } ${
                       isCurrent 
                         ? (isLight ? 'bg-gradient-to-r from-black/[0.04] to-transparent' : 'bg-gradient-to-r from-white/[0.04] to-transparent')
@@ -175,8 +175,8 @@ export const TechnologySection: React.FC<TechnologySectionProps> = ({
                       className="font-mono text-lg font-bold transition-colors duration-300 shrink-0"
                       style={{ 
                         color: isCurrent 
-                          ? (isLight ? '#15803D' : '#48C765') 
-                          : (isLight ? '#2B322C' : '#A4ACA1') 
+                          ? (isLight ? '#4ADE80' : '#48C765')
+                          : (isLight ? '#FFFFFF' : '#A4ACA1')
                       }}
                     >
                       {step.id}
@@ -184,13 +184,13 @@ export const TechnologySection: React.FC<TechnologySectionProps> = ({
                     <div>
                       <h4 
                         className="font-sans font-bold text-sm tracking-normal uppercase mb-1"
-                        style={{ color: isLight ? '#14170F' : '#FFFFFF' }}
+                        style={{ color: '#FFFFFF' }}
                       >
                         {step.title}
                       </h4>
                       <p 
                         className="text-xs leading-relaxed font-medium"
-                        style={{ color: isLight ? '#2B322C' : '#C8D2C5' }}
+                        style={{ color: isLight ? '#E5EBE3' : '#C8D2C5' }}
                       >
                         {step.desc}
                       </p>
