@@ -1,6 +1,46 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
+
+// Brochure-style 3D tilt that follows the mouse on hover (same effect as the pillar cards)
+const TiltCard: React.FC<{ isLight: boolean; className: string; children: React.ReactNode }> = ({ isLight, className, children }) => {
+  const [hovered, setHovered] = useState(false);
+  const [tilt, setTilt] = useState({ x: 0, y: 0 });
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const px = (e.clientX - rect.left) / rect.width - 0.5;
+    const py = (e.clientY - rect.top) / rect.height - 0.5;
+    setTilt({ x: -py * 12, y: px * 16 });
+  };
+
+  const handleMouseLeave = () => {
+    setHovered(false);
+    setTilt({ x: 0, y: 0 });
+  };
+
+  return (
+    <div className={`relative ${hovered ? 'z-10' : 'z-0'}`} style={{ perspective: 1000 }}>
+      <div
+        onMouseEnter={() => setHovered(true)}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        style={{
+          transform: `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg) scale(${hovered ? 1.2 : 1})`,
+          transition: hovered ? 'transform 0.12s ease-out' : 'transform 0.5s ease',
+          boxShadow: hovered
+            ? `${-tilt.y * 1.2}px ${14 + tilt.x}px 30px rgba(0,0,0,0.35)`
+            : 'none',
+          transformStyle: 'preserve-3d',
+          willChange: 'transform',
+        }}
+        className={className}
+      >
+        {children}
+      </div>
+    </div>
+  );
+};
 
 export const CompanyStorySection: React.FC = () => {
   const { language } = useLanguage();
@@ -11,7 +51,7 @@ export const CompanyStorySection: React.FC = () => {
     <section className={`w-full transition-colors duration-300 pt-20 pb-24 px-6 lg:px-12 relative overflow-hidden ${
       isLight ? 'bg-[#ECE5D8] text-[#14170F]' : 'bg-[#454545] text-white'
     }`}>
-      
+
       {/* Background Subtle Elements */}
       <div className={`absolute top-0 right-0 w-[800px] h-[800px] blur-[150px] pointer-events-none rounded-full ${
         isLight ? 'bg-[#15803D]/[0.03]' : 'bg-[#48C765]/[0.015]'
@@ -21,7 +61,7 @@ export const CompanyStorySection: React.FC = () => {
       }`} />
 
       <div className="max-w-[1200px] mx-auto relative z-10">
-        
+
         {/* Header */}
         <div className="flex flex-col items-center text-center mb-16 animate-fade-in-up">
           <div className="flex items-center gap-3 mb-6">
@@ -33,7 +73,7 @@ export const CompanyStorySection: React.FC = () => {
             </span>
             <span className={`w-8 h-[1px] ${isLight ? 'bg-[#15803D]' : 'bg-[#48C765]'}`}></span>
           </div>
-          
+
           <h1 className={`font-['Nunito',sans-serif] font-[900] text-4xl sm:text-6xl uppercase tracking-normal leading-tight mb-8 ${
             isLight ? 'text-[#14170F]' : 'text-white'
           }`}>
@@ -43,23 +83,23 @@ export const CompanyStorySection: React.FC = () => {
               {language === 'es' ? 'A NIVEL MUNDIAL' : 'GLOBALLY'}
             </span>
           </h1>
-          
+
           <p className={`font-sans text-sm sm:text-base max-w-2xl leading-relaxed text-center sm:text-justify ${
             isLight ? 'text-[#4A5048]' : 'text-[#A4ACA1]'
           }`}>
-            {language === 'es' 
-              ? 'Nacimos de la frustración de coleccionistas de todo el mundo cansados de servicios lentos y subjetivos. Gorilla Grading surge para ofrecer precisión óptica, velocidad y total transparencia a escala internacional.' 
+            {language === 'es'
+              ? 'Nacimos de la frustración de coleccionistas de todo el mundo cansados de servicios lentos y subjetivos. Gorilla Grading surge para ofrecer precisión óptica, velocidad y total transparencia a escala internacional.'
               : 'Born from the frustration of collectors worldwide tired of slow and subjective services. Gorilla Grading emerged to offer optical precision, speed, and total transparency on an international scale.'}
           </p>
         </div>
 
         {/* The Grid / Pillars */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-12">
-          
+
           {/* Pillar 1 */}
-          <div className={`p-8 md:p-10 flex flex-col items-start group border transition-all duration-300 ${
-            isLight 
-              ? 'bg-[#F2ECE1] border-black/[0.08] hover:bg-[#EAE2D5] shadow-sm' 
+          <TiltCard isLight={isLight} className={`p-8 md:p-10 flex flex-col items-start group border transition-all duration-300 ${
+            isLight
+              ? 'bg-[#F2ECE1] border-black/[0.08] hover:bg-[#EAE2D5] shadow-sm'
               : 'bg-[#161B16]/50 border-white/[0.04] hover:bg-[#161B16]'
           }`}>
             <div className={`mb-6 group-hover:scale-105 transition-transform duration-300 ${
@@ -77,16 +117,16 @@ export const CompanyStorySection: React.FC = () => {
             <p className={`font-sans text-xs leading-relaxed text-justify ${
               isLight ? 'text-[#4A5048]' : 'text-[#A4ACA1]'
             }`}>
-              {language === 'es' 
-                ? 'Con laboratorios y logística optimizada, ofrecemos un servicio de graduación rápido y seguro para coleccionistas sin importar de dónde vengan, eliminando los tiempos de espera absurdos.' 
+              {language === 'es'
+                ? 'Con laboratorios y logística optimizada, ofrecemos un servicio de graduación rápido y seguro para coleccionistas sin importar de dónde vengan, eliminando los tiempos de espera absurdos.'
                 : 'With optimized laboratories and logistics, we offer a fast and secure grading service for collectors no matter where they are from, eliminating absurd wait times.'}
             </p>
-          </div>
+          </TiltCard>
 
           {/* Pillar 2 */}
-          <div className={`p-8 md:p-10 flex flex-col items-start group border transition-all duration-300 ${
-            isLight 
-              ? 'bg-[#F2ECE1] border-black/[0.08] hover:bg-[#EAE2D5] shadow-sm' 
+          <TiltCard isLight={isLight} className={`p-8 md:p-10 flex flex-col items-start group border transition-all duration-300 ${
+            isLight
+              ? 'bg-[#F2ECE1] border-black/[0.08] hover:bg-[#EAE2D5] shadow-sm'
               : 'bg-[#161B16]/50 border-white/[0.04] hover:bg-[#161B16]'
           }`}>
             <div className={`mb-6 group-hover:scale-105 transition-transform duration-300 ${
@@ -104,16 +144,16 @@ export const CompanyStorySection: React.FC = () => {
             <p className={`font-sans text-xs leading-relaxed text-justify ${
               isLight ? 'text-[#4A5048]' : 'text-[#A4ACA1]'
             }`}>
-              {language === 'es' 
-                ? 'Se acabó el depender del "buen o mal día" de un graduador humano. Implementamos tecnología óptica y láser porque los números no mienten.' 
+              {language === 'es'
+                ? 'Se acabó el depender del "buen o mal día" de un graduador humano. Implementamos tecnología óptica y láser porque los números no mienten.'
                 : 'No more depending on a human grader\'s "good or bad day". We implemented optical and laser technology because numbers don\'t lie.'}
             </p>
-          </div>
+          </TiltCard>
 
           {/* Pillar 3 */}
-          <div className={`p-8 md:p-10 flex flex-col items-start group border transition-all duration-300 ${
-            isLight 
-              ? 'bg-[#F2ECE1] border-black/[0.08] hover:bg-[#EAE2D5] shadow-sm' 
+          <TiltCard isLight={isLight} className={`p-8 md:p-10 flex flex-col items-start group border transition-all duration-300 ${
+            isLight
+              ? 'bg-[#F2ECE1] border-black/[0.08] hover:bg-[#EAE2D5] shadow-sm'
               : 'bg-[#161B16]/50 border-white/[0.04] hover:bg-[#161B16]'
           }`}>
             <div className={`mb-6 group-hover:scale-105 transition-transform duration-300 ${
@@ -131,11 +171,11 @@ export const CompanyStorySection: React.FC = () => {
             <p className={`font-sans text-xs leading-relaxed text-justify ${
               isLight ? 'text-[#4A5048]' : 'text-[#A4ACA1]'
             }`}>
-              {language === 'es' 
-                ? 'No somos un fondo de inversión sin alma. Somos entusiastas de los TCG, diseñando el producto que siempre quisimos usar para nuestras propias colecciones.' 
+              {language === 'es'
+                ? 'No somos un fondo de inversión sin alma. Somos entusiastas de los TCG, diseñando el producto que siempre quisimos usar para nuestras propias colecciones.'
                 : 'We are not a soulless investment fund. We are TCG enthusiasts, building the exact product we always wanted to use for our own collections.'}
             </p>
-          </div>
+          </TiltCard>
 
         </div>
 
