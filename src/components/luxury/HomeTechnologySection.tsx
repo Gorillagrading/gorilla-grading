@@ -114,8 +114,8 @@ export const HomeTechnologySection: React.FC<HomeTechnologySectionProps> = ({
                   }}
                   className="w-full h-auto object-contain pointer-events-none select-none bg-transparent"
                   style={{
-                    maskImage: 'radial-gradient(ellipse at center, black 60%, transparent 100%)',
-                    WebkitMaskImage: 'radial-gradient(ellipse at center, black 60%, transparent 100%)',
+                    maskImage: 'radial-gradient(farthest-corner at center, black 72%, transparent 100%)',
+                    WebkitMaskImage: 'radial-gradient(farthest-corner at center, black 72%, transparent 100%)',
                   }}
                 />
 
