@@ -292,7 +292,7 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
           className="absolute inset-0"
           style={{
             background: isLight
-              ? 'linear-gradient(90deg, rgba(240,247,240,0.94) 0%, rgba(240,247,240,0.78) 38%, rgba(240,247,240,0.20) 70%, rgba(240,247,240,0) 100%)'
+              ? 'linear-gradient(90deg, rgba(240,247,240,0.80) 0%, rgba(240,247,240,0.55) 38%, rgba(240,247,240,0.10) 70%, rgba(240,247,240,0) 100%)'
               : 'linear-gradient(90deg, rgba(5,10,8,0.92) 0%, rgba(5,10,8,0.75) 38%, rgba(5,10,8,0.20) 70%, rgba(5,10,8,0) 100%)',
           }}
         />
