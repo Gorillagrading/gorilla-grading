@@ -83,9 +83,9 @@ export const TechnologySection: React.FC<TechnologySectionProps> = ({
           <>
             <div className="absolute inset-0 lg:hidden bg-[#F1ECE5]/70" />
             <div className="hidden lg:flex w-full h-full">
-              <div className="w-[45%] bg-gradient-to-r from-[#F1ECE5]/92 via-[#F1ECE5]/55 to-transparent" />
+              <div className="w-[50%] bg-gradient-to-r from-[#F1ECE5]/95 via-[#F1ECE5]/80 to-transparent" />
               <div className="flex-1" />
-              <div className="w-[30%] bg-gradient-to-l from-[#F1ECE5]/85 via-[#F1ECE5]/45 to-transparent" />
+              <div className="w-[36%] bg-gradient-to-l from-[#F1ECE5]/92 via-[#F1ECE5]/70 to-transparent" />
             </div>
           </>
         ) : (
@@ -98,7 +98,9 @@ export const TechnologySection: React.FC<TechnologySectionProps> = ({
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 w-full items-center">
           
           {/* Left Copy Overlay */}
-          <div className="lg:col-span-5 flex flex-col justify-center items-center lg:items-start text-center lg:text-left opacity-100">
+          <div className={`lg:col-span-5 flex flex-col justify-center items-center lg:items-start text-center lg:text-left opacity-100 ${
+            isLight ? '[text-shadow:0_0_12px_rgba(241,236,229,0.6)]' : ''
+          }`}>
             <p className={`font-mono text-[10px] tracking-[0.2em] uppercase mb-4 text-center lg:text-left ${
               isLight ? 'text-[#15803D] font-bold' : 'text-[#4ADE80] font-bold'
             }`}>
@@ -141,7 +143,9 @@ export const TechnologySection: React.FC<TechnologySectionProps> = ({
           <div className="hidden lg:block lg:col-span-3"></div>
 
           {/* Right Steps - Open layout without box, with enhanced text legibility */}
-          <div className="lg:col-span-4 flex flex-col justify-center lg:pl-10">
+          <div className={`lg:col-span-4 flex flex-col justify-center lg:pl-10 ${
+            isLight ? '[text-shadow:0_0_12px_rgba(241,236,229,0.6)]' : ''
+          }`}>
             <div className={`flex flex-col border-l overflow-hidden ${
               isLight ? 'border-black/20' : 'border-white/10'
             }`}>
