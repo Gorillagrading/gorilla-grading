@@ -133,13 +133,13 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onNavigate }) => {
               <button 
                 onClick={() => onNavigate('/')}
                 title={language === 'es' ? 'Ir al inicio de Gorilla Grading' : 'Go to Gorilla Grading home'}
-                className={`relative p-2 rounded-2xl border transition-all duration-300 hover:scale-105 cursor-pointer group ${
-                  isLight 
-                    ? 'bg-white border-[#DDD6C9] shadow-sm hover:border-[#16A34A]/40' 
-                    : 'bg-[#181E17] border-white/10 shadow-[0_0_20px_rgba(72,199,101,0.12)] hover:border-[#48C765]/40'
+                className={`relative p-1.5 rounded-2xl border transition-all duration-300 hover:scale-105 cursor-pointer group ${
+                  isLight
+                    ? 'bg-white border-[#DDD6C9] shadow-sm hover:border-[#16A34A]/40'
+                    : 'bg-[#181E17] border-white/10 hover:border-[#48C765]/40'
                 }`}
               >
-                <div className="w-12 h-12 flex items-center justify-center p-1">
+                <div className="w-9 h-9 flex items-center justify-center p-0.5">
                   <img 
                     src="/brand/logo-green.png" 
                     alt="Gorilla Grading Logo" 
