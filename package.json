@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "dev:all": "node scripts/dev.mjs",
-    "dev:api":"tsx watch --env-file-if-exists=.env server/dev.ts",
+    "dev:api": "tsx watch --env-file-if-exists=.env server/dev.ts",
     "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.server.json",
     "test": "vitest run",
     "build": "tsc && vite build",
@@ -25,6 +25,7 @@
     "framer-motion": "^13.4.4",
     "hono": "^4.13.13",
     "lucide-react": "^0.475.0",
+    "nodemailer": "^10.1.7",
     "postgres": "^3.4.9",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
@@ -33,6 +34,7 @@
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.10",
     "@types/node": "^22.13.4",
+    "@types/nodemailer": "^8.0.2",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
     "@vitejs/plugin-react": "^4.3.4",
