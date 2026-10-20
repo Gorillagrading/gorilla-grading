@@ -3,6 +3,12 @@ import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import { MOCK_SERVICES } from '../data/mockServices';
 import { OrderItem, ServiceTier } from '../types';
+import { useAuth } from '../context/AuthContext';
+import { ApiError } from '../api/client';
+import { fetchQuote, submitOrder } from '../api/orders';
+import { formatEur } from '../utils/money';
+import { InlineSignIn } from '../components/common/InlineSignIn';
+import type { QuoteDto, QuoteIssue } from '../../shared/orders';
 import { Plus, Trash2, CheckCircle2, Clock, Check, ShieldCheck, Edit2, X } from 'lucide-react';
 import { 
   BlueprintCaliper, 
@@ -135,12 +141,102 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [generatedSubmissionId, setGeneratedSubmissionId] = useState('');
 
-  // Totals Calculation
-  const subtotalGrading = items.length * (selectedTier?.priceEur || 0);
+  const es = language === 'es';
+  const { user, isLoggedIn } = useAuth();
+
+  // Datos de contacto y dirección de devolución (paso 3).
+  const [contact, setContact] = useState({
+    fullName: '', email: '', line1: '', city: '', postalCode: '', countryCode: 'ES', phone: '',
+  });
+  const setField = (key: keyof typeof contact) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
+    setContact((prev) => ({ ...prev, [key]: e.target.value }));
+  const [step3Error, setStep3Error] = useState('');
+
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [confirmedValues, setConfirmedValues] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
+  // Identifica este pedido: si el envío se repite (doble clic, mala conexión), el servidor no crea otro.
+  const [clientToken] = useState(() => crypto.randomUUID());
+
+  // El precio lo calcula siempre el servidor. Aquí solo se pide y se muestra.
+  const [quote, setQuote] = useState<QuoteDto | null>(null);
+  const [issues, setIssues] = useState<QuoteIssue[]>([]);
+  const [quoteLoading, setQuoteLoading] = useState(false);
+  const [quoteFailed, setQuoteFailed] = useState(false);
+  const quoteItems = items.map((item) => ({
+    tier: item.serviceTierId,
+    declaredValueCents: Math.round((Number(item.declaredValue) || 0) * 100),
+  }));
+  const quoteKey = JSON.stringify([quoteItems, shippingMethod]);
+
+  useEffect(() => {
+    if (quoteItems.length === 0) {
+      setQuote(null);
+      setIssues([]);
+      return;
+    }
+    let cancelled = false;
+    setQuoteLoading(true);
+    const timer = setTimeout(() => {
+      fetchQuote(quoteItems, shippingMethod)
+        .then((result) => {
+          if (cancelled) return;
+          setQuote(result.quote);
+          setIssues(result.issues);
+          setQuoteFailed(false);
+        })
+        .catch(() => {
+          if (!cancelled) setQuoteFailed(true);
+        })
+        .finally(() => {
+          if (!cancelled) setQuoteLoading(false);
+        });
+    }, 300);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [quoteKey]);
+
+  // Quien tiene sesión no vuelve a escribir su nombre y correo.
+  useEffect(() => {
+    if (user) setContact((prev) => ({ ...prev, fullName: prev.fullName || user.fullName || '', email: user.email }));
+  }, [user]);
+
+  // El servicio Event solo se entrega en mano en un evento oficial.
+  useEffect(() => {
+    if (selectedTier?.id === 'event') setShippingMethod('CARD_SHOW_DROPOFF');
+  }, [selectedTier]);
+
+  const issueMessage = (issue: QuoteIssue): string => {
+    const n = String(issue.index + 1).padStart(2, '0');
+    switch (issue.code) {
+      case 'declared_value_exceeds_limit': {
+        const name = MOCK_SERVICES.find((s) => s.id === issue.tier)?.name ?? issue.tier;
+        return es
+          ? `Carta #${n}: el valor declarado (${formatEur(issue.declaredValueCents, 'es')}) supera el límite del servicio ${name} (${formatEur(issue.maxCents, 'es')}). Baja el valor o elige un servicio superior en el paso 1.`
+          : `Card #${n}: the declared value (${formatEur(issue.declaredValueCents, 'en')}) exceeds the ${name} service limit (${formatEur(issue.maxCents, 'en')}). Lower the value or choose a higher service in step 1.`;
+      }
+      case 'declared_value_required':
+        return es ? `Carta #${n}: indica su valor declarado (mínimo 1 €).` : `Card #${n}: enter its declared value (minimum €1).`;
+      case 'event_tier_requires_dropoff':
+        return es ? 'El servicio Event solo admite entrega en mano en un evento oficial.' : 'The Event service only accepts in-person drop-off at an official event.';
+      case 'unknown_tier':
+        return es ? `Carta #${n}: el servicio elegido ya no está disponible.` : `Card #${n}: the chosen service is no longer available.`;
+    }
+  };
+
+  const validateStep3 = (): string => {
+    if (!contact.fullName.trim()) return es ? 'Escribe tu nombre completo.' : 'Enter your full name.';
+    if (!/^\S+@\S+\.\S+$/.test(contact.email.trim())) return es ? 'Introduce un correo válido.' : 'Enter a valid email.';
+    if (shippingMethod === 'COURIER_INSURED' && (!contact.line1.trim() || !contact.city.trim() || !contact.postalCode.trim())) {
+      return es ? 'Completa la dirección de devolución.' : 'Complete the return address.';
+    }
+    return '';
+  };
+
   const totalDeclaredValue = items.reduce((sum, item) => sum + (Number(item.declaredValue) || 0), 0);
-  const insuranceFee = Math.max(8.00, totalDeclaredValue * 0.008);
-  const shippingFee = shippingMethod === 'CARD_SHOW_DROPOFF' ? 0.00 : 14.50;
-  const totalEstimatedCost = subtotalGrading + (shippingMethod === 'COURIER_INSURED' ? insuranceFee + shippingFee : 0);
 
   const handleAddCard = (e: React.FormEvent) => {
     e.preventDefault();
@@ -157,6 +253,8 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
         set: newCardSet || 'Unknown',
         declaredValue: Number(newDeclaredValue) || 100,
         serviceTierId: selectedTier?.id || 'standard',
+        year: Number(newCardYear) || undefined,
+        language: newCardLanguage || undefined,
         notes: '',
         frontImagePreview: 'https://images.unsplash.com/photo-1613771404784-3a5686aa2be3?auto=format&fit=crop&w=400&q=80'
       });
@@ -184,12 +282,57 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
     setItems(items.filter(item => item.id !== id));
   };
 
-  const handleFinalSubmit = () => {
-    if (items.length === 0) return;
-    const randomSubId = `GG-SUB-${Math.floor(100000 + Math.random() * 900000)}`;
-    setGeneratedSubmissionId(randomSubId);
-    setIsSubmitted(true);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+  const handleFinalSubmit = async () => {
+    if (items.length === 0 || submitting) return;
+    setSubmitting(true);
+    setSubmitError('');
+    try {
+      const order = await submitOrder({
+        items: items.map((item) => ({
+          tier: item.serviceTierId,
+          cardName: item.cardName.trim(),
+          game: item.game,
+          setName: item.set && item.set !== 'Unknown' ? item.set : undefined,
+          year: item.year,
+          language: item.language,
+          declaredValueCents: Math.round((Number(item.declaredValue) || 0) * 100),
+          notes: item.notes || undefined,
+        })),
+        shippingMethod,
+        fullName: contact.fullName.trim(),
+        shippingAddress:
+          shippingMethod === 'COURIER_INSURED'
+            ? {
+                line1: contact.line1.trim(),
+                city: contact.city.trim(),
+                postalCode: contact.postalCode.trim(),
+                countryCode: contact.countryCode,
+                phone: contact.phone.trim() || undefined,
+              }
+            : undefined,
+        locale: es ? 'es' : 'en',
+        clientToken,
+        acceptedTerms: true,
+        confirmedDeclaredValues: true,
+      });
+      setGeneratedSubmissionId(order.code);
+      setIsSubmitted(true);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (err) {
+      if (err instanceof ApiError && err.code === 'invalid_order') {
+        setIssues((err.extra.issues as QuoteIssue[] | undefined) ?? []);
+        setSubmitError(es ? 'Hay cartas que no se pueden enviar tal como están. Revisa el paso 2.' : 'Some cards cannot be submitted as they are. Review step 2.');
+        setCurrentStep(2);
+      } else if (err instanceof ApiError && err.status === 401) {
+        setSubmitError(es ? 'Tu sesión ha caducado. Confirma tu correo otra vez.' : 'Your session has expired. Confirm your email again.');
+      } else if (err instanceof ApiError && err.status === 429) {
+        setSubmitError(es ? 'Demasiados pedidos seguidos. Espera unos minutos.' : 'Too many orders in a row. Please wait a few minutes.');
+      } else {
+        setSubmitError(es ? 'No se pudo enviar el pedido. Inténtalo de nuevo.' : 'The order could not be submitted. Please try again.');
+      }
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const stepsList = [
@@ -892,9 +1035,18 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
               </div>
 
               {items.length > 0 && (
-                <div className={`font-mono text-xs ${isLight ? 'text-gray-600' : 'text-gray-400'}`}>
-                  <span>{items.length} × {selectedTier?.priceEur || 0} € = </span>
-                  <strong className={`font-bold text-sm ${isLight ? 'text-gray-950' : 'text-white'}`}>{subtotalGrading} €</strong>
+                <div className={`font-mono text-xs ${isLight ? 'text-gray-600' : 'text-gray-400'}`} aria-live="polite">
+                  {quote ? (
+                    <>
+                      <span>
+                        {quote.itemCount} {es ? (quote.itemCount === 1 ? 'carta' : 'cartas') : (quote.itemCount === 1 ? 'card' : 'cards')}
+                        {quote.discountRate > 0 ? ` · −${Math.round(quote.discountRate * 100)} %` : ''} ={' '}
+                      </span>
+                      <strong className={`font-bold text-sm ${isLight ? 'text-gray-950' : 'text-white'}`}>{formatEur(quote.subtotalCents, language)}</strong>
+                    </>
+                  ) : (
+                    <span>…</span>
+                  )}
                 </div>
               )}
             </div>
@@ -1058,6 +1210,17 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
               </form>
             )}
 
+            {(issues.length > 0 || quoteFailed) && (
+              <div role="alert" className="mb-6 p-4 border border-red-500/40 bg-red-500/10 text-red-700 dark:text-red-300 font-sans text-xs space-y-1.5">
+                {quoteFailed && (
+                  <p>{es ? 'No se pudo calcular el precio. Comprueba tu conexión.' : 'Could not calculate the price. Check your connection.'}</p>
+                )}
+                {issues.map((issue, n) => (
+                  <p key={n}>{issueMessage(issue)}</p>
+                ))}
+              </div>
+            )}
+
             {/* Horizontal Card Gallery */}
             {items.length > 0 && (
               <div className="space-y-3">
@@ -1115,7 +1278,7 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
                       {/* Top bar with ID & actions */}
                       <div className="flex items-center justify-between mb-2">
                         <span className="font-mono text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
-                          GG-{1000 + idx}
+                          #{String(idx + 1).padStart(2, '0')}
                         </span>
                         <div className="flex items-center gap-1.5" onClick={e => e.stopPropagation()}>
                           <button
@@ -1158,7 +1321,7 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
                         <span className="text-[9.5px] uppercase text-gray-500 dark:text-gray-400">
                           {language === 'es' ? 'Seguro / Valor:' : 'Insurance / Decl:'}
                         </span>
-                        <strong className="font-bold text-emerald-600 dark:text-emerald-400">
+                        <strong className={`font-bold ${issues.some((i) => i.index === idx) ? 'text-red-500' : 'text-emerald-600 dark:text-emerald-400'}`}>
                           €{item.declaredValue}
                         </strong>
                       </div>
@@ -1181,105 +1344,261 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
         {/* ==============================================================
             STEP 3: DATOS
         ============================================================== */}
-        {currentStep === 3 && (
-          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <h2 className={`font-['Nunito',sans-serif] text-xl sm:text-2xl uppercase font-[900] tracking-normal mb-2 ${isLight ? 'text-[#1C201D]' : 'text-white'}`}>
-              {language === 'es' ? 'Tus Datos de Envío' : 'Your Shipping Details'}
-            </h2>
-            <p className={`text-xs font-sans mb-8 ${isLight ? 'text-[#656E63]' : 'text-[#A4ACA1]'}`}>
-              {language === 'es' 
-                ? 'Introduce tus datos para que el servicio de mensajería blindada recoja tus cartas.'
-                : 'Enter your details for the armored courier pickup.'}
-            </p>
+        {currentStep === 3 && (() => {
+          const inputClass = `w-full p-4 text-sm focus:outline-none transition-colors border ${
+            isLight
+              ? 'bg-white border-[#DCD5C3] text-[#1C201D] placeholder:text-[#9A9E96] focus:border-[#2D9A46] read-only:bg-[#F3EFE6]'
+              : 'bg-[#151A15] border-white/10 text-white focus:border-[#48C765] read-only:bg-[#1B211B]'
+          }`;
+          const methods = [
+            {
+              id: 'COURIER_INSURED' as const,
+              title: es ? 'Mensajería asegurada' : 'Insured courier',
+              text: es ? 'Te devolvemos las cartas a tu dirección, con seguro y firma. El coste de envío se suma al total.' : 'We return your cards to your address, insured and signed for. Shipping is added to the total.',
+            },
+            {
+              id: 'CARD_SHOW_DROPOFF' as const,
+              title: es ? 'Entrega en mano en un evento' : 'In-person at an event',
+              text: es ? 'Entregas y recoges tus cartas en un evento oficial de Gorilla Grading. Sin coste de envío.' : 'You hand over and collect your cards at an official Gorilla Grading event. No shipping cost.',
+            },
+          ];
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <input 
-                type="text" 
-                placeholder={language === 'es' ? 'Nombre Completo' : 'Full Name'} 
-                className={`w-full p-4 text-sm focus:outline-none transition-colors border ${
-                  isLight 
-                    ? 'bg-white border-[#DCD5C3] text-[#1C201D] placeholder:text-[#9A9E96] focus:border-[#2D9A46]' 
-                    : 'bg-[#151A15] border-white/10 text-white focus:border-[#48C765]'
-                }`} 
-              />
-              <input 
-                type="email" 
-                placeholder={language === 'es' ? 'Correo Electrónico' : 'Email Address'} 
-                className={`w-full p-4 text-sm focus:outline-none transition-colors border ${
-                  isLight 
-                    ? 'bg-white border-[#DCD5C3] text-[#1C201D] placeholder:text-[#9A9E96] focus:border-[#2D9A46]' 
-                    : 'bg-[#151A15] border-white/10 text-white focus:border-[#48C765]'
-                }`} 
-              />
-              <input 
-                type="text" 
-                placeholder={language === 'es' ? 'Dirección' : 'Street Address'} 
-                className={`w-full p-4 text-sm focus:outline-none transition-colors border md:col-span-2 ${
-                  isLight 
-                    ? 'bg-white border-[#DCD5C3] text-[#1C201D] placeholder:text-[#9A9E96] focus:border-[#2D9A46]' 
-                    : 'bg-[#151A15] border-white/10 text-white focus:border-[#48C765]'
-                }`} 
-              />
-              <input 
-                type="text" 
-                placeholder={language === 'es' ? 'Ciudad' : 'City'} 
-                className={`w-full p-4 text-sm focus:outline-none transition-colors border ${
-                  isLight 
-                    ? 'bg-white border-[#DCD5C3] text-[#1C201D] placeholder:text-[#9A9E96] focus:border-[#2D9A46]' 
-                    : 'bg-[#151A15] border-white/10 text-white focus:border-[#48C765]'
-                }`} 
-              />
-              <input 
-                type="text" 
-                placeholder={language === 'es' ? 'Código Postal' : 'Postal Code'} 
-                className={`w-full p-4 text-sm focus:outline-none transition-colors border ${
-                  isLight 
-                    ? 'bg-white border-[#DCD5C3] text-[#1C201D] placeholder:text-[#9A9E96] focus:border-[#2D9A46]' 
-                    : 'bg-[#151A15] border-white/10 text-white focus:border-[#48C765]'
-                }`} 
-              />
+          return (
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <h2 className={`font-['Nunito',sans-serif] text-xl sm:text-2xl uppercase font-[900] tracking-normal mb-2 ${isLight ? 'text-[#1C201D]' : 'text-white'}`}>
+                {es ? 'Tus Datos de Envío' : 'Your Shipping Details'}
+              </h2>
+              <p className={`text-xs font-sans mb-8 ${isLight ? 'text-[#656E63]' : 'text-[#A4ACA1]'}`}>
+                {es ? 'Indica a quién y dónde devolvemos tus cartas.' : 'Tell us who to return your cards to and where.'}
+              </p>
+
+              <fieldset className="mb-8">
+                <legend className={`font-mono text-[10px] uppercase tracking-widest mb-3 ${isLight ? 'text-[#6B7268]' : 'text-[#A4ACA1]'}`}>
+                  {es ? 'Cómo recibes tus cartas' : 'How you get your cards back'}
+                </legend>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {methods.map((method) => {
+                    const disabled = method.id === 'COURIER_INSURED' && selectedTier?.id === 'event';
+                    const selected = shippingMethod === method.id;
+                    return (
+                      <label
+                        key={method.id}
+                        className={`flex gap-3 p-4 border transition-colors ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'} ${
+                          selected
+                            ? (isLight ? 'bg-white border-[#2D9A46]' : 'bg-[#151A15] border-[#48C765]')
+                            : (isLight ? 'bg-white/60 border-[#DCD5C3]' : 'bg-[#151A15]/60 border-white/10')
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="shippingMethod"
+                          value={method.id}
+                          checked={selected}
+                          disabled={disabled}
+                          onChange={() => setShippingMethod(method.id)}
+                          className="mt-1 accent-[#16A34A]"
+                        />
+                        <span className="flex flex-col gap-1">
+                          <span className="font-bold text-sm">{method.title}</span>
+                          <span className={`text-xs font-sans ${isLight ? 'text-[#656E63]' : 'text-[#A4ACA1]'}`}>{method.text}</span>
+                          {disabled && (
+                            <span className="text-[11px] font-mono text-red-500">
+                              {es ? 'El servicio Event solo admite entrega en un evento.' : 'The Event service only accepts event drop-off.'}
+                            </span>
+                          )}
+                        </span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </fieldset>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <input
+                  id="ship-name" type="text" autoComplete="name" maxLength={120}
+                  aria-label={es ? 'Nombre completo' : 'Full name'} placeholder={es ? 'Nombre Completo' : 'Full Name'}
+                  value={contact.fullName} onChange={setField('fullName')} className={inputClass}
+                />
+                <input
+                  id="ship-email" type="email" autoComplete="email" maxLength={254}
+                  aria-label={es ? 'Correo electrónico' : 'Email address'} placeholder={es ? 'Correo Electrónico' : 'Email Address'}
+                  value={contact.email} onChange={setField('email')} readOnly={isLoggedIn}
+                  title={isLoggedIn ? (es ? 'Es el correo de tu cuenta' : 'This is your account email') : undefined}
+                  className={inputClass}
+                />
+                {shippingMethod === 'COURIER_INSURED' && (
+                  <>
+                    <input
+                      id="ship-line1" type="text" autoComplete="address-line1" maxLength={200}
+                      aria-label={es ? 'Dirección' : 'Street address'} placeholder={es ? 'Dirección' : 'Street Address'}
+                      value={contact.line1} onChange={setField('line1')} className={`${inputClass} md:col-span-2`}
+                    />
+                    <input
+                      id="ship-city" type="text" autoComplete="address-level2" maxLength={120}
+                      aria-label={es ? 'Ciudad' : 'City'} placeholder={es ? 'Ciudad' : 'City'}
+                      value={contact.city} onChange={setField('city')} className={inputClass}
+                    />
+                    <input
+                      id="ship-postal" type="text" autoComplete="postal-code" maxLength={20}
+                      aria-label={es ? 'Código postal' : 'Postal code'} placeholder={es ? 'Código Postal' : 'Postal Code'}
+                      value={contact.postalCode} onChange={setField('postalCode')} className={inputClass}
+                    />
+                    <select
+                      id="ship-country" autoComplete="country"
+                      aria-label={es ? 'País' : 'Country'}
+                      value={contact.countryCode} onChange={setField('countryCode')} className={inputClass}
+                    >
+                      <option value="ES">{es ? 'España' : 'Spain'}</option>
+                      <option value="PT">Portugal</option>
+                      <option value="FR">{es ? 'Francia' : 'France'}</option>
+                    </select>
+                    <input
+                      id="ship-phone" type="tel" autoComplete="tel" maxLength={40}
+                      aria-label={es ? 'Teléfono (opcional)' : 'Phone (optional)'} placeholder={es ? 'Teléfono (opcional)' : 'Phone (optional)'}
+                      value={contact.phone} onChange={setField('phone')} className={inputClass}
+                    />
+                  </>
+                )}
+              </div>
+
+              {step3Error && (
+                <p role="alert" className="mt-4 text-red-500 text-xs font-sans">{step3Error}</p>
+              )}
             </div>
-          </div>
-        )}
+          );
+        })()}
 
         {/* ==============================================================
             STEP 4: RESUMEN
         ============================================================== */}
-        {currentStep === 4 && (
-          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <h2 className={`font-['Nunito',sans-serif] text-xl sm:text-2xl uppercase font-[900] tracking-normal mb-2 ${isLight ? 'text-[#1C201D]' : 'text-white'}`}>
-              {language === 'es' ? 'Resumen Final' : 'Final Review'}
-            </h2>
-            <p className={`text-xs font-sans mb-8 ${isLight ? 'text-[#656E63]' : 'text-[#A4ACA1]'}`}>
-              {language === 'es' 
-                ? 'Comprueba que todo esté correcto. Al confirmar, emitiremos tu etiqueta de envío encriptada.'
-                : 'Verify all details. Upon confirmation, your encrypted shipping label will be issued.'}
-            </p>
+        {currentStep === 4 && (() => {
+          const row = `flex justify-between pb-3 border-b ${isLight ? 'border-[#E5DEC9]' : 'border-white/10'}`;
+          const muted = isLight ? 'text-[#656E63]' : 'text-[#A4ACA1]';
+          const money = (cents: number) => formatEur(cents, language);
+          const returnText = shippingMethod === 'COURIER_INSURED'
+            ? (es ? 'Mensajería asegurada' : 'Insured courier')
+            : (es ? 'Entrega en mano en un evento' : 'In-person at an event');
 
-            <div className={`p-6 font-mono text-sm space-y-4 border ${
-              isLight 
-                ? 'bg-white border-[#E5DEC9] shadow-sm text-[#1C201D]' 
-                : 'bg-[#151A15] border-white/10 text-white shadow-lg'
-            }`}>
-              <div className={`flex justify-between pb-3 border-b ${isLight ? 'border-[#E5DEC9]' : 'border-white/10'}`}>
-                <span className={isLight ? 'text-[#656E63]' : 'text-white'}>{language === 'es' ? 'Servicio Seleccionado' : 'Selected Service'}</span>
-                <span className={`font-bold ${isLight ? 'text-[#2D9A46]' : 'text-[#48C765]'}`}>{selectedTier?.name || ''}</span>
+          return (
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <h2 className={`font-['Nunito',sans-serif] text-xl sm:text-2xl uppercase font-[900] tracking-normal mb-2 ${isLight ? 'text-[#1C201D]' : 'text-white'}`}>
+                {es ? 'Resumen Final' : 'Final Review'}
+              </h2>
+              <p className={`text-xs font-sans mb-8 ${muted}`}>
+                {es
+                  ? 'Comprueba que todo esté correcto. Al confirmar, emitiremos tu etiqueta de envío encriptada.'
+                  : 'Verify all details. Upon confirmation, your encrypted shipping label will be issued.'}
+              </p>
+
+              <div className={`p-6 font-mono text-sm space-y-4 border ${
+                isLight
+                  ? 'bg-white border-[#E5DEC9] shadow-sm text-[#1C201D]'
+                  : 'bg-[#151A15] border-white/10 text-white shadow-lg'
+              }`}>
+                <div className={row}>
+                  <span className={muted}>{es ? 'Total de Cartas' : 'Total Cards'}</span>
+                  <span className="font-bold">{items.length}</span>
+                </div>
+                <div className={row}>
+                  <span className={muted}>{es ? 'Valor Declarado Total' : 'Total Declared Value'}</span>
+                  <span className="font-bold">€{totalDeclaredValue.toLocaleString()}</span>
+                </div>
+
+                {quote ? (
+                  <>
+                    {quote.lines.map((line) => (
+                      <div key={line.tier} className={row}>
+                        <span className={muted}>{line.count} × {line.name}</span>
+                        <span className="font-bold">{money(line.totalCents)}</span>
+                      </div>
+                    ))}
+                    {quote.discountCents > 0 && (
+                      <div className={row}>
+                        <span className={muted}>{es ? `Descuento por volumen (${Math.round(quote.discountRate * 100)} %)` : `Volume discount (${Math.round(quote.discountRate * 100)}%)`}</span>
+                        <span className={`font-bold ${isLight ? 'text-[#2D9A46]' : 'text-[#48C765]'}`}>−{money(quote.discountCents)}</span>
+                      </div>
+                    )}
+                    <div className={row}>
+                      <span className={muted}>{es ? 'Seguro de transporte y custodia' : 'Transit and custody insurance'}</span>
+                      <span className="font-bold">{es ? 'Incluido' : 'Included'}</span>
+                    </div>
+                    <div className={row}>
+                      <span className={muted}>{es ? 'Devolución' : 'Return'} · {returnText}</span>
+                      <span className="font-bold">{quote.shippingCents > 0 ? money(quote.shippingCents) : es ? 'Gratis' : 'Free'}</span>
+                    </div>
+                    <div className="flex justify-between font-bold text-lg pt-2">
+                      <span>{es ? 'TOTAL (IVA incluido)' : 'TOTAL (VAT included)'}</span>
+                      <span className={isLight ? 'text-[#2D9A46]' : 'text-[#48C765]'}>{money(quote.totalCents)}</span>
+                    </div>
+                    <p className={`text-[11px] font-sans ${muted}`}>
+                      {es
+                        ? `Base imponible ${money(quote.vatBaseCents)} + IVA ${Math.round(quote.vatRate * 100)} % ${money(quote.vatCents)}. Todavía no se cobra nada.`
+                        : `Net ${money(quote.vatBaseCents)} + ${Math.round(quote.vatRate * 100)}% VAT ${money(quote.vatCents)}. Nothing is charged yet.`}
+                    </p>
+                  </>
+                ) : (
+                  <p className={`text-xs font-sans ${muted}`} aria-live="polite">{quoteFailed ? (es ? 'No se pudo calcular el precio.' : 'Could not calculate the price.') : '…'}</p>
+                )}
               </div>
-              <div className={`flex justify-between pb-3 border-b ${isLight ? 'border-[#E5DEC9]' : 'border-white/10'}`}>
-                <span className={isLight ? 'text-[#656E63]' : 'text-white'}>{language === 'es' ? 'Total de Cartas' : 'Total Cards'}</span>
-                <span className="font-bold">{items.length}</span>
+
+              <div className={`mt-4 p-6 border text-xs font-sans space-y-1 ${isLight ? 'bg-white border-[#E5DEC9]' : 'bg-[#151A15] border-white/10'}`}>
+                <div className="font-mono text-[10px] uppercase tracking-widest mb-2 text-[#6B7268]">{es ? 'Contacto y devolución' : 'Contact and return'}</div>
+                <div className="font-bold text-sm">{contact.fullName}</div>
+                <div className={muted}>{contact.email}</div>
+                {shippingMethod === 'COURIER_INSURED' && (
+                  <div className={muted}>
+                    {contact.line1}, {contact.postalCode} {contact.city} ({contact.countryCode})
+                  </div>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setCurrentStep(3)}
+                  className={`underline underline-offset-4 cursor-pointer pt-1 ${isLight ? 'text-[#2D9A46]' : 'text-[#48C765]'}`}
+                >
+                  {es ? 'Cambiar' : 'Change'}
+                </button>
               </div>
-              <div className={`flex justify-between pb-3 border-b ${isLight ? 'border-[#E5DEC9]' : 'border-white/10'}`}>
-                <span className={isLight ? 'text-[#656E63]' : 'text-white'}>{language === 'es' ? 'Valor Declarado Total' : 'Total Declared Value'}</span>
-                <span className="font-bold">€{totalDeclaredValue.toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between font-bold text-lg pt-2">
-                <span>TOTAL APROX.</span>
-                <span className={isLight ? 'text-[#2D9A46]' : 'text-[#48C765]'}>€{totalEstimatedCost.toFixed(2)}</span>
+
+              <div className="mt-4 space-y-4">
+                {isLoggedIn ? (
+                  <p className={`text-xs font-sans ${muted}`}>
+                    {es ? `Sesión iniciada como ${user?.email}. El pedido aparecerá en tu cuenta.` : `Signed in as ${user?.email}. The order will appear in your account.`}
+                  </p>
+                ) : (
+                  <InlineSignIn email={contact.email.trim()} />
+                )}
+
+                <label className="flex items-start gap-3 text-xs font-sans cursor-pointer">
+                  <input
+                    id="accept-values" type="checkbox" checked={confirmedValues}
+                    onChange={(e) => setConfirmedValues(e.target.checked)} className="mt-0.5 accent-[#16A34A]"
+                  />
+                  <span>
+                    {es
+                      ? 'Confirmo que el valor declarado de cada carta es correcto. Es el importe hasta el que queda asegurada.'
+                      : 'I confirm the declared value of each card is correct. It is the amount up to which it is insured.'}
+                  </span>
+                </label>
+                <label className="flex items-start gap-3 text-xs font-sans cursor-pointer">
+                  <input
+                    id="accept-terms" type="checkbox" checked={acceptedTerms}
+                    onChange={(e) => setAcceptedTerms(e.target.checked)} className="mt-0.5 accent-[#16A34A]"
+                  />
+                  <span>
+                    {es ? 'Acepto los ' : 'I accept the '}
+                    <a href="/terms" target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">{es ? 'Términos y condiciones' : 'Terms and conditions'}</a>
+                    {es ? ' y la ' : ' and the '}
+                    <a href="/privacy" target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">{es ? 'Política de privacidad' : 'Privacy policy'}</a>.
+                  </span>
+                </label>
+
+                {submitError && (
+                  <p role="alert" className="text-red-500 text-xs font-sans">{submitError}</p>
+                )}
               </div>
             </div>
-          </div>
-        )}
+          );
+        })()}
 
         {/* ==============================================================
             BOTTOM NAVIGATION BAR
@@ -1300,26 +1619,40 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
             </button>
           ) : <div className="hidden sm:block" />}
           
-          {currentStep > 1 && (
-            <button
-              onClick={() => {
-                if (currentStep === 2 && items.length > 0) setCurrentStep(3);
-                else if (currentStep === 2 && items.length === 0) alert(language === 'es' ? 'Añade al menos una carta' : 'Add at least one card');
-                else if (currentStep === 3) setCurrentStep(4);
-                else if (currentStep === 4) handleFinalSubmit();
-              }}
-              className="btn-gorilla-square w-full sm:w-auto px-6 sm:px-10 py-3.5 text-[11px] sm:text-xs font-extrabold tracking-normal uppercase flex items-center justify-center gap-2 sm:gap-4 shadow-lg"
-            >
-              <span>{language === 'es' ? (currentStep === 4 ? 'ENVIAR PEDIDO' : 'CONTINUAR') : (currentStep === 4 ? 'SUBMIT ORDER' : 'CONTINUE')}</span>
-              
-              {/* Show dynamic total price on the button */}
-              {items.length > 0 && currentStep > 1 && (
-                <span className="px-2 py-0.5 rounded-none shrink-0 truncate bg-black/25 text-white">
-                  €{totalEstimatedCost.toFixed(2)}
+          {currentStep > 1 && (() => {
+            const blocked =
+              (currentStep === 2 && (items.length === 0 || !quote || quoteLoading || issues.length > 0 || quoteFailed)) ||
+              (currentStep === 4 && (!isLoggedIn || !acceptedTerms || !confirmedValues || !quote || quoteLoading || issues.length > 0 || submitting));
+            const goNext = () => {
+              if (currentStep === 2) setCurrentStep(3);
+              else if (currentStep === 3) {
+                const problem = validateStep3();
+                setStep3Error(problem);
+                if (!problem) setCurrentStep(4);
+              } else if (currentStep === 4) void handleFinalSubmit();
+            };
+            return (
+              <button
+                type="button"
+                disabled={blocked}
+                onClick={goNext}
+                className="btn-gorilla-square w-full sm:w-auto px-6 sm:px-10 py-3.5 text-[11px] sm:text-xs font-extrabold tracking-normal uppercase flex items-center justify-center gap-2 sm:gap-4 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <span>
+                  {currentStep === 4
+                    ? (submitting ? (es ? 'ENVIANDO…' : 'SUBMITTING…') : (es ? 'ENVIAR PEDIDO' : 'SUBMIT ORDER'))
+                    : (es ? 'CONTINUAR' : 'CONTINUE')}
                 </span>
-              )}
-            </button>
-          )}
+
+                {/* Total que calcula el servidor */}
+                {items.length > 0 && (
+                  <span className="px-2 py-0.5 rounded-none shrink-0 truncate bg-black/25 text-white" aria-live="polite">
+                    {quote ? formatEur(quote.totalCents, language) : '…'}
+                  </span>
+                )}
+              </button>
+            );
+          })()}
         </div>
 
         {/* Modal de Edición de Carta Individual */}

@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
+import { useAuth } from '../../context/AuthContext';
 
 interface LuxuryNavbarProps {
   onNavigate?: (path: string) => void;
@@ -11,6 +12,9 @@ export const LuxuryNavbar: React.FC<LuxuryNavbarProps> = ({ onNavigate }) => {
   const { language, setLanguage, t } = useLanguage();
   const { theme, toggleTheme } = useTheme();
   const isLight = theme === 'light';
+  const { user } = useAuth();
+  // El panel del laboratorio solo se ofrece a cuentas del personal.
+  const isStaff = !!user && user.role !== 'customer';
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -275,6 +279,17 @@ export const LuxuryNavbar: React.FC<LuxuryNavbarProps> = ({ onNavigate }) => {
           {/* Vertical hairline divider */}
           <span className={`hidden sm:block h-5 w-px mx-0.5 ${isLight ? 'bg-black/15' : 'bg-white/15'}`} />
 
+          {isStaff && (
+            <button
+              onClick={() => go('/admin')}
+              className={`hidden sm:inline-flex items-center px-2.5 py-1 border rounded font-mono text-[10px] font-bold uppercase tracking-wider cursor-pointer transition-colors ${
+                isLight ? 'border-black/20 text-gray-800 hover:border-[#16A34A] hover:text-[#16A34A]' : 'border-white/20 text-gray-200 hover:border-[#4ADE80] hover:text-[#4ADE80]'
+              }`}
+            >
+              {language === 'es' ? 'Panel' : 'Lab panel'}
+            </button>
+          )}
+
           {/* Account / Collector Vault — neutral icon */}
           <button
             onClick={() => go('/account')}
@@ -360,6 +375,17 @@ export const LuxuryNavbar: React.FC<LuxuryNavbarProps> = ({ onNavigate }) => {
                 </button>
               );
             })}
+
+            {isStaff && (
+              <button
+                onClick={() => { setIsMobileMenuOpen(false); go('/admin'); }}
+                className={`py-4 px-2 text-left font-['Nunito',sans-serif] text-base tracking-normal transition-colors cursor-pointer ${
+                  isLight ? 'text-gray-700 hover:text-black font-bold' : 'text-gray-300 hover:text-white font-bold'
+                }`}
+              >
+                {language === 'es' ? 'Panel del laboratorio' : 'Lab panel'}
+              </button>
+            )}
 
             {/* Collector Vault / Login Row */}
             <button

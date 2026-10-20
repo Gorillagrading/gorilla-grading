@@ -1,88 +1,127 @@
-import React, { useState, useEffect } from 'react';
-import { MOCK_ORDERS } from '../data/mockOrders';
+import React, { useEffect, useState } from 'react';
 import { ArrowRight, ScanLine } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import { SlabTimelineIcon } from '../components/common/SlabTimelineIcon';
-import { Order } from '../types';
+import { api, ApiError } from '../api/client';
+import type { TrackingDto } from '../../shared/tracking';
+import { STATUS_LABEL, STEP_COPY } from '../utils/orderStatus';
 
 interface TrackingPageProps {
   onNavigate: (path: string) => void;
 }
 
-export const TrackingPage: React.FC<TrackingPageProps> = ({ onNavigate: _onNavigate }) => {
+type LookupError = 'not_found' | 'rate_limited' | 'network' | 'other';
+
+interface UiStep {
+  key: string;
+  label: string;
+  description: string;
+  timestamp?: string;
+  completed: boolean;
+  current: boolean;
+}
+
+export const TrackingPage: React.FC<TrackingPageProps> = ({ onNavigate }) => {
   const { language } = useLanguage();
   const { theme } = useTheme();
   const isLight = theme === 'light';
+  const es = language === 'es';
+  const lang = es ? 'es' : 'en';
 
   const [searchTracking, setSearchTracking] = useState('');
-  
-  // Por defecto el estado inicia en null si no hay parámetro en URL
-  const [activeOrder, setActiveOrder] = useState<Order | null>(() => {
-    const params = new URLSearchParams(window.location.search);
-    const trackingParam = params.get('id') || params.get('tracking');
-    if (trackingParam) {
-      return MOCK_ORDERS.find(
-        o => o.trackingNumber.toUpperCase() === trackingParam.toUpperCase() || o.id.toUpperCase() === trackingParam.toUpperCase()
-      ) || null;
+  const [tracking, setTracking] = useState<TrackingDto | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<{ kind: LookupError; query: string } | null>(null);
+
+  const errorMsg = !error
+    ? ''
+    : error.kind === 'not_found'
+      ? (es ? `No hemos encontrado ningún pedido con "${error.query}".` : `No order found for "${error.query}".`)
+      : error.kind === 'rate_limited'
+        ? (es ? 'Demasiadas consultas seguidas. Espera unos minutos.' : 'Too many lookups in a row. Please wait a few minutes.')
+        : error.kind === 'network'
+          ? (es ? 'No se pudo conectar con el servidor.' : 'Could not reach the server.')
+          : (es ? 'Algo salió mal. Inténtalo de nuevo.' : 'Something went wrong. Please try again.');
+
+  const lookup = async (raw: string) => {
+    const query = raw.trim();
+    if (!query) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const { tracking } = await api<{ tracking: TrackingDto }>(`/tracking/${encodeURIComponent(query)}`);
+      setTracking(tracking);
+      // La dirección queda con el código para poder recargar o compartir el enlace.
+      window.history.replaceState({}, '', `/track?code=${encodeURIComponent(tracking.code)}`);
+    } catch (err) {
+      setTracking(null);
+      const kind: LookupError =
+        err instanceof ApiError
+          ? err.status === 404 ? 'not_found' : err.status === 429 ? 'rate_limited' : err.code === 'network' ? 'network' : 'other'
+          : 'other';
+      setError({ kind, query: query.toUpperCase() });
+    } finally {
+      setLoading(false);
     }
-    return null;
-  });
-
-  const [errorMsg, setErrorMsg] = useState('');
-
-  // Proceso dinámico interactivo de la cadena de custodia
-  const [orderSteps, setOrderSteps] = useState(activeOrder ? activeOrder.steps : []);
-  const [_activeStepIdx, setActiveStepIdx] = useState(() => {
-    if (!activeOrder) return 0;
-    const idx = activeOrder.steps.findIndex(s => s.current);
-    return idx >= 0 ? idx : 0;
-  });
-
-  useEffect(() => {
-    if (activeOrder) {
-      setOrderSteps(activeOrder.steps);
-      const idx = activeOrder.steps.findIndex(s => s.current);
-      setActiveStepIdx(idx >= 0 ? idx : 0);
-    } else {
-      setOrderSteps([]);
-      setActiveStepIdx(0);
-    }
-  }, [activeOrder]);
-
-  const handleSelectStep = (idx: number) => {
-    setActiveStepIdx(idx);
-    setOrderSteps(prev => prev.map((s, i) => ({
-      ...s,
-      completed: i < idx,
-      current: i === idx
-    })));
   };
+
+  // Si llega un código en la dirección (por ejemplo desde la cuenta), se consulta al abrir la página.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('code') || params.get('id') || params.get('tracking');
+    if (code) {
+      setSearchTracking(code);
+      void lookup(code);
+    }
+  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    setErrorMsg('');
-    const query = searchTracking.trim().toUpperCase();
-    if (!query) return;
-
-    const found = MOCK_ORDERS.find(
-      o => o.trackingNumber.toUpperCase() === query || o.id.toUpperCase() === query
-    );
-
-    if (found) {
-      setActiveOrder(found);
-    } else {
-      setErrorMsg(`No submission order found for "${query}".`);
-    }
+    void lookup(searchTracking);
   };
+
+  const resetSearch = () => {
+    setTracking(null);
+    setSearchTracking('');
+    setError(null);
+    window.history.replaceState({}, '', '/track');
+  };
+
+  const locale = es ? 'es-ES' : 'en-GB';
+  const formatDate = (value: string) =>
+    new Date(value.length === 10 ? `${value}T12:00:00` : value).toLocaleDateString(locale, { day: '2-digit', month: 'short', year: 'numeric' });
+  const formatDateTime = (value: string) =>
+    new Date(value).toLocaleString(locale, { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+  // Los eventos que ya ocurrieron, seguidos de las fases que faltan.
+  const uiSteps: UiStep[] = tracking
+    ? [
+        ...tracking.steps.map((step, i) => ({
+          key: `event-${i}`,
+          label: step.label,
+          description: step.description,
+          timestamp: formatDateTime(step.occurredAt),
+          completed: step.state === 'completed',
+          current: step.state === 'current',
+        })),
+        ...tracking.pending.map((status) => ({
+          key: `pending-${status}`,
+          label: STEP_COPY[status]?.label[lang] ?? STATUS_LABEL[status][lang],
+          description: STEP_COPY[status]?.description[lang] ?? '',
+          completed: false,
+          current: false,
+        })),
+      ]
+    : [];
 
   return (
     <div className={`w-full min-h-screen flex flex-col font-sans selection:bg-[#48C765] selection:text-[#14170F] transition-colors duration-300 ${
       isLight ? 'bg-[#F3EFE6] text-[#1C201D]' : 'bg-[#454545] text-white'
     }`}>
       
-      {/* When activeOrder is present: Top compact search header + Order details & custody timeline */}
-      {activeOrder ? (
+      {/* With a tracked order: compact search header + order details & custody timeline */}
+      {tracking ? (
         <>
           {/* Editorial Search Section - Compact header when viewing an order */}
           <section className={`w-full pt-3.5 sm:pt-4 pb-3.5 px-6 lg:px-12 border-b transition-colors duration-300 ${
@@ -117,6 +156,7 @@ export const TrackingPage: React.FC<TrackingPageProps> = ({ onNavigate: _onNavig
                   <button 
                     type="submit"
                     aria-label="Search"
+                    disabled={loading}
                     className={`absolute right-1 top-1/2 -translate-y-1/2 transition-colors cursor-pointer ${
                       isLight 
                         ? 'text-[#1C201D]/50 group-focus-within:text-[#2D9A46] hover:text-[#2D9A46]' 
@@ -131,32 +171,6 @@ export const TrackingPage: React.FC<TrackingPageProps> = ({ onNavigate: _onNavig
                     {errorMsg}
                   </span>
                 )}
-              </div>
-
-              <div className={`flex flex-col gap-1 font-mono text-[9px] tracking-[0.15em] uppercase shrink-0 ${
-                isLight ? 'text-[#1C201D]/60' : 'text-white/50'
-              }`}>
-                <span className={isLight ? 'text-[#1C201D]/50 font-bold' : 'text-white/40 font-bold'}>
-                  {language === 'es' ? 'Ejemplos de Búsqueda' : 'Sample Searches'}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => { setSearchTracking('ES-GLS-9928174620'); setActiveOrder(MOCK_ORDERS[0]); setErrorMsg(''); }}
-                  className={`text-left transition-colors cursor-pointer ${
-                    isLight ? 'hover:text-[#2D9A46]' : 'hover:text-[#48C765]'
-                  }`}
-                >
-                  ES-GLS-9928174620 (In Progress)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setSearchTracking('PT-CTT-441029410'); setActiveOrder(MOCK_ORDERS[1]); setErrorMsg(''); }}
-                  className={`text-left transition-colors cursor-pointer ${
-                    isLight ? 'hover:text-[#2D9A46]' : 'hover:text-[#48C765]'
-                  }`}
-                >
-                  PT-CTT-441029410 (Delivered)
-                </button>
               </div>
             </div>
           </section>
@@ -173,7 +187,7 @@ export const TrackingPage: React.FC<TrackingPageProps> = ({ onNavigate: _onNavig
                 <div className={`flex flex-col pb-5 border-b ${isLight ? 'border-black/10' : 'border-white/10'}`}>
                   <button
                     type="button"
-                    onClick={() => { setActiveOrder(null); setSearchTracking(''); }}
+                    onClick={resetSearch}
                     className={`font-mono text-[9px] uppercase tracking-wider mb-2 text-left flex items-center gap-1 transition-colors cursor-pointer ${
                       isLight ? 'text-gray-500 hover:text-[#16A34A]' : 'text-gray-400 hover:text-[#4ADE80]'
                     }`}
@@ -184,12 +198,12 @@ export const TrackingPage: React.FC<TrackingPageProps> = ({ onNavigate: _onNavig
                   <span className={`font-mono text-[10px] tracking-[0.2em] uppercase mb-2 font-bold ${
                     isLight ? 'text-[#2D9A46]' : 'text-[#48C765]'
                   }`}>
-                    STATUS // {activeOrder.status.replace('_', ' ')}
+                    STATUS // {STATUS_LABEL[tracking.status][lang].toUpperCase()}
                   </span>
                   <h2 className={`font-['Nunito',sans-serif] text-lg md:text-xl font-[900] uppercase leading-[1.1] mb-3 ${
                     isLight ? 'text-[#1C201D]' : 'text-white'
                   }`}>
-                    ORDER #{activeOrder.id}
+                    ORDER #{tracking.code}
                   </h2>
 
                   <div className={`flex flex-col gap-2.5 font-mono text-[10px] tracking-[0.15em] uppercase ${
@@ -197,19 +211,19 @@ export const TrackingPage: React.FC<TrackingPageProps> = ({ onNavigate: _onNavig
                   }`}>
                     <div className={`flex justify-between border-b pb-1.5 ${isLight ? 'border-black/5' : 'border-white/5'}`}>
                       <span className={isLight ? 'text-[#1C201D]/55 font-semibold' : 'text-white/40'}>Carrier</span>
-                      <span className={`font-medium ${isLight ? 'text-[#1C201D]' : 'text-white'}`}>{activeOrder.carrier}</span>
+                      <span className={`font-medium ${isLight ? 'text-[#1C201D]' : 'text-white'}`}>{tracking.carrier ?? '—'}</span>
                     </div>
                     <div className={`flex justify-between border-b pb-1.5 ${isLight ? 'border-black/5' : 'border-white/5'}`}>
                       <span className={isLight ? 'text-[#1C201D]/55 font-semibold' : 'text-white/40'}>Tracking</span>
-                      <span className={`font-medium ${isLight ? 'text-[#1C201D]' : 'text-white'}`}>{activeOrder.trackingNumber}</span>
+                      <span className={`font-medium ${isLight ? 'text-[#1C201D]' : 'text-white'}`}>{tracking.trackingNumber ?? '—'}</span>
                     </div>
                     <div className={`flex justify-between border-b pb-1.5 ${isLight ? 'border-black/5' : 'border-white/5'}`}>
                       <span className={isLight ? 'text-[#1C201D]/55 font-semibold' : 'text-white/40'}>Placed</span>
-                      <span className={`font-medium ${isLight ? 'text-[#1C201D]' : 'text-white'}`}>{activeOrder.createdAt}</span>
+                      <span className={`font-medium ${isLight ? 'text-[#1C201D]' : 'text-white'}`}>{formatDate(tracking.submittedAt)}</span>
                     </div>
                     <div className={`flex justify-between border-b pb-1.5 ${isLight ? 'border-black/5' : 'border-white/5'}`}>
                       <span className={isLight ? 'text-[#1C201D]/55 font-semibold' : 'text-white/40'}>Completion Date</span>
-                      <span className={`font-bold ${isLight ? 'text-[#2D9A46]' : 'text-[#48C765]'}`}>{activeOrder.estimatedCompletion}</span>
+                      <span className={`font-bold ${isLight ? 'text-[#2D9A46]' : 'text-[#48C765]'}`}>{tracking.estimatedCompletionAt ? formatDate(tracking.estimatedCompletionAt) : '—'}</span>
                     </div>
                   </div>
                 </div>
@@ -218,35 +232,41 @@ export const TrackingPage: React.FC<TrackingPageProps> = ({ onNavigate: _onNavig
                   <span className={`font-mono text-[10px] tracking-[0.2em] uppercase font-bold mb-4 ${
                     isLight ? 'text-[#1C201D]/60' : 'text-white/40'
                   }`}>
-                    {language === 'es' ? 'Cartas en Lote' : 'Cards in Batch'} ({activeOrder.items.length})
+                    {language === 'es' ? 'Cartas en Lote' : 'Cards in Batch'} ({tracking.itemCount})
                   </span>
                   
-                  <div className="flex flex-col gap-4">
-                    {activeOrder.items.map((item, idx) => (
-                      <div key={item.id} className="flex items-center gap-4 group">
-                        <span className={`font-mono text-[9px] w-4 ${isLight ? 'text-[#1C201D]/40' : 'text-white/30'}`}>{String(idx + 1).padStart(2, '0')}</span>
-                        <div className={`w-12 h-16 border overflow-hidden shrink-0 ${isLight ? 'bg-white border-black/10' : 'bg-[#454545] border-white/10'}`}>
-                          <img 
-                            src={item.frontImagePreview} 
-                            alt="" 
-                            className="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition-opacity grayscale group-hover:grayscale-0" 
-                          />
+                  {tracking.items ? (
+                    <div className="flex flex-col gap-4">
+                      {tracking.items.map((item) => (
+                        <div key={item.position} className="flex items-center gap-4">
+                          <span className={`font-mono text-[9px] w-4 ${isLight ? 'text-[#1C201D]/40' : 'text-white/30'}`}>{String(item.position).padStart(2, '0')}</span>
+                          <div className="flex flex-col min-w-0">
+                            <span className={`font-mono text-xs uppercase tracking-widest truncate max-w-[220px] font-semibold ${
+                              isLight ? 'text-[#1C201D]' : 'text-white'
+                            }`}>
+                              {item.cardName}
+                            </span>
+                            <span className={`font-mono text-[9px] uppercase tracking-widest ${
+                              isLight ? 'text-[#4A5048]' : 'text-[#A4ACA1]'
+                            }`}>
+                              {item.game}{item.set ? ` • ${item.set}` : ''}
+                            </span>
+                          </div>
                         </div>
-                        <div className="flex flex-col min-w-0">
-                          <span className={`font-mono text-xs uppercase tracking-widest truncate max-w-[180px] font-semibold ${
-                            isLight ? 'text-[#1C201D]' : 'text-white'
-                          }`}>
-                            {item.cardName}
-                          </span>
-                          <span className={`font-mono text-[9px] uppercase tracking-widest ${
-                            isLight ? 'text-[#4A5048]' : 'text-[#A4ACA1]'
-                          }`}>
-                            {item.game} • {item.set}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className={`font-sans text-xs leading-relaxed ${isLight ? 'text-[#4A5048]' : 'text-[#A4ACA1]'}`}>
+                      {es ? 'Por privacidad, el detalle de las cartas solo lo ve el dueño del pedido.' : 'For privacy, only the order owner can see which cards it includes.'}{' '}
+                      <button
+                        type="button"
+                        onClick={() => onNavigate('/login')}
+                        className={`underline underline-offset-4 cursor-pointer ${isLight ? 'text-[#2D9A46]' : 'text-[#48C765]'}`}
+                      >
+                        {es ? 'Iniciar sesión' : 'Sign in'}
+                      </button>
+                    </p>
+                  )}
                 </div>
 
               </div>
@@ -262,15 +282,14 @@ export const TrackingPage: React.FC<TrackingPageProps> = ({ onNavigate: _onNavig
                 <div className={`flex flex-col relative border-l ml-2 ${
                   isLight ? 'border-black/15' : 'border-white/10'
                 }`}>
-                  {orderSteps.map((step, idx) => {
-                    const isLast = idx === orderSteps.length - 1;
-                    const isFinalCompleted = isLast && (step.completed || activeOrder?.status === 'DELIVERED');
+                  {uiSteps.map((step, idx) => {
+                    const isLast = idx === uiSteps.length - 1;
+                    const isFinalCompleted = isLast && (step.completed || tracking.status === 'DELIVERED');
                     
                     return (
                       <div 
-                        key={idx} 
-                        onClick={() => handleSelectStep(idx)}
-                        className={`relative pl-8 sm:pl-10 group cursor-pointer transition-all ${
+                        key={step.key}
+                        className={`relative pl-8 sm:pl-10 group transition-all ${
                           isLast ? 'pb-1' : 'pb-6 sm:pb-7'
                         }`}
                       >
@@ -369,6 +388,7 @@ export const TrackingPage: React.FC<TrackingPageProps> = ({ onNavigate: _onNavig
               <button 
                 type="submit"
                 aria-label="Search"
+                    disabled={loading}
                 className={`absolute right-1 top-1/2 -translate-y-1/2 transition-colors cursor-pointer p-1 ${
                   isLight 
                     ? 'text-[#1C201D]/60 group-focus-within:text-[#2D9A46] hover:text-[#2D9A46]' 
@@ -384,32 +404,6 @@ export const TrackingPage: React.FC<TrackingPageProps> = ({ onNavigate: _onNavig
                 {errorMsg}
               </span>
             )}
-
-            {/* Discreet sample search codes */}
-            <div className={`flex flex-wrap items-center justify-center gap-2 font-mono text-[10px] tracking-[0.15em] uppercase mt-4 ${
-              isLight ? 'text-[#1C201D]/50' : 'text-white/40'
-            }`}>
-              <span>{language === 'es' ? 'Ejemplos:' : 'Examples:'}</span>
-              <button
-                type="button"
-                onClick={() => { setSearchTracking('ES-GLS-9928174620'); setActiveOrder(MOCK_ORDERS[0]); setErrorMsg(''); }}
-                className={`underline underline-offset-4 transition-colors cursor-pointer ${
-                  isLight ? 'hover:text-[#2D9A46]' : 'hover:text-[#48C765]'
-                }`}
-              >
-                ES-GLS-9928174620
-              </button>
-              <span>•</span>
-              <button
-                type="button"
-                onClick={() => { setSearchTracking('PT-CTT-441029410'); setActiveOrder(MOCK_ORDERS[1]); setErrorMsg(''); }}
-                className={`underline underline-offset-4 transition-colors cursor-pointer ${
-                  isLight ? 'hover:text-[#2D9A46]' : 'hover:text-[#48C765]'
-                }`}
-              >
-                PT-CTT-441029410
-              </button>
-            </div>
 
           </div>
         </section>

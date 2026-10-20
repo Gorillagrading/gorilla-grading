@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import { authErrorMessage } from '../utils/authErrors';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface LoginPageProps {
@@ -10,38 +11,71 @@ interface LoginPageProps {
 
 export const LoginPage: React.FC<LoginPageProps> = ({ onNavigate }) => {
   const { language } = useLanguage();
-  const { login } = useAuth();
+  const { requestCode, verifyCode, isLoggedIn } = useAuth();
   const { theme } = useTheme();
   const isLight = theme === 'light';
-  
+  const es = language === 'es';
+
   const [step, setStep] = useState<'email' | 'sending' | 'otp'>('email');
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
   const [error, setError] = useState('');
+  const [info, setInfo] = useState('');
+  const [verifying, setVerifying] = useState(false);
+
+  // Quien ya ha iniciado sesión no necesita ver el formulario.
+  useEffect(() => {
+    if (isLoggedIn) onNavigate('/account');
+  }, [isLoggedIn]);
+
+  const messageFor = (err: unknown): string => authErrorMessage(err, es);
+
+  const sendCode = async (): Promise<boolean> => {
+    setError('');
+    setInfo('');
+    setStep('sending');
+    try {
+      await requestCode(email.trim(), language === 'es' ? 'es' : 'en');
+      setStep('otp');
+      return true;
+    } catch (err) {
+      setError(messageFor(err));
+      setStep('email');
+      return false;
+    }
+  };
 
   const handleEmailSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.includes('@')) {
-      setError(language === 'es' ? 'Introduce un correo válido' : 'Enter a valid email');
+      setError(es ? 'Introduce un correo válido' : 'Enter a valid email');
+      return;
+    }
+    void sendCode();
+  };
+
+  const handleResend = async () => {
+    setOtp('');
+    if (await sendCode()) setInfo(es ? 'Te hemos enviado un código nuevo.' : 'We sent you a new code.');
+  };
+
+  const handleOtpSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (otp.length !== 6) {
+      setError(es ? 'El código debe tener 6 dígitos' : 'Code must be 6 digits');
       return;
     }
     setError('');
-    setStep('sending');
-    
-    // Simulate API delay
-    setTimeout(() => {
-      setStep('otp');
-    }, 1100);
-  };
-
-  const handleOtpSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Simulate verification (any 6 digit code works for demo)
-    if (otp.length === 6) {
-      login(email);
+    setInfo('');
+    setVerifying(true);
+    try {
+      await verifyCode(email.trim(), otp);
       onNavigate('/account');
-    } else {
-      setError(language === 'es' ? 'El código debe tener 6 dígitos' : 'Code must be 6 digits');
+    } catch (err) {
+      setError(messageFor(err));
+      setOtp('');
+    } finally {
+      setVerifying(false);
     }
   };
 
@@ -279,19 +313,33 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onNavigate }) => {
                         }`}
                         required
                       />
-                      {error && <span className="text-red-500 text-xs mt-1 font-sans">{error}</span>}
+                      {error && <span role="alert" className="text-red-500 text-xs mt-1 font-sans text-center">{error}</span>}
+                      {info && !error && <span className="text-[#16A34A] text-xs mt-1 font-sans text-center">{info}</span>}
                     </div>
-                    
-                    <button 
-                      type="submit" 
-                      className="btn-gorilla-square w-full py-3.5 text-xs font-extrabold uppercase tracking-wider shadow-lg cursor-pointer transition-transform active:scale-[0.99]"
+
+                    <button
+                      type="submit"
+                      disabled={verifying}
+                      className="btn-gorilla-square w-full py-3.5 text-xs font-extrabold uppercase tracking-wider shadow-lg cursor-pointer transition-transform active:scale-[0.99] disabled:opacity-60 disabled:cursor-wait"
                     >
-                      {language === 'es' ? 'Acceder al Perfil' : 'Access Vault'}
+                      {verifying
+                        ? (language === 'es' ? 'Comprobando...' : 'Checking...')
+                        : (language === 'es' ? 'Acceder al Perfil' : 'Access Vault')}
                     </button>
 
-                    <button 
-                      type="button" 
-                      onClick={() => { setStep('email'); setOtp(''); setError(''); }}
+                    <button
+                      type="button"
+                      onClick={handleResend}
+                      className={`text-center font-mono text-[9px] uppercase tracking-widest transition-colors cursor-pointer hover:underline ${
+                        isLight ? 'text-neutral-500 hover:text-neutral-800' : 'text-[#A4ACA1] hover:text-white'
+                      }`}
+                    >
+                      {language === 'es' ? 'Reenviar código' : 'Resend code'}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => { setStep('email'); setOtp(''); setError(''); setInfo(''); }}
                       className={`text-center font-mono text-[9px] uppercase tracking-widest mt-2 transition-colors cursor-pointer hover:underline ${
                         isLight ? 'text-neutral-400 hover:text-neutral-800' : 'text-[#A4ACA1] hover:text-white'
                       }`}

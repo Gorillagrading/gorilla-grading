@@ -3,6 +3,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import { ArrowLeft, Mail, Clock, ShieldCheck, HelpCircle, CheckCircle2, Send, MessageSquare } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { provisionalCode } from '../utils/codes';
 
 interface ContactPageProps {
   onNavigate: (path: string) => void;
@@ -30,7 +31,7 @@ export const ContactPage: React.FC<ContactPageProps> = ({ onNavigate }) => {
     setTimeout(() => {
       setIsSubmitting(false);
       setIsSubmitted(true);
-      setTicketId(`GG-TKT-${Math.floor(100000 + Math.random() * 900000)}`);
+      setTicketId(provisionalCode('TKT'));
     }, 800);
   };
 
@@ -277,7 +278,7 @@ export const ContactPage: React.FC<ContactPageProps> = ({ onNavigate }) => {
                       type="text" 
                       value={orderNumber}
                       onChange={(e) => setOrderNumber(e.target.value)}
-                      placeholder="Ej. GG-2026-9812"
+                      placeholder="Ej. GGI-ORD-7K4M9Q"
                       className={`w-full px-4 py-3 text-sm focus:outline-none transition-colors border ${
                         isLight 
                           ? 'bg-[#EAE2D5] border-black/15 text-[#14170F] placeholder-black/40 focus:border-[#15803D]' 

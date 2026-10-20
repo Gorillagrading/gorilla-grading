@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { GradedCard, CardDefect } from '../../types';
+import { PublicGradedCard, CardDefect } from '../../types';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
 
 interface DefectInspectorProps {
-  card: GradedCard;
+  card: PublicGradedCard;
 }
 
 type TabType = 'Global' | 'Centering' | 'Corners' | 'Edges' | 'Surface';

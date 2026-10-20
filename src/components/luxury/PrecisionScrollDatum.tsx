@@ -79,7 +79,7 @@ export const PrecisionScrollDatum: React.FC = () => {
       {
         tag: 'AUDITORÍA FORENSE COMPLETADA',
         title: 'AUTENTICIDAD CRIPTOGRÁFICA VERIFICADA',
-        flaw: 'REGISTRO PÚBLICO #GG-99420',
+        flaw: 'REGISTRO PÚBLICO #GGI-994200',
         code: 'BLOCKCHAIN OK'
       }
     ],
@@ -99,7 +99,7 @@ export const PrecisionScrollDatum: React.FC = () => {
       {
         tag: 'FORENSIC AUDIT COMPLETED',
         title: 'CRYPTOGRAPHIC AUTHENTICITY CONFIRMED',
-        flaw: 'PUBLIC REGISTRY #GG-99420',
+        flaw: 'PUBLIC REGISTRY #GGI-994200',
         code: 'BLOCKCHAIN OK'
       }
     ]

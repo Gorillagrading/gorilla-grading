@@ -1,20 +1,19 @@
 import React, { useState } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
-import { MOCK_GRADED_CARDS } from '../../data/mockCards';
-import { GradedCard } from '../../types';
+import { ApiError } from '../../api/client';
+import { fetchCertificate, type PublicCertificate } from '../../api/certificates';
+import { CertificateStatusBanner } from '../common/CertificateStatusBanner';
 import { VerifyLogo } from './VerifyLogo';
 import { 
   ShieldCheck, 
   Search, 
-  QrCode, 
   Radio, 
   ExternalLink, 
   RotateCw, 
   CheckCircle2, 
   AlertCircle,
   Hash,
-  Cpu,
   Maximize2
 } from 'lucide-react';
 
@@ -28,19 +27,13 @@ export const HomeVerificationModule: React.FC<HomeVerificationModuleProps> = ({ 
   const isLight = theme === 'light';
 
   const [inputVal, setInputVal] = useState('');
-  const [selectedCard, setSelectedCard] = useState<GradedCard | null>(null);
+  const [selectedCard, setSelectedCard] = useState<PublicCertificate | null>(null);
   const [isFlipped, setIsFlipped] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [isSearching, setIsSearching] = useState(false);
 
-  const demoCodes = [
-    { code: 'GGI-892401', label: 'Cade Cunningham (9.5 GEM MINT)' },
-    { code: 'GGI-774102', label: 'Pikachu Illustrator (10 PRISTINE)' },
-    { code: 'GGI-652901', label: 'Umbreon VMAX (9.5 GEM MINT)' },
-  ];
-
-  const handleVerify = (codeToVerify?: string) => {
-    const query = (codeToVerify || inputVal).trim().toUpperCase();
+  const handleVerify = async () => {
+    const query = inputVal.trim();
     if (!query) {
       setErrorMsg(language === 'es' ? 'Introduce un código de certificado.' : 'Enter a certificate ID.');
       return;
@@ -48,47 +41,28 @@ export const HomeVerificationModule: React.FC<HomeVerificationModuleProps> = ({ 
 
     setIsSearching(true);
     setErrorMsg('');
-
-    setTimeout(() => {
-      const found = MOCK_GRADED_CARDS.find(
-        c => c.certNumber.toUpperCase() === query || 
-             c.certNumber.toUpperCase().replace('-', '') === query.replace('-', '') ||
-             c.certNumber.toUpperCase().replace('GGI', 'GG') === query ||
-             c.certNumber.toUpperCase() === query.replace('GG-', 'GGI-') ||
-             c.certNumber.toUpperCase().replace('GGI-', '') === query.replace('GG-', '').replace('GGI-', '') ||
-             c.name.toUpperCase().includes(query)
+    try {
+      const found = await fetchCertificate(query);
+      setSelectedCard(found);
+      setInputVal(found.certNumber);
+      setIsFlipped(false);
+    } catch (err) {
+      setSelectedCard(null);
+      const es = language === 'es';
+      setErrorMsg(
+        err instanceof ApiError && err.status === 404
+          ? (es ? `No existe ningún certificado con el código "${query.toUpperCase()}".` : `No certificate exists with code "${query.toUpperCase()}".`)
+          : err instanceof ApiError && err.status === 429
+            ? (es ? 'Demasiadas consultas seguidas. Espera unos minutos.' : 'Too many lookups in a row. Please wait a few minutes.')
+            : (es ? 'No se pudo consultar el registro. Inténtalo de nuevo.' : 'Could not check the registry. Please try again.'),
       );
-
-      if (found) {
-        setSelectedCard(found);
-        setInputVal(found.certNumber);
-        setIsFlipped(false);
-      } else {
-        setErrorMsg(
-          language === 'es'
-            ? `No se encontró ningún registro para "${query}". Prueba con un código de demostración.`
-            : `No certificate found matching "${query}". Try a demo code.`
-        );
-      }
+    } finally {
       setIsSearching(false);
-    }, 280);
+    }
   };
 
-  const handleQuickDemo = (code: string) => {
-    setInputVal(code);
-    handleVerify(code);
-  };
-
-  const simulateScan = (type: 'QR' | 'NFC') => {
-    setIsSearching(true);
-    setErrorMsg('');
-    setTimeout(() => {
-      const card = type === 'NFC' ? MOCK_GRADED_CARDS[1] : MOCK_GRADED_CARDS[0];
-      setSelectedCard(card);
-      setInputVal(card.certNumber);
-      setIsSearching(false);
-    }, 400);
-  };
+  const sideScores = (s: { frontScore: number; backScore: number }) =>
+    `${language === 'es' ? 'FRENTE' : 'FRONT'} ${s.frontScore} · ${language === 'es' ? 'DORSO' : 'BACK'} ${s.backScore}`;
 
   return (
     <section 
@@ -114,7 +88,7 @@ export const HomeVerificationModule: React.FC<HomeVerificationModuleProps> = ({ 
         <div className="flex flex-col items-center text-center max-w-3xl mx-auto mb-8 sm:mb-10">
           {/* Main Dedicated Gorilla Verify Sub-Brand Logo (Forensic Floating Badge) */}
           <div className="mb-4 sm:mb-5">
-            <VerifyLogo size="w-full max-w-[280px] sm:max-w-[340px] lg:max-w-[380px] h-[78px] sm:h-[94px] lg:h-[110px]" />
+            <VerifyLogo size="w-full max-w-[210px] sm:max-w-[255px] lg:max-w-[285px] h-[58px] sm:h-[70px] lg:h-[82px]" />
           </div>
 
           <h2 className="flex items-center gap-2 font-mono text-[11px] sm:text-xs tracking-[0.28em] uppercase text-gray-500 mb-6 sm:mb-7">
@@ -157,7 +131,7 @@ export const HomeVerificationModule: React.FC<HomeVerificationModuleProps> = ({ 
         {/* Forensic Search Console */}
         <div className="max-w-3xl sm:max-w-4xl mx-auto mb-10 w-full">
           <form 
-            onSubmit={(e) => { e.preventDefault(); handleVerify(); }}
+            onSubmit={(e) => { e.preventDefault(); void handleVerify(); }}
             className={`relative flex flex-col sm:flex-row items-stretch p-2 border shadow-lg transition-all duration-300 ${
               isLight 
                 ? 'bg-white border-[#D1D5DB] focus-within:border-[#16A34A] focus-within:ring-2 focus-within:ring-[#16A34A]/20' 
@@ -202,47 +176,11 @@ export const HomeVerificationModule: React.FC<HomeVerificationModuleProps> = ({ 
             </button>
           </form>
 
-          {/* Quick Access Badges (QR, NFC & Demo Seeds) */}
-          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 px-1 text-xs">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className={`font-mono text-[10px] uppercase tracking-wider ${isLight ? 'text-gray-500' : 'text-white/50'}`}>
-                {language === 'es' ? 'Códigos demo:' : 'Demo codes:'}
-              </span>
-              {demoCodes.map(d => (
-                <button
-                  key={d.code}
-                  type="button"
-                  onClick={() => handleQuickDemo(d.code)}
-                  className={`chip-forensic ${inputVal === d.code ? 'active' : ''}`}
-                >
-                  {d.code}
-                </button>
-              ))}
-            </div>
-
-            {/* Direct QR & NFC Access Buttons */}
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => simulateScan('QR')}
-                className="chip-forensic"
-                title={language === 'es' ? 'Simular escaneo de código QR' : 'Simulate QR code scan'}
-              >
-                <QrCode className="w-3.5 h-3.5 text-[#48C765]" />
-                <span>QR SCAN</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => simulateScan('NFC')}
-                className="chip-forensic"
-                title={language === 'es' ? 'Simular lectura de chip NFC' : 'Simulate NFC chip reading'}
-              >
-                <Cpu className="w-3.5 h-3.5 text-[#48C765]" />
-                <span>CHIP NFC</span>
-              </button>
-            </div>
-          </div>
+          <p className={`mt-4 px-1 font-mono text-[10px] uppercase tracking-wider ${isLight ? 'text-gray-500' : 'text-white/50'}`}>
+            {language === 'es'
+              ? 'También puedes verificar escaneando el QR del slab o acercando el móvil a su chip NFC.'
+              : 'You can also verify by scanning the QR on the slab or tapping your phone on its NFC chip.'}
+          </p>
 
           {errorMsg && (
             <div className="mt-3 p-3 border border-red-500/30 bg-red-500/10 text-red-400 font-mono text-xs flex items-center gap-2">
@@ -260,13 +198,15 @@ export const HomeVerificationModule: React.FC<HomeVerificationModuleProps> = ({ 
               : 'bg-[#141714] border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.6)]'
           }`}>
             
+            <CertificateStatusBanner certificate={selectedCard} onNavigate={onNavigate} />
+
             {/* Spec Sheet Top Console Bar */}
             <div className={`px-5 py-3.5 border-b flex flex-wrap items-center justify-between gap-4 font-mono text-xs ${
               isLight ? 'bg-gray-50 border-gray-200 text-gray-600' : 'bg-white/[0.03] border-white/10 text-white/70'
             }`}>
               <div className="flex items-center gap-3">
-                <span className="font-bold text-[#16A34A] tracking-wider text-[11px]">
-                  {language === 'es' ? '[REGISTRO ACTIVO]' : '[ACTIVE REGISTRY]'}
+                <span className={`font-bold tracking-wider text-[11px] ${selectedCard.status === 'active' ? 'text-[#16A34A]' : 'text-red-500'}`}>
+                  {selectedCard.status === 'active' ? (language === 'es' ? '[REGISTRO ACTIVO]' : '[ACTIVE REGISTRY]') : (language === 'es' ? '[NO VIGENTE]' : '[NOT VALID]')}
                 </span>
                 <span className="font-bold tracking-wider text-current">
                   CERT // {selectedCard.certNumber}
@@ -492,7 +432,6 @@ export const HomeVerificationModule: React.FC<HomeVerificationModuleProps> = ({ 
                     <span>•</span>
                     <span><strong>{language === 'es' ? 'Rareza:' : 'Rarity:'}</strong> {selectedCard.rarity}</span>
                     <span>•</span>
-                    <span><strong>{language === 'es' ? 'Valor Declarado:' : 'Declared Value:'}</strong> {selectedCard.declaredValueEur.toLocaleString()} €</span>
                   </div>
                 </div>
 
@@ -558,7 +497,7 @@ export const HomeVerificationModule: React.FC<HomeVerificationModuleProps> = ({ 
                         </span>
                       </div>
                       <div className="font-mono text-[9px] text-gray-500">
-                        90° Micro-Die Cut
+                        {sideScores(selectedCard.subgrades.corners)}
                       </div>
                     </div>
 
@@ -573,7 +512,7 @@ export const HomeVerificationModule: React.FC<HomeVerificationModuleProps> = ({ 
                         </span>
                       </div>
                       <div className="font-mono text-[9px] text-gray-500">
-                        Zero Silvering
+                        {sideScores(selectedCard.subgrades.edges)}
                       </div>
                     </div>
 
@@ -588,7 +527,7 @@ export const HomeVerificationModule: React.FC<HomeVerificationModuleProps> = ({ 
                         </span>
                       </div>
                       <div className="font-mono text-[9px] text-gray-500">
-                        Holo Foil Pristine
+                        {sideScores(selectedCard.subgrades.surface)}
                       </div>
                     </div>
                   </div>
@@ -598,8 +537,10 @@ export const HomeVerificationModule: React.FC<HomeVerificationModuleProps> = ({ 
                 <div className="pt-4 border-t border-gray-200 dark:border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
                   <div className="flex items-center gap-2 font-mono text-[10px] text-gray-400">
                     <Hash className="w-3.5 h-3.5 text-[#48C765]" />
-                    <span className="truncate max-w-[280px]" title={selectedCard.securityHash}>
-                      SHA-256: {selectedCard.securityHash.slice(0, 24)}...
+                    <span className="truncate max-w-[280px]" title={selectedCard.signature ?? undefined}>
+                      {selectedCard.signature
+                        ? `ED25519: ${selectedCard.signature.slice(0, 24)}...`
+                        : (language === 'es' ? 'Sin firma digital todavía' : 'No digital signature yet')}
                     </span>
                   </div>
 

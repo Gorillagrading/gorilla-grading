@@ -1,8 +1,12 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
-import { MOCK_GRADED_CARDS } from '../data/mockCards';
-import { MOCK_ORDERS } from '../data/mockOrders';
+import { useAuth } from '../context/AuthContext';
+import { fetchCards, fetchOrders } from '../api/account';
+import type { OrderSummaryDto } from '../../shared/account';
+import type { OrderStatus } from '../../shared/domain';
+import type { GradedCard } from '../types';
+import { STATUS_LABEL } from '../utils/orderStatus';
 import { SlabCard } from '../components/common/SlabCard';
 import { SlabTimelineIcon } from '../components/common/SlabTimelineIcon';
 
@@ -10,36 +14,118 @@ interface CollectorVaultPageProps {
   onNavigate: (path: string) => void;
 }
 
+/** Estados en los que el pedido sigue en curso: no está entregado, cancelado ni devuelto. */
+const IN_PROGRESS: OrderStatus[] = [
+  'SUBMITTED', 'PAYMENT_PENDING', 'PACKAGE_RECEIVED', 'PRE_INSPECTION', 'OPTICAL_GRADING',
+  'ENCAPSULATION', 'QUALITY_ASSURANCE', 'SHIPPED', 'ON_HOLD',
+];
+
+/**
+ * Fase en curso de las 5 que muestra el recorrido (recepción, inspección, sub-grados,
+ * graduación, encapsulado). -1 si ya terminaron todas o el pedido está en pausa.
+ */
+function currentStage(status: OrderStatus): number {
+  switch (status) {
+    case 'SUBMITTED':
+    case 'PAYMENT_PENDING':
+      return 0;
+    case 'PACKAGE_RECEIVED':
+    case 'PRE_INSPECTION':
+      return 1;
+    case 'OPTICAL_GRADING':
+      return 2;
+    case 'ENCAPSULATION':
+      return 4;
+    default:
+      return -1;
+  }
+}
+
+/** Panel para mensajes de carga, error y listas vacías. */
+const EmptyPanel: React.FC<{
+  isLight: boolean;
+  title: string;
+  text: string;
+  action?: { label: string; onClick: () => void };
+}> = ({ isLight, title, text, action }) => (
+  <div
+    className={`border rounded-xl p-8 sm:p-12 flex flex-col items-center text-center gap-3 ${
+      isLight ? 'bg-white border-[#E2DBD0] shadow-sm' : 'bg-[#383838] border-[#4E4E4E]'
+    }`}
+  >
+    <h3 className={`font-['Nunito',sans-serif] text-xl sm:text-2xl uppercase font-[900] ${isLight ? 'text-[#14170F]' : 'text-white'}`}>
+      {title}
+    </h3>
+    <p className={`text-sm max-w-md leading-relaxed ${isLight ? 'text-neutral-600' : 'text-[#D1D5DB]'}`}>{text}</p>
+    {action && (
+      <button
+        type="button"
+        onClick={action.onClick}
+        className={`mt-3 py-3 px-5 rounded-lg text-xs font-['Nunito',sans-serif] font-[900] tracking-wider uppercase cursor-pointer transition-all ${
+          isLight ? 'bg-[#15803D] hover:bg-[#166534] text-white' : 'bg-[#61B663] hover:bg-[#48C765] text-[#111311]'
+        }`}
+      >
+        {action.label}
+      </button>
+    )}
+  </div>
+);
+
 export const CollectorVaultPage: React.FC<CollectorVaultPageProps> = ({ onNavigate }) => {
   const { language } = useLanguage();
   const { theme } = useTheme();
+  const { user } = useAuth();
   const isLight = theme === 'light';
+  const es = language === 'es';
   const [activeTab, setActiveTab] = useState<'overview' | 'submissions' | 'vault' | 'invoices'>('overview');
   const [filterGame, setFilterGame] = useState('ALL');
-  const [showInvoiceModal, setShowInvoiceModal] = useState<string | null>(null);
-  const [expandedInvoices, setExpandedInvoices] = useState<Record<string, boolean>>({});
 
-  const toggleInvoice = (id: string) => {
-    setExpandedInvoices(prev => ({
-      ...prev,
-      [id]: !prev[id]
-    }));
-  };
+  const [data, setData] = useState<{ orders: OrderSummaryDto[]; cards: GradedCard[] } | null>(null);
+  const [loadFailed, setLoadFailed] = useState(false);
 
-  const userCards = MOCK_GRADED_CARDS;
-  const activeOrder = MOCK_ORDERS[0];
-  const pastOrders = MOCK_ORDERS.slice(1);
+  const load = useCallback(() => {
+    setLoadFailed(false);
+    Promise.all([fetchOrders(), fetchCards()])
+      .then(([orders, cards]) => setData({ orders, cards }))
+      .catch(() => setLoadFailed(true));
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const userCards = data?.cards ?? [];
+  const orders = data?.orders ?? [];
+  const activeOrder = orders.find((o) => IN_PROGRESS.includes(o.status));
+  const inProgressCount = orders.filter((o) => IN_PROGRESS.includes(o.status)).length;
+  // En las listas el pedido en curso va primero; el resto conserva el orden por fecha.
+  const allOrders = activeOrder ? [activeOrder, ...orders.filter((o) => o !== activeOrder)] : orders;
 
   const filteredCards = filterGame === 'ALL'
     ? userCards
     : userCards.filter(c => c.game.toUpperCase().includes(filterGame));
 
+  const statusLabel = (status: OrderStatus) => STATUS_LABEL[status][es ? 'es' : 'en'];
+  const locale = es ? 'es-ES' : 'en-GB';
+  const formatDate = (iso: string) => new Date(iso).toLocaleDateString(locale, { day: '2-digit', month: 'short', year: 'numeric' });
+  const formatTime = (iso: string) => new Date(iso).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
+
+  // Datos de la persona. Una cuenta nueva todavía no tiene nombre: se usa la parte local del email.
+  const displayName = user?.fullName || user?.email.split('@')[0] || '';
+  const firstName = displayName.split(/\s+/)[0];
+  const initials = (user?.fullName ? user.fullName.split(/\s+/).slice(0, 2).map((p) => p[0]).join('') : displayName.slice(0, 2)).toUpperCase();
+  const memberSince = user ? new Date(user.createdAt).toLocaleDateString(locale, { month: 'long', year: 'numeric' }) : '';
+
+  // Fase en curso del pedido activo y cuántas fases ya están completadas.
+  const stage = activeOrder ? currentStage(activeOrder.status) : -1;
+  const stagesDone = !activeOrder ? 0 : stage >= 0 ? stage : activeOrder.status === 'ON_HOLD' ? 0 : 5;
+
   // TABS
   const tabs = [
-    { id: 'overview', index: '01', label: language === 'es' ? 'RESUMEN' : 'OVERVIEW', count: null },
-    { id: 'submissions', index: '02', label: language === 'es' ? 'EXPEDIENTES' : 'ORDERS', count: `${[activeOrder, ...pastOrders].length}` },
-    { id: 'vault', index: '03', label: language === 'es' ? 'BÓVEDA DIGITAL' : 'GRADED VAULT', count: `${userCards.length}` },
-    { id: 'invoices', index: '04', label: language === 'es' ? 'FACTURACIÓN' : 'INVOICES', count: '2' },
+    { id: 'overview', index: '01', label: es ? 'RESUMEN' : 'OVERVIEW', count: null },
+    { id: 'submissions', index: '02', label: es ? 'EXPEDIENTES' : 'ORDERS', count: data ? `${allOrders.length}` : null },
+    { id: 'vault', index: '03', label: es ? 'BÓVEDA DIGITAL' : 'GRADED VAULT', count: data ? `${userCards.length}` : null },
+    { id: 'invoices', index: '04', label: es ? 'FACTURACIÓN' : 'INVOICES', count: null },
   ];
 
   const renderOrderStatusBadge = (status: string, isActive: boolean) => {
@@ -131,96 +217,10 @@ export const CollectorVaultPage: React.FC<CollectorVaultPageProps> = ({ onNaviga
             <span className={`font-['Nunito',sans-serif] text-sm font-[900] uppercase tracking-normal ${
               isLight ? 'text-[#14170F]' : 'text-white'
             }`}>
-              {status.replace('_', ' ')}
+              {STATUS_LABEL[status as OrderStatus]?.[es ? 'es' : 'en'] ?? status}
             </span>
           </div>
         );
-    }
-  };
-
-  const invoicesData: Record<string, {
-    id: string;
-    date: string;
-    orderId: string;
-    hash: string;
-    clientName: string;
-    clientAddress: string;
-    clientCity: string;
-    items: Array<{ code: string; title: string; subtitle: string; qty: number; unitPrice: number; total: number }>;
-    baseNet: number;
-    vatRate: number;
-    vatAmount: number;
-    total: number;
-  }> = {
-    'INV-2026-0892': {
-      id: 'INV-2026-0892',
-      date: language === 'es' ? '15 SEP 2026 · 14:32 CET' : 'SEP 15, 2026 · 14:32 CET',
-      orderId: 'GG-ORD-88219',
-      hash: 'SHA256: 7F4A·90E1·8829·003C',
-      clientName: 'Carlos Mendes',
-      clientAddress: 'Calle Serrano 120, 4ºB',
-      clientCity: '28006 Madrid, España',
-      items: [
-        {
-          code: 'SRV-STD-15D',
-          title: language === 'es' ? 'Servicio de Graduación Standard (15 Días)' : 'Standard Grading Service (15 Days)',
-          subtitle: language === 'es' ? 'Peritaje óptico 1200 DPI, cálculo centesimal y encapsulado sónico 35 kHz' : '1200 DPI multispectral imaging, centesimal centering & 35 kHz ultrasonic encapsulation',
-          qty: 1,
-          unitPrice: 30.00,
-          total: 30.00
-        },
-        {
-          code: 'OPT-SUB-4X',
-          title: language === 'es' ? 'Suplemento Sub-Grados Ópticos Láser' : 'Sub-Grades Laser Optical Addon',
-          subtitle: language === 'es' ? 'Telemetría de 4 cuadrantes con calibre láser de 0.01 mm (Centering, Corners, Edges, Surface)' : '4-quadrant micrometric laser telemetry (Centering, Corners, Edges, Surface)',
-          qty: 1,
-          unitPrice: 5.00,
-          total: 5.00
-        },
-        {
-          code: 'LOG-INS-EU',
-          title: language === 'es' ? 'Custodia y Retorno Asegurado (UE)' : 'Insured Armored Return Shipping (EU)',
-          subtitle: language === 'es' ? 'Tránsito blindado con seguro de valor real de reposición certificado' : 'Armored transit with certified full replacement market value insurance',
-          qty: 1,
-          unitPrice: 10.00,
-          total: 10.00
-        }
-      ],
-      baseNet: 37.19,
-      vatRate: 21,
-      vatAmount: 7.81,
-      total: 45.00
-    },
-    'INV-2026-0741': {
-      id: 'INV-2026-0741',
-      date: language === 'es' ? '02 AGO 2026 · 11:15 CET' : 'AUG 02, 2026 · 11:15 CET',
-      orderId: 'GG-ORD-88102',
-      hash: 'SHA256: 9C3B·11D4·7702·884F',
-      clientName: 'Carlos Mendes',
-      clientAddress: 'Calle Serrano 120, 4ºB',
-      clientCity: '28006 Madrid, España',
-      items: [
-        {
-          code: 'SRV-EXP-05D',
-          title: language === 'es' ? 'Servicio de Graduación Express Prioritario (5 Días)' : 'Express Priority Grading Service (5 Days)',
-          subtitle: language === 'es' ? 'Admisión preferente en sala blanca ISO y doble peritaje óptico' : 'Priority ISO cleanroom admission & dual-operator optical audit',
-          qty: 2,
-          unitPrice: 50.00,
-          total: 100.00
-        },
-        {
-          code: 'LOG-PRI-EU',
-          title: language === 'es' ? 'Transporte Retorno Blindado Express' : 'Express Armored Return Transit',
-          subtitle: language === 'es' ? 'Entrega garantizada 24h con custodia con código de verificación' : 'Guaranteed 24h delivery with tamper-evident security custody',
-          qty: 1,
-          unitPrice: 20.00,
-          total: 20.00
-        }
-      ],
-      baseNet: 99.17,
-      vatRate: 21,
-      vatAmount: 20.83,
-      total: 120.00
     }
   };
 
@@ -262,7 +262,7 @@ export const CollectorVaultPage: React.FC<CollectorVaultPageProps> = ({ onNaviga
                   ? 'border-[#D8D2C5] bg-white text-[#14170F]' 
                   : 'border-[#4E4E4E] bg-[#2A2A2A] text-white'
               }`}>
-                <span className="text-xl sm:text-2xl font-bold tracking-wider">CM</span>
+                <span className="text-xl sm:text-2xl font-bold tracking-wider">{initials}</span>
               </div>
 
               <div className="flex flex-col min-w-0">
@@ -274,12 +274,12 @@ export const CollectorVaultPage: React.FC<CollectorVaultPageProps> = ({ onNaviga
                   </span>
                   <span className="text-neutral-400 text-xs">•</span>
                   <span className={`text-[10px] font-mono tracking-wider ${isLight ? 'text-neutral-500' : 'text-[#8C9185]'}`}>
-                    #GOR-8821
+                    #{user?.customerCode ?? ''}
                   </span>
                 </div>
                 
                 <h1 className="font-['Nunito',sans-serif] text-2xl uppercase tracking-normal leading-tight truncate font-[900]">
-                  Carlos Mendes
+                  {displayName}
                 </h1>
                 <span className={`text-[11px] mt-0.5 ${isLight ? 'text-neutral-500' : 'text-[#8C9185]'}`}>
                   {language === 'es' ? 'Coleccionista Certificado' : 'Certified Collector'}
@@ -295,7 +295,7 @@ export const CollectorVaultPage: React.FC<CollectorVaultPageProps> = ({ onNaviga
                 <span className={`text-[10px] uppercase tracking-wide ${isLight ? 'text-neutral-500' : 'text-[#8C9185]'}`}>
                   {language === 'es' ? 'Expediente Cliente' : 'Client ID'}
                 </span>
-                <span className="font-mono font-semibold text-current">#GOR-8821</span>
+                <span className="font-mono font-semibold text-current">#{user?.customerCode ?? ''}</span>
               </div>
 
               <div className="flex justify-between items-center">
@@ -303,7 +303,7 @@ export const CollectorVaultPage: React.FC<CollectorVaultPageProps> = ({ onNaviga
                   {language === 'es' ? 'Acreditación' : 'Member Since'}
                 </span>
                 <span className="font-medium text-current">
-                  {language === 'es' ? 'Octubre 2025 · Verificado' : 'October 2025 · Verified'}
+                  {memberSince} · {es ? 'Verificado' : 'Verified'}
                 </span>
               </div>
 
@@ -416,8 +416,18 @@ export const CollectorVaultPage: React.FC<CollectorVaultPageProps> = ({ onNaviga
         {/* RIGHT COLUMN: Content Area */}
         <div className="flex-1 min-w-0">
           
+          {/* Carga de los datos de la cuenta */}
+          {!data && (
+            <EmptyPanel
+              isLight={isLight}
+              title={loadFailed ? (es ? 'No se pudo cargar tu cuenta' : 'Could not load your account') : (es ? 'Cargando tu cuenta…' : 'Loading your account…')}
+              text={loadFailed ? (es ? 'Comprueba tu conexión e inténtalo de nuevo.' : 'Check your connection and try again.') : ''}
+              action={loadFailed ? { label: es ? 'Reintentar' : 'Retry', onClick: load } : undefined}
+            />
+          )}
+
           {/* TAB: OVERVIEW */}
-          {activeTab === 'overview' && (
+          {data && activeTab === 'overview' && (
             <div className="space-y-8 animate-in fade-in duration-700">
               
               {/* Premium Greeting Banner (User Gray Card #383838) */}
@@ -439,14 +449,14 @@ export const CollectorVaultPage: React.FC<CollectorVaultPageProps> = ({ onNaviga
                     <h2 className={`font-['Nunito',sans-serif] text-2xl sm:text-3xl uppercase tracking-normal leading-tight mb-2 font-[900] ${
                       isLight ? 'text-[#14170F]' : 'text-white'
                     }`}>
-                      {language === 'es' ? 'Bienvenido,' : 'Welcome,'} <span className={isLight ? 'text-neutral-500' : 'text-[#D1D5DB]'}>Carlos</span>
+                      {language === 'es' ? 'Bienvenido,' : 'Welcome,'} <span className={isLight ? 'text-neutral-500' : 'text-[#D1D5DB]'}>{firstName}</span>
                     </h2>
                     <p className={`text-sm max-w-lg leading-relaxed ${
                       isLight ? 'text-neutral-600' : 'text-[#D1D5DB]'
                     }`}>
                       {language === 'es' 
-                        ? 'Tu colección se encuentra custodiada bajo estándares de alta seguridad. Tienes 1 expediente en proceso de evaluación y certificación.' 
-                        : 'Your collection is protected under certified security standards. You have 1 submission undergoing evaluation and certification.'}
+                        ? `Tu colección se encuentra custodiada bajo estándares de alta seguridad.${inProgressCount > 0 ? ` Tienes ${inProgressCount} ${inProgressCount === 1 ? 'expediente' : 'expedientes'} en proceso de evaluación y certificación.` : ''}` 
+                        : `Your collection is protected under certified security standards.${inProgressCount > 0 ? ` You have ${inProgressCount} ${inProgressCount === 1 ? 'submission' : 'submissions'} undergoing evaluation and certification.` : ''}`}
                     </p>
                   </div>
                 </div>
@@ -492,7 +502,7 @@ export const CollectorVaultPage: React.FC<CollectorVaultPageProps> = ({ onNaviga
                     <span className={`font-['Nunito',sans-serif] text-4xl leading-none font-[900] ${
                       isLight ? 'text-[#14170F]' : 'text-white'
                     }`}>
-                      {MOCK_ORDERS.length}
+                      {allOrders.length}
                     </span>
                     <span className={`font-mono text-[10px] font-semibold tracking-wider uppercase ${
                       isLight ? 'text-neutral-500' : 'text-neutral-400'
@@ -516,23 +526,23 @@ export const CollectorVaultPage: React.FC<CollectorVaultPageProps> = ({ onNaviga
                         <span className={`font-bold uppercase tracking-wider text-[11px] ${
                           isLight ? 'text-[#15803D]' : 'text-[#61B663]'
                         }`}>
-                          {language === 'es' ? 'EXPEDIENTE EN PROCESO · FASE 03' : 'SUBMISSION IN PROGRESS · STAGE 03'}
+                          {(es ? 'EXPEDIENTE EN PROCESO' : 'SUBMISSION IN PROGRESS') + ' · ' + statusLabel(activeOrder.status).toUpperCase()}
                         </span>
                         <span className={isLight ? 'text-black/30' : 'text-white/30'}>/</span>
                         <span className={`tracking-wider ${
                           isLight ? 'text-neutral-600' : 'text-[#D1D5DB]'
                         }`}>
-                          ID: {activeOrder.id}
+                          ID: {activeOrder.code}
                         </span>
                       </div>
                       <h3 className={`font-['Nunito',sans-serif] text-2xl uppercase tracking-normal font-[900] ${
                         isLight ? 'text-[#14170F]' : 'text-white'
                       }`}>
-                        {activeOrder.items.length} {language === 'es' ? 'Cartas' : 'Cards'} · Optical Grading
+                        {activeOrder.itemCount} {es ? (activeOrder.itemCount === 1 ? 'Carta' : 'Cartas') : (activeOrder.itemCount === 1 ? 'Card' : 'Cards')} · {statusLabel(activeOrder.status)}
                       </h3>
                     </div>
                     <button
-                      onClick={() => onNavigate('/track')}
+                      onClick={() => onNavigate(`/track?code=${activeOrder?.code ?? ''}`)}
                       className={`font-['Nunito',sans-serif] font-[800] text-xs uppercase tracking-wider flex items-center gap-2 py-2 px-3.5 rounded-lg border transition-all cursor-pointer ${
                         isLight
                           ? 'bg-[#F4EFE6] text-[#14170F] border-[#D8D2C5] hover:bg-[#EAE4D7]'
@@ -555,7 +565,7 @@ export const CollectorVaultPage: React.FC<CollectorVaultPageProps> = ({ onNaviga
                       {/* Active Progress Line */}
                       <div 
                         className="absolute top-[28px] left-[7%] h-[2px] bg-[#16A34A] dark:bg-[#61B663] transition-all duration-500" 
-                        style={{ width: '43%' }}
+                        style={{ width: `${(Math.min(stagesDone, 4) / 4) * 86}%` }}
                       />
 
                       {/* Steps with Slab Cards */}
@@ -567,14 +577,14 @@ export const CollectorVaultPage: React.FC<CollectorVaultPageProps> = ({ onNaviga
                           { id: 'GRADING', labelEs: 'Graduación', labelEn: 'Grading', subEs: 'Cálculo de nota', subEn: 'Final score QA' },
                           { id: 'ENCAPSULATION', labelEs: 'Encapsulado', labelEn: 'Encapsulation', subEs: 'Sellado hermético', subEn: 'Sonic sealing' },
                         ].map((st, idx) => {
-                          const isCompleted = idx < 2;
-                          const isCurrent = idx === 2;
-                          const isPending = idx > 2;
+                          const isCompleted = idx < stagesDone;
+                          const isCurrent = idx === stage;
+                          const isPending = !isCompleted && !isCurrent;
 
                           return (
                             <div 
                               key={st.id} 
-                              onClick={() => onNavigate('/track')}
+                              onClick={() => onNavigate(`/track?code=${activeOrder?.code ?? ''}`)}
                               className="flex flex-col items-center text-center group cursor-pointer w-24 sm:w-28"
                             >
                               {/* Micro Slab Card Icon */}
@@ -709,7 +719,7 @@ export const CollectorVaultPage: React.FC<CollectorVaultPageProps> = ({ onNaviga
           )}
 
           {/* TAB: SUBMISSIONS */}
-          {activeTab === 'submissions' && (
+          {data && activeTab === 'submissions' && (
             <div className="space-y-8 sm:space-y-12 animate-in fade-in duration-700">
               
               {/* Header */}
@@ -741,18 +751,27 @@ export const CollectorVaultPage: React.FC<CollectorVaultPageProps> = ({ onNaviga
                     {language === 'es' ? 'LOTES DECLARADOS' : 'DECLARED BATCHES'}
                   </span>
                   <span className="font-['Nunito',sans-serif] text-base font-[900] text-[#16A34A] dark:text-[#4ADE80]">
-                    {[activeOrder, ...pastOrders].length} {language === 'es' ? 'EXPEDIENTES' : 'DOSSIERS'}
+                    {allOrders.length} {es ? (allOrders.length === 1 ? 'EXPEDIENTE' : 'EXPEDIENTES') : (allOrders.length === 1 ? 'DOSSIER' : 'DOSSIERS')}
                   </span>
                 </div>
               </div>
 
+              {allOrders.length === 0 && (
+                <EmptyPanel
+                  isLight={isLight}
+                  title={es ? 'Todavía no tienes envíos' : 'You have no submissions yet'}
+                  text={es ? 'Cuando envíes tus primeras cartas a graduar, aparecerán aquí con su seguimiento.' : 'When you send your first cards for grading, they will appear here with their tracking.'}
+                  action={{ label: es ? 'Enviar cartas a graduar' : 'Submit cards for grading', onClick: () => onNavigate('/submit') }}
+                />
+              )}
+
               {/* Mobile Card View (< md) with Alternating Zebra Rows */}
               <div className="flex flex-col gap-3.5 md:hidden">
-                {[activeOrder, ...pastOrders].map((order, idx) => {
+                {allOrders.map((order, idx) => {
                   const isEven = idx % 2 === 0;
                   return (
                     <div 
-                      key={order.id} 
+                      key={order.code} 
                       className={`border rounded-xl p-4.5 flex flex-col gap-3.5 relative overflow-hidden transition-all duration-200 ${
                         isEven 
                           ? (isLight ? 'bg-[#FAF8F5] border-[#DCD5C7]' : 'bg-[#383838] border-[#4E4E4E]')
@@ -761,7 +780,7 @@ export const CollectorVaultPage: React.FC<CollectorVaultPageProps> = ({ onNaviga
                     >
                       {/* Left Status Marker */}
                       <div className={`absolute top-0 bottom-0 left-0 w-1 ${
-                        idx === 0 ? 'bg-[#61B663]' : 'bg-neutral-500/40'
+                        order.code === activeOrder?.code ? 'bg-[#61B663]' : 'bg-neutral-500/40'
                       }`} />
 
                       <div className="flex items-center justify-between gap-2 pl-2">
@@ -776,10 +795,10 @@ export const CollectorVaultPage: React.FC<CollectorVaultPageProps> = ({ onNaviga
                           <span className={`font-['Nunito',sans-serif] text-base font-[900] tracking-normal ${
                             isLight ? 'text-[#14170F]' : 'text-white'
                           }`}>
-                            {order.id}
+                            {order.code}
                           </span>
                         </div>
-                        {renderOrderStatusBadge(order.status, idx === 0)}
+                        {renderOrderStatusBadge(order.status, order.code === activeOrder?.code)}
                       </div>
 
                       <div className={`flex items-center justify-between text-xs border-y py-2.5 px-2 ${
@@ -787,22 +806,22 @@ export const CollectorVaultPage: React.FC<CollectorVaultPageProps> = ({ onNaviga
                       }`}>
                         <div className="flex flex-col">
                           <span className={`font-mono text-[9px] uppercase tracking-wider ${isLight ? 'text-neutral-400' : 'text-[#8C9185]'}`}>{language === 'es' ? 'Fecha' : 'Date'}</span>
-                          <span className="font-mono text-xs font-semibold">{order.createdAt}</span>
+                          <span className="font-mono text-xs font-semibold">{formatDate(order.submittedAt)}</span>
                         </div>
                         <div className="flex flex-col items-end">
                           <span className={`font-mono text-[9px] uppercase tracking-wider ${isLight ? 'text-neutral-400' : 'text-[#8C9185]'}`}>{language === 'es' ? 'Volumen' : 'Volume'}</span>
                           <span className={`font-['Nunito',sans-serif] text-sm font-[900] ${isLight ? 'text-[#14170F]' : 'text-white'}`}>
-                            {order.items.length} {language === 'es' ? 'CARTAS' : 'CARDS'}
+                            {order.itemCount} {language === 'es' ? 'CARTAS' : 'CARDS'}
                           </span>
                         </div>
                       </div>
 
                       <div className="flex items-center justify-between pl-2 pt-0.5">
                         <span className={`font-mono text-[9px] ${isLight ? 'text-neutral-400' : 'text-[#8C9185]'}`}>
-                          {order.carrier || 'GLS Express EU'}
+                          {order.carrier ?? (es ? 'Sin transportista asignado' : 'No carrier assigned')}
                         </span>
                         <button
-                          onClick={() => onNavigate('/track')}
+                          onClick={() => onNavigate(`/track?code=${order.code}`)}
                           className={`font-['Nunito',sans-serif] text-xs font-[800] uppercase tracking-wider py-1.5 px-3 rounded border transition-all flex items-center gap-1.5 cursor-pointer ${
                             isLight 
                               ? 'bg-black text-white border-black hover:bg-neutral-800' 
@@ -819,7 +838,7 @@ export const CollectorVaultPage: React.FC<CollectorVaultPageProps> = ({ onNaviga
               </div>
 
               {/* Desktop Table View (>= md) with Alternating Zebra Rows */}
-              <div className={`hidden md:block border rounded-xl overflow-hidden shadow-sm ${
+              <div className={`${allOrders.length === 0 ? 'hidden' : 'hidden md:block'} border rounded-xl overflow-hidden shadow-sm ${
                 isLight 
                   ? 'border-[#D8D2C5]' 
                   : 'border-[#4E4E4E]'
@@ -850,11 +869,11 @@ export const CollectorVaultPage: React.FC<CollectorVaultPageProps> = ({ onNaviga
                       </tr>
                     </thead>
                     <tbody>
-                      {[activeOrder, ...pastOrders].map((order, idx) => {
+                      {allOrders.map((order, idx) => {
                         const isEven = idx % 2 === 0;
                         return (
                           <tr 
-                            key={order.id} 
+                            key={order.code} 
                             className={`border-b transition-colors duration-200 group ${
                               isLight 
                                 ? (isEven 
@@ -878,13 +897,13 @@ export const CollectorVaultPage: React.FC<CollectorVaultPageProps> = ({ onNaviga
                                   </svg>
                                 </div>
                                 <div>
-                                  <span className={`font-['Nunito',sans-serif] text-base font-[900] tracking-normal block ${
+                                  <span className={`font-['Nunito',sans-serif] text-base font-[900] tracking-normal block whitespace-nowrap ${
                                     isLight ? 'text-[#14170F]' : 'text-white'
                                   }`}>
-                                    {order.id}
+                                    {order.code}
                                   </span>
                                   <span className="font-mono text-[10px] text-neutral-400 block mt-0.5">
-                                    {order.carrier || 'GLS Express EU'} &bull; {order.trackingNumber || 'REF-STD'}
+                                    {order.carrier ?? (es ? 'Sin transportista asignado' : 'No carrier assigned')}{order.trackingNumber && <> &bull; {order.trackingNumber}</>}
                                   </span>
                                 </div>
                               </div>
@@ -896,10 +915,10 @@ export const CollectorVaultPage: React.FC<CollectorVaultPageProps> = ({ onNaviga
                                 <span className={`font-mono text-xs font-semibold ${
                                   isLight ? 'text-[#14170F]' : 'text-white'
                                 }`}>
-                                  {order.createdAt}
+                                  {formatDate(order.submittedAt)}
                                 </span>
                                 <span className="font-mono text-[10px] text-neutral-400 mt-0.5">
-                                  10:24 CET &bull; {language === 'es' ? 'AUDITADO' : 'AUDITED'}
+                                  {formatTime(order.submittedAt)}
                                 </span>
                               </div>
                             </td>
@@ -910,26 +929,26 @@ export const CollectorVaultPage: React.FC<CollectorVaultPageProps> = ({ onNaviga
                                 <span className={`font-['Nunito',sans-serif] text-lg font-[900] ${
                                   isLight ? 'text-[#14170F]' : 'text-white'
                                 }`}>
-                                  {order.items.length}
+                                  {order.itemCount}
                                 </span>
                                 <span className="font-mono text-xs text-neutral-400 uppercase font-medium">
                                   {language === 'es' ? 'cartas' : 'cards'}
                                 </span>
                               </div>
                               <span className="font-mono text-[10px] text-neutral-400 block">
-                                {order.items[0]?.cardName ? order.items[0].cardName.slice(0, 22) + '...' : 'TCG Collectibles'}
+                                {order.firstCardName ? (order.firstCardName.length > 22 ? order.firstCardName.slice(0, 22) + '…' : order.firstCardName) : 'TCG Collectibles'}
                               </span>
                             </td>
 
                             {/* Status */}
                             <td className="px-6 py-5">
-                              {renderOrderStatusBadge(order.status, idx === 0)}
+                              {renderOrderStatusBadge(order.status, order.code === activeOrder?.code)}
                             </td>
 
                             {/* Action Button */}
                             <td className="px-6 py-5 text-right">
                               <button
-                                onClick={() => onNavigate('/track')}
+                                onClick={() => onNavigate(`/track?code=${order.code}`)}
                                 className={`font-['Nunito',sans-serif] text-xs uppercase tracking-wider font-[800] py-2 px-3.5 rounded-lg border transition-all inline-flex items-center gap-2 cursor-pointer shadow-sm ${
                                   isLight 
                                     ? 'bg-black text-white border-black hover:bg-neutral-800 hover:shadow' 
@@ -954,7 +973,7 @@ export const CollectorVaultPage: React.FC<CollectorVaultPageProps> = ({ onNaviga
           )}
 
           {/* TAB: VAULT */}
-          {activeTab === 'vault' && (
+          {data && activeTab === 'vault' && (
             <div className="space-y-12 animate-in fade-in duration-700">
               
               <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
@@ -992,6 +1011,17 @@ export const CollectorVaultPage: React.FC<CollectorVaultPageProps> = ({ onNaviga
                 </div>
               </div>
 
+              {filteredCards.length === 0 && (
+                <EmptyPanel
+                  isLight={isLight}
+                  title={userCards.length === 0 ? (es ? 'Tu bóveda está vacía' : 'Your vault is empty') : (es ? 'Sin cartas de este juego' : 'No cards for this game')}
+                  text={userCards.length === 0
+                    ? (es ? 'Tus cartas certificadas aparecerán aquí cuando termine su graduación.' : 'Your certified cards will appear here once their grading is complete.')
+                    : (es ? 'Prueba con otro filtro para ver el resto de tu colección.' : 'Try another filter to see the rest of your collection.')}
+                  action={userCards.length === 0 ? { label: es ? 'Enviar cartas a graduar' : 'Submit cards for grading', onClick: () => onNavigate('/submit') } : undefined}
+                />
+              )}
+
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
                 {filteredCards.map(card => (
                   <div key={card.id} className="flex flex-col items-center group">
@@ -999,7 +1029,7 @@ export const CollectorVaultPage: React.FC<CollectorVaultPageProps> = ({ onNaviga
                       card={card}
                       size="sm"
                       variant="card-only"
-                      onInspect={() => onNavigate('/certificates/demo')}
+                      onInspect={() => onNavigate(`/certificates/${card.certNumber}`)}
                     />
                     <div className={`w-full mt-6 border rounded-xl p-4 flex items-center justify-between transition-colors shadow-sm ${
                       isLight ? 'bg-white border-[#E2DBD0]' : 'bg-[#383838] border-[#4E4E4E]'
@@ -1030,7 +1060,7 @@ export const CollectorVaultPage: React.FC<CollectorVaultPageProps> = ({ onNaviga
                         </div>
                       </div>
                       <button
-                        onClick={() => onNavigate('/certificates/demo')}
+                        onClick={() => onNavigate(`/certificates/${card.certNumber}`)}
                         className={`w-9 h-9 shrink-0 flex items-center justify-center border rounded-full transition-colors ${
                           isLight 
                             ? 'border-[#D8D2C5] text-neutral-600 hover:border-[#15803D] hover:text-[#15803D] hover:bg-neutral-50' 
@@ -1052,673 +1082,20 @@ export const CollectorVaultPage: React.FC<CollectorVaultPageProps> = ({ onNaviga
 
           {/* TAB: INVOICES */}
           {activeTab === 'invoices' && (
-            <div className="space-y-6 sm:space-y-8 animate-in fade-in duration-700">
-              
-              {/* Telemetry & Fiscal Archive Command Header */}
-              <div className={`p-5 sm:p-6 border rounded-xl relative overflow-hidden transition-colors ${
-                isLight 
-                  ? 'bg-white border-[#D8D2C5] shadow-sm text-[#14170F]' 
-                  : 'bg-[#383838] border-[#4E4E4E] text-white shadow-md'
-              }`}>
-                {/* Holographic Top Hairline */}
-                <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#16A34A] via-[#38BDF8] to-[#16A34A] opacity-70" />
-                
-                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-                  <div>
-                    <div className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-[0.22em] text-[#16A34A] dark:text-[#48C765] font-bold mb-1.5">
-                      <span>{language === 'es' ? 'REGISTRO MERCANTIL & EXPEDIENTES TRIBUTARIOS' : 'COMMERCIAL REGISTRY & TAX ARCHIVES'}</span>
-                      <span className="text-neutral-400 font-normal">| R.D. 1619/2012</span>
-                    </div>
-                    <h2 className={`font-['Nunito',sans-serif] text-2xl sm:text-3xl uppercase tracking-normal font-[900] ${
-                      isLight ? 'text-[#14170F]' : 'text-white'
-                    }`}>
-                      {language === 'es' ? 'BÓVEDA DE FACTURACIÓN & PERITAJE FISCAL' : 'BILLING & VALUATION ARCHIVE'}
-                    </h2>
-                    <p className={`font-mono text-xs mt-1 max-w-xl ${
-                      isLight ? 'text-neutral-600' : 'text-[#A4ACA1]'
-                    }`}>
-                      {language === 'es' 
-                        ? 'Expedientes fiscales oficiales consolidados con telemetría de peritaje y sellado criptográfico VeriFactu.' 
-                        : 'Official consolidated fiscal dossiers with optical metrology telemetry and VeriFactu cryptographic digital seal.'}
-                    </p>
-                  </div>
-
-                  {/* Vault Telemetry Metrics Plaque & Master Accordion Toggle */}
-                  <div className="flex flex-wrap items-center gap-3 font-mono text-xs">
-                    <div className={`px-4 py-2.5 border rounded-lg ${
-                      isLight ? 'bg-[#F7F4EC] border-[#E0D9CB]' : 'bg-[#2A2A2A] border-[#4E4E4E]'
-                    }`}>
-                      <span className="block text-[8px] uppercase tracking-wider text-neutral-400">
-                        {language === 'es' ? 'EJERCICIO 2026' : 'FISCAL YEAR 2026'}
-                      </span>
-                      <span className={`font-['Nunito',sans-serif] text-base font-[900] ${isLight ? 'text-[#14170F]' : 'text-white'}`}>
-                        2 {language === 'es' ? 'EXPEDIENTES' : 'DOSSIERS'}
-                      </span>
-                    </div>
-
-                    <div className={`px-4 py-2.5 border rounded-lg ${
-                      isLight ? 'bg-[#F7F4EC] border-[#E0D9CB]' : 'bg-[#2A2A2A] border-[#4E4E4E]'
-                    }`}>
-                      <span className="block text-[8px] uppercase tracking-wider text-neutral-400">
-                        {language === 'es' ? 'TOTAL CONCILIADO' : 'TOTAL SETTLED'}
-                      </span>
-                      <span className="font-['Nunito',sans-serif] text-base font-[900] text-[#16A34A] dark:text-[#48C765]">
-                        €165.00 EUR
-                      </span>
-                    </div>
-
-                    <div className={`px-4 py-2.5 border rounded-lg ${
-                      isLight ? 'bg-[#F7F4EC] border-[#E0D9CB]' : 'bg-[#2A2A2A] border-[#4E4E4E]'
-                    }`}>
-                      <span className="block text-[8px] uppercase tracking-wider text-neutral-400">
-                        {language === 'es' ? 'ESTADO' : 'STATUS'}
-                      </span>
-                      <span className="font-mono text-xs font-bold text-[#16A34A] dark:text-[#48C765]">
-                        {language === 'es' ? 'REGULARIZADO' : 'SETTLED'}
-                      </span>
-                    </div>
-
-                    {/* Master Expand/Collapse Toggle */}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const allExp = Object.values(invoicesData).every(inv => !!expandedInvoices[inv.id]);
-                        const next: Record<string, boolean> = {};
-                        Object.keys(invoicesData).forEach(id => {
-                          next[id] = !allExp;
-                        });
-                        setExpandedInvoices(next);
-                      }}
-                      className={`px-3.5 py-2.5 border rounded-lg font-mono text-[10px] font-bold uppercase tracking-wider flex items-center gap-2 transition-all cursor-pointer select-none ${
-                        isLight 
-                          ? 'bg-white hover:bg-[#F2EFE8] border-[#D8D2C5] text-[#14170F]' 
-                          : 'bg-[#2A2A2A] hover:bg-[#333333] border-[#4E4E4E] text-white'
-                      }`}
-                      title={Object.values(invoicesData).every(inv => !!expandedInvoices[inv.id]) ? 'Reducir todos los cuadros' : 'Expandir todos los cuadros'}
-                    >
-                      <svg 
-                        className={`w-3.5 h-3.5 transition-transform duration-300 ${
-                          Object.values(invoicesData).every(inv => !!expandedInvoices[inv.id]) ? 'rotate-180' : 'rotate-0'
-                        }`} 
-                        fill="none" 
-                        viewBox="0 0 24 24" 
-                        stroke="currentColor"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" />
-                      </svg>
-                      <span>
-                        {Object.values(invoicesData).every(inv => !!expandedInvoices[inv.id])
-                          ? (language === 'es' ? 'REDUCIR TODOS' : 'COLLAPSE ALL')
-                          : (language === 'es' ? 'EXPANDIR TODOS' : 'EXPAND ALL')}
-                      </span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Bespoke Archival Folio Cards Collection (Expandable / Collapsible) */}
-              <div className="flex flex-col gap-4 sm:gap-5">
-                {Object.values(invoicesData).map((inv) => {
-                  const isExpanded = !!expandedInvoices[inv.id];
-                  return (
-                    <div 
-                      key={inv.id} 
-                      className={`border rounded-xl relative transition-all duration-300 group overflow-hidden ${
-                        isLight 
-                          ? 'bg-[#FAF9F5] border-[#D8D2C5] text-[#191D19] shadow-sm hover:border-[#16A34A]/80' 
-                          : 'bg-[#383838] border-[#4E4E4E] text-white hover:border-[#61B663]/60 shadow-md'
-                      }`}
-                    >
-                      {/* Document Paper Texture & Watermark */}
-                      <div className="absolute inset-0 bg-[url('/images/noise.png')] opacity-10 pointer-events-none mix-blend-overlay z-0" />
-                      <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none select-none opacity-[0.025] dark:opacity-[0.03] font-['Nunito',sans-serif] text-8xl font-[900] uppercase tracking-widest hidden md:block">
-                        {inv.id}
-                      </div>
-
-                      <div className="relative z-10 p-4 sm:p-6 pl-5 sm:pl-7 flex flex-col">
-                        
-                        {/* 1. Folio Identification Header (Click to Expand / Reduce) */}
-                        <div 
-                          onClick={() => toggleInvoice(inv.id)}
-                          className={`flex flex-col lg:flex-row lg:items-center justify-between gap-4 cursor-pointer select-none transition-colors ${
-                            isExpanded ? 'pb-4 border-b border-dashed border-current/15' : ''
-                          }`}
-                        >
-                          <div className="flex items-center gap-3">
-                            {/* Official Fiscal Document Seal */}
-                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 border transition-all ${
-                              isLight 
-                                ? 'bg-[#F5F2EB] border-[#D8D2C5] text-[#14170F]' 
-                                : 'bg-[#2A2A2A] border-[#4E4E4E] text-white'
-                            }`}>
-                              <svg className="w-5 h-5 text-[#16A34A] dark:text-[#4ADE80]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                              </svg>
-                            </div>
-
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <span className="font-['Nunito',sans-serif] text-lg sm:text-xl font-[900] tracking-normal">
-                                  {inv.id}
-                                </span>
-                                <span className="font-mono text-[9px] uppercase tracking-wider text-neutral-500 font-semibold">
-                                  {language === 'es' ? '· FACTURA OFICIAL' : '· OFFICIAL INVOICE'}
-                                </span>
-                              </div>
-                              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[10px] text-neutral-500 mt-0.5">
-                                <span>{language === 'es' ? 'Expediente Pedido:' : 'Order Ref:'} <strong className="text-current font-semibold">{inv.orderId}</strong></span>
-                                <span>&bull;</span>
-                                <span>{inv.date}</span>
-                                <span>&bull;</span>
-                                <span>{inv.items.length} {language === 'es' ? 'servicios' : 'services'}</span>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Right Controls: Amount Summary + Status + Expand/Reduce Button */}
-                          <div className="flex flex-wrap items-center gap-3 text-xs">
-                            {/* Total Amount Plaque */}
-                            <div className={`px-3 py-1.5 rounded-lg border font-mono flex items-center gap-2 ${
-                              isLight ? 'bg-white border-[#E0D9CB]' : 'bg-[#2A2A2A] border-[#4E4E4E]'
-                            }`}>
-                              <span className="text-[9px] uppercase tracking-wider text-neutral-400 font-normal">
-                                {language === 'es' ? 'TOTAL:' : 'TOTAL:'}
-                              </span>
-                              <span className="font-['Nunito',sans-serif] text-base font-[900] tracking-tight text-[#16A34A] dark:text-[#4ADE80]">
-                                €{inv.total.toFixed(2)}
-                              </span>
-                            </div>
-
-                            {/* Status Typographic Endorsement */}
-                            <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-                              {language === 'es' ? 'PAGADO' : 'PAID'}
-                            </span>
-
-                            {/* Bespoke Expand / Reduce Toggle Button */}
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                toggleInvoice(inv.id);
-                              }}
-                              className={`px-3 py-1.5 rounded-lg font-['Nunito',sans-serif] text-xs font-[800] uppercase tracking-wider border transition-all duration-200 flex items-center gap-2 cursor-pointer select-none shadow-sm ${
-                                isExpanded
-                                  ? (isLight ? 'bg-black text-white border-black' : 'bg-white/10 text-white border-white/20')
-                                  : (isLight ? 'bg-white hover:bg-neutral-100 text-[#14170F] border-[#D4CDC0]' : 'bg-[#2A2A2A] hover:bg-[#333333] text-white border-[#4E4E4E]')
-                              }`}
-                            >
-                              <span>
-                                {isExpanded 
-                                  ? (language === 'es' ? 'REDUCIR' : 'COLLAPSE') 
-                                  : (language === 'es' ? 'EXPANDIR' : 'EXPAND')}
-                              </span>
-                              <svg 
-                                className={`w-3.5 h-3.5 transition-transform duration-300 ${isExpanded ? 'rotate-180' : 'rotate-0'}`} 
-                                fill="none" 
-                                viewBox="0 0 24 24" 
-                                stroke="currentColor"
-                              >
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" />
-                              </svg>
-                            </button>
-                          </div>
-                        </div>
-
-
-                        {/* 2. Collapsible Services Breakdown & Financial Ledger Matrix */}
-                        <div 
-                          className={`transition-all duration-300 ease-in-out overflow-hidden ${
-                            isExpanded 
-                              ? 'max-h-[1400px] opacity-100 mt-5' 
-                              : 'max-h-0 opacity-0 mt-0 pointer-events-none'
-                          }`}
-                        >
-                          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-center">
-                            
-                            {/* Left: Audited Services Telemetry (7 cols) */}
-                            <div className="lg:col-span-7 space-y-2">
-                              <span className="font-mono text-[9px] uppercase tracking-[0.18em] font-bold block text-[#16A34A] dark:text-[#48C765]">
-                                // {language === 'es' ? 'SERVICIOS METROLÓGICOS FACTURADOS' : 'AUDITED SERVICES BREAKDOWN'}
-                              </span>
-                              <div className="space-y-1.5 font-mono text-xs">
-                                {inv.items.map((it, idx) => (
-                                  <div key={idx} className={`flex items-start justify-between gap-2 p-2.5 rounded-lg border ${
-                                    isLight ? 'bg-white/80 border-[#E2DCce]' : 'bg-[#2A2A2A] border-[#4E4E4E]'
-                                  }`}>
-                                    <div className="flex items-start gap-2">
-                                      <span className="font-bold text-[10px] text-[#16A34A] dark:text-[#48C765] shrink-0 mt-0.5">
-                                        [{it.code}]
-                                      </span>
-                                      <div>
-                                        <p className="font-sans font-medium text-xs leading-snug">
-                                          {it.title}
-                                        </p>
-                                        <p className={`font-sans text-[10px] mt-0.5 leading-tight ${isLight ? 'text-neutral-500' : 'text-[#8E968B]'}`}>
-                                          {it.subtitle}
-                                        </p>
-                                      </div>
-                                    </div>
-                                    <span className="font-bold text-xs shrink-0">
-                                      €{it.total.toFixed(2)}
-                                    </span>
-                                  </div>
-                                ))}
-                              </div>
-                              
-                              <div className="flex items-center justify-between font-mono text-[9px] text-neutral-400 pt-1">
-                                <span>HASH: {inv.hash}</span>
-                                <span>{language === 'es' ? 'CENTRO: MADRID · SEDE TÉCNICA' : 'FACILITY: MADRID · TECHNICAL LAB'}</span>
-                              </div>
-                            </div>
-
-                            {/* Right: Accounting Summary Plaque & Custom Gorilla Buttons (5 cols) */}
-                            <div className={`lg:col-span-5 p-4 rounded-xl border flex flex-col justify-between gap-4 font-mono ${
-                              isLight 
-                                ? 'bg-white border-[#D4CDC0] shadow-sm' 
-                                : 'bg-[#2A2A2A] border-[#4E4E4E]'
-                            }`}>
-                              <div className="space-y-1.5 text-xs border-b border-current/10 pb-3">
-                                <div className="flex justify-between">
-                                  <span className="text-neutral-500">{language === 'es' ? 'Base Imponible:' : 'Net Base:'}</span>
-                                  <span className="font-bold">€{inv.baseNet.toFixed(2)}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                  <span className="text-neutral-500">{language === 'es' ? `IVA (${inv.vatRate}%):` : `VAT (${inv.vatRate}%):`}</span>
-                                  <span className="font-bold">€{inv.vatAmount.toFixed(2)}</span>
-                                </div>
-                                <div className="flex justify-between items-baseline pt-2">
-                                  <div>
-                                    <span className="font-['Nunito',sans-serif] text-sm uppercase tracking-normal font-[900] block">
-                                      TOTAL LIQUIDADO
-                                    </span>
-                                    <span className="text-[7.5px] text-[#16A34A] dark:text-[#48C765] block font-mono">
-                                      EUR // R.D. 1619/2012
-                                    </span>
-                                  </div>
-                                  <span className={`font-['Nunito',sans-serif] text-2xl sm:text-3xl font-[900] tracking-tight ${
-                                    isLight ? 'text-[#16A34A]' : 'text-[#48C765]'
-                                  }`}>
-                                    €{inv.total.toFixed(2)}
-                                  </span>
-                                </div>
-                              </div>
-
-                              {/* Bespoke Gorilla Grading Action Buttons (Zero Generic Links) */}
-                              <div className="flex flex-col sm:flex-row items-center gap-2.5">
-                                <button 
-                                  type="button"
-                                  onClick={() => setShowInvoiceModal(inv.id)}
-                                  className="btn-gorilla-square-secondary w-full sm:flex-1 py-2.5 px-4 text-[11px] font-bold tracking-wider flex items-center justify-center gap-2 cursor-pointer"
-                                >
-                                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                  </svg>
-                                  <span>{language === 'es' ? 'Ver Expediente' : 'View Dossier'}</span>
-                                </button>
-
-                                <button 
-                                  type="button"
-                                  onClick={() => setShowInvoiceModal(inv.id)}
-                                  className="btn-gorilla-square w-full sm:flex-1 py-2.5 px-4 text-[11px] font-extrabold tracking-wider flex items-center justify-center gap-2 cursor-pointer shadow-md"
-                                >
-                                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                  </svg>
-                                  <span>{language === 'es' ? 'Descargar PDF' : 'Download PDF'}</span>
-                                </button>
-                              </div>
-                            </div>
-
-                          </div>
-                        </div>
-
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
+            <div className="animate-in fade-in duration-700">
+              <EmptyPanel
+                isLight={isLight}
+                title={language === 'es' ? 'Facturaci�n' : 'Invoices'}
+                text={language === 'es'
+                  ? 'Tus facturas aparecer�n aqu� cuando se active el pago online de los pedidos.'
+                  : 'Your invoices will appear here once online payment is enabled for orders.'}
+              />
             </div>
           )}
 
         </div>
 
       </div>
-      {/* Bespoke Architectural Laboratory Fiscal Dossier Modal */}
-      {showInvoiceModal && (() => {
-        const currentInvoice = invoicesData[showInvoiceModal] || invoicesData['INV-2026-0892'];
-
-        return (
-          <div className="fixed inset-0 z-[120] flex items-center justify-center p-2 sm:p-4 md:p-6 overflow-y-auto">
-            {/* Backdrop Blur Layer */}
-            <div 
-              className="fixed inset-0 bg-black/85 backdrop-blur-md transition-opacity duration-300" 
-              onClick={() => setShowInvoiceModal(null)} 
-            />
-
-            {/* Bespoke Physical Metrology Fiscal Dossier (Zero Generic Templates) */}
-            <div 
-              className={`relative w-full max-w-3xl my-auto flex flex-col max-h-[95vh] overflow-hidden border rounded-xl shadow-2xl transition-all duration-300 ${
-                isLight 
-                  ? 'bg-[#FCFBF8] border-[#D8D2C5] text-[#191D19] shadow-[0_30px_90px_rgba(0,0,0,0.30)]' 
-                  : 'bg-[#383838] border-[#4E4E4E] text-white shadow-[0_30px_90px_rgba(0,0,0,0.95)]'
-              }`}
-            >
-              {/* 1. Holographic Top Security Strip */}
-              <div className="h-1.5 w-full bg-gradient-to-r from-[#16A34A] via-[#38BDF8] via-[#A855F7] via-[#F59E0B] to-[#16A34A] opacity-90 relative overflow-hidden">
-                <div className="absolute inset-0 bg-white/20" />
-              </div>
-
-              {/* Archival Security Watermark Background Motif */}
-              <div className="absolute inset-0 pointer-events-none select-none overflow-hidden z-0 flex items-center justify-center opacity-[0.035] dark:opacity-[0.04]">
-                <div className="font-['Nunito',sans-serif] text-[120px] font-[900] tracking-[0.2em] uppercase rotate-[-25deg] whitespace-nowrap">
-                  GORILLA LABS
-                </div>
-              </div>
-
-              {/* Technical Registration Crosshairs (Architectural Lab Detailing) */}
-              <div className={`absolute top-3 left-3 font-mono text-[9px] pointer-events-none select-none z-20 ${
-                isLight ? 'text-black/30' : 'text-white/25'
-              }`}>┌ [METROLOGY LAB 01 · MADRID]</div>
-              <div className={`absolute top-3 right-12 font-mono text-[9px] pointer-events-none select-none z-20 hidden sm:block ${
-                isLight ? 'text-black/30' : 'text-white/25'
-              }`}>[ISO-17025 ARCHIVE] ┐</div>
-
-              {/* 2. Technical Ledger Header */}
-              <div className={`shrink-0 px-5 sm:px-8 pt-5 pb-3.5 border-b relative z-10 ${
-                isLight ? 'border-[#E2DCce] bg-white/80' : 'border-[#4E4E4E] bg-[#2A2A2A]'
-              }`}>
-                {/* Security Micro-print Line */}
-                <div className="flex items-center justify-between pb-2.5 mb-2.5 border-b border-dashed border-current/15 font-mono text-[8.5px] uppercase tracking-[0.22em] text-[#16A34A] dark:text-[#48C765]">
-                  <span>// GORILLA METROLOGY LEDGER // CERTIFICACIÓN FISCAL</span>
-                  <span className="hidden sm:inline font-mono">HASH: {currentInvoice.hash}</span>
-                  <span>R.D. 1619/2012 · VALIDEZ OFICIAL</span>
-                </div>
-
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex items-center gap-3.5">
-                    {/* Official Fiscal Seal Insignia */}
-                    <div className={`w-12 h-12 rounded-lg flex items-center justify-center shrink-0 border relative shadow-sm ${
-                      isLight 
-                        ? 'bg-[#F5F2EB] border-[#D8D2C5] text-[#14170F]' 
-                        : 'bg-[#383838] border-[#4E4E4E] text-white'
-                    }`}>
-                      <span className="absolute -top-[1px] -left-[1px] w-2.5 h-2.5 border-t-2 border-l-2 border-[#16A34A] dark:border-[#48C765]" />
-                      <span className="absolute -bottom-[1px] -right-[1px] w-2.5 h-2.5 border-b-2 border-r-2 border-[#16A34A] dark:border-[#48C765]" />
-                      <svg className="w-6 h-6 text-[#16A34A] dark:text-[#48C765]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
-                    </div>
-
-                    <div>
-                      <div className="flex flex-wrap items-baseline gap-2">
-                        <h3 className={`font-['Nunito',sans-serif] text-xl sm:text-2xl uppercase tracking-normal font-[900] ${
-                          isLight ? 'text-[#14170F]' : 'text-white'
-                        }`}>
-                          {language === 'es' ? 'FACTURA FISCAL DE CERTIFICACIÓN' : 'CERTIFICATION FISCAL INVOICE'}
-                        </h3>
-                        <span className="font-mono text-xs sm:text-sm font-bold text-[#16A34A] dark:text-[#48C765] tracking-wider">
-                          [{currentInvoice.id}]
-                        </span>
-                      </div>
-                      <p className={`font-mono text-[9px] uppercase tracking-wider mt-0.5 ${
-                        isLight ? 'text-neutral-600' : 'text-[#A4ACA1]'
-                      }`}>
-                        Gorilla Grading International S.L. &bull; NIF: B-88291042 &bull; Registro Mercantil de Madrid Tomo 41208
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2.5">
-                    <div className="hidden sm:flex flex-col items-end font-mono text-[9.5px] uppercase tracking-wider">
-                      <span className="font-bold text-[#15803D] dark:text-[#48C765]">
-                        [{language === 'es' ? 'PAGADO' : 'PAID'}]
-                      </span>
-                      <span className="text-[7.5px] text-neutral-400 mt-0.5 tracking-widest font-semibold">VERIFACTU REGISTRADO</span>
-                    </div>
-
-                    {/* Architectural Close Button */}
-                    <button 
-                      type="button"
-                      onClick={() => setShowInvoiceModal(null)} 
-                      className={`w-8 h-8 rounded-lg border flex items-center justify-center transition-all duration-200 cursor-pointer ${
-                        isLight 
-                          ? 'border-[#D4CDC0] text-neutral-600 hover:text-black hover:bg-black/5 hover:border-black' 
-                          : 'border-[#4E4E4E] text-[#A4ACA1] hover:text-white hover:bg-[#2A2A2A] hover:border-[#61B663]'
-                      }`}
-                      title={language === 'es' ? 'Cerrar documento' : 'Close document'}
-                    >
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* 3. Scrollable Document Body */}
-              <div className="flex-1 overflow-y-auto px-5 sm:px-8 py-4 sm:py-5 space-y-4 sm:space-y-5 relative z-10">
-                
-                {/* Architectural Metadata Grid (Hairline Rules, Zero Generic Boxes) */}
-                <div className={`grid grid-cols-1 sm:grid-cols-2 border rounded-xl overflow-hidden ${
-                  isLight ? 'border-[#E2DCce] divide-y sm:divide-y-0 sm:divide-x divide-[#E2DCce] bg-white/70' : 'border-[#4E4E4E] divide-y sm:divide-y-0 sm:divide-x divide-[#4E4E4E] bg-[#2A2A2A]'
-                }`}>
-                  {/* Left: Recipient Data */}
-                  <div className="p-3.5 sm:p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-mono text-[9px] uppercase tracking-[0.2em] font-bold text-[#16A34A] dark:text-[#48C765]">
-                        // {language === 'es' ? 'TITULAR FISCAL / RECEPTOR' : 'TAX RECIPIENT'}
-                      </span>
-                      <span className="font-mono text-[8.5px] text-neutral-400">ID: GG-4091</span>
-                    </div>
-                    <p className={`font-['Nunito',sans-serif] text-sm font-bold tracking-tight ${
-                      isLight ? 'text-[#14170F]' : 'text-white'
-                    }`}>
-                      {currentInvoice.clientName}
-                    </p>
-                    <p className={`text-xs mt-0.5 font-mono ${isLight ? 'text-neutral-600' : 'text-[#B8BFB5]'}`}>
-                      {currentInvoice.clientAddress}
-                    </p>
-                    <p className={`text-xs font-mono ${isLight ? 'text-neutral-600' : 'text-[#B8BFB5]'}`}>
-                      {currentInvoice.clientCity}
-                    </p>
-                    <div className="mt-2 pt-1.5 border-t border-dashed border-current/15 flex items-center justify-between font-mono text-[8.5px] text-neutral-400">
-                      <span>DNI/NIF: ES-***3491-B</span>
-                      <span className="text-[#16A34A] dark:text-[#48C765] font-semibold">✓ DOMICILIO FISCAL VERIFICADO</span>
-                    </div>
-                  </div>
-
-                  {/* Right: Laboratory Order Metrics */}
-                  <div className="p-3.5 sm:p-4">
-                    <span className="font-mono text-[9px] uppercase tracking-[0.2em] font-bold block mb-2 text-[#16A34A] dark:text-[#48C765]">
-                      // {language === 'es' ? 'TELEMETRÍA DE LA TRANSACCIÓN' : 'TRANSACTION METRICS'}
-                    </span>
-                    <div className="space-y-1.5 font-mono text-xs">
-                      <div className="flex justify-between">
-                        <span className={isLight ? 'text-neutral-500' : 'text-[#A4ACA1]'}>{language === 'es' ? 'Fecha de Emisión:' : 'Issue Date:'}</span>
-                        <span className="font-semibold">{currentInvoice.date}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className={isLight ? 'text-neutral-500' : 'text-[#A4ACA1]'}>{language === 'es' ? 'Expediente Pedido:' : 'Order Ref:'}</span>
-                        <span className="font-bold text-[#16A34A] dark:text-[#48C765]">{currentInvoice.orderId}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className={isLight ? 'text-neutral-500' : 'text-[#A4ACA1]'}>{language === 'es' ? 'Canal Liquidación:' : 'Settlement:'}</span>
-                        <span className="font-medium">{language === 'es' ? 'Pasarela Bancaria / Tarjeta (EUR)' : 'Card / Bank Gateway (EUR)'}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className={isLight ? 'text-neutral-500' : 'text-[#A4ACA1]'}>{language === 'es' ? 'Centro de Peritaje:' : 'Facility:'}</span>
-                        <span className="font-medium">Madrid Cleanroom Lab 01</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Technical Itemization Ledger Table */}
-                <div className={`border rounded-xl overflow-hidden ${
-                  isLight ? 'border-[#E2DCce] bg-white/90' : 'border-[#4E4E4E] bg-[#2A2A2A]'
-                }`}>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left font-sans text-xs sm:text-sm min-w-[520px]">
-                      <thead>
-                        <tr className={`border-b font-mono text-[9px] uppercase tracking-[0.16em] ${
-                          isLight ? 'bg-[#F4EFE6] border-[#E2DCce] text-neutral-700' : 'bg-[#333333] border-[#4E4E4E] text-[#A4ACA1]'
-                        }`}>
-                          <th className="px-4 py-2.5 font-bold">{language === 'es' ? 'Cód. Servicio' : 'Code'}</th>
-                          <th className="px-4 py-2.5 font-bold">{language === 'es' ? 'Especificación Técnica del Peritaje' : 'Service Specification'}</th>
-                          <th className="px-3 py-2.5 font-bold text-center">{language === 'es' ? 'Cant.' : 'Qty'}</th>
-                          <th className="px-3 py-2.5 font-bold text-right">{language === 'es' ? 'Precio Ud.' : 'Unit'}</th>
-                          <th className="px-4 py-2.5 font-bold text-right">{language === 'es' ? 'Base Neta' : 'Amount'}</th>
-                        </tr>
-                      </thead>
-                      <tbody className={`divide-y font-mono ${isLight ? 'divide-[#EFE9DF]' : 'divide-[#4E4E4E]/60'}`}>
-                        {currentInvoice.items.map((item, idx) => (
-                          <tr key={idx} className={isLight ? 'hover:bg-black/[0.01]' : 'hover:bg-white/[0.03]'}>
-                            <td className="px-4 py-3 font-bold text-[10px] text-[#16A34A] dark:text-[#48C765]">
-                              [{item.code}]
-                            </td>
-                            <td className="px-4 py-3">
-                              <p className={`font-sans font-bold text-xs ${isLight ? 'text-[#14170F]' : 'text-white'}`}>
-                                {item.title}
-                              </p>
-                              <p className={`font-sans text-[10.5px] mt-0.5 leading-snug ${isLight ? 'text-neutral-500' : 'text-[#8E968B]'}`}>
-                                {item.subtitle}
-                              </p>
-                            </td>
-                            <td className={`px-3 py-3 text-center text-xs ${isLight ? 'text-neutral-600' : 'text-[#A4ACA1]'}`}>
-                              {item.qty}
-                            </td>
-                            <td className={`px-3 py-3 text-right text-xs ${isLight ? 'text-neutral-600' : 'text-[#A4ACA1]'}`}>
-                              €{item.unitPrice.toFixed(2)}
-                            </td>
-                            <td className={`px-4 py-3 text-right font-bold text-xs ${isLight ? 'text-[#14170F]' : 'text-white'}`}>
-                              €{item.total.toFixed(2)}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-
-                {/* Bottom Verification Seal & Totals Plaque */}
-                <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center pt-1">
-                  
-                  {/* Left: Official Digital Seal & Stamp Block */}
-                  <div className="sm:col-span-7 flex items-center gap-4">
-                    {/* Authentic Rotating Laboratory Wax/Ink Stamp */}
-                    <div className="relative border-2 border-[#16A34A]/80 dark:border-[#48C765]/80 w-22 h-22 p-1 flex items-center justify-center text-center font-mono text-[7px] uppercase tracking-wider rotate-[-5deg] select-none shrink-0 opacity-90 shadow-sm">
-                      <div className="w-full h-full border border-dashed border-[#16A34A]/60 dark:border-[#48C765]/60 flex flex-col items-center justify-center p-1 leading-tight">
-                        <span className="font-bold text-[7.5px] tracking-widest text-[#16A34A] dark:text-[#48C765]">GORILLA LABS</span>
-                        <span className="text-[6px] tracking-wider opacity-80">INTERNATIONAL</span>
-                        <span className="font-['Nunito',sans-serif] text-[11px] font-[900] text-[#16A34A] dark:text-[#48C765] my-0.5">CERTIFIED</span>
-                        <span className="text-[6px] tracking-tighter opacity-70">PROBATIVE VALUE</span>
-                      </div>
-                    </div>
-
-                    <div className="space-y-1.5 font-mono text-[8.5px]">
-                      <div className="flex items-center gap-2">
-                        {/* Stylized Barcode */}
-                        <div className="flex gap-[1.5px] h-6 items-end opacity-85 text-[#16A34A] dark:text-[#48C765]">
-                          <div className="w-[2px] h-full bg-current"></div>
-                          <div className="w-[1px] h-3/4 bg-current"></div>
-                          <div className="w-[3px] h-full bg-current"></div>
-                          <div className="w-[1px] h-1/2 bg-current"></div>
-                          <div className="w-[2px] h-full bg-current"></div>
-                          <div className="w-[4px] h-full bg-current"></div>
-                          <div className="w-[1px] h-3/4 bg-current"></div>
-                          <div className="w-[2px] h-current bg-current"></div>
-                          <div className="w-[3px] h-2/3 bg-current"></div>
-                          <div className="w-[1px] h-full bg-current"></div>
-                          <div className="w-[3px] h-full bg-current"></div>
-                        </div>
-                        <div>
-                          <span className="font-bold block tracking-wider text-[#16A34A] dark:text-[#48C765]">
-                            {language === 'es' ? 'VERIFACTU // SELLO TRIBUTARIO' : 'VERIFACTU // TAX AUDIT SEAL'}
-                          </span>
-                          <span className="text-[7.5px] opacity-75">
-                            {language === 'es' ? 'FIRMA ELECTRÓNICA V4.2 CONSOLIDADA' : 'CONSOLIDATED ELECTRONIC SIGNATURE V4.2'}
-                          </span>
-                        </div>
-                      </div>
-                      <p className={`text-[8px] leading-snug ${isLight ? 'text-neutral-500' : 'text-[#8E968B]'}`}>
-                        {language === 'es'
-                          ? 'Documento fiscal emitido por Gorilla Grading International S.L. con plena eficacia mercantil conforme al R.D. 1619/2012 y directivas de la Unión Europea.'
-                          : 'Fiscal document issued by Gorilla Grading International S.L. with full commercial validity under R.D. 1619/2012 and EU directives.'}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Right: Bespoke Totals Plaque (Guaranteed Full Visibility) */}
-                  <div className={`sm:col-span-5 border rounded-xl p-3.5 font-mono ${
-                    isLight 
-                      ? 'border-[#D4CDC0] bg-white shadow-sm text-neutral-800' 
-                      : 'border-[#4E4E4E] bg-[#2A2A2A] text-white'
-                  }`}>
-                    <div className="flex justify-between py-1 text-xs border-b border-current/10">
-                      <span className="text-neutral-500">{language === 'es' ? 'Base Imponible:' : 'Net Subtotal:'}</span>
-                      <span className="font-bold">€{currentInvoice.baseNet.toFixed(2)}</span>
-                    </div>
-                    <div className="flex justify-between py-1 text-xs border-b border-current/10">
-                      <span className="text-neutral-500">IVA ({currentInvoice.vatRate}%):</span>
-                      <span className="font-bold">€{currentInvoice.vatAmount.toFixed(2)}</span>
-                    </div>
-                    <div className="flex justify-between items-baseline pt-2 mt-1">
-                      <div>
-                        <span className="font-['Nunito',sans-serif] text-xs sm:text-sm uppercase tracking-normal font-[900] block">
-                          TOTAL LIQUIDADO
-                        </span>
-                        <span className="text-[8px] text-[#16A34A] dark:text-[#48C765] block font-mono">
-                          EUR // TOTAL FACTURA
-                        </span>
-                      </div>
-                      <span className={`font-['Nunito',sans-serif] text-2xl sm:text-3xl font-[900] tracking-tight ${
-                        isLight ? 'text-[#16A34A]' : 'text-[#48C765]'
-                      }`}>
-                        €{currentInvoice.total.toFixed(2)}
-                      </span>
-                    </div>
-                  </div>
-
-                </div>
-
-              </div>
-
-              {/* 4. Executive Action Footer (Gorilla Custom Square Buttons, Zero Templates) */}
-              <div className={`shrink-0 px-5 sm:px-8 py-3.5 border-t flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3 relative z-10 ${
-                isLight ? 'bg-[#F4EFE6] border-[#E2DCce]' : 'bg-[#2A2A2A] border-[#4E4E4E]'
-              }`}>
-                <div className="hidden sm:flex items-center gap-2 font-mono text-[9px] uppercase tracking-wider text-neutral-500">
-                  <span>// REGISTRO OFICIAL // ACCESO PERMANENTE EN BÓVEDA</span>
-                </div>
-
-                <div className="flex items-center justify-end gap-3 w-full sm:w-auto">
-                  <button 
-                    type="button"
-                    onClick={() => setShowInvoiceModal(null)}
-                    className="btn-gorilla-square-secondary py-2.5 px-6 text-xs font-bold tracking-normal"
-                  >
-                    {language === 'es' ? 'Cerrar' : 'Close'}
-                  </button>
-                  <button 
-                    type="button"
-                    onClick={() => window.print()}
-                    className="btn-gorilla-square py-2.5 px-7 text-xs font-extrabold tracking-normal flex items-center justify-center gap-2 shadow-lg"
-                  >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                    </svg>
-                    <span>{language === 'es' ? 'Descargar / Imprimir PDF' : 'Download / Print PDF'}</span>
-                  </button>
-                </div>
-              </div>
-
-            </div>
-          </div>
-        );
-      })()}
-
     </div>
   );
 };

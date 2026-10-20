@@ -1,11 +1,11 @@
 import React, { useState, useRef } from 'react';
-import { GradedCard } from '../../types';
+import { PublicGradedCard } from '../../types';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
 import { ShieldCheck, QrCode, Sparkles, RefreshCw, Eye, Award } from 'lucide-react';
 
 interface SlabCardProps {
-  card: GradedCard;
+  card: PublicGradedCard;
   interactive?: boolean;
   onInspect?: () => void;
   size?: 'sm' | 'md' | 'lg';

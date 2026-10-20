@@ -2,7 +2,7 @@ import { Order } from '../types';
 
 export const MOCK_ORDERS: Order[] = [
   {
-    id: 'GG-ORD-88219',
+    id: 'GGI-ORD-7K4M9Q',
     trackingNumber: 'ES-GLS-9928174620',
     carrier: 'GLS Express EU Insured',
     createdAt: '2026-09-18',
@@ -103,7 +103,7 @@ export const MOCK_ORDERS: Order[] = [
     estimatedCompletion: '25 Sep 2026'
   },
   {
-    id: 'GG-ORD-77104',
+    id: 'GGI-ORD-3FX8RB',
     trackingNumber: 'PT-CTT-441029410',
     carrier: 'CTT Express Portugal',
     createdAt: '2026-09-08',
@@ -157,7 +157,7 @@ export const MOCK_ORDERS: Order[] = [
       {
         status: 'ENCAPSULATION',
         label: 'Sonic Encapsulated',
-        description: 'Slab serial #GG-774102 generated.',
+        description: 'Slab serial #GGI-SLB-774102 generated.',
         timestamp: '14 Sep 2026, 12:00 WEST',
         completed: true,
         current: false

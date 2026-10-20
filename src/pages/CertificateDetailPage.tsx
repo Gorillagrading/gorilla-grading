@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
-import { MOCK_GRADED_CARDS } from '../data/mockCards';
+import React, { useEffect, useState } from 'react';
 import { SlabCard } from '../components/common/SlabCard';
 import { DefectInspector } from '../components/common/DefectInspector';
+import { CertificateStatusBanner } from '../components/common/CertificateStatusBanner';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
+import { ApiError } from '../api/client';
+import { channelFromUrl, fetchCertificate, type PublicCertificate } from '../api/certificates';
 import { 
   ShieldCheck, 
   Printer, 
@@ -17,24 +19,68 @@ import {
 
 interface CertificateDetailPageProps {
   onNavigate: (path: string) => void;
-  certId?: string;
+  certId: string;
 }
 
 export const CertificateDetailPage: React.FC<CertificateDetailPageProps> = ({ 
   onNavigate, 
-  certId = 'GGI-892401' 
+  certId 
 }) => {
   const { theme } = useTheme();
   const isLight = theme === 'light';
   const { language } = useLanguage();
+  const es = language === 'es';
   const [copied, setCopied] = useState(false);
-  const card = MOCK_GRADED_CARDS.find(c => c.certNumber === certId) || MOCK_GRADED_CARDS[0];
+  const [card, setCard] = useState<PublicCertificate | null>(null);
+  const [state, setState] = useState<'loading' | 'ready' | 'not_found' | 'error'>('loading');
+
+  useEffect(() => {
+    let cancelled = false;
+    setState('loading');
+    fetchCertificate(certId, channelFromUrl())
+      .then((found) => {
+        if (cancelled) return;
+        setCard(found);
+        setState('ready');
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        setCard(null);
+        setState(err instanceof ApiError && err.status === 404 ? 'not_found' : 'error');
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [certId]);
 
   const handleCopyLink = () => {
     navigator.clipboard?.writeText?.(window.location.href);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
+
+  if (state !== 'ready' || !card) {
+    const title =
+      state === 'loading' ? (es ? 'Consultando el registro…' : 'Checking the registry…')
+      : state === 'not_found' ? (es ? 'Certificado no encontrado' : 'Certificate not found')
+      : (es ? 'No se pudo consultar el registro' : 'Could not check the registry');
+    const text =
+      state === 'loading' ? ''
+      : state === 'not_found'
+        ? (es ? `No existe ningún certificado con el número ${certId.toUpperCase()}. Comprueba que lo has escrito bien.` : `There is no certificate with number ${certId.toUpperCase()}. Check that you typed it correctly.`)
+        : (es ? 'Inténtalo de nuevo en unos minutos.' : 'Please try again in a few minutes.');
+    return (
+      <div className={`max-w-xl mx-auto px-4 py-24 text-center flex flex-col items-center gap-4 ${isLight ? 'text-gray-900' : 'text-slate-100'}`} aria-busy={state === 'loading'}>
+        <h1 className="font-display text-2xl sm:text-3xl font-black tracking-tight">{title}</h1>
+        {text && <p className={`text-sm ${isLight ? 'text-gray-600' : 'text-gray-400'}`}>{text}</p>}
+        {state !== 'loading' && (
+          <button type="button" onClick={() => onNavigate('/verify')} className="btn-gorilla-square px-6 py-3 text-xs font-extrabold tracking-normal cursor-pointer">
+            {es ? 'Ir al verificador de certificados' : 'Go to the certificate verifier'}
+          </button>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-6 sm:space-y-10 ${
@@ -88,6 +134,8 @@ export const CertificateDetailPage: React.FC<CertificateDetailPageProps> = ({
           </button>
         </div>
       </div>
+
+      <CertificateStatusBanner certificate={card} onNavigate={onNavigate} />
 
       {/* Official Certificate Header Plaque — Solid High-Contrast Luxury Design */}
       <div 
@@ -177,6 +225,13 @@ export const CertificateDetailPage: React.FC<CertificateDetailPageProps> = ({
               }`}>
                 {card.gradeLabel}
               </div>
+              <button
+                type="button"
+                onClick={() => onNavigate('/grading-scale')}
+                className="mt-2 text-[10px] underline underline-offset-4 cursor-pointer text-emerald-600 dark:text-emerald-400"
+              >
+                {es ? 'Cómo se calcula la nota' : 'How the grade is calculated'}
+              </button>
             </div>
 
             <div className={`border-l pl-4 sm:pl-5 text-right font-mono text-[11px] sm:text-xs space-y-1.5 ${
@@ -202,7 +257,7 @@ export const CertificateDetailPage: React.FC<CertificateDetailPageProps> = ({
         <div className="lg:col-span-7 space-y-8 relative z-0">
           <DefectInspector card={card} />
 
-          {/* Tamper Proof Security & NFC Record */}
+          {/* Firma del registro */}
           <div 
             className={`p-6 border space-y-3 font-mono text-xs shadow-md ${
               isLight ? 'border-gray-200' : 'border-white/10'
@@ -211,21 +266,28 @@ export const CertificateDetailPage: React.FC<CertificateDetailPageProps> = ({
           >
             <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-black tracking-wide">
               <ShieldCheck className="w-4 h-4" />
-              <span>{language === 'es' ? 'INTEGRIDAD DE REGISTRO CRIPTOGRÁFICO' : 'CRYPTOGRAPHIC LEDGER INTEGRITY'}</span>
+              <span>{card.signature ? (es ? 'FIRMA DIGITAL DEL REGISTRO' : 'DIGITAL SIGNATURE OF THE RECORD') : (es ? 'REGISTRO DE CERTIFICACIÓN' : 'CERTIFICATION RECORD')}</span>
             </div>
             <p className={`text-[11px] leading-relaxed ${isLight ? 'text-gray-600' : 'text-gray-400'}`}>
-              {language === 'es' 
-                ? 'Esta carta fue autenticada mediante análisis de longitud de onda espectral no destructivo y encapsulada en acrílico hermético por ultrasonido. El hash criptográfico coincide con el registro central internacional.'
-                : 'This card was authenticated using non-destructive spectral wavelength analysis and encapsulated in an ultrasonic hermetic acrylic case. The unique security hash matches the international central vault ledger.'}
+              {card.signature
+                ? (es
+                    ? 'El registro de este certificado está firmado con Ed25519. Cualquiera puede comprobar la firma con la clave pública del laboratorio.'
+                    : 'The record of this certificate is signed with Ed25519. Anyone can check the signature with the laboratory public key.')
+                : (es
+                    ? 'Este certificado figura en el registro público de Gorilla Grading. Todavía no incluye firma digital.'
+                    : 'This certificate is listed in the Gorilla Grading public registry. It does not include a digital signature yet.')}
             </p>
-            <div 
-              className={`p-3 border text-[10px] break-all font-mono ${
-                isLight ? 'border-gray-200 text-gray-700' : 'border-white/10 text-gray-400'
-              }`}
-              style={{ backgroundColor: isLight ? '#F9FAF9' : '#070907' }}
-            >
-              SHA256: {card.securityHash}
-            </div>
+            {card.signature && (
+              <div 
+                className={`p-3 border text-[10px] break-all font-mono ${
+                  isLight ? 'border-gray-200 text-gray-700' : 'border-white/10 text-gray-400'
+                }`}
+                style={{ backgroundColor: isLight ? '#F9FAF9' : '#070907' }}
+              >
+                ED25519: {card.signature}
+                {card.keyId && <div className="mt-1 opacity-70">KEY: {card.keyId}</div>}
+              </div>
+            )}
           </div>
         </div>
       </div>

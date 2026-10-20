@@ -99,6 +99,11 @@ export const LuxuryFooter: React.FC<LuxuryFooterProps> = ({ onNavigate }) => {
             }`}>
               {language === 'es' ? 'Verificar Certificado' : 'Verify Certificate'}
             </button>
+            <button onClick={() => onNavigate && onNavigate('/grading-scale')} className={`text-center lg:text-left text-xs transition-all duration-300 w-fit mx-auto lg:mx-0 ${
+              isLight ? 'text-[#4B524A] hover:text-[#16A34A] hover:translate-x-0 lg:hover:translate-x-1' : 'text-[#A4ACA1] hover:text-[#48C765] hover:translate-x-0 lg:hover:translate-x-1'
+            }`}>
+              {language === 'es' ? 'Cómo calculamos la nota' : 'How we calculate the grade'}
+            </button>
             <button onClick={() => onNavigate && onNavigate('/pricing')} className={`text-center lg:text-left text-xs transition-all duration-300 w-fit mx-auto lg:mx-0 ${
               isLight ? 'text-[#4B524A] hover:text-[#16A34A] hover:translate-x-0 lg:hover:translate-x-1' : 'text-[#A4ACA1] hover:text-[#48C765] hover:translate-x-0 lg:hover:translate-x-1'
             }`}>
