@@ -269,7 +269,10 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
       `}</style>
 
       {/* Full-Section Video Background - Covers the whole hero, text sits on a theme-aware gradient for legibility */}
-      <div className="absolute inset-0 z-0 pointer-events-none select-none overflow-hidden">
+      <div
+        className="absolute inset-0 z-0 pointer-events-none select-none overflow-hidden"
+        style={{ backgroundColor: isLight ? '#EEF3EC' : '#0A0D0A' }}
+      >
         <video
           src="/videos/gorilla_hero_loop.mp4"
           poster={heroImageSrc}
@@ -280,7 +283,7 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
           playsInline
           preload="auto"
           disablePictureInPicture
-          className="absolute inset-0 w-full h-full object-cover"
+          className="absolute inset-0 w-full h-full object-contain"
           style={{
             WebkitTouchCallout: 'none',
             userSelect: 'none',
