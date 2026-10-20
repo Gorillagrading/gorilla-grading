@@ -62,7 +62,7 @@ export const LuxuryFooter: React.FC<LuxuryFooterProps> = ({ onNavigate }) => {
                   }`}>
                     GORILLA
                   </span>
-                  <span className="font-['Nunito',sans-serif] font-bold text-[#61B663] text-[6px] sm:text-[8.5px] tracking-[0.4em] uppercase mt-[3px]">
+                  <span className="font-['Nunito',sans-serif] font-black text-[#61B663] text-[5px] sm:text-[7px] tracking-[0.4em] uppercase mt-[3px]">
                     GRADING
                   </span>
                 </div>
