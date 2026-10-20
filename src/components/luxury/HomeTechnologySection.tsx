@@ -154,6 +154,10 @@ export const HomeTechnologySection: React.FC<HomeTechnologySectionProps> = ({
                     }
                   }}
                   className="w-full h-auto object-contain pointer-events-none select-none bg-transparent"
+                  style={{
+                    maskImage: 'radial-gradient(ellipse at center, black 60%, transparent 100%)',
+                    WebkitMaskImage: 'radial-gradient(ellipse at center, black 60%, transparent 100%)',
+                  }}
                 />
 
                 {/* Sombra interna perimetral responsive (ultra sutil en móvil para no tapar las cartas) */}
