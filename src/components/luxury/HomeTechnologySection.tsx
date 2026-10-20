@@ -1,5 +1,4 @@
-import React, { useRef } from 'react';
-import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
+import React from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -15,35 +14,6 @@ export const HomeTechnologySection: React.FC<HomeTechnologySectionProps> = ({
   const { language } = useLanguage();
   const { theme } = useTheme();
   const isLight = theme === 'light';
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  // Smooth Physics-Based 3D Tilt Values
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-
-  // Spring physics for natural, buttery-smooth reaction and return
-  const springConfig = { damping: 25, stiffness: 140, mass: 0.5 };
-  const smoothX = useSpring(mouseX, springConfig);
-  const smoothY = useSpring(mouseY, springConfig);
-
-  // 3D Rotations (Degrees)
-  const rotateX = useTransform(smoothY, [-0.5, 0.5], [7, -7]);
-  const rotateY = useTransform(smoothX, [-0.5, 0.5], [-9, 9]);
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!containerRef.current) return;
-    if (typeof window !== 'undefined' && window.matchMedia && !window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
-    const rect = containerRef.current.getBoundingClientRect();
-    const xPct = (e.clientX - rect.left) / rect.width - 0.5;
-    const yPct = (e.clientY - rect.top) / rect.height - 0.5;
-    mouseX.set(xPct);
-    mouseY.set(yPct);
-  };
-
-  const handleMouseLeave = () => {
-    mouseX.set(0);
-    mouseY.set(0);
-  };
 
   const handleExplore = () => {
     if (onOpenTechModal) {
@@ -119,24 +89,13 @@ export const HomeTechnologySection: React.FC<HomeTechnologySectionProps> = ({
 
           {/* Right Column: Zero-Box Seamless Floating 3D Cards Stage */}
           <div className="lg:col-span-8 flex justify-center items-center">
-            <div 
-              ref={containerRef}
-              onMouseMove={handleMouseMove}
-              onMouseLeave={handleMouseLeave}
+            <div
               onClick={handleExplore}
               className="relative w-full max-w-[920px] cursor-pointer select-none bg-transparent touch-pan-y"
-              style={{ perspective: 1400 }}
               title={language === 'es' ? 'Haz clic para explorar el protocolo en detalle' : 'Click to explore full protocol'}
             >
-              {/* Pure 3D Floating Stage - Zero rectangular boundaries, zero box footprint */}
-              <motion.div
-                style={{
-                  rotateX,
-                  rotateY,
-                  transformStyle: 'preserve-3d',
-                }}
-                whileHover={{ scale: 1.015 }}
-                transition={{ scale: { duration: 0.25, ease: 'easeOut' } }}
+              {/* Flat video stage - no 3D tilt, no hover motion */}
+              <div
                 className="relative w-full h-auto flex items-center justify-center bg-transparent pointer-events-auto overflow-hidden"
               >
                 {/* Seamless 4-Card Sequence Video */}
@@ -178,7 +137,7 @@ export const HomeTechnologySection: React.FC<HomeTechnologySectionProps> = ({
                   }
                 `}</style>
                 <div className="absolute inset-0 pointer-events-none z-10 tech-video-shadow" />
-              </motion.div>
+              </div>
             </div>
           </div>
 
