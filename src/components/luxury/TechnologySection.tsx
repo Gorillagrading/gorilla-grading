@@ -144,7 +144,7 @@ export const TechnologySection: React.FC<TechnologySectionProps> = ({
 
           {/* Right Steps - Open layout without box, with enhanced text legibility */}
           <div className={`lg:col-span-4 flex flex-col justify-center lg:pl-10 ${
-            isLight ? '[text-shadow:0_0_12px_rgba(241,236,229,0.6)]' : ''
+            isLight ? 'bg-[#F1ECE5]/92 p-6 rounded-sm' : ''
           }`}>
             <div className={`flex flex-col border-l overflow-hidden ${
               isLight ? 'border-black/20' : 'border-white/10'
