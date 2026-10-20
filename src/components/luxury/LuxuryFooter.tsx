@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
-import { GorillaLogo } from './GorillaLogo';
 import { GradedCardsCounter } from './GradedCardsCounter';
 
 interface LuxuryFooterProps {
@@ -39,7 +38,23 @@ export const LuxuryFooter: React.FC<LuxuryFooterProps> = ({ onNavigate }) => {
               onClick={() => onNavigate && onNavigate('/')}
               className="cursor-pointer mb-6 flex justify-center lg:justify-start w-full transition-transform hover:scale-102"
             >
-              <GorillaLogo shieldSize="h-20 sm:h-28" />
+              <div className="flex flex-col items-center lg:items-start">
+                <img
+                  src="/brand/logo-green.png"
+                  alt="Gorilla Grading Shield"
+                  className="h-8 sm:h-9 w-auto object-contain"
+                />
+                <div className="flex flex-col items-center leading-none mt-1">
+                  <span className={`font-['Nunito',sans-serif] font-black tracking-normal text-[16px] sm:text-[18px] uppercase ${
+                    isLight ? 'text-[#111827]' : 'text-[#F0F1F2]'
+                  }`}>
+                    GORILLA
+                  </span>
+                  <span className="font-['Nunito',sans-serif] font-bold text-[#16A34A] tracking-normal text-[8px] sm:text-[9px] uppercase mt-[1px]">
+                    GRADING
+                  </span>
+                </div>
+              </div>
             </div>
             
             <p className={`text-xs max-w-sm leading-relaxed mb-6 font-normal text-center lg:text-left mx-auto lg:mx-0 ${
