@@ -114,7 +114,7 @@ export const HomeVerificationModule: React.FC<HomeVerificationModuleProps> = ({ 
         <div className="flex flex-col items-center text-center max-w-3xl mx-auto mb-8 sm:mb-10">
           {/* Main Dedicated Gorilla Verify Sub-Brand Logo (Forensic Floating Badge) */}
           <div className="mb-4 sm:mb-5">
-            <VerifyLogo size="w-full max-w-[280px] sm:max-w-[340px] lg:max-w-[380px] h-[78px] sm:h-[94px] lg:h-[110px]" />
+            <VerifyLogo size="w-full max-w-[210px] sm:max-w-[255px] lg:max-w-[285px] h-[58px] sm:h-[70px] lg:h-[82px]" />
           </div>
 
           <h2 className="flex items-center gap-2 font-mono text-[11px] sm:text-xs tracking-[0.28em] uppercase text-gray-500 mb-6 sm:mb-7">
