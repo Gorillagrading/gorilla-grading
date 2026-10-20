@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
+import { GorillaLogo } from './GorillaLogo';
 import { GradedCardsCounter } from './GradedCardsCounter';
 
 interface LuxuryFooterProps {
@@ -38,35 +39,7 @@ export const LuxuryFooter: React.FC<LuxuryFooterProps> = ({ onNavigate }) => {
               onClick={() => onNavigate && onNavigate('/')}
               className="cursor-pointer mb-6 flex justify-center lg:justify-start w-full transition-transform hover:scale-102"
             >
-              <div className="flex flex-col items-center lg:items-start select-none group">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="74 10 72 80"
-                  className="h-20 sm:h-28 w-auto object-contain shrink-0"
-                  role="img"
-                  aria-label="Gorilla Grading"
-                >
-                  <g className="animate-float">
-                    <g transform="translate(68,4)">
-                      <path d="M8 16A8 8 0 0 1 16 8h52a8 8 0 0 1 8 8v34c0 16-16 28-34 34C24 78 8 66 8 50Z" fill="#61B663"/>
-                      <g transform="translate(42,44)">
-                        <path d="M13 -9 A15.5 15.5 0 1 0 15.5 3 H2" fill="none" stroke="#2A2A2A" strokeWidth="7.5"
-                              strokeLinecap="round" strokeLinejoin="round"/>
-                      </g>
-                    </g>
-                  </g>
-                </svg>
-                <div className="flex flex-col items-center leading-none mt-2">
-                  <span className={`font-['Nunito',sans-serif] font-black tracking-normal text-[24px] sm:text-[30px] uppercase ${
-                    isLight ? 'text-[#181B18]' : 'text-[#F0F1F2]'
-                  }`}>
-                    GORILLA
-                  </span>
-                  <span className="font-['Nunito',sans-serif] font-bold text-[#61B663] tracking-normal text-[11px] sm:text-[13px] uppercase mt-[2px]">
-                    GRADING
-                  </span>
-                </div>
-              </div>
+              <GorillaLogo shieldSize="h-20 sm:h-28" />
             </div>
             
             <p className={`text-xs max-w-sm leading-relaxed mb-6 font-normal text-center lg:text-left mx-auto lg:mx-0 ${
