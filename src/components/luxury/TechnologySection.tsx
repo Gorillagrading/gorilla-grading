@@ -81,11 +81,11 @@ export const TechnologySection: React.FC<TechnologySectionProps> = ({
       <div className="absolute inset-0 z-0 pointer-events-none">
         {isLight ? (
           <>
-            <div className="absolute inset-0 lg:hidden bg-[#F1ECE5]/85" />
+            <div className="absolute inset-0 lg:hidden bg-[#F1ECE5]/70" />
             <div className="hidden lg:flex w-full h-full">
-              <div className="w-2/5 bg-gradient-to-r from-[#F1ECE5] via-[#F1ECE5]/90 to-transparent" />
-              <div className="w-1/5" />
-              <div className="w-2/5 bg-gradient-to-l from-[#F1ECE5] via-[#F1ECE5]/85 to-transparent" />
+              <div className="w-[45%] bg-gradient-to-r from-[#F1ECE5]/92 via-[#F1ECE5]/55 to-transparent" />
+              <div className="flex-1" />
+              <div className="w-[30%] bg-gradient-to-l from-[#F1ECE5]/85 via-[#F1ECE5]/45 to-transparent" />
             </div>
           </>
         ) : (
