@@ -10,7 +10,6 @@ import { VerifiedAuditsSection, LiveLabActivitySection } from '../components/lux
 import { PromoCTA } from '../components/luxury/PromoCTA';
 import { FAQSection } from '../components/luxury/FAQSection';
 import { NewsletterSection } from '../components/luxury/NewsletterSection';
-import { ScrollReveal } from '../components/luxury/ScrollReveal';
 
 interface LuxuryReferenceHomePageProps {
   onNavigate: (path: string) => void;
@@ -28,60 +27,38 @@ export const LuxuryReferenceHomePage: React.FC<LuxuryReferenceHomePageProps> = (
         onOpenTechModal={() => setIsTechModalOpen(true)}
       />
 
-
       {/* 3. Core Laboratory Technology: Scan, Analyze, Measure, Grade */}
-      <ScrollReveal direction="up" delay={0.1}>
-        <HomeTechnologySection 
-          onNavigate={onNavigate}
-          onOpenTechModal={() => setIsTechModalOpen(true)}
-        />
-      </ScrollReveal>
+      <HomeTechnologySection 
+        onNavigate={onNavigate}
+        onOpenTechModal={() => setIsTechModalOpen(true)}
+      />
 
       {/* 3.5. Live Forensic Certificate Verification Module */}
-      <ScrollReveal direction="up" delay={0.1}>
-        <HomeVerificationModule onNavigate={onNavigate} />
-      </ScrollReveal>
+      <HomeVerificationModule onNavigate={onNavigate} />
 
       {/* 4. Pricing & Services Recommendation */}
-      <ScrollReveal direction="up" delay={0.1}>
-        <LuxuryPricingSection onNavigate={onNavigate} isHome={true} />
-      </ScrollReveal>
-
+      <LuxuryPricingSection onNavigate={onNavigate} isHome={true} />
 
       {/* 5. Step by Step / Process */}
-      <ScrollReveal direction="up" delay={0.1}>
-        <TechnologySection onNavigate={onNavigate} />
-      </ScrollReveal>
+      <TechnologySection onNavigate={onNavigate} />
 
       {/* 7. Verified Expert Audits & Testimonials */}
-      <ScrollReveal direction="up" delay={0.1}>
-        <VerifiedAuditsSection />
-      </ScrollReveal>
+      <VerifiedAuditsSection />
 
       {/* 8. Call to Action / Promos */}
-      <ScrollReveal direction="up" delay={0.1}>
-        <PromoCTA onNavigate={onNavigate} />
-      </ScrollReveal>
+      <PromoCTA onNavigate={onNavigate} />
 
       {/* 9. FAQs */}
-      <ScrollReveal direction="up" delay={0.1}>
-        <FAQSection onNavigate={onNavigate} />
-      </ScrollReveal>
+      <FAQSection onNavigate={onNavigate} />
 
       {/* 10. Live Laboratory Activity & Community Feed */}
-      <ScrollReveal direction="up" delay={0.1}>
-        <LiveLabActivitySection />
-      </ScrollReveal>
+      <LiveLabActivitySection />
 
       {/* 11. Customer Promise / International Shipping */}
-      <ScrollReveal direction="up" delay={0.1}>
-        <MissionBanner onNavigate={onNavigate} />
-      </ScrollReveal>
+      <MissionBanner onNavigate={onNavigate} />
 
       {/* 12. Newsletter Subscription */}
-      <ScrollReveal direction="up" delay={0.1}>
-        <NewsletterSection />
-      </ScrollReveal>
+      <NewsletterSection />
 
       {/* Interactive Technology Detail Explorer Modal */}
       <TechDetailModal

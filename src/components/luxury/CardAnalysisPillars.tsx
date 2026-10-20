@@ -1,5 +1,4 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -56,13 +55,9 @@ export const CardAnalysisPillars: React.FC<CardAnalysisPillarsProps> = () => {
         
         {/* 4 Informative Pillars Grid (Without links or navigation) */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {pillars.map((p, idx) => (
-            <motion.div
+          {pillars.map((p) => (
+            <div
               key={p.id}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.5, delay: idx * 0.1, ease: "easeOut" }}
               className={`rounded-none border overflow-hidden flex flex-col justify-between transition-colors duration-300 ${
                 isLight 
                   ? 'bg-[#EDE8DF] border-black/10 shadow-xs' 
@@ -93,7 +88,7 @@ export const CardAnalysisPillars: React.FC<CardAnalysisPillarsProps> = () => {
                   {p.desc}
                 </p>
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
 
