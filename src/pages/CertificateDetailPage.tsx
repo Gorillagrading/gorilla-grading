@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { SlabCard } from '../components/common/SlabCard';
 import { DefectInspector } from '../components/common/DefectInspector';
 import { CertificateStatusBanner } from '../components/common/CertificateStatusBanner';
 import { useTheme } from '../context/ThemeContext';
@@ -248,14 +247,9 @@ export const CertificateDetailPage: React.FC<CertificateDetailPageProps> = ({
       </div>
 
       {/* Main Grid: 3D Slab + Optical Defect Inspector */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* On mobile: relative positioning in normal flow. On desktop: sticky top-24 alongside the inspector */}
-        <div className="lg:col-span-5 flex justify-center relative lg:sticky lg:top-24 z-10">
-          <SlabCard card={card} size="md" />
-        </div>
-
-        <div className="lg:col-span-7 space-y-8 relative z-0">
-          <DefectInspector card={card} />
+      <div className="grid grid-cols-1 gap-8 items-start">
+        <div className="space-y-8 relative z-0">
+          <DefectInspector card={card} large />
 
           {/* Firma del registro */}
           <div 

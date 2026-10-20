@@ -5,11 +5,12 @@ import { useTheme } from '../../context/ThemeContext';
 
 interface DefectInspectorProps {
   card: PublicGradedCard;
+  large?: boolean;
 }
 
 type TabType = 'Global' | 'Centering' | 'Corners' | 'Edges' | 'Surface';
 
-export const DefectInspector: React.FC<DefectInspectorProps> = ({ card }) => {
+export const DefectInspector: React.FC<DefectInspectorProps> = ({ card, large = false }) => {
   const { language } = useLanguage();
   const { theme } = useTheme();
   const isLight = theme === 'light';
@@ -40,7 +41,9 @@ export const DefectInspector: React.FC<DefectInspectorProps> = ({ card }) => {
         }`}>
           {language === 'es' ? 'Inspector de Defectos' : 'Defect Inspector'}
         </span>
-        <h3 className={`font-['Space_Grotesk',sans-serif] text-base sm:text-lg font-bold uppercase tracking-wide ${
+        <h3 className={`font-['Space_Grotesk',sans-serif] font-bold uppercase tracking-wide ${
+          large ? 'text-2xl sm:text-4xl' : 'text-base sm:text-lg'
+        } ${
           isLight ? 'text-gray-900' : 'text-white'
         }`}>
           {language === 'es' ? 'Mapeo Óptico de Anomalías' : 'Optical Anomaly Mapping'}
@@ -74,7 +77,9 @@ export const DefectInspector: React.FC<DefectInspectorProps> = ({ card }) => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
 
         {/* The Card Blueprint with Original Slab Label */}
-        <div className={`relative w-full max-w-[280px] mx-auto md:mx-0 aspect-[2.5/3.5] border p-3 ${
+        <div className={`relative w-full mx-auto md:mx-0 aspect-[2.5/3.5] border p-3 ${
+          large ? 'max-w-[320px] sm:max-w-[420px] md:max-w-[460px]' : 'max-w-[280px]'
+        } ${
           isLight ? 'border-gray-300 bg-white shadow-sm' : 'border-white/10 bg-[#0E120E]'
         }`}>
             {/* Corner brackets */}
