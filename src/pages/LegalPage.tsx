@@ -70,7 +70,7 @@ export const LegalPage: React.FC<LegalPageProps> = ({ type: initialType, onNavig
   const legalContent = {
     'legal-notice': {
       category: isEs ? 'ESTATUTO CORPORATIVO' : 'CORPORATE CHARTER',
-      code: 'DOC. GG-CORP-LEGAL-2026',
+      code: 'DOC. GGI-CORP-LEGAL-2026',
       title: isEs ? 'Aviso Legal y Estructura Societaria' : 'Legal Notice & Corporate Entity',
       desc: isEs
         ? 'Identificación institucional, titularidad de activos tecnológicos y marco regulatorio internacional aplicable a los servicios de metrología óptica, certificación numismática y custodia acorazada.'
@@ -114,7 +114,7 @@ export const LegalPage: React.FC<LegalPageProps> = ({ type: initialType, onNavig
     },
     'terms': {
       category: isEs ? 'CONVENIO DE SERVICIOS' : 'SERVICE COVENANT',
-      code: 'DOC. GG-TERMS-CUSTODY-2026',
+      code: 'DOC. GGI-TERMS-CUSTODY-2026',
       title: isEs ? 'Términos de Servicio y Protocolo de Custodia' : 'Terms of Service & Custody Protocol',
       desc: isEs
         ? 'Contrato vinculante que rige la recepción en cámara limpia, la auditoría óptica imparcial, el aseguramiento a valor declarado y la preservación hermética en cápsula molecular.'
@@ -158,7 +158,7 @@ export const LegalPage: React.FC<LegalPageProps> = ({ type: initialType, onNavig
     },
     'privacy': {
       category: isEs ? 'SEGURIDAD DE LA INFORMACIÓN' : 'DATA PROTECTION',
-      code: 'DOC. GG-PRIV-GDPR-2026',
+      code: 'DOC. GGI-PRIV-GDPR-2026',
       title: isEs ? 'Política de Privacidad y Protección de Datos' : 'Privacy Policy & Global Data Protection',
       desc: isEs
         ? 'Compromiso riguroso con la privacidad del coleccionista conforme al RGPD de la Unión Europea y los más exigentes estándares internacionales de seguridad de la información (ISO/IEC 27001).'
@@ -202,7 +202,7 @@ export const LegalPage: React.FC<LegalPageProps> = ({ type: initialType, onNavig
     },
     'refund': {
       category: isEs ? 'GARANTÍA Y COBERTURA' : 'GUARANTEE & COVERAGE',
-      code: 'DOC. GG-CLAIMS-INSURANCE-2026',
+      code: 'DOC. GGI-CLAIMS-INSURANCE-2026',
       title: isEs ? 'Garantía Numismática, Reembolsos y Cobertura' : 'Numismatic Guarantee, Claims & Refunds',
       desc: isEs
         ? 'Estatuto de indemnización transparente que garantiza la restitución del 100% del valor de reposición de mercado en caso de siniestro durante el tránsito asegurado o la custodia.'
@@ -246,7 +246,7 @@ export const LegalPage: React.FC<LegalPageProps> = ({ type: initialType, onNavig
     },
     'cookies': {
       category: isEs ? 'DIRECTIVA DE NAVEGACIÓN' : 'NAVIGATION DIRECTIVE',
-      code: 'DOC. GG-COOKIES-TECH-2026',
+      code: 'DOC. GGI-COOKIES-TECH-2026',
       title: isEs ? 'Política de Cookies e Identificadores' : 'Cookie Policy & Technical Storage',
       desc: isEs
         ? 'Transparencia absoluta: utilizamos únicamente identificadores técnicos esenciales para mantener su sesión segura y telemetría anónima de rendimiento, sin rastreadores publicitarios intrusivos.'
@@ -290,7 +290,7 @@ export const LegalPage: React.FC<LegalPageProps> = ({ type: initialType, onNavig
     },
     'cookie-consent': {
       category: isEs ? 'PANEL DE PREFERENCIAS' : 'PREFERENCE PANEL',
-      code: 'DOC. GG-CONSENT-CONFIG-2026',
+      code: 'DOC. GGI-CONSENT-CONFIG-2026',
       title: isEs ? 'Gestión de Preferencias de Privacidad' : 'Privacy & Consent Preferences',
       desc: isEs
         ? 'Controle de manera granular los identificadores locales activos en su navegador durante el uso de la plataforma de certificación Gorilla Grading.'

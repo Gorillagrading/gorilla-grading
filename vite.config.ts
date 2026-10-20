@@ -10,4 +10,10 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  server: {
+    // En desarrollo, la API corre aparte con `npm run dev:api`.
+    proxy: {
+      '/api': `http://localhost:${process.env.API_PORT ?? 8787}`,
+    },
+  },
 })

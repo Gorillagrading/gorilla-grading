@@ -2,7 +2,7 @@
 
 Prototipo web de Gorilla Grading, un servicio de grading de cartas coleccionables (TCG). La aplicación presenta el servicio, explica el proceso, permite seguir pedidos y verificar certificados.
 
-> **Estado:** front-end con datos simulados. No hay backend todavía. El plan de backend está en [docs/engineering/PLAN_BACKEND.pdf](docs/engineering/PLAN_BACKEND.pdf).
+> **Estado:** el front-end sigue usando datos simulados. El backend está en construcción según [docs/engineering/PLAN_BACKEND.pdf](docs/engineering/PLAN_BACKEND.pdf): la Fase 0 (API base, esquema, migraciones, seed y CI) ya está montada.
 
 ## Stack
 
@@ -11,6 +11,9 @@ Prototipo web de Gorilla Grading, un servicio de grading de cartas coleccionable
 - Tailwind CSS 3 y PostCSS
 - Framer Motion para animaciones
 - Lucide para iconos
+- API: Hono en Vercel Functions
+- Base de datos: PostgreSQL en Supabase, con Drizzle ORM y migraciones SQL
+- Validación: Zod
 
 ## Requisitos
 
@@ -26,19 +29,50 @@ npm run dev
 
 La aplicación queda disponible en `http://localhost:5173`.
 
+### Backend
+
+1. Copia `.env.example` como `.env` y rellena las cadenas de conexión de tu proyecto de Supabase.
+2. Aplica las migraciones y carga los datos de ejemplo:
+
+   ```bash
+   npm run db:migrate
+   npm run db:seed
+   ```
+
+3. Arranca la API en otra terminal. Vite redirige `/api` a ella:
+
+   ```bash
+   npm run dev:api
+   ```
+
+   Comprueba que responde en `http://localhost:5173/api/v1/health` y que conecta con la base de datos en `/api/v1/health/db`.
+
+Todas las tablas tienen RLS activado y sin políticas, así que la Data API de Supabase no puede leerlas: solo el backend accede a los datos.
+
 ## Scripts
 
 | Comando | Descripción |
 |---|---|
 | `npm run dev` | Servidor de desarrollo con recarga en caliente |
-| `npm run typecheck` | Comprobación de tipos con TypeScript, sin generar archivos |
+| `npm run dev:api` | API local en el puerto 8787 |
+| `npm run typecheck` | Comprobación de tipos del frontend y del backend, sin generar archivos |
+| `npm test` | Pruebas con Vitest |
 | `npm run build` | Comprobación de tipos y build de producción en `dist/` |
 | `npm run preview` | Sirve el build de producción para revisarlo localmente |
+| `npm run db:generate` | Genera una migración SQL a partir de los cambios en `db/schema.ts` |
+| `npm run db:migrate` | Aplica las migraciones pendientes |
+| `npm run db:check` | Comprueba la coherencia de las migraciones |
+| `npm run db:seed` | Carga los datos de `src/data/` en una base vacía (no se ejecuta en producción) |
+| `npm run db:studio` | Abre Drizzle Studio para explorar la base de datos |
 
 ## Estructura
 
 ```
 .
+├── api/                 Punto de entrada de Vercel Functions
+├── server/              API (Hono) y lógica de dominio
+├── db/                  Esquema, migraciones y seed
+├── shared/              Valores de dominio y schemas Zod comunes a frontend y backend
 ├── src/                 Código de la aplicación
 │   ├── components/      Componentes (common/ y luxury/)
 │   ├── context/         Estado global: idioma, tema, sesión y concepto
@@ -54,7 +88,7 @@ La aplicación queda disponible en `http://localhost:5173`.
 └── vite.config.ts       Configuración de Vite
 ```
 
-Las rutas de la aplicación se definen en [src/App.tsx](src/App.tsx). El enrutado es propio, basado en `window.history`, y `vercel.json` redirige todas las rutas a `index.html` para el despliegue.
+Las rutas de la aplicación se definen en [src/App.tsx](src/App.tsx). El enrutado es propio, basado en `window.history`. En el despliegue, `vercel.json` envía `/api/*` a la función de la API y el resto de rutas a `index.html`.
 
 ## Documentación
 
@@ -74,4 +108,4 @@ node scripts/reverse_migrate.cjs  # revierte los reemplazos anteriores
 
 ## Despliegue
 
-Pensado para Vercel como aplicación de una sola página. No requiere variables de entorno en esta fase.
+Pensado para Vercel: la aplicación de una sola página y la API en `api/` se despliegan juntas. Hay que definir `DATABASE_URL` (pooler de Supabase en modo transacción) en las variables de entorno de Vercel. Las variables están documentadas en `.env.example`.

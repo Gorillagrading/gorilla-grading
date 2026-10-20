@@ -1,46 +1,94 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { api, ApiError } from '../api/client';
+import type { UserDto } from '../../shared/auth';
+
+type AuthStatus = 'loading' | 'authenticated' | 'anonymous';
 
 interface AuthContextType {
+  status: AuthStatus;
+  user: UserDto | null;
   isLoggedIn: boolean;
   userEmail: string | null;
-  login: (email: string) => void;
-  logout: () => void;
+  /** Envía un código de acceso al email. */
+  requestCode: (email: string, locale: 'es' | 'en') => Promise<void>;
+  /** Comprueba el código; si es correcto la sesión queda iniciada. */
+  verifyCode: (email: string, code: string) => Promise<void>;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
+  status: 'loading',
+  user: null,
   isLoggedIn: false,
   userEmail: null,
-  login: () => {},
-  logout: () => {},
+  requestCode: async () => {},
+  verifyCode: async () => {},
+  logout: async () => {},
 });
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [status, setStatus] = useState<AuthStatus>('loading');
+  const [user, setUser] = useState<UserDto | null>(null);
 
   useEffect(() => {
-    // Check session on load
-    const storedEmail = localStorage.getItem('gorilla_auth_email');
-    if (storedEmail) {
-      setIsLoggedIn(true);
-      setUserEmail(storedEmail);
+    // La sesión antigua se guardaba en localStorage y no tenía ninguna validez real.
+    try {
+      localStorage.removeItem('gorilla_auth_email');
+    } catch {
+      /* sin acceso a localStorage: no hay nada que limpiar */
+    }
+
+    let cancelled = false;
+    api<{ user: UserDto }>('/me')
+      .then(({ user }) => {
+        if (cancelled) return;
+        setUser(user);
+        setStatus('authenticated');
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        // Un 401 es lo normal para quien no ha iniciado sesión; otros errores (servidor
+        // caído) también se tratan como anónimo para no bloquear las páginas públicas.
+        if (!(err instanceof ApiError) || err.status !== 401) console.warn('No se pudo comprobar la sesión', err);
+        setUser(null);
+        setStatus('anonymous');
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const requestCode = useCallback(async (email: string, locale: 'es' | 'en') => {
+    await api('/auth/otp', { body: { email, locale } });
+  }, []);
+
+  const verifyCode = useCallback(async (email: string, code: string) => {
+    const { user } = await api<{ user: UserDto }>('/auth/otp/verify', { body: { email, code } });
+    setUser(user);
+    setStatus('authenticated');
+  }, []);
+
+  const logout = useCallback(async () => {
+    try {
+      await api('/auth/logout', { method: 'POST' });
+    } finally {
+      setUser(null);
+      setStatus('anonymous');
     }
   }, []);
 
-  const login = (email: string) => {
-    setIsLoggedIn(true);
-    setUserEmail(email);
-    localStorage.setItem('gorilla_auth_email', email);
-  };
-
-  const logout = () => {
-    setIsLoggedIn(false);
-    setUserEmail(null);
-    localStorage.removeItem('gorilla_auth_email');
-  };
-
   return (
-    <AuthContext.Provider value={{ isLoggedIn, userEmail, login, logout }}>
+    <AuthContext.Provider
+      value={{
+        status,
+        user,
+        isLoggedIn: status === 'authenticated',
+        userEmail: user?.email ?? null,
+        requestCode,
+        verifyCode,
+        logout,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

@@ -1,5 +1,4 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
 import { BrandEcosystemRibbon } from './BrandEcosystemRibbon';
@@ -19,52 +18,6 @@ interface LuxuryHeroProps {
   onNavigate?: (path: string) => void;
   onOpenTechModal?: () => void;
 }
-
-// After Effects Diamond Star Lens Flare Component (Zero background box, pure light physics, 100% GPU CSS animation)
-const StarGlint: React.FC<{ x: number; y: number; animationClass: string; color?: string }> = ({ 
-  x, 
-  y, 
-  animationClass, 
-  color = '#48C765' 
-}) => {
-  return (
-    <div 
-      className={`absolute pointer-events-none -translate-x-1/2 -translate-y-1/2 z-30 select-none ${animationClass}`}
-      style={{ left: `${x}%`, top: `${y}%` }}
-    >
-      {/* Horizontal Anamorphic Flare Beam */}
-      <div 
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-28 sm:w-40 h-[1.5px] pointer-events-none"
-        style={{
-          background: `linear-gradient(90deg, transparent, ${color} 40%, #ffffff 50%, ${color} 60%, transparent)`,
-          filter: 'drop-shadow(0 0 6px rgba(72,199,101,0.9))'
-        }}
-      />
-      {/* Vertical Starlight Beam */}
-      <div 
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1.5px] h-14 sm:h-20 pointer-events-none"
-        style={{
-          background: `linear-gradient(180deg, transparent, ${color} 40%, #ffffff 50%, ${color} 60%, transparent)`,
-          filter: 'drop-shadow(0 0 6px rgba(72,199,101,0.9))'
-        }}
-      />
-      {/* 45-degree Diagonal Sparkle Micro-Rays */}
-      <div 
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-[1px] rotate-45 pointer-events-none"
-        style={{ background: 'linear-gradient(90deg, transparent, #ffffff, transparent)' }}
-      />
-      <div 
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-[1px] -rotate-45 pointer-events-none"
-        style={{ background: 'linear-gradient(90deg, transparent, #ffffff, transparent)' }}
-      />
-      {/* Central Starlight Corona Core */}
-      <div 
-        className="w-4 h-4 rounded-full bg-white blur-[1.5px]"
-        style={{ boxShadow: '0 0 14px #ffffff, 0 0 24px #48C765, 0 0 36px #22C55E' }}
-      />
-    </div>
-  );
-};
 
 export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechModal }) => {
   const { t, language } = useLanguage();
@@ -315,6 +268,36 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
         }
       `}</style>
 
+      {/* Full-Section Video Background - Covers the whole hero, text sits on a theme-aware gradient for legibility */}
+      <div className="absolute inset-0 z-0 pointer-events-none select-none overflow-hidden">
+        <video
+          src="/videos/gorilla_hero_loop.mp4"
+          poster={heroImageSrc}
+          aria-label="Gorilla Grading hero video"
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          disablePictureInPicture
+          className="absolute inset-0 w-full h-full object-cover"
+          style={{
+            WebkitTouchCallout: 'none',
+            userSelect: 'none',
+            WebkitUserSelect: 'none',
+            pointerEvents: 'none',
+          }}
+        />
+        <div
+          className="absolute inset-0"
+          style={{
+            background: isLight
+              ? 'linear-gradient(90deg, rgba(240,247,240,0.94) 0%, rgba(240,247,240,0.78) 38%, rgba(240,247,240,0.20) 70%, rgba(240,247,240,0) 100%)'
+              : 'linear-gradient(90deg, rgba(5,10,8,0.92) 0%, rgba(5,10,8,0.75) 38%, rgba(5,10,8,0.20) 70%, rgba(5,10,8,0) 100%)',
+          }}
+        />
+      </div>
+
       {/* Contenedor de Escáneres Ópticos (Z-20, no interactivo, estricta precisión) */}
       <div className="absolute inset-0 pointer-events-none z-20 overflow-hidden">
         
@@ -366,24 +349,16 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
         <div className="lg:col-span-6 xl:col-span-6 flex flex-col justify-center items-center lg:items-start text-center lg:text-left pt-2 lg:pt-0">
           
           {/* Refined Technical Kicker - Pure Floating Editorial Typography (Zero Generic Box) */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            className="flex items-center justify-center lg:justify-start mb-3 sm:mb-4"
-          >
+          <div className="flex items-center justify-center lg:justify-start mb-3 sm:mb-4">
             <span className={`font-['Nunito',sans-serif] text-xs font-bold tracking-normal uppercase select-none ${
               isLight ? 'text-[#15803D]' : 'text-[#22C55E]'
             }`}>
               {t('ref.hero.eyebrow')}
             </span>
-          </motion.div>
+          </div>
 
           {/* Monumental Display Headline — Limpio, nítido y de alto impacto (sin efecto 3D) */}
-          <motion.h1 
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut", delay: 0.1 }}
+          <h1 
             className={`font-['Nunito',sans-serif] font-[900] text-3xl sm:text-4xl md:text-5xl lg:text-[46px] xl:text-[54px] 2xl:text-[62px] leading-[0.98] tracking-normal mb-4 sm:mb-5 uppercase select-none ${
               isLight ? 'text-[#0F172A]' : 'text-white'
             }`}
@@ -402,27 +377,17 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
                 {t('ref.hero.titleGreen')}
               </span>
             </span>
-          </motion.h1>
+          </h1>
 
           {/* Clear Editorial Description */}
-          <motion.div 
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
-            className="relative mb-4 sm:mb-5"
-          >
+          <div className="relative mb-4 sm:mb-5">
             <p className="font-sans text-sm sm:text-base lg:text-lg text-[#F4F6F0] max-w-[520px] leading-relaxed font-medium">
               {t('ref.hero.desc')}
             </p>
-          </motion.div>
+          </div>
 
           {/* Action CTAs */}
-          <motion.div 
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut", delay: 0.3 }}
-            className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 sm:gap-4 mb-5 sm:mb-6 w-full sm:w-auto"
-          >
+          <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 sm:gap-4 mb-5 sm:mb-6 w-full sm:w-auto">
             {/* Primary Capsule Button */}
             <button
               onClick={() => onNavigate && onNavigate('/pricing')}
@@ -445,13 +410,10 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
               </span>
               <span className="ml-0.5 text-sm font-bold transition-transform duration-300 group-hover:translate-x-1">→</span>
             </button>
-          </motion.div>
+          </div>
 
           {/* 3 Scientific Rigor Badges */}
-          <motion.div 
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut", delay: 0.4 }}
+          <div 
             className={`w-full max-w-xl grid grid-cols-3 gap-2 sm:gap-3 pt-4 sm:pt-5 border-t ${
               isLight ? 'border-gray-300/80' : 'border-white/10'
             }`}
@@ -529,132 +491,6 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
               }`}>
                 {language === 'es' ? 'Cápsula sin adhesivos' : 'Adhesive-free enclosure'}
               </span>
-            </div>
-          </motion.div>
-
-        </div>
-
-        {/* Right Column: 3D SLAB INSPECTOR HERO */}
-        <div className="lg:col-span-6 xl:col-span-6 flex flex-col items-center justify-center relative w-full pointer-events-none select-none touch-pan-y">
-          
-          {/* 3D Slab Continuous Metrology Stage (Pronounced 3D Perspective & Motion - 100% GPU Autonomous Video-Like) */}
-          <div
-            style={{ perspective: 1000 }}
-            className="relative w-full max-w-[500px] sm:max-w-[620px] lg:max-w-[720px] xl:max-w-[820px] 2xl:max-w-[920px] aspect-[1.48/1] flex items-center justify-center bg-transparent select-none pointer-events-none"
-          >
-            {/* 3D Depth Aura Behind Slab (Separates slab from background in physical Z-space) */}
-            <div
-              className={`hero-aura-animated absolute pointer-events-none rounded-full blur-[75px] select-none ${
-                isLight 
-                  ? 'bg-gradient-to-r from-emerald-500/25 via-green-500/15 to-transparent' 
-                  : 'bg-gradient-to-r from-[#48C765]/40 via-emerald-500/20 to-transparent'
-              }`}
-              style={{
-                width: '88%',
-                height: '78%',
-              }}
-            />
-
-            {/* 3D Tilting Slab Wrapper - Pure floating stage with rich 3D levitation, roll & depth */}
-            <div
-              className="hero-slab-animated relative w-full h-full flex items-center justify-center bg-transparent pointer-events-none select-none"
-            >
-              {/* Slab Artwork Image - Pure transparent PNG with contoured drop-shadow */}
-              <img 
-                src={heroImageSrc}
-                alt="Gorilla Grading Certified Slab"
-                draggable={false}
-                loading="eager"
-                decoding="async"
-                className={`w-full h-full object-contain pointer-events-none select-none transition-filter duration-300 ${
-                  isLight
-                    ? 'filter drop-shadow-[0_18px_30px_rgba(0,0,0,0.15)]'
-                    : 'filter drop-shadow-[0_22px_40px_rgba(0,0,0,0.85)]'
-                }`}
-                style={{
-                  WebkitTouchCallout: 'none',
-                  userSelect: 'none',
-                  WebkitUserSelect: 'none',
-                  pointerEvents: 'none',
-                }}
-              />
-
-              {/* Front Slab: Secret Rare Rainbow Holographic Foil Sheen (Directly bounded to card artwork) */}
-              <div
-                className="absolute pointer-events-none rounded-[6px] overflow-hidden z-10"
-                style={{
-                  left: '8.4%',
-                  top: '26.2%',
-                  width: '31.8%',
-                  height: '58.2%',
-                  mixBlendMode: 'color-dodge',
-                }}
-              >
-                <div
-                  className="hero-foil-animated w-full h-full"
-                  style={{
-                    background: `linear-gradient(118deg, 
-                      transparent 10%, 
-                      rgba(236, 72, 153, 0.35) 25%, 
-                      rgba(59, 130, 246, 0.48) 40%, 
-                      rgba(255, 255, 255, 0.88) 50%, 
-                      rgba(52, 211, 153, 0.50) 60%, 
-                      rgba(251, 191, 36, 0.45) 75%, 
-                      transparent 90%)`,
-                    filter: 'contrast(1.35) brightness(1.25)'
-                  }}
-                />
-              </div>
-
-              {/* Front Slab: Grade 10 Label Brushed Metallic Optical Shimmer */}
-              <div
-                className="absolute pointer-events-none rounded-[5px] overflow-hidden z-10"
-                style={{
-                  left: '8.2%',
-                  top: '6.8%',
-                  width: '32.2%',
-                  height: '16.5%',
-                  mixBlendMode: 'overlay',
-                }}
-              >
-                <div
-                  className="hero-label-animated w-full h-full"
-                  style={{
-                    background: `linear-gradient(110deg, transparent 25%, rgba(255,255,255,0.88) 50%, transparent 75%)`
-                  }}
-                />
-              </div>
-
-              {/* Back Slab: Reverse Card Iridescent Holographic Sheen */}
-              <div
-                className="absolute pointer-events-none rounded-[6px] overflow-hidden z-10"
-                style={{
-                  left: '60.0%',
-                  top: '26.2%',
-                  width: '31.8%',
-                  height: '58.2%',
-                  mixBlendMode: 'color-dodge',
-                }}
-              >
-                <div
-                  className="hero-reverse-animated w-full h-full"
-                  style={{
-                    background: `linear-gradient(132deg, 
-                      transparent 20%, 
-                      rgba(59, 130, 246, 0.42) 40%, 
-                      rgba(255, 255, 255, 0.78) 50%, 
-                      rgba(245, 158, 11, 0.42) 60%, 
-                      transparent 80%)`,
-                    filter: 'contrast(1.25)'
-                  }}
-                />
-              </div>
-
-              {/* After Effects Diamond Anamorphic Star Glints */}
-              <StarGlint x={18.2} y={15} animationClass="hero-glint-1-animated" color="#A7F3D0" />
-              <StarGlint x={50.7} y={45} animationClass="hero-glint-2-animated" color="#34D399" />
-              <StarGlint x={84.2} y={15} animationClass="hero-glint-3-animated" color="#6EE7B7" />
-
             </div>
           </div>
 

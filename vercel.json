@@ -1,8 +1,18 @@
 {
   "rewrites": [
     {
-      "source": "/(.*)",
+      "source": "/api/(.*)",
+      "destination": "/api"
+    },
+    {
+      "source": "/((?!api/).*)",
       "destination": "/index.html"
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/v1/jobs/advance-orders",
+      "schedule": "0 7 * * *"
     }
   ]
 }

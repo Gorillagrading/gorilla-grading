@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
-import { MOCK_GRADED_CARDS, MOCK_POPULAR_SEARCHES } from '../data/mockCards';
-import { GradedCard } from '../types';
+import { ApiError } from '../api/client';
+import { channelFromUrl, fetchCertificate, type PublicCertificate } from '../api/certificates';
 import { SlabCard } from '../components/common/SlabCard';
 import { DefectInspector } from '../components/common/DefectInspector';
+import { CertificateStatusBanner } from '../components/common/CertificateStatusBanner';
 import { Search, ShieldCheck, ArrowRight } from 'lucide-react';
 import { VerifyLogo } from '../components/luxury/VerifyLogo';
 
@@ -16,62 +17,61 @@ export const VerificationPage: React.FC<VerificationPageProps> = ({ onNavigate }
   const { t, language } = useLanguage();
   const { theme } = useTheme();
   const isLight = theme === 'light';
-  
-  const [searchInput, setSearchInput] = useState(() => {
-    const params = new URLSearchParams(window.location.search);
-    return params.get('cert') || '';
-  });
+  const es = language === 'es';
 
-  const [activeCard, setActiveCard] = useState<GradedCard | null>(() => {
+  // El buscador del menú envía ?id=; los enlaces de los certificados, ?cert=.
+  const initialQuery = () => {
     const params = new URLSearchParams(window.location.search);
-    const certParam = params.get('cert');
-    if (certParam) {
-      const query = certParam.trim().toUpperCase();
-      return MOCK_GRADED_CARDS.find(
-        c => c.certNumber.toUpperCase() === query || c.name.toUpperCase().includes(query)
-      ) || null;
+    return params.get('cert') || params.get('id') || '';
+  };
+
+  const [searchInput, setSearchInput] = useState(initialQuery);
+  const [activeCard, setActiveCard] = useState<PublicCertificate | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<{ kind: 'not_found' | 'rate_limited' | 'other'; query: string } | null>(null);
+
+  const errorMsg = !error
+    ? ''
+    : error.kind === 'not_found'
+      ? (es ? `No existe ningún certificado con el código "${error.query}".` : `No certificate exists with code "${error.query}".`)
+      : error.kind === 'rate_limited'
+        ? (es ? 'Demasiadas consultas seguidas. Espera unos minutos.' : 'Too many lookups in a row. Please wait a few minutes.')
+        : (es ? 'No se pudo consultar el registro. Inténtalo de nuevo.' : 'Could not check the registry. Please try again.');
+
+  const lookup = async (raw: string, via: 'web' | 'qr' | 'nfc') => {
+    const query = raw.trim();
+    if (!query) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const found = await fetchCertificate(query, via);
+      setActiveCard(found);
+      setSearchInput(found.certNumber);
+      window.history.replaceState({}, '', `/verify?cert=${found.certNumber}`);
+    } catch (err) {
+      setActiveCard(null);
+      setError({
+        kind: err instanceof ApiError && err.status === 404 ? 'not_found' : err instanceof ApiError && err.status === 429 ? 'rate_limited' : 'other',
+        query: query.toUpperCase(),
+      });
+    } finally {
+      setLoading(false);
     }
-    return null;
-  });
+  };
 
-  const [errorMsg, setErrorMsg] = useState('');
-
+  // Un QR, un chip NFC o un enlace traen el número en la dirección: se verifica al abrir.
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const certParam = params.get('cert');
-    if (certParam) {
-      const query = certParam.trim().toUpperCase();
-      const found = MOCK_GRADED_CARDS.find(
-        c => c.certNumber.toUpperCase() === query || c.name.toUpperCase().includes(query)
-      );
-      if (found) {
-        setSearchInput(found.certNumber);
-        setActiveCard(found);
-      }
-    }
+    const initial = initialQuery();
+    if (initial) void lookup(initial, channelFromUrl());
   }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    setErrorMsg('');
-    const query = searchInput.trim().toUpperCase();
-
-    if (!query) return;
-
-    const found = MOCK_GRADED_CARDS.find(
-      c => c.certNumber.toUpperCase() === query || c.name.toUpperCase().includes(query)
-    );
-
-    if (found) {
-      setActiveCard(found);
-    } else {
-      setErrorMsg(
-        language === 'es' 
-          ? `No se encontró ningún certificado con el código "${query}".` 
-          : `No certificate found matching "${query}".`
-      );
-    }
+    void lookup(searchInput, 'web');
   };
+
+  const sideScores = (s: { frontScore: number; backScore: number }) =>
+    `${es ? 'FRENTE' : 'FRONT'} ${s.frontScore.toFixed(1)} · ${es ? 'DORSO' : 'BACK'} ${s.backScore.toFixed(1)}`;
 
   return (
     <div className={`w-full min-h-screen ${
@@ -139,7 +139,7 @@ export const VerificationPage: React.FC<VerificationPageProps> = ({ onNavigate }
             {searchInput && (
               <button
                 type="button"
-                onClick={() => { setSearchInput(''); setErrorMsg(''); }}
+                onClick={() => { setSearchInput(''); setError(null); }}
                 className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-xs px-2 py-1 font-mono uppercase mr-1 cursor-pointer"
                 title={language === 'es' ? 'Limpiar búsqueda' : 'Clear search'}
               >
@@ -149,6 +149,7 @@ export const VerificationPage: React.FC<VerificationPageProps> = ({ onNavigate }
 
             <button
               type="submit"
+              disabled={loading}
               className="btn-gorilla-square px-5 py-2 sm:py-2.5 text-xs font-bold tracking-normal shrink-0 gap-1.5 cursor-pointer shadow-sm"
             >
               <span>{language === 'es' ? 'Verificar' : 'Verify'}</span>
@@ -163,35 +164,6 @@ export const VerificationPage: React.FC<VerificationPageProps> = ({ onNavigate }
           )}
         </form>
 
-        {/* Quick Searches Centered Pills */}
-        <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-2.5 font-mono">
-          <span className={`text-[10px] tracking-[0.2em] uppercase mr-1 ${
-            isLight ? 'text-gray-400' : 'text-white/40'
-          }`}>
-            {language === 'es' ? 'Búsquedas de ejemplo:' : 'Example searches:'}
-          </span>
-          {MOCK_POPULAR_SEARCHES.map((cert) => (
-            <button
-              key={cert}
-              type="button"
-              onClick={() => {
-                setSearchInput(cert);
-                setErrorMsg('');
-                const found = MOCK_GRADED_CARDS.find(c => c.certNumber === cert);
-                if (found) setActiveCard(found);
-              }}
-              className={`px-3 py-1 rounded-lg border font-mono text-[11px] tracking-wider transition-all duration-200 cursor-pointer ${
-                activeCard?.certNumber === cert
-                  ? 'bg-[#16A34A] text-white border-[#16A34A] shadow-sm font-bold'
-                  : isLight
-                    ? 'bg-white/70 hover:bg-white text-gray-700 hover:text-[#16A34A] border-gray-200 hover:border-[#16A34A]/40 shadow-xs'
-                    : 'bg-white/5 hover:bg-white/10 text-white/70 hover:text-[#4ADE80] border-white/10 hover:border-[#4ADE80]/40'
-              }`}
-            >
-              {cert}
-            </button>
-          ))}
-        </div>
       </div>
 
       {/* Results - Split Layout */}
@@ -204,12 +176,12 @@ export const VerificationPage: React.FC<VerificationPageProps> = ({ onNavigate }
               {/* Subtle background glow */}
               <div className="absolute inset-0 bg-[#48C765]/5 blur-[80px] pointer-events-none opacity-40 group-hover:opacity-80 transition-opacity" />
               <div className="relative z-10 flex justify-center">
-                <SlabCard card={activeCard} size="md" variant="card-only" onInspect={() => onNavigate('/certificates/demo')} />
+                <SlabCard card={activeCard} size="md" variant="card-only" onInspect={() => onNavigate(`/certificates/${activeCard.certNumber}`)} />
               </div>
             </div>
             
             <button 
-              onClick={() => onNavigate('/certificates/demo')}
+              onClick={() => onNavigate(`/certificates/${activeCard.certNumber}`)}
               className="btn-gorilla-square mx-auto mt-2 px-6 py-2.5 text-xs font-extrabold tracking-normal gap-2 shadow-md cursor-pointer"
             >
               <span>{language === 'es' ? 'Ver Dossier con Slab 3D' : 'View Dossier with 3D Slab'}</span>
@@ -220,6 +192,8 @@ export const VerificationPage: React.FC<VerificationPageProps> = ({ onNavigate }
           {/* Right Column: Editorial Data Sheet */}
           <div className="lg:col-span-7 flex flex-col">
             
+            <div className="mb-5 empty:hidden"><CertificateStatusBanner certificate={activeCard} onNavigate={onNavigate} /></div>
+
             {/* 1. Header Spec */}
             <div className={`pb-5 border-b ${isLight ? 'border-gray-200' : 'border-white/10'}`}>
               <div className="flex items-center gap-3 mb-2 font-mono text-[10px] tracking-[0.2em] uppercase text-[#16A34A] dark:text-[#48C765]">
@@ -285,6 +259,13 @@ export const VerificationPage: React.FC<VerificationPageProps> = ({ onNavigate }
                 }`}>
                   Authenticated by {activeCard.verifier}
                 </span>
+                <button
+                  type="button"
+                  onClick={() => onNavigate('/grading-scale')}
+                  className="font-mono text-[10px] tracking-[0.1em] underline underline-offset-4 cursor-pointer text-[#16A34A] dark:text-[#48C765]"
+                >
+                  {es ? 'Cómo se calcula la nota' : 'How the grade is calculated'}
+                </button>
               </div>
             </div>
 
@@ -299,9 +280,9 @@ export const VerificationPage: React.FC<VerificationPageProps> = ({ onNavigate }
               <div className="flex flex-col gap-2">
                 {[
                   { label: t('verify.subCentering'), score: activeCard.subgrades.centering.score, desc: activeCard.subgrades.centering.frontRatio.split(',')[0] },
-                  { label: t('verify.subCorners'), score: activeCard.subgrades.corners.score, desc: '90° DIE CUT' },
-                  { label: t('verify.subEdges'), score: activeCard.subgrades.edges.score, desc: 'NO WHITENING' },
-                  { label: t('verify.subSurface'), score: activeCard.subgrades.surface.score, desc: 'SPECULAR OK' }
+                  { label: t('verify.subCorners'), score: activeCard.subgrades.corners.score, desc: sideScores(activeCard.subgrades.corners) },
+                  { label: t('verify.subEdges'), score: activeCard.subgrades.edges.score, desc: sideScores(activeCard.subgrades.edges) },
+                  { label: t('verify.subSurface'), score: activeCard.subgrades.surface.score, desc: sideScores(activeCard.subgrades.surface) }
                 ].map((sub, i) => (
                   <div key={i} className="flex items-center justify-between py-1 group">
                     <div className="flex items-baseline gap-4 w-1/3">

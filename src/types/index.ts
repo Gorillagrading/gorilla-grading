@@ -49,7 +49,8 @@ export interface GradedCard {
   game: 'Pokemon' | 'Magic: The Gathering' | 'Yu-Gi-Oh!' | 'One Piece' | 'Lorcana' | 'Sports';
   language: string;
   grade: number;
-  gradeLabel: 'Pristine 10' | 'Gem Mint 10' | 'Mint 9' | 'Near Mint-Mint 8.5' | 'Near Mint 8' | 'Excellent 7';
+  /** Etiqueta de la nota (shared/grading.ts), por ejemplo "Mint+ 9.5". */
+  gradeLabel: string;
   subgrades: Subgrades;
   frontImage: string;
   backImage: string;
@@ -66,6 +67,9 @@ export interface GradedCard {
   declaredValueEur: number;
   isAuthentic: boolean;
 }
+
+/** Carta certificada tal como la ve el público: sin el valor declarado, que es del dueño. */
+export type PublicGradedCard = Omit<GradedCard, 'declaredValueEur'>;
 
 export interface ServiceTier {
   id: string;
@@ -89,6 +93,8 @@ export interface OrderItem {
   set: string;
   declaredValue: number;
   serviceTierId: string;
+  year?: number;
+  language?: string;
   notes?: string;
   frontImagePreview?: string;
 }

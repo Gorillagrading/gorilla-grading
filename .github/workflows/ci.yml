@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: gorilla_ci
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/gorilla_ci
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - name: Esquema y migraciones sincronizados
+        run: |
+          npm run db:check
+          npm run db:generate
+          test -z "$(git status --porcelain db/migrations)" || (echo "Falta generar una migración: npm run db:generate" && exit 1)
+      - name: Migración limpia sobre base vacía
+        run: npm run db:migrate
+      - name: Seed desde los mocks
+        run: npm run db:seed
+      - run: npm run build

@@ -35,10 +35,12 @@ import { FAQDropoffPage } from './pages/FAQDropoffPage';
 import { FAQTurnaroundPage } from './pages/FAQTurnaroundPage';
 import { EventsCalendarPage } from './pages/EventsCalendarPage';
 import { LoginPage } from './pages/LoginPage';
+import { AdminPage } from './pages/AdminPage';
+import { GradingScalePage } from './pages/GradingScalePage';
 import { TeamVisualMapPage } from './pages/TeamVisualMapPage';
 
 export const AppContent: React.FC = () => {
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, status: authStatus } = useAuth();
   const { theme } = useTheme();
   const [currentPath, setCurrentPath] = useState<string>(() => {
     return window.location.pathname || '/';
@@ -122,14 +124,14 @@ export const AppContent: React.FC = () => {
         return <SubmissionWizardPage onNavigate={handleNavigate} />;
       case '/verify':
         return <VerificationPage onNavigate={handleNavigate} />;
-      case '/certificates/demo':
-        return <CertificateDetailPage onNavigate={handleNavigate} certId="GGI-892401" />;
       case '/track':
       case '/tracking':
         return <TrackingPage onNavigate={handleNavigate} />;
       case '/login':
         return <LoginPage onNavigate={handleNavigate} />;
       case '/account':
+        // Mientras se comprueba la sesión no se muestra el formulario de acceso, para que no parpadee.
+        if (authStatus === 'loading') return <div className="flex-1 min-h-[60vh]" aria-busy="true" />;
         return isLoggedIn ? <CollectorVaultPage onNavigate={handleNavigate} /> : <LoginPage onNavigate={handleNavigate} />;
       case '/terms':
         return <LegalPage type="terms" onNavigate={handleNavigate} />;
@@ -145,7 +147,14 @@ export const AppContent: React.FC = () => {
         return <LegalPage type="legal-notice" onNavigate={handleNavigate} />;
       case '/mapa':
         return <TeamVisualMapPage onNavigate={handleNavigate} />;
+      case '/grading-scale':
+        return <GradingScalePage onNavigate={handleNavigate} />;
+      case '/admin':
+        return <AdminPage path={currentPath} onNavigate={handleNavigate} />;
       default:
+        if (currentPath.startsWith('/admin/orders/')) {
+          return <AdminPage path={currentPath} onNavigate={handleNavigate} />;
+        }
         if (currentPath.startsWith('/certificates/')) {
           const certId = currentPath.replace('/certificates/', '');
           return <CertificateDetailPage onNavigate={handleNavigate} certId={certId} />;

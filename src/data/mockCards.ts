@@ -12,7 +12,7 @@ export const MOCK_GRADED_CARDS: GradedCard[] = [
     game: 'Sports',
     language: 'English',
     grade: 9.5,
-    gradeLabel: 'Gem Mint 10',
+    gradeLabel: 'Mint+ 9.5',
     subgrades: {
       centering: {
         score: 9.5,

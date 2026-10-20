@@ -116,7 +116,7 @@ export const TechDetailModal: React.FC<TechDetailModalProps> = ({ isOpen, onClos
           {/* Official Dossier Identification */}
           <div className="min-w-0 flex-1">
             <div className="font-mono text-[8.5px] sm:text-[10px] font-bold tracking-[0.14em] sm:tracking-[0.2em] uppercase text-[#15803D] dark:text-[#48C765] truncate">
-              {isEs ? 'DOSSIER DE LABORATORIO · REF. GG-LAB-2026-MET' : 'LABORATORY DOSSIER · REF. GG-LAB-2026-MET'}
+              {isEs ? 'DOSSIER DE LABORATORIO · REF. GGI-LAB-2026-MET' : 'LABORATORY DOSSIER · REF. GGI-LAB-2026-MET'}
             </div>
             <h2 className={`font-['Nunito',sans-serif] text-xs sm:text-base md:text-lg font-[900] tracking-normal uppercase leading-tight mt-0.5 ${
               isLight ? 'text-[#14170F]' : 'text-white'
