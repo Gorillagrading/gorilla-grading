@@ -30,6 +30,14 @@ export const ORDER_STATUSES = [
 export const OrderStatus = z.enum(ORDER_STATUSES);
 export type OrderStatus = z.infer<typeof OrderStatus>;
 
+/** Estados en los que un pedido ya no se mueve. */
+export const FINISHED_STATUSES: readonly OrderStatus[] = ['DELIVERED', 'CANCELLED', 'RETURNED'];
+
+/** Estados de un pedido en curso: enviado por el cliente y todavía no cerrado. */
+export const ACTIVE_STATUSES: readonly OrderStatus[] = ORDER_STATUSES.filter(
+  (s) => s !== 'DRAFT' && !FINISHED_STATUSES.includes(s),
+);
+
 export const SHIPPING_METHODS = ['COURIER_INSURED', 'CARD_SHOW_DROPOFF', 'VAULT_STORE'] as const;
 export const ShippingMethod = z.enum(SHIPPING_METHODS);
 export type ShippingMethod = z.infer<typeof ShippingMethod>;
