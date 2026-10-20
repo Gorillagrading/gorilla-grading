@@ -1,7 +1,7 @@
 import { and, asc, desc, eq, inArray, ne } from 'drizzle-orm';
-import type { Db } from '../../db/client';
-import { orderItems, orders, shipments } from '../../db/schema';
-import type { OrderSummaryDto } from '../../shared/account';
+import type { Db } from '../../db/client.js';
+import { orderItems, orders, shipments } from '../../db/schema.js';
+import type { OrderSummaryDto } from '../../shared/account.js';
 
 /** Pedidos enviados de un usuario, del más reciente al más antiguo. Los borradores no se incluyen. */
 export async function listUserOrders(db: Db, userId: string): Promise<OrderSummaryDto[]> {

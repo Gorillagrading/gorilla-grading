@@ -5,9 +5,9 @@
  * Además imita al cron de Vercel: cada minuto avanza los pedidos cuyas fases ya les tocan.
  */
 import { serve } from '@hono/node-server';
-import { getDb } from '../db/client';
-import { app } from './app';
-import { advanceDueOrders } from './domain/automation';
+import { getDb } from '../db/client.js';
+import { app } from './app.js';
+import { advanceDueOrders } from './domain/automation.js';
 
 const port = Number(process.env.API_PORT ?? 8787);
 

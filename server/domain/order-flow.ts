@@ -3,7 +3,7 @@
  * hacerlos y qué texto ve el cliente. Es el único sitio donde se definen; para cambiar una
  * regla (por ejemplo, quién puede recibir paquetes) basta con editar esta tabla.
  */
-import type { OrderStatus, ShippingMethod, UserRole } from '../../shared/domain';
+import type { OrderStatus, ShippingMethod, UserRole } from '../../shared/domain.js';
 
 export interface TransitionRule {
   from: OrderStatus;

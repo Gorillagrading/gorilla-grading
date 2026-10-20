@@ -1,5 +1,5 @@
 import { and, desc, eq, inArray, type SQL } from 'drizzle-orm';
-import type { Db } from '../../db/client';
+import type { Db } from '../../db/client.js';
 import {
   cardIdentities,
   certificates,
@@ -7,8 +7,8 @@ import {
   gradingResults,
   orderItems,
   orders,
-} from '../../db/schema';
-import type { CardDefectDto, GradedCardDto } from '../../shared/account';
+} from '../../db/schema.js';
+import type { CardDefectDto, GradedCardDto } from '../../shared/account.js';
 
 const CATEGORY_LABEL = {
   centering: 'Centering',

@@ -1,7 +1,7 @@
 import { sql } from 'drizzle-orm';
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import { custodyEvents, orderItems, orders, rateLimitEvents, serviceTiers, shipments } from '../db/schema';
-import { createTestApp, createTestDb, insertTier, insertUser, type TestDb } from './testing';
+import { custodyEvents, orderItems, orders, rateLimitEvents, serviceTiers, shipments } from '../db/schema.js';
+import { createTestApp, createTestDb, insertTier, insertUser, type TestDb } from './testing.js';
 
 const read = (res: Response) => res.json() as Promise<any>;
 

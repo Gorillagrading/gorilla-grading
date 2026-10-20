@@ -1,11 +1,11 @@
 import type { Context } from 'hono';
 import { getCookie } from 'hono/cookie';
 import { createMiddleware } from 'hono/factory';
-import type { UserDto } from '../../shared/auth';
-import type { UserRole } from '../../shared/domain';
-import type { AppEnv, Deps } from '../context';
-import { forbidden, unauthenticated } from '../problem';
-import { findSessionUser } from './service';
+import type { UserDto } from '../../shared/auth.js';
+import type { UserRole } from '../../shared/domain.js';
+import type { AppEnv, Deps } from '../context.js';
+import { forbidden, unauthenticated } from '../problem.js';
+import { findSessionUser } from './service.js';
 
 export const SESSION_COOKIE = 'gg_session';
 

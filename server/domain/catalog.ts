@@ -1,7 +1,7 @@
 import { and, desc, isNull, lte, or, gt } from 'drizzle-orm';
-import type { Db } from '../../db/client';
-import { serviceTiers } from '../../db/schema';
-import type { TierPricing } from './pricing';
+import type { Db } from '../../db/client.js';
+import { serviceTiers } from '../../db/schema.js';
+import type { TierPricing } from './pricing.js';
 
 export type ActiveTier = TierPricing & { id: string };
 

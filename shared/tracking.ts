@@ -2,7 +2,7 @@
  * Contrato del seguimiento público de un pedido. Solo tipos: el frontend los importa con `import type`.
  * Nunca incluye dirección, datos de contacto, notas internas ni valores declarados.
  */
-import type { OrderStatus } from './domain';
+import type { OrderStatus } from './domain.js';
 
 export interface TrackingStepDto {
   status: OrderStatus;

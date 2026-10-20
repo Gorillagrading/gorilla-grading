@@ -1,12 +1,12 @@
 import { Hono } from 'hono';
-import { CreateOrderBody, QuoteBody, type QuoteResponse } from '../../shared/orders';
-import { requireUser } from '../auth/middleware';
-import type { AppEnv, Deps } from '../context';
-import { loadActiveTiers } from '../domain/catalog';
-import { computeQuote } from '../domain/pricing';
-import { createOrder } from '../domain/submit-order';
-import { clientIp, parseJson } from '../http';
-import { enforceRateLimit } from '../rate-limit';
+import { CreateOrderBody, QuoteBody, type QuoteResponse } from '../../shared/orders.js';
+import { requireUser } from '../auth/middleware.js';
+import type { AppEnv, Deps } from '../context.js';
+import { loadActiveTiers } from '../domain/catalog.js';
+import { computeQuote } from '../domain/pricing.js';
+import { createOrder } from '../domain/submit-order.js';
+import { clientIp, parseJson } from '../http.js';
+import { enforceRateLimit } from '../rate-limit.js';
 
 const QUOTES_PER_WINDOW = 300;
 const ORDERS_PER_WINDOW = 20;

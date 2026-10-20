@@ -3,7 +3,7 @@
  * El frontend solo debe importar tipos de aquí (`import type`).
  */
 import { z } from 'zod';
-import { UserRole } from './domain';
+import { UserRole } from './domain.js';
 
 export const Locale = z.enum(['es', 'en']);
 export type Locale = z.infer<typeof Locale>;

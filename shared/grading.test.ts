@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   ALL_GRADE_LABELS, GRADE_LABELS, checkGrade, deriveFinalGrade, deriveGradeLabel, isGradeValue, traceGrade,
   type SubgradeScores,
-} from './grading';
+} from './grading.js';
 
 const s = (centering: number, corners: number, edges: number, surface: number): SubgradeScores => ({ centering, corners, edges, surface });
 

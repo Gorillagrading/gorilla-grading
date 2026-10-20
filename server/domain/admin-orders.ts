@@ -1,17 +1,17 @@
 import { and, asc, count, desc, eq, ilike, inArray, ne, or, type SQL } from 'drizzle-orm';
-import type { Db } from '../../db/client';
+import type { Db } from '../../db/client.js';
 import {
   auditLogs, custodyEvents, emailOutbox, orderItems, orders, serviceTiers, shipments, users,
-} from '../../db/schema';
+} from '../../db/schema.js';
 import type {
   AdminOrderDetail, AdminOrderList, AdminOrdersQuery, AdminTransitionOption, ShipmentBody, TransitionBody,
-} from '../../shared/admin';
-import type { UserDto } from '../../shared/auth';
-import { ACTIVE_STATUSES, FINISHED_STATUSES } from '../../shared/domain';
-import { hashIp } from '../auth/crypto';
-import { ProblemError, forbidden, notFound } from '../problem';
-import { AUTO_FROM, remainingSteps } from './automation';
-import { NOTIFY_ON, addBusinessDays, publicCopy, rulesFrom, type TransitionRule } from './order-flow';
+} from '../../shared/admin.js';
+import type { UserDto } from '../../shared/auth.js';
+import { ACTIVE_STATUSES, FINISHED_STATUSES } from '../../shared/domain.js';
+import { hashIp } from '../auth/crypto.js';
+import { ProblemError, forbidden, notFound } from '../problem.js';
+import { AUTO_FROM, remainingSteps } from './automation.js';
+import { NOTIFY_ON, addBusinessDays, publicCopy, rulesFrom, type TransitionRule } from './order-flow.js';
 
 export const ADMIN_PAGE_SIZE = 25;
 

@@ -1,10 +1,10 @@
 import { Hono } from 'hono';
-import type { VerificationChannel } from '../../shared/certificate';
-import type { AppEnv, Deps } from '../context';
-import { findPublicCertificate } from '../domain/certificates';
-import { clientIp } from '../http';
-import { ProblemError } from '../problem';
-import { enforceRateLimit } from '../rate-limit';
+import type { VerificationChannel } from '../../shared/certificate.js';
+import type { AppEnv, Deps } from '../context.js';
+import { findPublicCertificate } from '../domain/certificates.js';
+import { clientIp } from '../http.js';
+import { ProblemError } from '../problem.js';
+import { enforceRateLimit } from '../rate-limit.js';
 
 const CHECKS_PER_WINDOW = 120;
 const WINDOW_MS = 10 * 60_000;

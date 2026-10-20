@@ -1,8 +1,8 @@
 import { eq, sql } from 'drizzle-orm';
 import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import { auditLogs, custodyEvents, emailOutbox, orders, users } from '../db/schema';
-import { AUTO_NOTE, addBusinessTime, advanceDueOrders, scheduleFor } from './domain/automation';
-import { createTestApp, createTestDb, insertAllTiers, insertUser, type TestDb } from './testing';
+import { auditLogs, custodyEvents, emailOutbox, orders, users } from '../db/schema.js';
+import { AUTO_NOTE, addBusinessTime, advanceDueOrders, scheduleFor } from './domain/automation.js';
+import { createTestApp, createTestDb, insertAllTiers, insertUser, type TestDb } from './testing.js';
 
 const read = (res: Response) => res.json() as Promise<any>;
 const DAY = 86_400_000;

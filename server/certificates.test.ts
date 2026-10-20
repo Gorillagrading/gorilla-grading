@@ -1,8 +1,8 @@
 import { eq, sql } from 'drizzle-orm';
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import { certificateChecks, certificates } from '../db/schema';
-import { parseCertificateQuery } from './domain/certificates';
-import { createTestApp, createTestDb, insertGradedOrder, insertTier, insertUser, type TestDb } from './testing';
+import { certificateChecks, certificates } from '../db/schema.js';
+import { parseCertificateQuery } from './domain/certificates.js';
+import { createTestApp, createTestDb, insertGradedOrder, insertTier, insertUser, type TestDb } from './testing.js';
 
 const read = (res: Response) => res.json() as Promise<any>;
 

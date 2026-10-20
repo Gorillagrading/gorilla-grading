@@ -1,10 +1,10 @@
 import { Hono } from 'hono';
-import { currentUser } from '../auth/middleware';
-import type { AppEnv, Deps } from '../context';
-import { findTracking } from '../domain/tracking';
-import { clientIp } from '../http';
-import { ProblemError } from '../problem';
-import { enforceRateLimit } from '../rate-limit';
+import { currentUser } from '../auth/middleware.js';
+import type { AppEnv, Deps } from '../context.js';
+import { findTracking } from '../domain/tracking.js';
+import { clientIp } from '../http.js';
+import { ProblemError } from '../problem.js';
+import { enforceRateLimit } from '../rate-limit.js';
 
 const LOOKUPS_PER_WINDOW = 60;
 const WINDOW_MS = 10 * 60_000;

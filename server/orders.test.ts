@@ -2,9 +2,9 @@ import { eq, sql } from 'drizzle-orm';
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import {
   addresses, consents, custodyEvents, emailOutbox, orderItems, orders, serviceTiers, users,
-} from '../db/schema';
-import { ORDER_CODE } from '../shared/codes';
-import { createTestApp, createTestDb, insertAllTiers, type TestDb } from './testing';
+} from '../db/schema.js';
+import { ORDER_CODE } from '../shared/codes.js';
+import { createTestApp, createTestDb, insertAllTiers, type TestDb } from './testing.js';
 
 const read = (res: Response) => res.json() as Promise<any>;
 

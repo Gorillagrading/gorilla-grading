@@ -1,10 +1,10 @@
 import { eq } from 'drizzle-orm';
-import type { Db } from '../../db/client';
-import { certificateChecks, certificates, slabs } from '../../db/schema';
-import { hashIp } from '../auth/crypto';
-import { CERTIFICATE_NUMBER, SLAB_SERIAL } from '../../shared/codes';
-import type { PublicCertificateDto, VerificationChannel } from '../../shared/certificate';
-import { loadCards } from './vault';
+import type { Db } from '../../db/client.js';
+import { certificateChecks, certificates, slabs } from '../../db/schema.js';
+import { hashIp } from '../auth/crypto.js';
+import { CERTIFICATE_NUMBER, SLAB_SERIAL } from '../../shared/codes.js';
+import type { PublicCertificateDto, VerificationChannel } from '../../shared/certificate.js';
+import { loadCards } from './vault.js';
 
 type Lookup = { kind: 'number' | 'serial'; value: string };
 

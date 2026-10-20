@@ -5,11 +5,11 @@
 import { PGlite } from '@electric-sql/pglite';
 import { drizzle } from 'drizzle-orm/pglite';
 import { migrate } from 'drizzle-orm/pglite/migrator';
-import * as schema from '../db/schema';
-import { GRADE_LABELS } from '../shared/grading';
-import { createApp } from './app';
-import { slabSerialFor } from './codes';
-import type { Deps } from './context';
+import * as schema from '../db/schema.js';
+import { GRADE_LABELS } from '../shared/grading.js';
+import { createApp } from './app.js';
+import { slabSerialFor } from './codes.js';
+import type { Deps } from './context.js';
 
 process.env.AUTH_SECRET ??= 'test-secret-test-secret-test-secret-123456';
 

@@ -1,7 +1,7 @@
 import { eq, sql } from 'drizzle-orm';
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import { otpChallenges, sessions, users } from '../db/schema';
-import { createTestApp, createTestDb, type TestDb } from './testing';
+import { otpChallenges, sessions, users } from '../db/schema.js';
+import { createTestApp, createTestDb, type TestDb } from './testing.js';
 
 let db: TestDb;
 let t: ReturnType<typeof createTestApp>;

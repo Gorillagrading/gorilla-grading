@@ -1,10 +1,10 @@
 import { Hono } from 'hono';
-import { AdminOrdersQuery, STAFF_ROLES, ShipmentBody, TransitionBody } from '../../shared/admin';
-import { requireRole, requireUser } from '../auth/middleware';
-import type { AppEnv, Deps } from '../context';
-import { addShipment, getAdminOrder, listAdminOrders, transitionOrder } from '../domain/admin-orders';
-import { clientIp, parseJson } from '../http';
-import { ProblemError } from '../problem';
+import { AdminOrdersQuery, STAFF_ROLES, ShipmentBody, TransitionBody } from '../../shared/admin.js';
+import { requireRole, requireUser } from '../auth/middleware.js';
+import type { AppEnv, Deps } from '../context.js';
+import { addShipment, getAdminOrder, listAdminOrders, transitionOrder } from '../domain/admin-orders.js';
+import { clientIp, parseJson } from '../http.js';
+import { ProblemError } from '../problem.js';
 
 /**
  * Panel del laboratorio. Todo exige sesión y un rol del personal; el control fino de quién

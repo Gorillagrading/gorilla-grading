@@ -1,6 +1,6 @@
 import { sql } from 'drizzle-orm';
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import { custodyEvents, orderItems, orders, shipments } from '../db/schema';
+import { custodyEvents, orderItems, orders, shipments } from '../db/schema.js';
 import {
   createTestApp,
   createTestDb,
@@ -8,7 +8,7 @@ import {
   insertTier,
   insertUser,
   type TestDb,
-} from './testing';
+} from './testing.js';
 
 /** El JSON de una respuesta, sin tipar: en las pruebas se comprueba con expect. */
 const read = (res: Response) => res.json() as Promise<any>;

@@ -1,8 +1,8 @@
 import { and, count, eq, gte } from 'drizzle-orm';
-import type { Db } from '../db/client';
-import { rateLimitEvents } from '../db/schema';
-import { hashIp } from './auth/crypto';
-import { tooManyRequests } from './problem';
+import type { Db } from '../db/client.js';
+import { rateLimitEvents } from '../db/schema.js';
+import { hashIp } from './auth/crypto.js';
+import { tooManyRequests } from './problem.js';
 
 /**
  * Limita cuántas veces puede usar un cliente un endpoint público en una ventana de tiempo.

@@ -1,7 +1,7 @@
 /**
  * Contratos del dashboard de la cuenta. Solo tipos: el frontend los importa con `import type`.
  */
-import type { OrderStatus } from './domain';
+import type { OrderStatus } from './domain.js';
 
 export interface OrderSummaryDto {
   /** Código visible del pedido, por ejemplo GGI-ORD-7K4M9Q. */

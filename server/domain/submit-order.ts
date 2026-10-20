@@ -1,13 +1,13 @@
 import { and, count, eq } from 'drizzle-orm';
-import type { Db } from '../../db/client';
-import { addresses, consents, custodyEvents, emailOutbox, orderItems, orders, users } from '../../db/schema';
-import type { UserDto } from '../../shared/auth';
-import type { CreateOrderBody, CreatedOrderDto } from '../../shared/orders';
-import { hashIp } from '../auth/crypto';
-import { newOrderCode } from '../codes';
-import { ProblemError } from '../problem';
-import { loadActiveTiers } from './catalog';
-import { computeQuote } from './pricing';
+import type { Db } from '../../db/client.js';
+import { addresses, consents, custodyEvents, emailOutbox, orderItems, orders, users } from '../../db/schema.js';
+import type { UserDto } from '../../shared/auth.js';
+import type { CreateOrderBody, CreatedOrderDto } from '../../shared/orders.js';
+import { hashIp } from '../auth/crypto.js';
+import { newOrderCode } from '../codes.js';
+import { ProblemError } from '../problem.js';
+import { loadActiveTiers } from './catalog.js';
+import { computeQuote } from './pricing.js';
 
 /** Versión de los términos y la política de privacidad que se aceptan al enviar un pedido. */
 export const CONSENT_VERSION = '2026-10-20';

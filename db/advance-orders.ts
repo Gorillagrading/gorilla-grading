@@ -3,8 +3,8 @@
  * Uso: npm run jobs:advance
  */
 import { existsSync } from 'node:fs';
-import { advanceDueOrders } from '../server/domain/automation';
-import { createDb } from './client';
+import { advanceDueOrders } from '../server/domain/automation.js';
+import { createDb } from './client.js';
 
 if (existsSync('.env')) process.loadEnvFile('.env');
 

@@ -3,7 +3,7 @@
  * y Hono enruta según la URL original.
  */
 import { handle } from 'hono/vercel';
-import { app } from '../server/app';
+import { app } from '../server/app.js';
 
 const handler = handle(app);
 

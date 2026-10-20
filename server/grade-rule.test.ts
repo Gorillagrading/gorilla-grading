@@ -1,9 +1,9 @@
 import { readFileSync } from 'node:fs';
 import { sql } from 'drizzle-orm';
 import { beforeAll, describe, expect, it } from 'vitest';
-import { gradingResults } from '../db/schema';
-import { deriveFinalGrade, deriveGradeLabel, GRADE_LABELS, type SubgradeScores } from '../shared/grading';
-import { createTestDb, insertAllTiers, insertGradedOrder, insertUser, type TestDb } from './testing';
+import { gradingResults } from '../db/schema.js';
+import { deriveFinalGrade, deriveGradeLabel, GRADE_LABELS, type SubgradeScores } from '../shared/grading.js';
+import { createTestDb, insertAllTiers, insertGradedOrder, insertUser, type TestDb } from './testing.js';
 
 let db: TestDb;
 

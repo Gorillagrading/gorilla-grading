@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { addBusinessDays, publicCopy, rulesFrom } from './order-flow';
+import { addBusinessDays, publicCopy, rulesFrom } from './order-flow.js';
 
 const day = (iso: string) => new Date(`${iso}T10:00:00Z`);
 const iso = (d: Date) => d.toISOString().slice(0, 10);

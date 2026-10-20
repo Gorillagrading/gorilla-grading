@@ -1,11 +1,11 @@
 import { Hono } from 'hono';
 import { deleteCookie, getCookie, setCookie } from 'hono/cookie';
-import { RequestCodeBody, VerifyCodeBody } from '../../shared/auth';
-import { SESSION_COOKIE, requireUser } from '../auth/middleware';
-import { CODE_TTL_MS, issueLoginCode, revokeSession, verifyLoginCode } from '../auth/service';
-import type { AppEnv, Deps } from '../context';
-import { isProduction } from '../env';
-import { clientIp, parseJson } from '../http';
+import { RequestCodeBody, VerifyCodeBody } from '../../shared/auth.js';
+import { SESSION_COOKIE, requireUser } from '../auth/middleware.js';
+import { CODE_TTL_MS, issueLoginCode, revokeSession, verifyLoginCode } from '../auth/service.js';
+import type { AppEnv, Deps } from '../context.js';
+import { isProduction } from '../env.js';
+import { clientIp, parseJson } from '../http.js';
 
 const cookieOptions = () => ({
   httpOnly: true,

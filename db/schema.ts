@@ -27,14 +27,14 @@ import {
   uuid,
   type AnyPgColumn,
 } from 'drizzle-orm/pg-core';
-import { CERTIFICATE_NUMBER, ORDER_CODE, SLAB_SERIAL, TICKET_CODE } from '../shared/codes';
-import { GRADE_LABELS } from '../shared/grading';
+import { CERTIFICATE_NUMBER, ORDER_CODE, SLAB_SERIAL, TICKET_CODE } from '../shared/codes.js';
+import { GRADE_LABELS } from '../shared/grading.js';
 import {
   CERTIFICATE_STATUSES,
   ORDER_STATUSES,
   SHIPPING_METHODS,
   USER_ROLES,
-} from '../shared/domain';
+} from '../shared/domain.js';
 
 /** Condición CHECK: la columna cumple el formato de código. */
 const matches = (column: AnyPgColumn, pattern: RegExp) => sql`${column} ~ ${sql.raw(`'${pattern.source}'`)}`;

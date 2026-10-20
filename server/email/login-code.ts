@@ -1,5 +1,5 @@
-import { isProduction } from '../env';
-import { ProblemError } from '../problem';
+import { isProduction } from '../env.js';
+import { ProblemError } from '../problem.js';
 
 export type SendLoginCode = (to: string, code: string, locale: 'es' | 'en') => Promise<void>;
 

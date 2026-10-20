@@ -1,5 +1,5 @@
 import { randomInt } from 'node:crypto';
-import { CODE_ALPHABET, CODE_PREFIX } from '../shared/codes';
+import { CODE_ALPHABET, CODE_PREFIX } from '../shared/codes.js';
 
 const randomChars = (length: number) =>
   Array.from({ length }, () => CODE_ALPHABET[randomInt(CODE_ALPHABET.length)]).join('');

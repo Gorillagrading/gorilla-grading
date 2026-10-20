@@ -1,8 +1,8 @@
 import { Hono } from 'hono';
-import { requireUser } from '../auth/middleware';
-import type { AppEnv, Deps } from '../context';
-import { listUserOrders } from '../domain/orders';
-import { listUserVault } from '../domain/vault';
+import { requireUser } from '../auth/middleware.js';
+import type { AppEnv, Deps } from '../context.js';
+import { listUserOrders } from '../domain/orders.js';
+import { listUserVault } from '../domain/vault.js';
 
 /** Datos del dashboard. Todo se filtra por el usuario de la sesión; nunca se acepta un id de usuario del cliente. */
 export function accountRoutes(deps: Deps) {

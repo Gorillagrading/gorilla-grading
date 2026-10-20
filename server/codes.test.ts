@@ -1,9 +1,9 @@
 import { sql } from 'drizzle-orm';
 import { beforeAll, describe, expect, it } from 'vitest';
-import { contactMessages, orders, slabs } from '../db/schema';
-import { CERTIFICATE_NUMBER, CODE_ALPHABET, ORDER_CODE, SLAB_SERIAL, TICKET_CODE } from '../shared/codes';
-import { newCertificateNumber, newOrderCode, newTicketCode, slabSerialFor } from './codes';
-import { createTestDb, insertGradedOrder, insertTier, insertUser, type TestDb } from './testing';
+import { contactMessages, orders, slabs } from '../db/schema.js';
+import { CERTIFICATE_NUMBER, CODE_ALPHABET, ORDER_CODE, SLAB_SERIAL, TICKET_CODE } from '../shared/codes.js';
+import { newCertificateNumber, newOrderCode, newTicketCode, slabSerialFor } from './codes.js';
+import { createTestDb, insertGradedOrder, insertTier, insertUser, type TestDb } from './testing.js';
 
 describe('generadores de códigos', () => {
   it('todos empiezan por GGI- y cumplen su formato', () => {

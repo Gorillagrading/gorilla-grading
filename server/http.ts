@@ -1,7 +1,7 @@
 import type { Context, MiddlewareHandler } from 'hono';
 import type { z } from 'zod';
-import { allowedOrigins } from './env';
-import { ProblemError } from './problem';
+import { allowedOrigins } from './env.js';
+import { ProblemError } from './problem.js';
 
 /** Lee el cuerpo JSON y lo valida con un schema Zod; responde 400 o 422 si no es válido. */
 export async function parseJson<T extends z.ZodType>(c: Context, schema: T): Promise<z.infer<T>> {

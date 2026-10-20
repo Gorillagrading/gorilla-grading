@@ -3,7 +3,7 @@
  * y notas internas que nunca salen en las vistas públicas.
  */
 import { z } from 'zod';
-import { OrderStatus, ShippingMethod, UserRole } from './domain';
+import { OrderStatus, ShippingMethod, UserRole } from './domain.js';
 
 export const STAFF_ROLES = ['staff', 'grader', 'qa', 'admin'] as const satisfies readonly UserRole[];
 export type StaffRole = (typeof STAFF_ROLES)[number];

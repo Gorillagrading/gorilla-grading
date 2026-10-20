@@ -1,9 +1,9 @@
 import { and, count, desc, eq, gt, gte, isNull, lt, max, sql } from 'drizzle-orm';
-import type { Db } from '../../db/client';
-import { otpChallenges, sessions, users } from '../../db/schema';
-import type { UserDto } from '../../shared/auth';
-import { ProblemError, tooManyRequests } from '../problem';
-import { hashIp, hashLoginCode, hashSessionToken, newLoginCode, newSessionToken, safeEqual } from './crypto';
+import type { Db } from '../../db/client.js';
+import { otpChallenges, sessions, users } from '../../db/schema.js';
+import type { UserDto } from '../../shared/auth.js';
+import { ProblemError, tooManyRequests } from '../problem.js';
+import { hashIp, hashLoginCode, hashSessionToken, newLoginCode, newSessionToken, safeEqual } from './crypto.js';
 
 export const CODE_TTL_MS = 10 * 60_000;
 export const MAX_ATTEMPTS = 5;

@@ -2,8 +2,8 @@
  * Contrato de la verificación pública de un certificado. Solo tipos.
  * Es público: no incluye el valor declarado, ni al dueño, ni el pedido, ni sus fotos privadas.
  */
-import type { GradedCardDto } from './account';
-import type { CertificateStatus } from './domain';
+import type { GradedCardDto } from './account.js';
+import type { CertificateStatus } from './domain.js';
 
 export type VerificationChannel = 'web' | 'qr' | 'nfc';
 

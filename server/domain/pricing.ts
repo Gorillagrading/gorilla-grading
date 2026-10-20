@@ -8,7 +8,7 @@
  *     8 % desde 25 y 12 % desde 50.
  *   - Si el valor declarado supera el límite del nivel, el pedido no se puede enviar.
  */
-import type { QuoteBody, QuoteDto, QuoteIssue, QuoteLine, SubmittableShippingMethod } from '../../shared/orders';
+import type { QuoteBody, QuoteDto, QuoteIssue, QuoteLine, SubmittableShippingMethod } from '../../shared/orders.js';
 
 export const VAT_RATE = 0.21;
 export const COURIER_RETURN_CENTS = 1450;

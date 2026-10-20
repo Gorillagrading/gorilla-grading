@@ -1,8 +1,8 @@
 import { and, asc, desc, eq, ne, sql } from 'drizzle-orm';
-import type { Db } from '../../db/client';
-import { custodyEvents, orderItems, orders, shipments } from '../../db/schema';
-import type { OrderStatus } from '../../shared/domain';
-import type { TrackingDto } from '../../shared/tracking';
+import type { Db } from '../../db/client.js';
+import { custodyEvents, orderItems, orders, shipments } from '../../db/schema.js';
+import type { OrderStatus } from '../../shared/domain.js';
+import type { TrackingDto } from '../../shared/tracking.js';
 
 /** Recorrido normal de un pedido. PAYMENT_PENDING cuenta como SUBMITTED a efectos de lo que falta. */
 const PIPELINE: OrderStatus[] = [

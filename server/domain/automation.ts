@@ -7,10 +7,10 @@
  * se detiene en control de calidad hasta que una persona lo aprueba.
  */
 import { and, eq, inArray, isNotNull } from 'drizzle-orm';
-import type { Db } from '../../db/client';
-import { auditLogs, custodyEvents, orders, users } from '../../db/schema';
-import type { OrderStatus } from '../../shared/domain';
-import { addBusinessDays, publicCopy } from './order-flow';
+import type { Db } from '../../db/client.js';
+import { auditLogs, custodyEvents, orders, users } from '../../db/schema.js';
+import type { OrderStatus } from '../../shared/domain.js';
+import { addBusinessDays, publicCopy } from './order-flow.js';
 
 /** En qué punto del plazo (0 = llegada del paquete, 1 = plazo completo) entra el pedido en cada fase. */
 export const AUTO_STAGES: readonly { to: OrderStatus; at: number }[] = [

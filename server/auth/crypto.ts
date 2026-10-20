@@ -1,5 +1,5 @@
 import { createHash, createHmac, randomBytes, randomInt, timingSafeEqual } from 'node:crypto';
-import { authSecret } from '../env';
+import { authSecret } from '../env.js';
 
 /** Token de sesión: lo recibe el navegador en la cookie; en la base solo se guarda su hash. */
 export const newSessionToken = () => randomBytes(32).toString('base64url');

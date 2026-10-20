@@ -1,8 +1,8 @@
 import { Hono } from 'hono';
-import { safeEqual } from '../auth/crypto';
-import type { AppEnv, Deps } from '../context';
-import { advanceDueOrders } from '../domain/automation';
-import { ProblemError, unauthenticated } from '../problem';
+import { safeEqual } from '../auth/crypto.js';
+import type { AppEnv, Deps } from '../context.js';
+import { advanceDueOrders } from '../domain/automation.js';
+import { ProblemError, unauthenticated } from '../problem.js';
 
 /**
  * Tareas programadas. Vercel Cron llama con `Authorization: Bearer <CRON_SECRET>`.

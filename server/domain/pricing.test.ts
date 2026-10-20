@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { QuoteBody } from '../../shared/orders';
-import { computeQuote, discountedUnitCents, volumeDiscountRate, type TierPricing } from './pricing';
+import type { QuoteBody } from '../../shared/orders.js';
+import { computeQuote, discountedUnitCents, volumeDiscountRate, type TierPricing } from './pricing.js';
 
 const tiers = new Map<string, TierPricing>(
   [

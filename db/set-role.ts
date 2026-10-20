@@ -8,9 +8,9 @@
  */
 import { existsSync } from 'node:fs';
 import { eq, sql } from 'drizzle-orm';
-import { UserRole } from '../shared/domain';
-import { createDb } from './client';
-import { auditLogs, sessions, users } from './schema';
+import { UserRole } from '../shared/domain.js';
+import { createDb } from './client.js';
+import { auditLogs, sessions, users } from './schema.js';
 
 if (existsSync('.env')) process.loadEnvFile('.env');
 

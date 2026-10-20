@@ -9,14 +9,14 @@
  */
 import { existsSync } from 'node:fs';
 import { eq } from 'drizzle-orm';
-import { MOCK_GRADED_CARDS } from '../src/data/mockCards';
-import { MOCK_ORDERS } from '../src/data/mockOrders';
-import { MOCK_SERVICES } from '../src/data/mockServices';
-import type { GradedCard, Order } from '../src/types';
-import { slabSerialFor } from '../server/codes';
-import { deriveFinalGrade, deriveGradeLabel } from '../shared/grading';
-import { createDb } from './client';
-import * as s from './schema';
+import { MOCK_GRADED_CARDS } from '../src/data/mockCards.js';
+import { MOCK_ORDERS } from '../src/data/mockOrders.js';
+import { MOCK_SERVICES } from '../src/data/mockServices.js';
+import type { GradedCard, Order } from '../src/types/index.js';
+import { slabSerialFor } from '../server/codes.js';
+import { deriveFinalGrade, deriveGradeLabel } from '../shared/grading.js';
+import { createDb } from './client.js';
+import * as s from './schema.js';
 
 if (existsSync('.env')) process.loadEnvFile('.env');
 
