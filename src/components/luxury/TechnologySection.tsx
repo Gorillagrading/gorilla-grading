@@ -73,7 +73,7 @@ export const TechnologySection: React.FC<TechnologySectionProps> = ({
           className="w-full h-full object-cover object-center pointer-events-none"
           poster={isLight ? '/images/tecnoSeccion.png' : '/images/Dark/tecnoSeccion.png'}
         >
-          <source src={isLight ? '/images/tecnoSeccion.mp4' : '/images/Dark/tecnoSeccion.mp4'} type="video/mp4" />
+          <source src="/images/tecnoSeccionScn.mp4" type="video/mp4" />
         </video>
       </div>
       
