@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "dev:api": "tsx watch --env-file-if-exists=.env server/dev.ts",
+    "dev:all": "node scripts/dev.mjs",
+    "dev:api":"tsx watch --env-file-if-exists=.env server/dev.ts",
     "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.server.json",
     "test": "vitest run",
     "build": "tsc && vite build",
@@ -14,6 +15,8 @@
     "db:migrate": "drizzle-kit migrate",
     "db:check": "drizzle-kit check",
     "db:seed": "tsx db/seed.ts",
+    "staff:role": "tsx db/set-role.ts",
+    "jobs:advance": "tsx db/advance-orders.ts",
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
@@ -28,6 +31,7 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.10",
     "@types/node": "^22.13.4",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
