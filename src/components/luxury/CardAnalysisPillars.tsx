@@ -1,10 +1,85 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
 
 interface CardAnalysisPillarsProps {
   onNavigate?: (path: string) => void;
 }
+
+interface Pillar {
+  id: string;
+  title: string;
+  desc: string;
+  imgSrc: string;
+  imgAlt: string;
+}
+
+// Brochure-style 3D tilt that follows the mouse on hover
+const PillarCard: React.FC<{ p: Pillar; isLight: boolean }> = ({ p, isLight }) => {
+  const [hovered, setHovered] = useState(false);
+  const [tilt, setTilt] = useState({ x: 0, y: 0 });
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const px = (e.clientX - rect.left) / rect.width - 0.5;
+    const py = (e.clientY - rect.top) / rect.height - 0.5;
+    setTilt({ x: -py * 12, y: px * 16 });
+  };
+
+  const handleMouseLeave = () => {
+    setHovered(false);
+    setTilt({ x: 0, y: 0 });
+  };
+
+  return (
+    <div style={{ perspective: 1000 }}>
+      <div
+        onMouseEnter={() => setHovered(true)}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        style={{
+          transform: `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg) scale(${hovered ? 1.03 : 1})`,
+          transition: hovered ? 'transform 0.12s ease-out' : 'transform 0.5s ease',
+          boxShadow: hovered
+            ? `${-tilt.y * 1.2}px ${14 + tilt.x}px 30px rgba(0,0,0,0.35)`
+            : 'none',
+          transformStyle: 'preserve-3d',
+          willChange: 'transform',
+        }}
+        className={`rounded-none border overflow-hidden flex flex-col justify-between h-full ${
+          isLight
+            ? 'bg-[#EDE8DF] border-black/10 shadow-xs'
+            : 'bg-[#1C201C] border-white/[0.08]'
+        }`}
+      >
+        {/* Macro Photographic Image Area */}
+        <div className={`w-full h-48 sm:h-52 relative border-b overflow-hidden ${
+          isLight ? 'border-black/5 bg-[#E2DCD1]' : 'border-white/[0.06] bg-[#14170F]'
+        }`}>
+          <img
+            src={p.imgSrc}
+            alt={p.imgAlt}
+            className="w-full h-full object-cover"
+          />
+        </div>
+
+        {/* Editorial Pillar Body Content - Pure Informative */}
+        <div className="p-6 flex flex-col flex-1">
+          <h3 className={`font-['Nunito',sans-serif] font-[900] text-lg uppercase tracking-tight mb-2.5 ${
+            isLight ? 'text-[#14170F]' : 'text-white'
+          }`}>
+            {p.title}
+          </h3>
+          <p className={`font-sans text-xs leading-relaxed font-normal ${
+            isLight ? 'text-[#4A5546]' : 'text-[#A4ACA1]'
+          }`}>
+            {p.desc}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export const CardAnalysisPillars: React.FC<CardAnalysisPillarsProps> = () => {
   const { t } = useLanguage();
@@ -56,39 +131,7 @@ export const CardAnalysisPillars: React.FC<CardAnalysisPillarsProps> = () => {
         {/* 4 Informative Pillars Grid (Without links or navigation) */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {pillars.map((p) => (
-            <div
-              key={p.id}
-              className={`rounded-none border overflow-hidden flex flex-col justify-between transition-colors duration-300 ${
-                isLight 
-                  ? 'bg-[#EDE8DF] border-black/10 shadow-xs' 
-                  : 'bg-[#1C201C] border-white/[0.08]'
-              }`}
-            >
-              {/* Macro Photographic Image Area */}
-              <div className={`w-full h-48 sm:h-52 relative border-b overflow-hidden ${
-                isLight ? 'border-black/5 bg-[#E2DCD1]' : 'border-white/[0.06] bg-[#14170F]'
-              }`}>
-                <img 
-                  src={p.imgSrc} 
-                  alt={p.imgAlt} 
-                  className="w-full h-full object-cover"
-                />
-              </div>
-
-              {/* Editorial Pillar Body Content - Pure Informative */}
-              <div className="p-6 flex flex-col flex-1">
-                <h3 className={`font-['Nunito',sans-serif] font-[900] text-lg uppercase tracking-tight mb-2.5 ${
-                  isLight ? 'text-[#14170F]' : 'text-white'
-                }`}>
-                  {p.title}
-                </h3>
-                <p className={`font-sans text-xs leading-relaxed font-normal ${
-                  isLight ? 'text-[#4A5546]' : 'text-[#A4ACA1]'
-                }`}>
-                  {p.desc}
-                </p>
-              </div>
-            </div>
+            <PillarCard key={p.id} p={p} isLight={isLight} />
           ))}
         </div>
 
