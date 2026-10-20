@@ -32,13 +32,13 @@ const PillarCard: React.FC<{ p: Pillar; isLight: boolean }> = ({ p, isLight }) =
   };
 
   return (
-    <div style={{ perspective: 1000 }}>
+    <div className={`relative ${hovered ? 'z-10' : 'z-0'}`} style={{ perspective: 1000 }}>
       <div
         onMouseEnter={() => setHovered(true)}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         style={{
-          transform: `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg) scale(${hovered ? 1.03 : 1})`,
+          transform: `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg) scale(${hovered ? 1.1 : 1})`,
           transition: hovered ? 'transform 0.12s ease-out' : 'transform 0.5s ease',
           boxShadow: hovered
             ? `${-tilt.y * 1.2}px ${14 + tilt.x}px 30px rgba(0,0,0,0.35)`
