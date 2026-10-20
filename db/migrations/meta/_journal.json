@@ -8,6 +8,41 @@
       "when": 1792410316821,
       "tag": "0000_init",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1792500199493,
+      "tag": "0001_rate_limit_events",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792500820961,
+      "tag": "0002_code_formats",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1792502576169,
+      "tag": "0003_order_client_token",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792504486989,
+      "tag": "0004_order_automation",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1792505663546,
+      "tag": "0005_grade_rule",
+      "breakpoints": true
     }
   ]
 }

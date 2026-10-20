@@ -27,12 +27,31 @@ import {
   uuid,
   type AnyPgColumn,
 } from 'drizzle-orm/pg-core';
+import { CERTIFICATE_NUMBER, ORDER_CODE, SLAB_SERIAL, TICKET_CODE } from '../shared/codes';
+import { GRADE_LABELS } from '../shared/grading';
 import {
   CERTIFICATE_STATUSES,
   ORDER_STATUSES,
   SHIPPING_METHODS,
   USER_ROLES,
 } from '../shared/domain';
+
+/** Condición CHECK: la columna cumple el formato de código. */
+const matches = (column: AnyPgColumn, pattern: RegExp) => sql`${column} ~ ${sql.raw(`'${pattern.source}'`)}`;
+
+/** Valor de la escala de notas: de 1 a 10 en pasos de 0,5. */
+const onGradeScale = (column: AnyPgColumn) =>
+  sql`(${column} is null or (${column} between 1 and 10 and ${column} * 2 = floor(${column} * 2)))`;
+
+/** Cada nota admite solo sus etiquetas (shared/grading.ts). */
+const labelMatchesGrade = (grade: AnyPgColumn, label: AnyPgColumn) =>
+  sql.join(
+    Object.entries(GRADE_LABELS).map(
+      ([value, labels]) =>
+        sql`(${grade} = ${sql.raw(value)} and ${label} in (${sql.raw(labels.map((l) => `'${l}'`).join(', '))}))`,
+    ),
+    sql` or `,
+  );
 
 const id = () => uuid('id').primaryKey().defaultRandom();
 const createdAt = () => timestamp('created_at', { withTimezone: true }).notNull().defaultNow();
@@ -238,7 +257,7 @@ export const orders = pgTable(
   'orders',
   {
     id: id(),
-    // GG-ORD-xxxxxx
+    // GGI-ORD-xxxxxx
     code: text('code').notNull().unique(),
     userId: uuid('user_id')
       .notNull()
@@ -260,10 +279,21 @@ export const orders = pgTable(
     paymentStatus: paymentStatus('payment_status').notNull().default('unpaid'),
     submittedAt: tstz('submitted_at'),
     estimatedCompletionAt: date('estimated_completion_at'),
+    // Lo genera el navegador una vez por pedido. Si el envío se repite no se crea otro pedido.
+    clientToken: text('client_token'),
+    // Reloj del avance automático: se fija al confirmar la recepción del paquete y se retrasa
+    // el tiempo que el pedido esté en pausa. Sin él, el pedido solo avanza a mano.
+    autoAnchorAt: tstz('auto_anchor_at'),
+    autoTurnaroundDays: smallint('auto_turnaround_days'),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
-  (t) => [index('orders_user_idx').on(t.userId), index('orders_status_idx').on(t.status)],
+  (t) => [
+    index('orders_user_idx').on(t.userId),
+    index('orders_status_idx').on(t.status),
+    check('orders_code_format', matches(t.code, ORDER_CODE)),
+    uniqueIndex('orders_user_client_token_uq').on(t.userId, t.clientToken),
+  ],
 ).enableRLS();
 
 export type AddressSnapshot = {
@@ -463,6 +493,35 @@ export const gradingResults = pgTable(
     uniqueIndex('grading_results_item_current_uq')
       .on(t.orderItemId)
       .where(sql`${t.status} <> 'superseded'`),
+    // Regla de la nota (shared/grading.ts): la base de datos no deja guardar una nota que la incumpla.
+    check(
+      'grading_results_scale',
+      sql`${onGradeScale(t.centeringScore)} and ${onGradeScale(t.cornersScore)} and ${onGradeScale(t.edgesScore)} and ${onGradeScale(t.surfaceScore)} and ${onGradeScale(t.finalGrade)}`,
+    ),
+    check(
+      'grading_results_grade_rule',
+      sql`(
+        ${t.finalGrade} is null or ${t.centeringScore} is null or ${t.cornersScore} is null or ${t.edgesScore} is null or ${t.surfaceScore} is null
+        or (
+          ${t.finalGrade} <= least(${t.centeringScore}, ${t.cornersScore}, ${t.edgesScore}, ${t.surfaceScore}) + 0.5
+          and ${t.finalGrade} <= ceil((${t.centeringScore} + ${t.cornersScore} + ${t.edgesScore} + ${t.surfaceScore} - 1) / 2) / 2
+          and (${t.finalGrade} < 10 or (
+            least(${t.centeringScore}, ${t.cornersScore}, ${t.edgesScore}, ${t.surfaceScore}) >= 9.5
+            and (${t.centeringScore} = 10)::int + (${t.cornersScore} = 10)::int + (${t.edgesScore} = 10)::int + (${t.surfaceScore} = 10)::int >= 3))
+          and (${t.finalGrade} < 9.5 or (
+            (${t.centeringScore} >= 9.5)::int + (${t.cornersScore} >= 9.5)::int + (${t.edgesScore} >= 9.5)::int + (${t.surfaceScore} >= 9.5)::int >= 3
+            and least(${t.centeringScore}, ${t.cornersScore}, ${t.edgesScore}, ${t.surfaceScore}) >= 9))
+        )
+      )`,
+    ),
+    check(
+      'grading_results_label',
+      sql`(
+        ${t.finalGrade} is null or ${t.gradeLabel} is null
+        or ((${labelMatchesGrade(t.finalGrade, t.gradeLabel)})
+          and (${t.gradeLabel} <> 'Pristine 10' or (${t.centeringScore} = 10 and ${t.cornersScore} = 10 and ${t.edgesScore} = 10 and ${t.surfaceScore} = 10)))
+      )`,
+    ),
     check('grading_results_double_signature', sql`${t.qaApprovedBy} is null or ${t.qaApprovedBy} <> ${t.gradedBy}`),
     check(
       'grading_results_approved_has_qa',
@@ -504,14 +563,14 @@ export const slabs = pgTable('slabs', {
   gradingResultId: uuid('grading_result_id')
     .notNull()
     .references(() => gradingResults.id),
-  // GG-xxxxxx
+  // GGI-SLB-xxxxxx
   serial: text('serial').notNull().unique(),
   nfcUid: text('nfc_uid').unique(),
   qrPayload: text('qr_payload'),
   encapsulatedAt: tstz('encapsulated_at').notNull().defaultNow(),
   encapsulatedBy: uuid('encapsulated_by').references(() => users.id),
   createdAt: createdAt(),
-}).enableRLS();
+}, (t) => [check('slabs_serial_format', matches(t.serial, SLAB_SERIAL))]).enableRLS();
 
 // ---------------------------------------------------------------------------
 // Certificados
@@ -550,6 +609,7 @@ export const certificates = pgTable(
   },
   (t) => [
     index('certificates_card_identity_idx').on(t.cardIdentityId),
+    check('certificates_number_format', matches(t.number, CERTIFICATE_NUMBER)),
     check(
       'certificates_revoked_has_reason',
       sql`${t.status} <> 'revoked' or (${t.revokedAt} is not null and ${t.revokedReason} is not null)`,
@@ -581,7 +641,7 @@ export const certificateChecks = pgTable(
 
 export const contactMessages = pgTable('contact_messages', {
   id: id(),
-  // GG-TKT-xxxxxx
+  // GGI-TKT-xxxxxx
   ticket: text('ticket').notNull().unique(),
   userId: uuid('user_id').references(() => users.id),
   name: text('name').notNull(),
@@ -592,7 +652,7 @@ export const contactMessages = pgTable('contact_messages', {
   status: contactStatus('status').notNull().default('open'),
   createdAt: createdAt(),
   updatedAt: updatedAt(),
-}).enableRLS();
+}, (t) => [check('contact_messages_ticket_format', matches(t.ticket, TICKET_CODE))]).enableRLS();
 
 export const newsletterSubscriptions = pgTable(
   'newsletter_subscriptions',
@@ -672,4 +732,19 @@ export const auditLogs = pgTable(
     index('audit_logs_entity_idx').on(t.entityType, t.entityId),
     index('audit_logs_actor_idx').on(t.actorId, t.createdAt),
   ],
+).enableRLS();
+
+/**
+ * Peticiones registradas para limitar el uso de los endpoints públicos (seguimiento,
+ * verificación). Guarda solo el hash de la IP. Las filas antiguas se pueden borrar.
+ */
+export const rateLimitEvents = pgTable(
+  'rate_limit_events',
+  {
+    id: id(),
+    bucket: text('bucket').notNull(),
+    keyHash: text('key_hash').notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [index('rate_limit_events_lookup_idx').on(t.bucket, t.keyHash, t.createdAt)],
 ).enableRLS();

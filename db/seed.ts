@@ -13,6 +13,8 @@ import { MOCK_GRADED_CARDS } from '../src/data/mockCards';
 import { MOCK_ORDERS } from '../src/data/mockOrders';
 import { MOCK_SERVICES } from '../src/data/mockServices';
 import type { GradedCard, Order } from '../src/types';
+import { slabSerialFor } from '../server/codes';
+import { deriveFinalGrade, deriveGradeLabel } from '../shared/grading';
 import { createDb } from './client';
 import * as s from './schema';
 
@@ -26,7 +28,7 @@ const db = createDb(url);
 type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
 /** Pedido que agrupa las cartas certificadas de ejemplo. */
-const CERTIFIED_ORDER_CODE = 'GG-ORD-000001';
+const CERTIFIED_ORDER_CODE = 'GGI-ORD-9HW2TD';
 
 const cents = (eur: number) => Math.round(eur * 100);
 
@@ -43,12 +45,20 @@ function parseMockTimestamp(value: string): Date {
   return new Date(`${m[3]}-${MONTHS[m[2]]}-${m[1]}T${m[4]}:00${TZ_OFFSETS[m[5]]}`);
 }
 
+/** Convierte "25 Sep 2026" o "Completed (16 Sep 2026)" en "2026-09-25". */
+function parseMockCompletion(value: string): string {
+  const m = /(\d{2}) (\w{3}) (\d{4})/.exec(value);
+  if (!m || !MONTHS[m[2]]) throw new Error(`Fecha estimada de mock no reconocida: ${value}`);
+  return `${m[3]}-${MONTHS[m[2]]}-${m[1]}`;
+}
+
 async function seedUsers(tx: Tx) {
   const rows = await tx
     .insert(s.users)
     .values([
       { email: 'cliente.demo@gorillagrading.test', fullName: 'Cliente Demo', role: 'customer' },
       { email: 'carlos.mendes@gorillagrading.test', fullName: 'Carlos Mendes', role: 'customer' },
+      { email: 'staff.demo@gorillagrading.test', fullName: 'Staff Demo', role: 'staff' },
       { email: 'grader.demo@gorillagrading.test', fullName: 'Grader Demo', role: 'grader' },
       { email: 'qa.demo@gorillagrading.test', fullName: 'QA Demo', role: 'qa' },
       { email: 'admin.demo@gorillagrading.test', fullName: 'Admin Demo', role: 'admin' },
@@ -124,6 +134,7 @@ async function seedMockOrder(tx: Tx, order: Order, userId: string, tiers: Map<st
       paymentStatus: 'paid',
       submittedAt,
       createdAt: submittedAt,
+      estimatedCompletionAt: parseMockCompletion(order.estimatedCompletion),
     })
     .returning();
 
@@ -167,7 +178,7 @@ async function seedCertifiedCards(
     .insert(s.orders)
     .values({
       code: CERTIFIED_ORDER_CODE,
-      userId: users.customer.id,
+      userId: users.carlos.id,
       status: 'DELIVERED',
       shippingMethod: 'VAULT_STORE',
       paymentStatus: 'paid',
@@ -225,14 +236,17 @@ async function seedCertifiedCard(
     .returning();
 
   const { centering, corners, edges, surface } = card.subgrades;
+  // La nota y la etiqueta las dicta la regla de la nota a partir de las subnotas.
+  const finalGrade = deriveFinalGrade({ centering: centering.score, corners: corners.score, edges: edges.score, surface: surface.score });
+  const gradeLabel = deriveGradeLabel(finalGrade, { centering: centering.score, corners: corners.score, edges: edges.score, surface: surface.score });
   const [result] = await tx
     .insert(s.gradingResults)
     .values({
       orderItemId: item.id,
       status: 'approved',
       isAuthentic: card.isAuthentic,
-      finalGrade: card.grade,
-      gradeLabel: card.gradeLabel,
+      finalGrade,
+      gradeLabel,
       centeringScore: centering.score,
       centeringFrontRatio: centering.frontRatio,
       centeringBackRatio: centering.backRatio,
@@ -274,8 +288,8 @@ async function seedCertifiedCard(
     );
   }
 
-  // GGI-774102 -> GG-774102, como el serial que muestra el seguimiento.
-  const serial = card.certNumber.replace(/^GGI-/, 'GG-');
+  // GGI-774102 -> GGI-SLB-774102
+  const serial = slabSerialFor(card.certNumber);
   const [slab] = await tx
     .insert(s.slabs)
     .values({
@@ -296,9 +310,11 @@ async function seedCertifiedCard(
       number: card.certNumber,
       serial,
       card: { game: card.game, set: card.set, number: card.cardNumber, name: card.name, language: card.language },
-      grade: card.grade,
-      gradeLabel: card.gradeLabel,
+      grade: finalGrade,
+      gradeLabel,
       issuedAt: certifiedAt.toISOString(),
+      // Rutas públicas de las imágenes de ejemplo. Las cartas reales usarán las fotos privadas de item_images.
+      images: { front: card.frontImage, back: card.backImage, slabMockup: card.slabMockupImage },
     },
     issuedAt: certifiedAt,
   });
@@ -314,9 +330,10 @@ async function main() {
   await db.transaction(async (tx) => {
     const users = await seedUsers(tx);
     const tiers = await seedServiceTiers(tx);
-    const owners = [users.carlos.id, users.customer.id];
-    for (const [i, order] of MOCK_ORDERS.entries()) {
-      await seedMockOrder(tx, order, owners[i] ?? users.customer.id, tiers);
+    // Carlos Mendes es la cuenta de demostración con pedidos y cartas, como en el diseño original.
+    // "Cliente Demo" no tiene nada y sirve para probar una cuenta nueva.
+    for (const order of MOCK_ORDERS) {
+      await seedMockOrder(tx, order, users.carlos.id, tiers);
     }
     await seedCertifiedCards(tx, users, tiers);
   });

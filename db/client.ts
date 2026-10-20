@@ -1,8 +1,12 @@
+import type { PgDatabase } from 'drizzle-orm/pg-core';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import * as schema from './schema';
 
 export type Database = ReturnType<typeof createDb>;
+
+/** Tipo común a la conexión de producción (postgres-js) y a la de las pruebas (PGlite). */
+export type Db = PgDatabase<any, typeof schema>;
 
 /**
  * `prepare: false` es obligatorio con el pooler de Supabase en modo
