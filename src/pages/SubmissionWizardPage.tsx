@@ -816,28 +816,6 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
                     </p>
                   </div>
 
-                  {/* Service Level Switcher */}
-                  <div className={`p-1 border flex items-center gap-1 flex-wrap ${
-                    isLight ? 'bg-gray-50 border-gray-200' : 'bg-black/40 border-white/15'
-                  }`}>
-                    {serviceLevels.map((lvl) => {
-                      const isActive = (selectedTier?.id || 'standard') === lvl.id;
-                      return (
-                        <button
-                          key={lvl.id}
-                          type="button"
-                          onClick={() => handleSelectTier(lvl.id)}
-                          className={`px-2.5 py-1 sm:px-3 sm:py-1.5 font-mono text-[11px] sm:text-xs transition-colors cursor-pointer ${
-                            isActive
-                              ? (isLight ? 'bg-white text-black font-bold shadow-xs border border-gray-200' : 'bg-white/20 text-white font-bold')
-                              : (isLight ? 'text-gray-600 hover:text-black' : 'text-gray-300 hover:text-white')
-                          }`}
-                        >
-                          {lvl.name}
-                        </button>
-                      );
-                    })}
-                  </div>
                 </div>
 
                 {/* Main interactive area: Volume buttons & Real-time result */}
