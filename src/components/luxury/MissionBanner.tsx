@@ -85,15 +85,15 @@ export const MissionBanner: React.FC<MissionBannerProps> = ({ onNavigate }) => {
           <div className="flex flex-col">
             
             {/* 1. PERSONAL SUPPORT */}
-            <div className={`flex items-start gap-4 sm:gap-5 py-5 pl-7 pr-3 border-b group relative transition-all duration-500 ease-out transform ${
+            <div className={`flex items-start gap-4 sm:gap-5 py-5 pl-7 pr-3 border-b group relative transition-all duration-300 opacity-100 translate-x-0 ${
               isLight ? 'border-black/[0.08]' : 'border-white/5'
-            } ${activeStep >= 0 ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'} ${
+            } ${
               activeStep === 0 
                 ? (isLight ? 'bg-black/[0.03]' : 'bg-gradient-to-r from-white/[0.04] to-transparent') 
                 : 'bg-transparent'
             }`}>
               <div className={`absolute top-0 left-0 w-[3px] h-full transition-all duration-300 ${
-                activeStep >= 0 
+                activeStep === 0 
                   ? (isLight ? 'bg-gradient-to-b from-[#16A34A] to-transparent scale-y-100' : 'bg-gradient-to-b from-[#48C765] to-transparent scale-y-100') 
                   : 'scale-y-0 bg-transparent'
               }`}></div>
@@ -121,15 +121,15 @@ export const MissionBanner: React.FC<MissionBannerProps> = ({ onNavigate }) => {
             </div>
 
             {/* 2. INTERNATIONAL SHIPPING */}
-            <div className={`flex items-start gap-4 sm:gap-5 py-5 pl-7 pr-3 border-b group relative transition-all duration-500 ease-out transform ${
+            <div className={`flex items-start gap-4 sm:gap-5 py-5 pl-7 pr-3 border-b group relative transition-all duration-300 opacity-100 translate-x-0 ${
               isLight ? 'border-black/[0.08]' : 'border-white/5'
-            } ${activeStep >= 1 ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'} ${
+            } ${
               activeStep === 1 
                 ? (isLight ? 'bg-black/[0.03]' : 'bg-gradient-to-r from-white/[0.04] to-transparent') 
                 : 'bg-transparent'
             }`}>
               <div className={`absolute top-0 left-0 w-[3px] h-full transition-all duration-300 ${
-                activeStep >= 1 
+                activeStep === 1 
                   ? (isLight ? 'bg-gradient-to-b from-[#16A34A] to-transparent scale-y-100' : 'bg-gradient-to-b from-[#48C765] to-transparent scale-y-100') 
                   : 'scale-y-0 bg-transparent'
               }`}></div>
@@ -157,15 +157,15 @@ export const MissionBanner: React.FC<MissionBannerProps> = ({ onNavigate }) => {
             </div>
 
             {/* 3. ORDER TRACKING */}
-            <div className={`flex items-start gap-4 sm:gap-5 py-5 pl-7 pr-3 border-b group relative transition-all duration-500 ease-out transform ${
+            <div className={`flex items-start gap-4 sm:gap-5 py-5 pl-7 pr-3 border-b group relative transition-all duration-300 opacity-100 translate-x-0 ${
               isLight ? 'border-black/[0.08]' : 'border-white/5'
-            } ${activeStep >= 2 ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'} ${
+            } ${
               activeStep === 2 
                 ? (isLight ? 'bg-black/[0.03]' : 'bg-gradient-to-r from-white/[0.04] to-transparent') 
                 : 'bg-transparent'
             }`}>
               <div className={`absolute top-0 left-0 w-[3px] h-full transition-all duration-300 ${
-                activeStep >= 2 
+                activeStep === 2 
                   ? (isLight ? 'bg-gradient-to-b from-[#16A34A] to-transparent scale-y-100' : 'bg-gradient-to-b from-[#48C765] to-transparent scale-y-100') 
                   : 'scale-y-0 bg-transparent'
               }`}></div>
@@ -193,15 +193,15 @@ export const MissionBanner: React.FC<MissionBannerProps> = ({ onNavigate }) => {
             </div>
 
             {/* 4. SECURE RETURN */}
-            <div className={`flex items-start gap-4 sm:gap-5 py-5 pl-7 pr-3 border-b group relative transition-all duration-500 ease-out transform ${
+            <div className={`flex items-start gap-4 sm:gap-5 py-5 pl-7 pr-3 border-b group relative transition-all duration-300 opacity-100 translate-x-0 ${
               isLight ? 'border-black/[0.08]' : 'border-white/5'
-            } ${activeStep >= 3 ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'} ${
+            } ${
               activeStep === 3 
                 ? (isLight ? 'bg-black/[0.03]' : 'bg-gradient-to-r from-white/[0.04] to-transparent') 
                 : 'bg-transparent'
             }`}>
               <div className={`absolute top-0 left-0 w-[3px] h-full transition-all duration-300 ${
-                activeStep >= 3 
+                activeStep === 3 
                   ? (isLight ? 'bg-gradient-to-b from-[#16A34A] to-transparent scale-y-100' : 'bg-gradient-to-b from-[#48C765] to-transparent scale-y-100') 
                   : 'scale-y-0 bg-transparent'
               }`}></div>

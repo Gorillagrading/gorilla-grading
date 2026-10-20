@@ -153,10 +153,8 @@ export const TechnologySection: React.FC<TechnologySectionProps> = ({
                 return (
                   <div 
                     key={step.id} 
-                    className={`flex gap-5 sm:gap-6 py-5 px-6 border-b relative transition-all duration-300 ease-out transform ${
+                    className={`flex gap-5 sm:gap-6 py-5 px-6 border-b relative transition-all duration-300 ease-out opacity-100 translate-y-0 ${
                       isLight ? 'border-black/10' : 'border-white/5'
-                    } ${
-                      isRevealed ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
                     } ${
                       isCurrent 
                         ? (isLight ? 'bg-gradient-to-r from-black/[0.04] to-transparent' : 'bg-gradient-to-r from-white/[0.04] to-transparent')
@@ -164,7 +162,7 @@ export const TechnologySection: React.FC<TechnologySectionProps> = ({
                     }`}
                   >
                     <div className={`absolute top-0 left-[-1px] w-[2px] h-full transition-all duration-300 ${
-                      isRevealed 
+                      isCurrent 
                         ? (isLight ? 'bg-gradient-to-b from-[#15803D] to-transparent scale-y-100' : 'bg-gradient-to-b from-[#48C765] to-transparent scale-y-100')
                         : 'scale-y-0 bg-transparent'
                     }`} />
