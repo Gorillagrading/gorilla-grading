@@ -75,6 +75,32 @@ export function adminRoutes(deps: Deps) {
     return c.json({ grading });
   });
 
+  // Diagnóstico del almacenamiento: prueba cada paso y dice dónde falla. Nunca muestra claves.
+  routes.get('/admin/storage-check', requireUser(deps), requireRole('admin'), async (c) => {
+    const key = process.env.SUPABASE_SERVICE_ROLE_KEY ?? '';
+    const env = {
+      supabaseUrl: process.env.SUPABASE_URL ?? null,
+      bucket: process.env.SUPABASE_BUCKET ?? 'lab-private',
+      secretKey: !key ? 'no configurada' : key.startsWith('sb_secret_') ? 'sb_secret_… (nueva)' : key.startsWith('eyJ') ? 'JWT (service_role antigua)' : `formato desconocido (empieza por "${key.slice(0, 4)}…", ${key.length} caracteres)`,
+      anonKey: !!process.env.SUPABASE_ANON_KEY,
+    };
+    const steps: { step: string; ok: boolean; detail?: string }[] = [];
+    const probe = 'diagnostico/prueba.txt';
+    const attempt = async (step: string, work: () => Promise<unknown>) => {
+      try {
+        const result = await work();
+        steps.push({ step, ok: true, detail: typeof result === 'string' ? result : undefined });
+      } catch (error) {
+        steps.push({ step, ok: false, detail: error instanceof Error ? error.message : String(error) });
+      }
+    };
+    await attempt('Preparar una subida firmada', async () => (await deps.storage.createUpload(probe, 'text/plain')).url.split('?')[0]);
+    await attempt('Comprobar si existe un archivo', async () => String(await deps.storage.exists(probe)));
+    await attempt('Firmar un enlace de lectura', async () => (await deps.storage.createDownloadUrl(probe, 60)).split('?')[0]);
+    c.header('Cache-Control', 'no-store');
+    return c.json({ env, steps, ok: steps.every((s) => s.ok) });
+  });
+
   // Fotos de las cartas. Las suben quienes reciben o gradúan; control de calidad solo las mira.
   const photographer = [requireUser(deps), requireRole('staff', 'grader', 'admin')] as const;
 

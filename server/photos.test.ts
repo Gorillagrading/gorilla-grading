@@ -240,3 +240,26 @@ describe('resultados para el cliente', () => {
     expect(res.headers.get('cache-control')).toBe('private, no-store');
   });
 });
+
+describe('diagnóstico del almacenamiento', () => {
+  it('solo un admin lo ve y nunca devuelve claves', async () => {
+    process.env.SUPABASE_SERVICE_ROLE_KEY = 'sb_secret_muy_secreta';
+    process.env.SUPABASE_URL = 'https://abc.supabase.co';
+    try {
+      for (const email of ['staff@lab.test', 'grader@lab.test', 'qa@lab.test']) {
+        expect((await api('/admin/storage-check', email)).status, email).toBe(403);
+      }
+      expect((await api('/admin/storage-check')).status).toBe(401);
+
+      const res = await api('/admin/storage-check', 'admin@lab.test');
+      const body = await read(res);
+      expect(res.status).toBe(200);
+      expect(body).toMatchObject({ ok: true, env: { supabaseUrl: 'https://abc.supabase.co', secretKey: 'sb_secret_… (nueva)', bucket: 'lab-private' } });
+      expect(body.steps.map((s: any) => s.step)).toHaveLength(3);
+      expect(JSON.stringify(body)).not.toContain('muy_secreta');
+    } finally {
+      delete process.env.SUPABASE_SERVICE_ROLE_KEY;
+      delete process.env.SUPABASE_URL;
+    }
+  });
+});
