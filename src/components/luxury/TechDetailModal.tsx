@@ -649,9 +649,36 @@ export const TechDetailModal: React.FC<TechDetailModalProps> = ({ isOpen, onClos
                         }`}
                       />
 
-                      {/* Optical 0.5px Caliper Reticle Hairlines (Zero black boxes) */}
-                      <div className="absolute inset-x-0 top-1/2 h-[1px] bg-neutral-500/30 pointer-events-none" />
-                      <div className="absolute inset-y-0 left-1/2 w-[1px] bg-neutral-500/30 pointer-events-none" />
+                      {/* Centering measurement: the caliper hairlines start slightly off-axis, settle on the exact
+                          50/50 center and lock with a soft pulse (static when reduced motion is requested) */}
+                      <motion.div
+                        className="absolute inset-x-0 top-1/2 h-[1px] bg-[#15803D] dark:bg-[#48C765] pointer-events-none"
+                        style={{ opacity: 0.35 }}
+                        animate={reduceMotion ? undefined : {
+                          y: [-14, 5, -2, 0, 0, -14],
+                          opacity: [0.3, 0.45, 0.6, 0.95, 0.95, 0.3],
+                        }}
+                        transition={{ duration: 6.5, times: [0, 0.22, 0.32, 0.42, 0.8, 1], repeat: Infinity, ease: 'easeInOut' }}
+                      />
+                      <motion.div
+                        className="absolute inset-y-0 left-1/2 w-[1px] bg-[#15803D] dark:bg-[#48C765] pointer-events-none"
+                        style={{ opacity: 0.35 }}
+                        animate={reduceMotion ? undefined : {
+                          x: [12, -5, 2, 0, 0, 12],
+                          opacity: [0.3, 0.45, 0.6, 0.95, 0.95, 0.3],
+                        }}
+                        transition={{ duration: 6.5, times: [0, 0.22, 0.32, 0.42, 0.8, 1], repeat: Infinity, ease: 'easeInOut' }}
+                      />
+                      {!reduceMotion && (
+                        <div className="absolute left-1/2 top-1/2 w-0 h-0 pointer-events-none">
+                          <motion.span
+                            className="absolute -left-2 -top-2 w-4 h-4 rounded-full border border-[#15803D] dark:border-[#48C765]"
+                            initial={{ opacity: 0, scale: 0.4 }}
+                            animate={{ opacity: [0, 0, 0.9, 0, 0], scale: [0.4, 0.4, 1, 2, 2] }}
+                            transition={{ duration: 6.5, times: [0, 0.4, 0.46, 0.62, 1], repeat: Infinity, ease: 'easeOut' }}
+                          />
+                        </div>
+                      )}
 
                       {/* Delicate Precision Corner Caliper Ticks */}
                       <div className="absolute top-0 left-0 w-2.5 h-2.5 border-t border-l border-[#15803D] dark:border-[#48C765] pointer-events-none" />
