@@ -804,13 +804,30 @@ export const TechDetailModal: React.FC<TechDetailModalProps> = ({ isOpen, onClos
                   {/* Clean Specimen Viewport: Gorilla Slab Specimen */}
                   <div className="my-2 sm:my-4 relative flex flex-col items-center justify-center">
                     <div className="relative w-36 sm:w-52 h-48 sm:h-72 flex items-center justify-center">
-                      <img 
-                        src="/images/hero-slab-promo-poster.png"
-                        alt="Cápsula Gorilla Grading con sellado ultrasónico"
-                        className={`w-full h-full object-cover filter contrast-105 pointer-events-none select-none ${
-                          isLight ? 'drop-shadow-[0_18px_30px_rgba(0,0,0,0.2)]' : 'drop-shadow-[0_22px_45px_rgba(0,0,0,0.75)]'
-                        }`}
-                      />
+                      {/* Ultrasonic fusion waves: soft rings radiating from the slab (35 kHz sealing) */}
+                      {!reduceMotion && [0, 1, 2].map((i) => (
+                        <motion.span
+                          key={i}
+                          className="absolute left-1/2 top-1/2 w-40 h-40 sm:w-56 sm:h-56 -ml-20 -mt-20 sm:-ml-28 sm:-mt-28 rounded-full border border-[#15803D]/50 dark:border-[#48C765]/50 pointer-events-none"
+                          initial={{ scale: 0.5, opacity: 0 }}
+                          animate={{ scale: [0.5, 1.6], opacity: [0.45, 0] }}
+                          transition={{ duration: 3.6, delay: i * 1.2, repeat: Infinity, ease: 'easeOut' }}
+                        />
+                      ))}
+
+                      <motion.div
+                        className="relative z-10 w-full h-full"
+                        animate={reduceMotion ? undefined : { y: [0, -5, 0] }}
+                        transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
+                      >
+                        <img
+                          src="/images/hero-slab-promo-poster.png"
+                          alt="Cápsula Gorilla Grading con sellado ultrasónico"
+                          className={`w-full h-full object-cover filter contrast-105 pointer-events-none select-none ${
+                            isLight ? 'drop-shadow-[0_18px_30px_rgba(0,0,0,0.2)]' : 'drop-shadow-[0_22px_45px_rgba(0,0,0,0.75)]'
+                          }`}
+                        />
+                      </motion.div>
                     </div>
 
                     <div className="mt-3 font-mono text-[9.5px] uppercase tracking-wider opacity-75">
