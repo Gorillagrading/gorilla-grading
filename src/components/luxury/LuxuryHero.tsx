@@ -333,8 +333,8 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
         />
         {/* On desktop the real video keeps its 16:9 shape at the hero height, centered, with its side
             edges feathered into the blurred backdrop. On small screens it simply covers the hero. */}
-        <div className="absolute inset-0 flex justify-center">
-          <div className="relative w-full h-full lg:w-auto lg:aspect-video lg:max-w-full shrink-0 lg:[mask-image:linear-gradient(to_right,transparent,#000_8%,#000_92%,transparent)] lg:[-webkit-mask-image:linear-gradient(to_right,transparent,#000_8%,#000_92%,transparent)]">
+        <div className="absolute inset-0 flex justify-center lg:justify-end">
+          <div className="relative w-full h-full lg:w-auto lg:aspect-video lg:max-w-full shrink-0 lg:[mask-image:linear-gradient(to_right,transparent,#000_22%)] lg:[-webkit-mask-image:linear-gradient(to_right,transparent,#000_22%)]">
             <video
               ref={videoRef}
               src="/videos/gorilla_hero_loop.mp4"

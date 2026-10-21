@@ -26,7 +26,14 @@ export function createSupabaseStorage(): ObjectStorage {
     if (!base || !key) throw unavailable();
     return { api: `${base}/storage/v1`, key, bucket: process.env.SUPABASE_BUCKET ?? 'lab-private' };
   };
-  const auth = (key: string) => ({ Authorization: `Bearer ${key}`, apikey: key });
+  // Las claves nuevas (sb_secret_…) no son JWT: solo van en "apikey" y el gateway de Supabase pone el resto.
+  // Las antiguas (service_role, un JWT) admiten además "Authorization: Bearer".
+  const auth = (key: string): Record<string, string> =>
+    key.startsWith('sb_') ? { apikey: key } : { Authorization: `Bearer ${key}`, apikey: key };
+  const failure = async (what: string, res: Response) =>
+    new ProblemError(502, 'Bad Gateway', `Supabase Storage no pudo ${what} (${res.status}): ${(await res.text().catch(() => '')).slice(0, 200)}`, {
+      code: 'storage_error',
+    });
   const path = (bucket: string, objectKey: string) => `${bucket}/${objectKey.split('/').map(encodeURIComponent).join('/')}`;
 
   return {
@@ -37,7 +44,7 @@ export function createSupabaseStorage(): ObjectStorage {
         headers: { ...auth(key), 'content-type': 'application/json' },
         body: '{}',
       });
-      if (!res.ok) throw new Error(`Supabase Storage: no se pudo preparar la subida (${res.status})`);
+      if (!res.ok) throw await failure('preparar la subida', res);
       const { url } = (await res.json()) as { url: string };
       const signed = new URL(`${api}${url.startsWith('/') ? '' : '/'}${url}`);
       const anon = process.env.SUPABASE_ANON_KEY;
@@ -62,7 +69,7 @@ export function createSupabaseStorage(): ObjectStorage {
         headers: { ...auth(key), 'content-type': 'application/json' },
         body: JSON.stringify({ expiresIn: ttlSeconds }),
       });
-      if (!res.ok) throw new Error(`Supabase Storage: no se pudo firmar el enlace (${res.status})`);
+      if (!res.ok) throw await failure('firmar el enlace', res);
       const { signedURL } = (await res.json()) as { signedURL: string };
       return encodeURI(`${api}${signedURL}`);
     },

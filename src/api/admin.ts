@@ -90,6 +90,8 @@ export function adminErrorMessage(err: unknown): string {
       return `No se pudo subir la foto (${err.status || 'sin conexión'}): ${err.message}`;
     case 'upload_missing':
       return 'La foto no llegó al almacenamiento. Vuelve a intentarlo.';
+    case 'storage_error':
+      return `Error del almacenamiento: ${err.message}`;
     case 'storage_unavailable':
       return 'El almacenamiento de fotos no está configurado todavía.';
     case 'tracking_required':
@@ -109,6 +111,6 @@ export function adminErrorMessage(err: unknown): string {
     case 'network':
       return 'No se pudo conectar con el servidor.';
     default:
-      return 'Algo salió mal. Inténtalo de nuevo.';
+      return `Algo salió mal (${err.status}${err.code ? `, ${err.code}` : ''}). Inténtalo de nuevo.`;
   }
 }
