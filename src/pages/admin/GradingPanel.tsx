@@ -50,16 +50,21 @@ export const GradingPanel: React.FC<{
 
   const [editing, setEditing] = useState(false);
   const [busy, setBusy] = useState(false);
+  /** El resultado de la última acción, junto a la carta: el aviso general de la página queda lejos de donde se trabaja. */
+  const [local, setLocal] = useState<{ kind: 'notice' | 'error'; text: string } | null>(null);
 
   const run = async (work: () => Promise<unknown>, done: string) => {
     setBusy(true);
+    setLocal(null);
     try {
       await work();
       await onChanged();
       onMessage('notice', done);
+      setLocal({ kind: 'notice', text: done });
       return true;
     } catch (err) {
       onMessage('error', adminErrorMessage(err));
+      setLocal({ kind: 'error', text: adminErrorMessage(err) });
       return false;
     } finally {
       setBusy(false);
@@ -85,6 +90,12 @@ export const GradingPanel: React.FC<{
       </summary>
 
       <div className={`border-t px-4 py-4 space-y-5 ${t.rule}`}>
+        {local && (
+          <p role={local.kind === 'error' ? 'alert' : 'status'} className={`text-xs font-bold ${local.kind === 'error' ? 'text-red-500' : 'text-emerald-600 dark:text-emerald-400'}`}>
+            {local.text}
+          </p>
+        )}
+
         <Photos code={code} position={item.position} images={images} canPhoto={canPhoto} busy={busy} run={run} />
 
         {grading && !editing && <ResultView grading={grading} />}

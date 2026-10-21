@@ -61,7 +61,10 @@ export async function uploadItemImage(code: string, position: number, kind: Imag
   } catch {
     throw new ApiError(0, 'upload_failed', 'No se pudo enviar el archivo.');
   }
-  if (!res.ok) throw new ApiError(res.status, 'upload_failed', 'El almacenamiento rechazó el archivo.');
+  if (!res.ok) {
+    const detail = (await res.text().catch(() => '')).slice(0, 200);
+    throw new ApiError(res.status, 'upload_failed', detail || 'sin detalle');
+  }
   return api<{ image: ImageDto }>(`${itemPath(code, position)}/images/${image.id}/confirm`, { body: {} }).then((r) => r.image);
 }
 
@@ -84,7 +87,7 @@ export function adminErrorMessage(err: unknown): string {
     case 'grade_above_subgrades':
       return 'La nota final no puede superar la que dan las subnotas.';
     case 'upload_failed':
-      return 'No se pudo subir la foto. Comprueba la conexión y vuelve a intentarlo.';
+      return `No se pudo subir la foto (${err.status || 'sin conexión'}): ${err.message}`;
     case 'upload_missing':
       return 'La foto no llegó al almacenamiento. Vuelve a intentarlo.';
     case 'storage_unavailable':
