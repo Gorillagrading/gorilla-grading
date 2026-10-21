@@ -22,29 +22,50 @@ export function usePanelTheme() {
   };
 }
 
-const PILL: Record<OrderStatus, string> = {
-  DRAFT: 'bg-neutral-500/15 text-neutral-500 border-neutral-500/30',
-  SUBMITTED: 'bg-sky-500/15 text-sky-700 dark:text-sky-300 border-sky-500/30',
-  PAYMENT_PENDING: 'bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30',
-  PACKAGE_RECEIVED: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30',
-  PRE_INSPECTION: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30',
-  OPTICAL_GRADING: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30',
-  ENCAPSULATION: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30',
-  QUALITY_ASSURANCE: 'bg-violet-500/15 text-violet-700 dark:text-violet-300 border-violet-500/30',
-  SHIPPED: 'bg-teal-500/15 text-teal-700 dark:text-teal-300 border-teal-500/30',
-  DELIVERED: 'bg-neutral-500/15 text-neutral-600 dark:text-neutral-300 border-neutral-500/30',
-  ON_HOLD: 'bg-amber-500/20 text-amber-800 dark:text-amber-300 border-amber-500/40',
-  CANCELLED: 'bg-red-500/15 text-red-700 dark:text-red-300 border-red-500/30',
-  RETURNED: 'bg-neutral-500/15 text-neutral-600 dark:text-neutral-300 border-neutral-500/30',
+/** Etapas del recorrido normal de un pedido, en orden. Sirven para dibujar el avance. */
+const PIPELINE: OrderStatus[] = [
+  'PACKAGE_RECEIVED', 'PRE_INSPECTION', 'OPTICAL_GRADING', 'ENCAPSULATION', 'QUALITY_ASSURANCE', 'SHIPPED', 'DELIVERED',
+];
+
+/** Color sólido del marcador y del avance de cada estado. */
+const MARK: Record<OrderStatus, string> = {
+  DRAFT: 'bg-neutral-400',
+  SUBMITTED: 'bg-sky-500',
+  PAYMENT_PENDING: 'bg-amber-500',
+  PACKAGE_RECEIVED: 'bg-[#15803D] dark:bg-[#61B663]',
+  PRE_INSPECTION: 'bg-[#15803D] dark:bg-[#61B663]',
+  OPTICAL_GRADING: 'bg-[#15803D] dark:bg-[#61B663]',
+  ENCAPSULATION: 'bg-[#15803D] dark:bg-[#61B663]',
+  QUALITY_ASSURANCE: 'bg-violet-500',
+  SHIPPED: 'bg-teal-500',
+  DELIVERED: 'bg-[#14170F] dark:bg-white',
+  ON_HOLD: 'bg-orange-500',
+  CANCELLED: 'bg-red-500',
+  RETURNED: 'bg-neutral-400',
 };
 
-export const StatusPill: React.FC<{ status: OrderStatus }> = ({ status }) => (
-  <span
-    className={`inline-flex items-center px-2.5 py-1 border rounded font-mono text-[10px] font-bold uppercase tracking-wider whitespace-nowrap ${PILL[status]}`}
-  >
-    {STATUS_LABEL[status].es}
-  </span>
-);
+/**
+ * Estado del pedido: marcador cuadrado sólido, nombre en mayúsculas y, en el recorrido normal,
+ * una barra de siete tramos que muestra en qué etapa va. Sin caja ni fondo translúcido.
+ */
+export const StatusPill: React.FC<{ status: OrderStatus }> = ({ status }) => {
+  const step = PIPELINE.indexOf(status);
+  return (
+    <span className="inline-flex flex-col gap-1.5 align-middle">
+      <span className="inline-flex items-center gap-2 font-mono text-[10.5px] font-bold uppercase tracking-wider whitespace-nowrap">
+        <span className={`w-2 h-2 shrink-0 ${MARK[status]}`} />
+        {STATUS_LABEL[status].es}
+      </span>
+      {step >= 0 && (
+        <span className="flex gap-[3px]" aria-hidden="true">
+          {PIPELINE.map((stage, i) => (
+            <span key={stage} className={`h-[3px] w-3.5 ${i <= step ? MARK[status] : 'bg-black/10 dark:bg-white/15'}`} />
+          ))}
+        </span>
+      )}
+    </span>
+  );
+};
 
 export const money = (cents: number | null) =>
   cents == null ? '—' : (cents / 100).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' });
