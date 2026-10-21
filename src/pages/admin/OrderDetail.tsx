@@ -13,6 +13,7 @@ import {
 
 const BLOCKED_TEXT: Record<NonNullable<AdminTransitionOption['blockedReason']>, string> = {
   tracking_required: 'Registra antes el transportista y el número de seguimiento de la devolución.',
+  grading_incomplete: 'Todas las cartas necesitan su resultado de graduación aprobado por control de calidad.',
   two_person_rule: 'Quien encapsuló este pedido no puede aprobarlo. Tiene que hacerlo otra persona.',
 };
 

@@ -3,6 +3,7 @@
  * con las mismas migraciones que Supabase.
  */
 import { PGlite } from '@electric-sql/pglite';
+import { sql } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/pglite';
 import { migrate } from 'drizzle-orm/pglite/migrator';
 import * as schema from '../db/schema.js';
@@ -174,4 +175,40 @@ export function createTestApp(db: TestDb) {
       body: JSON.stringify(body),
     });
   return { app, sent, mails, json };
+}
+
+/** Deja todas las cartas de un pedido con el resultado de graduación aprobado (9 en todo), como si el laboratorio ya hubiera terminado. */
+export async function approveAllGrading(db: TestDb, orderCode: string) {
+  const people = await db
+    .insert(schema.users)
+    .values([
+      { email: 'grader.helper@lab.test', role: 'grader' as const, emailVerifiedAt: new Date() },
+      { email: 'qa.helper@lab.test', role: 'qa' as const, emailVerifiedAt: new Date() },
+    ])
+    .onConflictDoNothing()
+    .returning();
+  const [grader, qa] = people.length
+    ? people
+    : await Promise.all(['grader.helper@lab.test', 'qa.helper@lab.test'].map(async (email) => (await db.select().from(schema.users).where(sql`${schema.users.email} = ${email}`))[0]));
+  const items = await db
+    .select({ id: schema.orderItems.id })
+    .from(schema.orderItems)
+    .innerJoin(schema.orders, sql`${schema.orders.id} = ${schema.orderItems.orderId}`)
+    .where(sql`${schema.orders.code} = ${orderCode}`);
+  for (const item of items) {
+    await db.insert(schema.gradingResults).values({
+      orderItemId: item.id,
+      status: 'approved',
+      isAuthentic: true,
+      finalGrade: 9,
+      gradeLabel: 'Mint 9',
+      centeringScore: 9,
+      cornersScore: 9,
+      edgesScore: 9,
+      surfaceScore: 9,
+      gradedBy: grader.id,
+      qaApprovedBy: qa.id,
+      qaApprovedAt: new Date(),
+    });
+  }
 }

@@ -24,7 +24,8 @@ describe('generadores de códigos', () => {
 
   it('los códigos de pedido no se repiten en una muestra grande', () => {
     const codes = new Set(Array.from({ length: 5000 }, newOrderCode));
-    expect(codes.size).toBe(5000);
+    // Con ~1.000 millones de códigos posibles, 5.000 al azar chocan por casualidad una de cada ~170 veces.
+    expect(codes.size).toBeGreaterThanOrEqual(4995);
   });
 
   it('el serial del slab lleva los dígitos de su certificado', () => {

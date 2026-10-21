@@ -2,7 +2,7 @@ import { eq, sql } from 'drizzle-orm';
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { auditLogs, custodyEvents, emailOutbox, orders, shipments, users } from '../db/schema.js';
 import { advanceDueOrders } from './domain/automation.js';
-import { createTestApp, createTestDb, insertAllTiers, insertUser, type TestDb } from './testing.js';
+import { createTestApp, createTestDb, insertAllTiers, insertUser, type TestDb, approveAllGrading } from './testing.js';
 
 const read = (res: Response) => res.json() as Promise<any>;
 
@@ -235,6 +235,7 @@ describe('cambios de estado', () => {
   it('recorrido completo: dos pasos a mano (recibir y aprobar la salida) y el resto lo hace el sistema', async () => {
     await staffSetup();
     const code = await placeOrder();
+    await approveAllGrading(db, code);
 
     expect((await move(code, 'staff@lab.test', 'PACKAGE_RECEIVED', 'SUBMITTED')).status).toBe(200);
     // Pasan los días del servicio: el sistema lleva el pedido solo hasta control de calidad.
@@ -458,6 +459,7 @@ describe('cambios de estado', () => {
     it('si el sistema encapsuló, la aprueba cualquiera de calidad o un admin', async () => {
       await staffSetup();
       const code = await placeOrder();
+    await approveAllGrading(db, code);
       await untilQuality(code);
       for (const email of ['qa@lab.test', 'admin@lab.test']) {
         const detail = (await read(await api(`/admin/orders/${code}`, email))).order;
@@ -469,6 +471,7 @@ describe('cambios de estado', () => {
     it('si un admin adelantó el encapsulado a mano, no puede aprobar él mismo la salida', async () => {
       await staffSetup();
       const code = await placeOrder();
+    await approveAllGrading(db, code);
       await move(code, 'staff@lab.test', 'PACKAGE_RECEIVED', 'SUBMITTED');
       await move(code, 'admin@lab.test', 'PRE_INSPECTION', 'PACKAGE_RECEIVED');
       await move(code, 'admin@lab.test', 'OPTICAL_GRADING', 'PRE_INSPECTION');
@@ -490,6 +493,7 @@ describe('cambios de estado', () => {
     it('la devolución por mensajería no sale sin número de seguimiento', async () => {
       await staffSetup();
       const code = await placeOrder();
+    await approveAllGrading(db, code);
       await untilQuality(code, { tracking: false });
 
       const blocked = await move(code, 'qa@lab.test', 'SHIPPED', 'QUALITY_ASSURANCE');
@@ -509,6 +513,7 @@ describe('cambios de estado', () => {
     it('la entrega en mano no necesita seguimiento y usa su propio texto', async () => {
       await staffSetup();
       const code = await placeOrder('evento@example.com', { shippingMethod: 'CARD_SHOW_DROPOFF', shippingAddress: undefined });
+    await approveAllGrading(db, code);
       await untilQuality(code, { tracking: false });
       expect((await move(code, 'qa@lab.test', 'SHIPPED', 'QUALITY_ASSURANCE')).status).toBe(200);
       expect((await track(code)).steps.at(-1).label).toBe('Listo para entrega en mano');

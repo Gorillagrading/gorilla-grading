@@ -33,7 +33,17 @@ export function adminErrorMessage(err: unknown): string {
     case 'order_changed':
       return 'Otra persona ha cambiado este pedido mientras lo mirabas. Hemos recargado su estado actual.';
     case 'two_person_rule':
-      return 'Quien encapsuló el pedido no puede aprobar su salida de control de calidad. Tiene que hacerlo otra persona.';
+      return 'No puedes aprobar tu propio trabajo. Tiene que hacerlo otra persona.';
+    case 'grading_incomplete':
+      return 'Todas las cartas necesitan su resultado de graduación aprobado por control de calidad antes de enviar el pedido.';
+    case 'grading_not_allowed':
+      return 'El pedido no está en una fase en la que se pueda graduar.';
+    case 'grading_approved':
+      return 'El resultado ya está aprobado. Solo un administrador puede corregirlo.';
+    case 'grading_not_pending':
+      return 'Este resultado no está pendiente de control de calidad.';
+    case 'grade_above_subgrades':
+      return 'La nota final no puede superar la que dan las subnotas.';
     case 'tracking_required':
       return 'Registra primero el transportista y el número de seguimiento de la devolución.';
     case 'note_required':

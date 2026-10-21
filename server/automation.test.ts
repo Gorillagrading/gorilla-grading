@@ -2,7 +2,7 @@ import { eq, sql } from 'drizzle-orm';
 import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { auditLogs, custodyEvents, emailOutbox, orders, users } from '../db/schema.js';
 import { AUTO_NOTE, addBusinessTime, advanceDueOrders, scheduleFor } from './domain/automation.js';
-import { createTestApp, createTestDb, insertAllTiers, insertUser, type TestDb } from './testing.js';
+import { createTestApp, createTestDb, insertAllTiers, insertUser, type TestDb, approveAllGrading } from './testing.js';
 
 const read = (res: Response) => res.json() as Promise<any>;
 const DAY = 86_400_000;
@@ -279,6 +279,7 @@ describe('pausas y cancelaciones', () => {
 
   it('un pedido que ya salió del laboratorio no se toca', async () => {
     const code = await placeOrder();
+    await approveAllGrading(db, code);
     await move(code, 'staff@lab.test', 'PACKAGE_RECEIVED', 'SUBMITTED');
     await advanceDueOrders(db, new Date(Date.now() + 1000 * DAY));
     await api(`/admin/orders/${code}/shipments`, 'staff@lab.test', { direction: 'outbound', carrier: 'GLS', trackingNumber: 'ES-1' });

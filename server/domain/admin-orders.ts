@@ -11,6 +11,7 @@ import { ACTIVE_STATUSES, FINISHED_STATUSES } from '../../shared/domain.js';
 import { hashIp } from '../auth/crypto.js';
 import { ProblemError, forbidden, notFound } from '../problem.js';
 import { AUTO_FROM, remainingSteps } from './automation.js';
+import { loadGradingResults } from './grading-results.js';
 import { NOTIFY_ON, addBusinessDays, publicCopy, rulesFrom, type TransitionRule } from './order-flow.js';
 
 export const ADMIN_PAGE_SIZE = 25;
@@ -105,7 +106,8 @@ async function loadContext(db: Db, code: string) {
       .where(eq(custodyEvents.orderId, row.order.id))
       .orderBy(asc(custodyEvents.occurredAt), asc(custodyEvents.createdAt)),
   ]);
-  return { ...row, items, shipments: shipmentRows, events };
+  const grading = await loadGradingResults(db, items.map((i) => i.item.id));
+  return { ...row, items, shipments: shipmentRows, events, grading };
 }
 type Context = NonNullable<Awaited<ReturnType<typeof loadContext>>>;
 
@@ -116,6 +118,8 @@ function businessBlock(ctx: Context, rule: TransitionRule, actorId: string): Adm
     if (!hasTracking) return 'tracking_required';
   }
   if (rule.from === 'QUALITY_ASSURANCE' && rule.to === 'SHIPPED') {
+    // Un pedido no sale del laboratorio hasta que todas sus cartas tienen el resultado aprobado.
+    if (ctx.items.some(({ item }) => ctx.grading.get(item.id)?.status !== 'approved')) return 'grading_incomplete';
     const encapsulatedBy = [...ctx.events].reverse().find((e) => e.event.toStatus === 'ENCAPSULATION')?.event.actorId;
     if (encapsulatedBy && encapsulatedBy === actorId) return 'two_person_rule';
   }
@@ -158,6 +162,7 @@ function buildDetail(ctx: Context, viewer: UserDto): AdminOrderDetail {
       tier: tierCode,
       unitPriceCents: item.unitPriceCents,
       notes: item.notes,
+      grading: ctx.grading.get(item.id) ?? null,
     })),
     shipments: ctx.shipments.map((s) => ({
       id: s.id,
@@ -242,6 +247,11 @@ export async function transitionOrder(
   if (blocked === 'tracking_required') {
     throw new ProblemError(409, 'Conflict', 'Registra el transportista y el número de seguimiento de la devolución antes de enviarla.', {
       code: 'tracking_required',
+    });
+  }
+  if (blocked === 'grading_incomplete') {
+    throw new ProblemError(409, 'Conflict', 'Todas las cartas deben tener el resultado de graduación aprobado por control de calidad antes de enviar el pedido.', {
+      code: 'grading_incomplete',
     });
   }
   if (blocked === 'two_person_rule') {

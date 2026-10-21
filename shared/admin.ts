@@ -4,6 +4,7 @@
  */
 import { z } from 'zod';
 import { OrderStatus, ShippingMethod, UserRole } from './domain.js';
+import type { AdminGradingResult } from './grading-admin.js';
 
 export const STAFF_ROLES = ['staff', 'grader', 'qa', 'admin'] as const satisfies readonly UserRole[];
 export type StaffRole = (typeof STAFF_ROLES)[number];
@@ -62,7 +63,7 @@ export interface AdminTransitionOption {
   requiresNote: boolean;
   /** Falso si la persona tiene permiso pero hoy no se puede hacer; `blockedReason` explica por qué. */
   allowed: boolean;
-  blockedReason?: 'tracking_required' | 'two_person_rule';
+  blockedReason?: 'tracking_required' | 'two_person_rule' | 'grading_incomplete';
 }
 
 export interface AdminOrderDetail {
@@ -100,6 +101,8 @@ export interface AdminOrderDetail {
     tier: string;
     unitPriceCents: number;
     notes: string | null;
+    /** Resultado vigente de la graduación; null si todavía no se ha introducido. */
+    grading: AdminGradingResult | null;
   }[];
   shipments: {
     id: string;
