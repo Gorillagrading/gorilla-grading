@@ -24,6 +24,11 @@ export function createSupabaseStorage(): ObjectStorage {
     const base = process.env.SUPABASE_URL?.replace(/\/+$/, '');
     const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
     if (!base || !key) throw unavailable();
+    if (!/^https?:\/\/[^\s/]+\.[^\s/]+/.test(base)) {
+      throw new ProblemError(503, 'Service Unavailable', 'SUPABASE_URL no es una dirección válida. Debe ser como https://xxxx.supabase.co', {
+        code: 'storage_error',
+      });
+    }
     return { api: `${base}/storage/v1`, key, bucket: process.env.SUPABASE_BUCKET ?? 'lab-private' };
   };
   // Las claves nuevas (sb_secret_…) no son JWT: solo van en "apikey" y el gateway de Supabase pone el resto.
@@ -34,12 +39,22 @@ export function createSupabaseStorage(): ObjectStorage {
     new ProblemError(502, 'Bad Gateway', `Supabase Storage no pudo ${what} (${res.status}): ${(await res.text().catch(() => '')).slice(0, 200)}`, {
       code: 'storage_error',
     });
+  const call = async (url: string, init: RequestInit): Promise<Response> => {
+    try {
+      return await fetch(url, init);
+    } catch (error) {
+      const reason = error instanceof Error ? `${error.message}${error.cause instanceof Error ? ` (${error.cause.message})` : ''}` : String(error);
+      throw new ProblemError(502, 'Bad Gateway', `No se pudo conectar con Supabase Storage en ${new URL(url, 'https://x').origin}: ${reason}`, {
+        code: 'storage_error',
+      });
+    }
+  };
   const path = (bucket: string, objectKey: string) => `${bucket}/${objectKey.split('/').map(encodeURIComponent).join('/')}`;
 
   return {
     async createUpload(objectKey, contentType) {
       const { api, key, bucket } = config();
-      const res = await fetch(`${api}/object/upload/sign/${path(bucket, objectKey)}`, {
+      const res = await call(`${api}/object/upload/sign/${path(bucket, objectKey)}`, {
         method: 'POST',
         headers: { ...auth(key), 'content-type': 'application/json' },
         body: '{}',
@@ -58,13 +73,13 @@ export function createSupabaseStorage(): ObjectStorage {
 
     async exists(objectKey) {
       const { api, key, bucket } = config();
-      const res = await fetch(`${api}/object/${path(bucket, objectKey)}`, { method: 'HEAD', headers: auth(key) });
+      const res = await call(`${api}/object/${path(bucket, objectKey)}`, { method: 'HEAD', headers: auth(key) });
       return res.ok;
     },
 
     async createDownloadUrl(objectKey, ttlSeconds) {
       const { api, key, bucket } = config();
-      const res = await fetch(`${api}/object/sign/${path(bucket, objectKey)}`, {
+      const res = await call(`${api}/object/sign/${path(bucket, objectKey)}`, {
         method: 'POST',
         headers: { ...auth(key), 'content-type': 'application/json' },
         body: JSON.stringify({ expiresIn: ttlSeconds }),
@@ -76,7 +91,7 @@ export function createSupabaseStorage(): ObjectStorage {
 
     async remove(objectKey) {
       const { api, key, bucket } = config();
-      await fetch(`${api}/object/${bucket}`, {
+      await call(`${api}/object/${bucket}`, {
         method: 'DELETE',
         headers: { ...auth(key), 'content-type': 'application/json' },
         body: JSON.stringify({ prefixes: [objectKey] }),

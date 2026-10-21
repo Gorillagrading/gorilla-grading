@@ -85,3 +85,21 @@ describe('Supabase Storage', () => {
     expect(JSON.parse(calls[1].init.body as string)).toEqual({ prefixes: ['a.jpg'] });
   });
 });
+
+describe('Supabase Storage: fallos de conexión', () => {
+  it('una dirección mal escrita se explica en vez de dar un error ciego', async () => {
+    process.env.SUPABASE_URL = 'abc.supabase.co';
+    await expect(createSupabaseStorage().exists('a.jpg')).rejects.toMatchObject({ status: 503, code: 'storage_error', message: expect.stringContaining('SUPABASE_URL') });
+  });
+
+  it('un fallo de red llega con su motivo', async () => {
+    vi.stubGlobal('fetch', async () => {
+      throw new TypeError('fetch failed', { cause: new Error('getaddrinfo ENOTFOUND abc.supabase.co') });
+    });
+    await expect(createSupabaseStorage().createUpload('a.jpg', 'image/jpeg')).rejects.toMatchObject({
+      status: 502,
+      code: 'storage_error',
+      message: expect.stringContaining('ENOTFOUND'),
+    });
+  });
+});
