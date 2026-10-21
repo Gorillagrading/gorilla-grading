@@ -12,6 +12,7 @@ import { createApp } from './app.js';
 import { slabSerialFor } from './codes.js';
 import type { Deps } from './context.js';
 import type { Mail } from './email/transport.js';
+import type { ObjectStorage } from './storage.js';
 
 process.env.AUTH_SECRET ??= 'test-secret-test-secret-test-secret-123456';
 
@@ -158,6 +159,7 @@ export async function insertGradedOrder(
 export function createTestApp(db: TestDb) {
   const sent: { to: string; code: string; locale: string }[] = [];
   const mails: Mail[] = [];
+  const storage = createFakeStorage();
   const deps: Deps = {
     getDb: () => db,
     sendLoginCode: async (to, code, locale) => {
@@ -166,6 +168,7 @@ export function createTestApp(db: TestDb) {
     sendMail: async (mail) => {
       mails.push(mail);
     },
+    storage,
   };
   const app = createApp(deps);
   const json = (path: string, body: unknown, headers: Record<string, string> = {}) =>
@@ -174,7 +177,7 @@ export function createTestApp(db: TestDb) {
       headers: { 'content-type': 'application/json', ...headers },
       body: JSON.stringify(body),
     });
-  return { app, sent, mails, json };
+  return { app, sent, mails, storage, json };
 }
 
 /** Deja todas las cartas de un pedido con el resultado de graduación aprobado (9 en todo), como si el laboratorio ya hubiera terminado. */
@@ -211,4 +214,22 @@ export async function approveAllGrading(db: TestDb, orderCode: string) {
       qaApprovedAt: new Date(),
     });
   }
+}
+
+/** Almacenamiento en memoria para las pruebas: "subir" un archivo es llamar a `put`. */
+export function createFakeStorage(): ObjectStorage & { put: (key: string) => void; files: Set<string>; removed: string[] } {
+  const files = new Set<string>();
+  const removed: string[] = [];
+  return {
+    files,
+    removed,
+    put: (key) => void files.add(key),
+    createUpload: async (key) => ({ method: 'PUT', url: `memory://upload/${key}`, headers: {}, body: 'multipart' }),
+    exists: async (key) => files.has(key),
+    createDownloadUrl: async (key, ttl) => `memory://download/${key}?ttl=${ttl}`,
+    remove: async (key) => {
+      files.delete(key);
+      removed.push(key);
+    },
+  };
 }

@@ -7,6 +7,7 @@ import { getDb } from '../db/client.js';
 import type { AppEnv, Deps } from './context.js';
 import { sendLoginCode } from './email/login-code.js';
 import { sendMail } from './email/transport.js';
+import { createSupabaseStorage } from './storage.js';
 import { sameOriginOnly } from './http.js';
 import { ProblemError, problemResponse } from './problem.js';
 import { accountRoutes } from './routes/account.js';
@@ -84,4 +85,4 @@ export function createApp(deps: Deps) {
   return app;
 }
 
-export const app = createApp({ getDb, sendLoginCode, sendMail });
+export const app = createApp({ getDb, sendLoginCode, sendMail, storage: createSupabaseStorage() });
