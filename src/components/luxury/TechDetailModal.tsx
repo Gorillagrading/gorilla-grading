@@ -805,9 +805,9 @@ export const TechDetailModal: React.FC<TechDetailModalProps> = ({ isOpen, onClos
                   <div className="my-2 sm:my-4 relative flex flex-col items-center justify-center">
                     <div className="relative w-36 sm:w-52 h-48 sm:h-72 flex items-center justify-center">
                       <img 
-                        src="/images/hero_card_slab.jpg" 
+                        src="/images/hero-slab-promo-poster.png"
                         alt="Cápsula Gorilla Grading con sellado ultrasónico"
-                        className={`w-full h-full object-contain filter contrast-105 pointer-events-none select-none ${
+                        className={`w-full h-full object-cover filter contrast-105 pointer-events-none select-none ${
                           isLight ? 'drop-shadow-[0_18px_30px_rgba(0,0,0,0.2)]' : 'drop-shadow-[0_22px_45px_rgba(0,0,0,0.75)]'
                         }`}
                       />
