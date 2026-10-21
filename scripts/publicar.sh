@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Guarda y sube la rama actual después de comprobar que el proyecto compila.
+# Guarda TODO y lo publica directamente en main (producción) tras comprobar que el proyecto compila.
 # Uso: bash scripts/publicar.sh "feat(home): descripción del cambio"
 set -e
 
@@ -11,10 +11,14 @@ if [ -z "$MSG" ]; then
 fi
 
 BRANCH=$(git branch --show-current)
-if [ "$BRANCH" = "main" ]; then
-  echo "Estás en main. Trabaja en una rama: git switch -c feat/nombre"
+if [ "$BRANCH" != "main" ]; then
+  echo "Estás en '$BRANCH' y este script publica en main."
+  echo "Cambia con: git switch main"
   exit 1
 fi
+
+echo "==> Trayendo lo último de GitHub"
+git pull --rebase --autostash -q origin main
 
 echo "==> Comprobando tipos"
 npm run typecheck
@@ -25,14 +29,13 @@ npm run build
 echo "==> Guardando cambios"
 git add -A
 if git diff --cached --quiet; then
-  echo "No hay cambios que guardar."
-  exit 0
+  echo "No hay cambios nuevos que guardar."
+else
+  git commit -m "$MSG" -m "Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
 fi
-git commit -m "$MSG" -m "Co-Authored-By: Claude Haiku 5.5 <noreply@anthropic.com>"
 
-echo "==> Subiendo $BRANCH"
-git push -u origin "$BRANCH"
+echo "==> Publicando en main"
+git push origin main
 
 echo ""
-echo "Revisa el preview de Vercel de esta rama y abre el PR:"
-echo "https://github.com/Gorillagrading/gorilla-grading/compare/main...$BRANCH"
+echo "Listo. Vercel desplegará main en unos minutos."
