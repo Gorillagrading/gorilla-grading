@@ -49,6 +49,7 @@ export const TechDetailModal: React.FC<TechDetailModalProps> = ({ isOpen, onClos
   const [activeFolio, setActiveFolio] = useState<FolioId>('measure');
   const [scanFilter, setScanFilter] = useState<'standard' | 'polarized'>('polarized');
   const [loupeZoom, setLoupeZoom] = useState<boolean>(true);
+  const reduceMotion = useReducedMotion();
 
   // Folio navigation sequence
   const folioList: FolioId[] = ['scan', 'analyze', 'measure', 'grade'];
@@ -453,10 +454,29 @@ export const TechDetailModal: React.FC<TechDetailModalProps> = ({ isOpen, onClos
                         }`}
                       />
 
+                      {/* UV 365 nm scan sweep: soft trailing wash with a bright leading edge */}
+                      {!reduceMotion && (
+                        <motion.div
+                          className="absolute top-0 bottom-0 w-20 pointer-events-none"
+                          style={{
+                            background: 'linear-gradient(90deg, transparent, rgba(168,85,247,0.22))',
+                            borderRight: '2px solid rgba(216,180,254,0.9)',
+                            boxShadow: '6px 0 14px rgba(168,85,247,0.55)',
+                          }}
+                          initial={{ left: '-25%' }}
+                          animate={{ left: ['-25%', '100%'] }}
+                          transition={{ duration: 4.2, repeat: Infinity, repeatDelay: 1.3, ease: 'easeInOut' }}
+                        />
+                      )}
+
                       {/* Optical Micro-Reticle Reticle */}
                       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                         <div className="w-24 h-24 rounded-full border border-white/50" />
-                        <div className="w-40 h-40 rounded-full border border-white/20 border-dashed" />
+                        <motion.div
+                          className="w-40 h-40 rounded-full border border-white/20 border-dashed"
+                          animate={reduceMotion ? undefined : { rotate: 360 }}
+                          transition={{ duration: 40, repeat: Infinity, ease: 'linear' }}
+                        />
                         <div className="absolute inset-x-6 top-1/2 h-[1px] bg-white/40" />
                         <div className="absolute inset-y-6 left-1/2 w-[1px] bg-white/40" />
                         
