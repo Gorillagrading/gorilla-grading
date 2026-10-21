@@ -55,21 +55,44 @@ export const TechnologySection: React.FC<TechnologySectionProps> = ({
 
   const isLight = theme === 'light';
 
+  const videoRef = React.useRef<HTMLVideoElement>(null);
+  const FADE_SECONDS = 0.8;
+
+  // Fade out during the last moments of the clip
+  const handleTimeUpdate = () => {
+    const v = videoRef.current;
+    if (!v || !v.duration) return;
+    const remaining = v.duration - v.currentTime;
+    v.style.opacity = String(remaining < FADE_SECONDS ? Math.max(remaining / FADE_SECONDS, 0) : 1);
+  };
+
+  // Restart from the beginning; timeupdate then fades it back in
+  const handleEnded = () => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.style.opacity = '0';
+    v.currentTime = 0;
+    v.play().catch(() => {});
+  };
+
   return (
-    <section 
-      id="how-it-works" 
+    <section
+      id="how-it-works"
       className={`relative w-full overflow-hidden select-none transition-colors duration-300 ${
         isLight ? 'bg-[#F1ECE5] text-[#1C201D]' : 'bg-[#14170F] text-white'
       }`}
     >
-      {/* Full Width Background Video */}
+      {/* Full Width Background Video - fades out at the end and back in, so the loop is not abrupt */}
       <div className="absolute inset-0 z-0 overflow-hidden">
         <video
           key={isLight ? 'video-light' : 'video-dark'}
+          ref={videoRef}
           autoPlay
-          loop
           muted
           playsInline
+          onTimeUpdate={handleTimeUpdate}
+          onEnded={handleEnded}
+          style={{ transition: 'opacity 0.25s linear' }}
           className="w-full h-full object-cover object-center pointer-events-none"
           poster={isLight ? '/images/tecnoSeccion.png' : '/images/Dark/tecnoSeccion.png'}
         >
