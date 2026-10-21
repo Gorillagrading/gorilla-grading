@@ -24,9 +24,9 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
   const { theme } = useTheme();
   const isLight = theme === 'light';
 
-  const heroImageSrc = '/images/alakazam_hero.png?v=9';
-
   const videoRef = React.useRef<HTMLVideoElement>(null);
+  // No poster image: the video fades in once its first frame is ready
+  const [videoReady, setVideoReady] = React.useState(false);
 
   // React does not set the DOM `muted` property from the attribute, so browsers
   // sometimes block autoplay and leave the poster/first frame on screen.
@@ -309,7 +309,6 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
         <video
           ref={videoRef}
           src="/videos/gorilla_hero_loop.mp4"
-          poster={heroImageSrc}
           aria-label="Gorilla Grading hero video"
           autoPlay
           muted
@@ -317,8 +316,12 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
           playsInline
           preload="auto"
           disablePictureInPicture
+          onLoadedData={() => setVideoReady(true)}
+          onPlaying={() => setVideoReady(true)}
           className="absolute inset-0 w-full h-full object-cover"
           style={{
+            opacity: videoReady ? 1 : 0,
+            transition: 'opacity 0.6s ease',
             WebkitTouchCallout: 'none',
             userSelect: 'none',
             WebkitUserSelect: 'none',
