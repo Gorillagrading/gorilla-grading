@@ -13,6 +13,13 @@ const CHANNELS: VerificationChannel[] = ['web', 'qr', 'nfc'];
 export function certificateRoutes(deps: Deps) {
   const routes = new Hono<AppEnv>();
 
+  // Público: clave pública con la que se verifican las firmas. No es secreta.
+  routes.get('/certificates/keys', (c) => {
+    const { keyId, publicKey } = deps.getSigner();
+    c.header('Cache-Control', 'public, max-age=3600');
+    return c.json({ keys: [{ keyId, algorithm: 'Ed25519', publicKey, format: 'SPKI DER, base64' }] });
+  });
+
   // Público: verifica un certificado por su número o por el serial de su slab.
   // `?via=qr` o `?via=nfc` lo añaden las direcciones grabadas en el QR y en el chip del slab.
   routes.get('/certificates/:number', async (c) => {
@@ -25,7 +32,7 @@ export function certificateRoutes(deps: Deps) {
       channel: via && CHANNELS.includes(via) ? via : 'web',
       ip,
       userAgent: c.req.header('user-agent') ?? null,
-    });
+    }, deps.storage);
     if (!certificate) {
       throw new ProblemError(404, 'Not Found', 'No existe ningún certificado con ese número.', {
         code: 'certificate_not_found',

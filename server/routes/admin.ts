@@ -38,7 +38,7 @@ export function adminRoutes(deps: Deps) {
 
   routes.post('/admin/orders/:code/transitions', ...staff, async (c) => {
     const body = await parseJson(c, TransitionBody);
-    const detail = await transitionOrder(deps.getDb(), c.get('user'), c.req.param('code'), body, { ip: clientIp(c) });
+    const detail = await transitionOrder(deps.getDb(), c.get('user'), c.req.param('code'), body, { ip: clientIp(c), getSigner: deps.getSigner });
     await flushOutbox(deps);
     return c.json({ order: detail });
   });

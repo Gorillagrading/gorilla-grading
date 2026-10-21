@@ -21,7 +21,7 @@ export function accountRoutes(deps: Deps) {
   });
 
   routes.get('/me/cards', signedIn, async (c) =>
-    c.json({ cards: await listUserVault(deps.getDb(), c.get('user').id) }),
+    c.json({ cards: await listUserVault(deps.getDb(), c.get('user').id, deps.storage) }),
   );
 
   return routes;

@@ -1,0 +1,2 @@
+ALTER TABLE "grading_results" DROP CONSTRAINT "grading_results_approved_has_qa";--> statement-breakpoint
+ALTER TABLE "grading_results" ADD CONSTRAINT "grading_results_approved_has_qa" CHECK ("grading_results"."status" <> 'approved' or ("grading_results"."qa_approved_by" is not null and ("grading_results"."final_grade" is not null or not "grading_results"."is_authentic")));

@@ -9,6 +9,7 @@ import {
   orders,
 } from '../../db/schema.js';
 import type { CardDefectDto, GradedCardDto } from '../../shared/account.js';
+import type { ObjectStorage } from '../storage.js';
 
 const CATEGORY_LABEL = {
   centering: 'Centering',
@@ -17,7 +18,10 @@ const CATEGORY_LABEL = {
   surface: 'Surface',
 } as const;
 
-type CertificateImages = { front?: string; back?: string; slabMockup?: string };
+/** `front`/`back` son enlaces fijos (datos de ejemplo); `frontKey`/`backKey` son fotos privadas que se firman al mostrarlas. */
+type CertificateImages = { front?: string; back?: string; slabMockup?: string; frontKey?: string | null; backKey?: string | null };
+
+const IMAGE_URL_TTL = 15 * 60;
 
 export type CertificateRecord = typeof certificates.$inferSelect;
 
@@ -37,6 +41,7 @@ export interface LoadedCard {
 export async function loadCards(
   db: Db,
   filter: { userId?: string; number?: string; activeOnly: boolean },
+  storage?: ObjectStorage,
 ): Promise<LoadedCard[]> {
   const conditions: SQL[] = [];
   if (filter.userId) conditions.push(eq(orders.userId, filter.userId));
@@ -75,7 +80,16 @@ export async function loadCards(
       : Promise.resolve([] as { id: string; number: string }[]),
   ]);
 
-  return rows.map(({ certificate: cert, result: r, identity, declaredValueCents }) => {
+  const signedUrl = async (key: string | null | undefined) =>
+    key && storage ? storage.createDownloadUrl(key, IMAGE_URL_TTL).catch(() => '') : '';
+  const signed = await Promise.all(
+    rows.map(async ({ certificate: cert }) => {
+      const images = (cert.payload as { images?: CertificateImages } | null)?.images ?? {};
+      return { front: await signedUrl(images.frontKey), back: await signedUrl(images.backKey) };
+    }),
+  );
+
+  return rows.map(({ certificate: cert, result: r, identity, declaredValueCents }, index) => {
     const grade = r.finalGrade ?? 0;
     const samePrint = peers.filter((p) => p.identityId === identity.id);
     const images = (cert.payload as { images?: CertificateImages } | null)?.images ?? {};
@@ -118,8 +132,8 @@ export async function loadCards(
           description: r.surfaceNotes ?? '',
         },
       },
-      frontImage: images.front ?? '',
-      backImage: images.back ?? '',
+      frontImage: images.front ?? signed[index].front,
+      backImage: images.back ?? signed[index].back,
       slabMockupImage: images.slabMockup ?? undefined,
       defects: defects
         .filter((d) => d.gradingResultId === r.id)
@@ -154,6 +168,6 @@ export async function loadCards(
 }
 
 /** Cartas certificadas (certificados activos) de un usuario, para su bóveda. */
-export async function listUserVault(db: Db, userId: string): Promise<GradedCardDto[]> {
-  return (await loadCards(db, { userId, activeOnly: true })).map((r) => r.card);
+export async function listUserVault(db: Db, userId: string, storage?: ObjectStorage): Promise<GradedCardDto[]> {
+  return (await loadCards(db, { userId, activeOnly: true }, storage)).map((r) => r.card);
 }

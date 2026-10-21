@@ -12,7 +12,11 @@ import { createApp } from './app.js';
 import { slabSerialFor } from './codes.js';
 import type { Deps } from './context.js';
 import type { Mail } from './email/transport.js';
+import { createSigner, generateSigningKey } from './signing.js';
 import type { ObjectStorage } from './storage.js';
+
+/** Clave de firma de pruebas, distinta en cada ejecución. */
+export const testSigner = createSigner(generateSigningKey().privateKey, 'test-key-1');
 
 process.env.AUTH_SECRET ??= 'test-secret-test-secret-test-secret-123456';
 
@@ -156,7 +160,7 @@ export async function insertGradedOrder(
 }
 
 /** App conectada a una base de prueba. Los códigos de acceso "enviados" quedan en `sent`. */
-export function createTestApp(db: TestDb) {
+export function createTestApp(db: TestDb, overrides: Partial<Deps> = {}) {
   const sent: { to: string; code: string; locale: string }[] = [];
   const mails: Mail[] = [];
   const storage = createFakeStorage();
@@ -169,6 +173,8 @@ export function createTestApp(db: TestDb) {
       mails.push(mail);
     },
     storage,
+    getSigner: () => testSigner,
+    ...overrides,
   };
   const app = createApp(deps);
   const json = (path: string, body: unknown, headers: Record<string, string> = {}) =>

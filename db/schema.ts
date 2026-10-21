@@ -525,7 +525,8 @@ export const gradingResults = pgTable(
     check('grading_results_double_signature', sql`${t.qaApprovedBy} is null or ${t.qaApprovedBy} <> ${t.gradedBy}`),
     check(
       'grading_results_approved_has_qa',
-      sql`${t.status} <> 'approved' or (${t.qaApprovedBy} is not null and ${t.finalGrade} is not null)`,
+      // Una carta que no es auténtica no tiene nota, pero también se aprueba.
+      sql`${t.status} <> 'approved' or (${t.qaApprovedBy} is not null and (${t.finalGrade} is not null or not ${t.isAuthentic}))`,
     ),
   ],
 ).enableRLS();

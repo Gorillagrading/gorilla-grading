@@ -12,6 +12,8 @@ import { hashIp } from '../auth/crypto.js';
 import { ProblemError, forbidden, notFound } from '../problem.js';
 import { AUTO_FROM, remainingSteps } from './automation.js';
 import { loadGradingResults } from './grading-results.js';
+import { issueCertificates } from './issue-certificates.js';
+import type { Signer } from '../signing.js';
 import { NOTIFY_ON, addBusinessDays, publicCopy, rulesFrom, type TransitionRule } from './order-flow.js';
 
 export const ADMIN_PAGE_SIZE = 25;
@@ -217,7 +219,7 @@ export async function transitionOrder(
   actor: UserDto,
   code: string,
   body: TransitionBody,
-  context: { ip: string | null },
+  context: { ip: string | null; getSigner: () => Signer },
   now = new Date(),
 ): Promise<AdminOrderDetail> {
   const ctx = await loadContext(db, code);
@@ -274,6 +276,10 @@ export async function transitionOrder(
     if (heldAt) resumedAnchor = new Date(order.autoAnchorAt.getTime() + Math.max(0, now.getTime() - heldAt.getTime()));
   }
 
+  // Aprobar la salida emite los certificados: sin clave de firma no puede salir ningún pedido.
+  const issuing = order.status === 'QUALITY_ASSURANCE' && body.to === 'SHIPPED';
+  const signer = issuing ? context.getSigner() : null;
+
   await db.transaction(async (tx) => {
     const [updated] = await tx
       .update(orders)
@@ -304,6 +310,8 @@ export async function transitionOrder(
         occurredAt: now,
       })
       .returning({ id: custodyEvents.id });
+
+    if (signer) await issueCertificates(tx, { orderId: order.id, orderCode: order.code, actorId: actor.id, signer, now });
 
     await tx.insert(auditLogs).values({
       actorId: actor.id,

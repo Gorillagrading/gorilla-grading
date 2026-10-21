@@ -17,4 +17,6 @@ export type PublicCertificateDto = Omit<GradedCardDto, 'declaredValueEur'> & {
   /** Firma Ed25519 del registro. Null hasta que se emitan certificados firmados (Fase 7). */
   signature: string | null;
   keyId: string | null;
+  /** Registro exacto que se firmó. Con la clave pública de /certificates/keys cualquiera puede verificar la firma. Null en certificados sin firmar. */
+  signedRecord: Record<string, unknown> | null;
 };

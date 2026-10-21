@@ -15,6 +15,7 @@
     "db:migrate": "drizzle-kit migrate",
     "db:check": "drizzle-kit check",
     "db:seed": "tsx db/seed.ts",
+    "keys:generate": "tsx db/generate-signing-key.ts",
     "staff:role": "tsx db/set-role.ts",
     "jobs:advance": "tsx db/advance-orders.ts",
     "db:studio": "drizzle-kit studio"

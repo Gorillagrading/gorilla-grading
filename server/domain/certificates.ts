@@ -4,6 +4,7 @@ import { certificateChecks, certificates, slabs } from '../../db/schema.js';
 import { hashIp } from '../auth/crypto.js';
 import { CERTIFICATE_NUMBER, SLAB_SERIAL } from '../../shared/codes.js';
 import type { PublicCertificateDto, VerificationChannel } from '../../shared/certificate.js';
+import type { ObjectStorage } from '../storage.js';
 import { loadCards } from './vault.js';
 
 type Lookup = { kind: 'number' | 'serial'; value: string };
@@ -30,6 +31,7 @@ export async function findPublicCertificate(
   db: Db,
   rawQuery: string,
   visit: { channel: VerificationChannel; ip: string | null; userAgent: string | null },
+  storage?: ObjectStorage,
 ): Promise<PublicCertificateDto | null> {
   const lookup = parseCertificateQuery(rawQuery);
   if (!lookup) return null;
@@ -49,12 +51,14 @@ export async function findPublicCertificate(
     number = row.number;
   }
 
-  const [found] = await loadCards(db, { number, activeOnly: false });
+  const [found] = await loadCards(db, { number, activeOnly: false }, storage);
   await logCheck(db, lookup.value, found?.certificate.id ?? null, visit);
   if (!found) return null;
 
   const { declaredValueEur: _owner, ...card } = found.card;
   const cert = found.certificate;
+  // El registro firmado es el payload sin las rutas privadas de las fotos.
+  const { images: _images, ...signedRecord } = (cert.payload ?? {}) as Record<string, unknown>;
   return {
     ...card,
     status: cert.status,
@@ -63,6 +67,7 @@ export async function findPublicCertificate(
     supersededBy: found.supersededByNumber,
     signature: cert.signature,
     keyId: cert.keyId,
+    signedRecord: cert.signature ? signedRecord : null,
   };
 }
 
