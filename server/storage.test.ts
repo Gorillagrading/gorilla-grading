@@ -87,8 +87,18 @@ describe('Supabase Storage', () => {
 });
 
 describe('Supabase Storage: fallos de conexión', () => {
-  it('una dirección mal escrita se explica en vez de dar un error ciego', async () => {
-    process.env.SUPABASE_URL = 'abc.supabase.co';
+  it('si a la dirección le falta el https:// se lo añade, y quita espacios y barras', async () => {
+    respond = () => new Response(null, { status: 200 });
+    for (const value of ['abc.supabase.co', '  https://abc.supabase.co/  ', 'abc.supabase.co//']) {
+      process.env.SUPABASE_URL = value;
+      calls = [];
+      await createSupabaseStorage().exists('a.jpg');
+      expect(calls[0].url).toBe('https://abc.supabase.co/storage/v1/object/lab-private/a.jpg');
+    }
+  });
+
+  it('una dirección sin sentido se explica en vez de dar un error ciego', async () => {
+    process.env.SUPABASE_URL = 'localhost';
     await expect(createSupabaseStorage().exists('a.jpg')).rejects.toMatchObject({ status: 503, code: 'storage_error', message: expect.stringContaining('SUPABASE_URL') });
   });
 

@@ -21,7 +21,9 @@ const unavailable = () =>
  */
 export function createSupabaseStorage(): ObjectStorage {
   const config = () => {
-    const base = process.env.SUPABASE_URL?.replace(/\/+$/, '');
+    // Se tolera que falte el "https://" o que sobren espacios o barras: es el fallo más común al copiar la dirección.
+    const raw = process.env.SUPABASE_URL?.trim().replace(/\/+$/, '');
+    const base = raw && !/^https?:\/\//i.test(raw) ? `https://${raw}` : raw;
     const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
     if (!base || !key) throw unavailable();
     if (!/^https?:\/\/[^\s/]+\.[^\s/]+/.test(base)) {
