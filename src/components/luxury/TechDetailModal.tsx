@@ -642,7 +642,7 @@ export const TechDetailModal: React.FC<TechDetailModalProps> = ({ isOpen, onClos
                     {/* Unobstructed Card Specimen */}
                     <div className="relative w-36 sm:w-52 h-48 sm:h-72 flex items-center justify-center">
                       <img 
-                        src="/images/slab/front.png"
+                        src="/images/imb.jpeg"
                         alt="Medición centesimal de carta"
                         className={`w-full h-full object-contain filter contrast-110 pointer-events-none select-none ${
                           isLight ? 'drop-shadow-[0_16px_28px_rgba(0,0,0,0.18)]' : 'drop-shadow-[0_20px_40px_rgba(0,0,0,0.7)]'
