@@ -24,7 +24,43 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
   const { theme } = useTheme();
   const isLight = theme === 'light';
 
-  const heroImageSrc = '/images/alakazam_hero.png?v=9';
+  const videoRef = React.useRef<HTMLVideoElement>(null);
+  // No poster image: the video fades in once its first frame is ready
+  const [videoReady, setVideoReady] = React.useState(false);
+
+  // React does not set the DOM `muted` property from the attribute, so browsers
+  // sometimes block autoplay and leave the poster/first frame on screen.
+  // Force muted and retry playback until it actually starts.
+  React.useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.muted = true;
+    v.defaultMuted = true;
+
+    const tryPlay = () => {
+      if (v.paused) v.play().catch(() => {});
+    };
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') tryPlay();
+    };
+
+    tryPlay();
+    v.addEventListener('loadeddata', tryPlay);
+    v.addEventListener('canplay', tryPlay);
+    v.addEventListener('stalled', tryPlay);
+    document.addEventListener('visibilitychange', onVisible);
+    window.addEventListener('pointerdown', tryPlay);
+    window.addEventListener('scroll', tryPlay, { passive: true });
+
+    return () => {
+      v.removeEventListener('loadeddata', tryPlay);
+      v.removeEventListener('canplay', tryPlay);
+      v.removeEventListener('stalled', tryPlay);
+      document.removeEventListener('visibilitychange', onVisible);
+      window.removeEventListener('pointerdown', tryPlay);
+      window.removeEventListener('scroll', tryPlay);
+    };
+  }, []);
 
   return (
     <section 
@@ -271,8 +307,8 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
       {/* Full-Section Video Background - Covers the whole hero, text sits on a theme-aware gradient for legibility */}
       <div className="absolute inset-0 z-0 pointer-events-none select-none overflow-hidden">
         <video
+          ref={videoRef}
           src="/videos/gorilla_hero_loop.mp4"
-          poster={heroImageSrc}
           aria-label="Gorilla Grading hero video"
           autoPlay
           muted
@@ -280,8 +316,12 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
           playsInline
           preload="auto"
           disablePictureInPicture
+          onLoadedData={() => setVideoReady(true)}
+          onPlaying={() => setVideoReady(true)}
           className="absolute inset-0 w-full h-full object-cover"
           style={{
+            opacity: videoReady ? 1 : 0,
+            transition: 'opacity 0.6s ease',
             WebkitTouchCallout: 'none',
             userSelect: 'none',
             WebkitUserSelect: 'none',
