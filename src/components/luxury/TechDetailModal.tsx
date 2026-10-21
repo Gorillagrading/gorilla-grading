@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -11,6 +11,35 @@ interface TechDetailModalProps {
 
 type FolioId = 'scan' | 'analyze' | 'measure' | 'grade';
 
+// Four registration corners that gently "breathe" outwards in sequence, like an optical
+// scanner locking on the specimen. Static when the user prefers reduced motion.
+const RegistrationCorners: React.FC = () => {
+  const reduceMotion = useReducedMotion();
+  const corners = [
+    { pos: 'top-0 left-0 border-t-2 border-l-2', dx: -3, dy: -3, delay: 0 },
+    { pos: 'top-0 right-0 border-t-2 border-r-2', dx: 3, dy: -3, delay: 0.25 },
+    { pos: 'bottom-0 right-0 border-b-2 border-r-2', dx: 3, dy: 3, delay: 0.5 },
+    { pos: 'bottom-0 left-0 border-b-2 border-l-2', dx: -3, dy: 3, delay: 0.75 },
+  ];
+
+  return (
+    <>
+      {corners.map((c) => (
+        <motion.div
+          key={c.pos}
+          className={`absolute w-3 h-3 border-[#15803D] dark:border-[#48C765] pointer-events-none ${c.pos}`}
+          animate={reduceMotion ? undefined : {
+            x: [0, c.dx, 0],
+            y: [0, c.dy, 0],
+            opacity: [0.65, 1, 0.65],
+          }}
+          transition={{ duration: 3, delay: c.delay, repeat: Infinity, ease: 'easeInOut' }}
+        />
+      ))}
+    </>
+  );
+};
+
 export const TechDetailModal: React.FC<TechDetailModalProps> = ({ isOpen, onClose, onNavigate }) => {
   const { language } = useLanguage();
   const { theme } = useTheme();
@@ -20,6 +49,7 @@ export const TechDetailModal: React.FC<TechDetailModalProps> = ({ isOpen, onClos
   const [activeFolio, setActiveFolio] = useState<FolioId>('measure');
   const [scanFilter, setScanFilter] = useState<'standard' | 'polarized'>('polarized');
   const [loupeZoom, setLoupeZoom] = useState<boolean>(true);
+  const reduceMotion = useReducedMotion();
 
   // Folio navigation sequence
   const folioList: FolioId[] = ['scan', 'analyze', 'measure', 'grade'];
@@ -247,10 +277,7 @@ export const TechDetailModal: React.FC<TechDetailModalProps> = ({ isOpen, onClos
                     {/* Specimen Display */}
                     <div className="relative w-36 sm:w-56 h-48 sm:h-76 flex items-center justify-center p-2">
                       {/* Authentic Archival Photo Mounting Corners */}
-                      <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-[#15803D] dark:border-[#48C765]" />
-                      <div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-[#15803D] dark:border-[#48C765]" />
-                      <div className="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 border-[#15803D] dark:border-[#48C765]" />
-                      <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-[#15803D] dark:border-[#48C765]" />
+                      <RegistrationCorners />
 
                       <img 
                         src="/images/alakazam_hero.png" 
@@ -427,10 +454,29 @@ export const TechDetailModal: React.FC<TechDetailModalProps> = ({ isOpen, onClos
                         }`}
                       />
 
+                      {/* UV 365 nm scan sweep: soft trailing wash with a bright leading edge */}
+                      {!reduceMotion && (
+                        <motion.div
+                          className="absolute top-0 bottom-0 w-20 pointer-events-none"
+                          style={{
+                            background: 'linear-gradient(90deg, transparent, rgba(168,85,247,0.22))',
+                            borderRight: '2px solid rgba(216,180,254,0.9)',
+                            boxShadow: '6px 0 14px rgba(168,85,247,0.55)',
+                          }}
+                          initial={{ left: '-25%' }}
+                          animate={{ left: ['-25%', '100%'] }}
+                          transition={{ duration: 4.2, repeat: Infinity, repeatDelay: 1.3, ease: 'easeInOut' }}
+                        />
+                      )}
+
                       {/* Optical Micro-Reticle Reticle */}
                       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                         <div className="w-24 h-24 rounded-full border border-white/50" />
-                        <div className="w-40 h-40 rounded-full border border-white/20 border-dashed" />
+                        <motion.div
+                          className="w-40 h-40 rounded-full border border-white/20 border-dashed"
+                          animate={reduceMotion ? undefined : { rotate: 360 }}
+                          transition={{ duration: 40, repeat: Infinity, ease: 'linear' }}
+                        />
                         <div className="absolute inset-x-6 top-1/2 h-[1px] bg-white/40" />
                         <div className="absolute inset-y-6 left-1/2 w-[1px] bg-white/40" />
                         
@@ -758,13 +804,30 @@ export const TechDetailModal: React.FC<TechDetailModalProps> = ({ isOpen, onClos
                   {/* Clean Specimen Viewport: Gorilla Slab Specimen */}
                   <div className="my-2 sm:my-4 relative flex flex-col items-center justify-center">
                     <div className="relative w-36 sm:w-52 h-48 sm:h-72 flex items-center justify-center">
-                      <img 
-                        src="/images/hero_card_slab.jpg" 
-                        alt="Cápsula Gorilla Grading con sellado ultrasónico"
-                        className={`w-full h-full object-contain filter contrast-105 pointer-events-none select-none ${
-                          isLight ? 'drop-shadow-[0_18px_30px_rgba(0,0,0,0.2)]' : 'drop-shadow-[0_22px_45px_rgba(0,0,0,0.75)]'
-                        }`}
-                      />
+                      {/* Ultrasonic fusion waves: soft rings radiating from the slab (35 kHz sealing) */}
+                      {!reduceMotion && [0, 1, 2].map((i) => (
+                        <motion.span
+                          key={i}
+                          className="absolute left-1/2 top-1/2 w-40 h-40 sm:w-56 sm:h-56 -ml-20 -mt-20 sm:-ml-28 sm:-mt-28 rounded-full border border-[#15803D]/50 dark:border-[#48C765]/50 pointer-events-none"
+                          initial={{ scale: 0.5, opacity: 0 }}
+                          animate={{ scale: [0.5, 1.6], opacity: [0.45, 0] }}
+                          transition={{ duration: 3.6, delay: i * 1.2, repeat: Infinity, ease: 'easeOut' }}
+                        />
+                      ))}
+
+                      <motion.div
+                        className="relative z-10 w-full h-full"
+                        animate={reduceMotion ? undefined : { y: [0, -5, 0] }}
+                        transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
+                      >
+                        <img
+                          src="/images/hero-slab-promo-poster.png"
+                          alt="Cápsula Gorilla Grading con sellado ultrasónico"
+                          className={`w-full h-full object-cover filter contrast-105 pointer-events-none select-none ${
+                            isLight ? 'drop-shadow-[0_18px_30px_rgba(0,0,0,0.2)]' : 'drop-shadow-[0_22px_45px_rgba(0,0,0,0.75)]'
+                          }`}
+                        />
+                      </motion.div>
                     </div>
 
                     <div className="mt-3 font-mono text-[9.5px] uppercase tracking-wider opacity-75">
