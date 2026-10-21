@@ -2,11 +2,13 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import type { AdminOrderDetail, AdminTransitionOption } from '../../../shared/admin';
 import type { OrderStatus } from '../../../shared/domain';
+import type { ImageDto } from '../../../shared/photos';
 import {
-  addAdminShipment, adminErrorMessage, fetchAdminOrder, transitionAdminOrder,
+  addAdminShipment, adminErrorMessage, fetchAdminOrder, fetchOrderImages, transitionAdminOrder,
 } from '../../api/admin';
 import { ApiError } from '../../api/client';
 import { STATUS_LABEL } from '../../utils/orderStatus';
+import { GradingPanel } from './GradingPanel';
 import {
   SHIPPING_LABEL, StatusPill, formatDate, formatDateTime, money, usePanelTheme, waiting,
 } from './ui';
@@ -48,6 +50,7 @@ export const OrderDetail: React.FC<{ code: string; onBack: () => void }> = ({ co
   const [notFound, setNotFound] = useState(false);
   const [notice, setNotice] = useState('');
   const [action, setAction] = useState<AdminTransitionOption | null>(null);
+  const [images, setImages] = useState<Record<number, ImageDto[]>>({});
 
   const reload = useCallback(async () => {
     try {
@@ -58,6 +61,20 @@ export const OrderDetail: React.FC<{ code: string; onBack: () => void }> = ({ co
       else setError(adminErrorMessage(err));
     }
   }, [code]);
+
+  /** Las fotos pueden no estar disponibles (almacenamiento sin configurar); el resto del panel sigue funcionando. */
+  const reloadImages = useCallback(async () => {
+    try {
+      const { items } = await fetchOrderImages(code);
+      setImages(Object.fromEntries(items.map((i) => [i.position, i.images])));
+    } catch {
+      setImages({});
+    }
+  }, [code]);
+
+  useEffect(() => {
+    void reloadImages();
+  }, [reloadImages]);
 
   useEffect(() => {
     setOrder(null);
@@ -149,6 +166,27 @@ export const OrderDetail: React.FC<{ code: string; onBack: () => void }> = ({ co
                 ))}
               </tbody>
             </table>
+          </section>
+
+          {/* Graduación y fotos */}
+          <section className={`border rounded-xl p-5 space-y-3 ${t.card}`} aria-label="Graduación y fotos">
+            <h3 className={`font-['Nunito',sans-serif] text-sm font-[900] uppercase ${t.text}`}>Graduación y fotos</h3>
+            {order.items.map((item) => (
+              <GradingPanel
+                key={item.position}
+                code={code}
+                order={order}
+                item={item}
+                images={images[item.position] ?? []}
+                onChanged={async () => {
+                  await Promise.all([reload(), reloadImages()]);
+                }}
+                onMessage={(kind, text) => {
+                  setNotice(kind === 'notice' ? text : '');
+                  setError(kind === 'error' ? text : '');
+                }}
+              />
+            ))}
           </section>
 
           {/* Historial */}

@@ -3,6 +3,7 @@ import { ArrowRight, ScanLine } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import { SlabTimelineIcon } from '../components/common/SlabTimelineIcon';
+import { OrderResults } from '../components/common/OrderResults';
 import { api, ApiError } from '../api/client';
 import type { TrackingDto } from '../../shared/tracking';
 import { STATUS_LABEL, STEP_COPY } from '../utils/orderStatus';
@@ -351,6 +352,9 @@ export const TrackingPage: React.FC<TrackingPageProps> = ({ onNavigate }) => {
 
             </div>
           </section>
+
+          {/* Resultados de graduación: solo para el dueño y cuando el pedido ya salió del laboratorio */}
+          {tracking.items && <OrderResults code={tracking.code} lang={lang} isLight={isLight} />}
         </>
       ) : (
         /* Empty / Centered Search State - Clean, minimal, zero clutter */
