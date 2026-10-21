@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -10,6 +10,35 @@ interface TechDetailModalProps {
 }
 
 type FolioId = 'scan' | 'analyze' | 'measure' | 'grade';
+
+// Four registration corners that gently "breathe" outwards in sequence, like an optical
+// scanner locking on the specimen. Static when the user prefers reduced motion.
+const RegistrationCorners: React.FC = () => {
+  const reduceMotion = useReducedMotion();
+  const corners = [
+    { pos: 'top-0 left-0 border-t-2 border-l-2', dx: -3, dy: -3, delay: 0 },
+    { pos: 'top-0 right-0 border-t-2 border-r-2', dx: 3, dy: -3, delay: 0.25 },
+    { pos: 'bottom-0 right-0 border-b-2 border-r-2', dx: 3, dy: 3, delay: 0.5 },
+    { pos: 'bottom-0 left-0 border-b-2 border-l-2', dx: -3, dy: 3, delay: 0.75 },
+  ];
+
+  return (
+    <>
+      {corners.map((c) => (
+        <motion.div
+          key={c.pos}
+          className={`absolute w-3 h-3 border-[#15803D] dark:border-[#48C765] pointer-events-none ${c.pos}`}
+          animate={reduceMotion ? undefined : {
+            x: [0, c.dx, 0],
+            y: [0, c.dy, 0],
+            opacity: [0.65, 1, 0.65],
+          }}
+          transition={{ duration: 3, delay: c.delay, repeat: Infinity, ease: 'easeInOut' }}
+        />
+      ))}
+    </>
+  );
+};
 
 export const TechDetailModal: React.FC<TechDetailModalProps> = ({ isOpen, onClose, onNavigate }) => {
   const { language } = useLanguage();
@@ -247,10 +276,7 @@ export const TechDetailModal: React.FC<TechDetailModalProps> = ({ isOpen, onClos
                     {/* Specimen Display */}
                     <div className="relative w-36 sm:w-56 h-48 sm:h-76 flex items-center justify-center p-2">
                       {/* Authentic Archival Photo Mounting Corners */}
-                      <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-[#15803D] dark:border-[#48C765]" />
-                      <div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-[#15803D] dark:border-[#48C765]" />
-                      <div className="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 border-[#15803D] dark:border-[#48C765]" />
-                      <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-[#15803D] dark:border-[#48C765]" />
+                      <RegistrationCorners />
 
                       <img 
                         src="/images/alakazam_hero.png" 
