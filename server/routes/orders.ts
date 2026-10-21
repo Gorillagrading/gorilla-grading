@@ -4,6 +4,7 @@ import { requireUser } from '../auth/middleware.js';
 import type { AppEnv, Deps } from '../context.js';
 import { loadActiveTiers } from '../domain/catalog.js';
 import { computeQuote } from '../domain/pricing.js';
+import { flushOutbox } from '../domain/outbox.js';
 import { createOrder } from '../domain/submit-order.js';
 import { clientIp, parseJson } from '../http.js';
 import { enforceRateLimit } from '../rate-limit.js';
@@ -32,6 +33,7 @@ export function orderRoutes(deps: Deps) {
     await enforceRateLimit(db, { bucket: 'orders', key: user.id, limit: ORDERS_PER_WINDOW, windowMs: WINDOW_MS });
     const body = await parseJson(c, CreateOrderBody);
     const order = await createOrder(db, user, body, { ip: clientIp(c) });
+    if (!order.alreadyExisted) await flushOutbox(deps);
     return c.json({ order }, order.alreadyExisted ? 200 : 201);
   });
 

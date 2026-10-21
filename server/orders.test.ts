@@ -165,7 +165,7 @@ describe('POST /orders: crear el pedido', () => {
     expect(event.internalNote).toBeNull();
 
     const [mail] = await db.select().from(emailOutbox);
-    expect(mail).toMatchObject({ toEmail: 'ana@example.com', template: 'order_submitted', status: 'pending', dedupeKey: `order:${order.code}:submitted` });
+    expect(mail).toMatchObject({ toEmail: 'ana@example.com', template: 'order_submitted', status: 'sent', dedupeKey: `order:${order.code}:submitted` });
     expect(mail.data).toMatchObject({ orderCode: order.code, totalCents: 3350 });
 
     const accepted = await db.select().from(consents);

@@ -1,19 +1,8 @@
-import nodemailer from 'nodemailer';
 import { isProduction } from '../env.js';
 import { ProblemError } from '../problem.js';
+import { sendMail, smtpConfig } from './transport.js';
 
 export type SendLoginCode = (to: string, code: string, locale: 'es' | 'en') => Promise<void>;
-
-/** Configuración SMTP. Sirve para IONOS, Amazon SES, Postmark, Google Workspace… solo cambian las variables. */
-function smtpConfig() {
-  const host = process.env.SMTP_HOST;
-  const user = process.env.SMTP_USER;
-  const pass = process.env.SMTP_PASS;
-  const from = process.env.MAIL_FROM;
-  if (!host || !user || !pass || !from) return null;
-  const port = Number(process.env.SMTP_PORT ?? 587);
-  return { host, port, user, pass, from };
-}
 
 const texts = {
   es: {
@@ -28,34 +17,24 @@ const texts = {
   },
 } as const;
 
+const unavailable = (detail: string) =>
+  new ProblemError(503, 'Service Unavailable', detail, { code: 'email_unavailable' });
+
 /**
  * En desarrollo (sin SMTP) el código se escribe en la consola de la API.
  * En producción hace falta SMTP_HOST, SMTP_USER, SMTP_PASS y MAIL_FROM.
  */
 export const sendLoginCode: SendLoginCode = async (to, code, locale) => {
-  const config = smtpConfig();
-  if (!config) {
-    if (isProduction()) {
-      throw new ProblemError(503, 'Service Unavailable', 'El envío de emails todavía no está configurado.', {
-        code: 'email_unavailable',
-      });
-    }
+  if (!smtpConfig()) {
+    if (isProduction()) throw unavailable('El envío de emails todavía no está configurado.');
     console.log(`\n  [DEV] Código de acceso para ${to}: ${code}\n`);
     return;
   }
   const t = texts[locale] ?? texts.en;
-  const transport = nodemailer.createTransport({
-    host: config.host,
-    port: config.port,
-    secure: config.port === 465,
-    auth: { user: config.user, pass: config.pass },
-  });
   try {
-    await transport.sendMail({ from: config.from, to, subject: t.subject(code), text: t.body(code) });
+    await sendMail({ to, subject: t.subject(code), text: t.body(code) });
   } catch (error) {
     console.error('[email] fallo al enviar el código de acceso', error);
-    throw new ProblemError(503, 'Service Unavailable', 'No se ha podido enviar el email.', {
-      code: 'email_unavailable',
-    });
+    throw unavailable('No se ha podido enviar el email.');
   }
 };

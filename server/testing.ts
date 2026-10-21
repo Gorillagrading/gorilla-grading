@@ -10,6 +10,7 @@ import { GRADE_LABELS } from '../shared/grading.js';
 import { createApp } from './app.js';
 import { slabSerialFor } from './codes.js';
 import type { Deps } from './context.js';
+import type { Mail } from './email/transport.js';
 
 process.env.AUTH_SECRET ??= 'test-secret-test-secret-test-secret-123456';
 
@@ -155,10 +156,14 @@ export async function insertGradedOrder(
 /** App conectada a una base de prueba. Los códigos de acceso "enviados" quedan en `sent`. */
 export function createTestApp(db: TestDb) {
   const sent: { to: string; code: string; locale: string }[] = [];
+  const mails: Mail[] = [];
   const deps: Deps = {
     getDb: () => db,
     sendLoginCode: async (to, code, locale) => {
       sent.push({ to, code, locale });
+    },
+    sendMail: async (mail) => {
+      mails.push(mail);
     },
   };
   const app = createApp(deps);
@@ -168,5 +173,5 @@ export function createTestApp(db: TestDb) {
       headers: { 'content-type': 'application/json', ...headers },
       body: JSON.stringify(body),
     });
-  return { app, sent, json };
+  return { app, sent, mails, json };
 }

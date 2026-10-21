@@ -2,6 +2,8 @@ import { Hono } from 'hono';
 import { safeEqual } from '../auth/crypto.js';
 import type { AppEnv, Deps } from '../context.js';
 import { advanceDueOrders } from '../domain/automation.js';
+import { deliverPendingEmails } from '../domain/outbox.js';
+import { mailAvailable } from '../email/transport.js';
 import { ProblemError, unauthenticated } from '../problem.js';
 
 /**
@@ -19,8 +21,10 @@ export function jobRoutes(deps: Deps) {
     if (!safeEqual(c.req.header('authorization') ?? '', `Bearer ${secret}`)) throw unauthenticated();
 
     const advanced = await advanceDueOrders(deps.getDb());
+    // Reintenta los emails que no pudieron salir en su momento.
+    const emails = mailAvailable() ? await deliverPendingEmails(deps.getDb(), deps.sendMail) : null;
     c.header('Cache-Control', 'no-store');
-    return c.json({ advanced: advanced.length, orders: advanced });
+    return c.json({ advanced: advanced.length, orders: advanced, emails });
   });
 
   return routes;

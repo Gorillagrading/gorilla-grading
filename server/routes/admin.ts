@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { AdminOrdersQuery, STAFF_ROLES, ShipmentBody, TransitionBody } from '../../shared/admin.js';
 import { requireRole, requireUser } from '../auth/middleware.js';
 import type { AppEnv, Deps } from '../context.js';
+import { flushOutbox } from '../domain/outbox.js';
 import { addShipment, getAdminOrder, listAdminOrders, transitionOrder } from '../domain/admin-orders.js';
 import { clientIp, parseJson } from '../http.js';
 import { ProblemError } from '../problem.js';
@@ -34,6 +35,7 @@ export function adminRoutes(deps: Deps) {
   routes.post('/admin/orders/:code/transitions', ...staff, async (c) => {
     const body = await parseJson(c, TransitionBody);
     const detail = await transitionOrder(deps.getDb(), c.get('user'), c.req.param('code'), body, { ip: clientIp(c) });
+    await flushOutbox(deps);
     return c.json({ order: detail });
   });
 
