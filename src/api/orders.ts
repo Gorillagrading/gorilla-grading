@@ -8,3 +8,7 @@ export const fetchQuote = (items: QuoteBody['items'], shippingMethod: QuoteBody[
 /** Envía el pedido a nombre de la sesión iniciada. Reenviar el mismo `clientToken` no crea otro pedido. */
 export const submitOrder = (body: CreateOrderBody) =>
   api<{ order: CreatedOrderDto }>('/orders', { body }).then((r) => r.order);
+
+/** Abre (otra vez) la página de pago de un pedido propio pendiente de pago y devuelve su dirección. */
+export const startCheckout = (code: string) =>
+  api<{ checkoutUrl: string }>(`/orders/${encodeURIComponent(code)}/checkout`, { body: {} }).then((r) => r.checkoutUrl);

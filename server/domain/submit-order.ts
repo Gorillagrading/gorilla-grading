@@ -12,6 +12,18 @@ import { computeQuote } from './pricing.js';
 /** Versión de los términos y la política de privacidad que se aceptan al enviar un pedido. */
 export const CONSENT_VERSION = '2026-10-20';
 
+/** Con el cobro activado, el pedido espera el pago antes de quedar registrado. */
+const AWAITING_PAYMENT_TEXT = {
+  es: {
+    label: 'Pendiente de pago',
+    description: 'Tu pedido está creado. Quedará registrado en cuanto se complete el pago.',
+  },
+  en: {
+    label: 'Awaiting payment',
+    description: 'Your order is created. It will be registered as soon as the payment is completed.',
+  },
+} as const;
+
 const REGISTERED_TEXT = {
   es: {
     label: 'Pedido registrado',
@@ -24,7 +36,8 @@ const REGISTERED_TEXT = {
 } as const;
 
 /**
- * Crea un pedido enviado (SUBMITTED, sin pagar) para el usuario de la sesión.
+ * Crea un pedido para el usuario de la sesión. Con el cobro activado (`requirePayment`) nace
+ * PAYMENT_PENDING y se registra al confirmarse el pago (server/domain/payments.ts); sin cobro, nace SUBMITTED.
  * El precio sale siempre del servidor: del cliente solo se leen el servicio y el valor declarado.
  * Si el mismo `clientToken` llega dos veces, devuelve el pedido ya creado.
  */
@@ -32,7 +45,7 @@ export async function createOrder(
   db: Db,
   user: UserDto,
   input: CreateOrderBody,
-  context: { ip: string | null },
+  context: { ip: string | null; requirePayment?: boolean },
   now = new Date(),
 ): Promise<CreatedOrderDto> {
   const existing = await findByClientToken(db, user.id, input.clientToken);
@@ -55,7 +68,10 @@ export async function createOrder(
 
   const unitCentsByTier = new Map(quote.lines.map((l) => [l.tier, l.unitCents]));
   const ipHash = context.ip ? hashIp(context.ip) : null;
-  const text = REGISTERED_TEXT[input.locale];
+  const requirePayment = !!context.requirePayment;
+  const status = requirePayment ? ('PAYMENT_PENDING' as const) : ('SUBMITTED' as const);
+  const paymentStatus = requirePayment ? ('pending' as const) : ('unpaid' as const);
+  const text = (requirePayment ? AWAITING_PAYMENT_TEXT : REGISTERED_TEXT)[input.locale];
   const courier = input.shippingMethod === 'COURIER_INSURED';
 
   return db.transaction(async (tx) => {
@@ -67,7 +83,7 @@ export async function createOrder(
         .values({
           code: newOrderCode(),
           userId: user.id,
-          status: 'SUBMITTED',
+          status,
           shippingMethod: input.shippingMethod,
           shippingAddress:
             courier && input.shippingAddress ? { fullName: input.fullName, ...input.shippingAddress } : null,
@@ -77,7 +93,7 @@ export async function createOrder(
           shippingCents: quote.shippingCents,
           taxCents: quote.vatCents,
           totalCents: quote.totalCents,
-          paymentStatus: 'unpaid',
+          paymentStatus,
           submittedAt: now,
           clientToken: input.clientToken,
         })
@@ -115,14 +131,15 @@ export async function createOrder(
 
     await tx.insert(custodyEvents).values({
       orderId: order.id,
-      toStatus: 'SUBMITTED',
+      toStatus: status,
       publicLabel: text.label,
       publicDescription: text.description,
       actorId: user.id,
       occurredAt: now,
     });
 
-    await tx
+    // Sin cobro, el pedido ya está registrado y se avisa ahora; con cobro, se avisa al confirmarse el pago.
+    if (!requirePayment) await tx
       .insert(emailOutbox)
       .values({
         dedupeKey: `order:${order.code}:submitted`,
@@ -178,8 +195,8 @@ export async function createOrder(
 
     return {
       code: order.code,
-      status: 'SUBMITTED' as const,
-      paymentStatus: 'unpaid' as const,
+      status,
+      paymentStatus,
       itemCount: quote.itemCount,
       totalCents: quote.totalCents,
       shippingMethod: input.shippingMethod,
@@ -198,8 +215,8 @@ async function findByClientToken(db: Db, userId: string, clientToken: string): P
   const [{ n }] = await db.select({ n: count() }).from(orderItems).where(eq(orderItems.orderId, order.id));
   return {
     code: order.code,
-    status: 'SUBMITTED',
-    paymentStatus: 'unpaid',
+    status: order.status === 'PAYMENT_PENDING' ? 'PAYMENT_PENDING' : 'SUBMITTED',
+    paymentStatus: order.paymentStatus,
     itemCount: n,
     totalCents: order.totalCents ?? 0,
     shippingMethod: order.shippingMethod as CreatedOrderDto['shippingMethod'],

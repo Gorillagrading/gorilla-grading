@@ -7,6 +7,7 @@ import { getDb } from '../db/client.js';
 import type { AppEnv, Deps } from './context.js';
 import { sendLoginCode } from './email/login-code.js';
 import { sendMail } from './email/transport.js';
+import { paymentGatewayFromEnv } from './payments/gateway.js';
 import { loadSigner } from './signing.js';
 import { createSupabaseStorage } from './storage.js';
 import { sameOriginOnly } from './http.js';
@@ -17,6 +18,7 @@ import { authRoutes } from './routes/auth.js';
 import { certificateRoutes } from './routes/certificates.js';
 import { jobRoutes } from './routes/jobs.js';
 import { orderRoutes } from './routes/orders.js';
+import { paymentRoutes } from './routes/payments.js';
 import { trackingRoutes } from './routes/tracking.js';
 
 export function createApp(deps: Deps) {
@@ -42,6 +44,7 @@ export function createApp(deps: Deps) {
   app.route('/', jobRoutes(deps));
   app.route('/', trackingRoutes(deps));
   app.route('/', certificateRoutes(deps));
+  app.route('/', paymentRoutes(deps));
 
   app.notFound((c) =>
     problemResponse(c, { type: 'about:blank', title: 'Not Found', status: 404, instance: c.req.path }),
@@ -86,4 +89,4 @@ export function createApp(deps: Deps) {
   return app;
 }
 
-export const app = createApp({ getDb, sendLoginCode, sendMail, storage: createSupabaseStorage(), getSigner: loadSigner });
+export const app = createApp({ getDb, sendLoginCode, sendMail, storage: createSupabaseStorage(), getSigner: loadSigner, payments: paymentGatewayFromEnv() });

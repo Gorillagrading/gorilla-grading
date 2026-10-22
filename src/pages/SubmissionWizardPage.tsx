@@ -5,7 +5,7 @@ import { MOCK_SERVICES } from '../data/mockServices';
 import { OrderItem, ServiceTier } from '../types';
 import { useAuth } from '../context/AuthContext';
 import { ApiError } from '../api/client';
-import { fetchQuote, submitOrder } from '../api/orders';
+import { fetchQuote, startCheckout, submitOrder } from '../api/orders';
 import { formatEur } from '../utils/money';
 import { InlineSignIn } from '../components/common/InlineSignIn';
 import type { QuoteDto, QuoteIssue } from '../../shared/orders';
@@ -140,6 +140,9 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
   const [shippingMethod, setShippingMethod] = useState<'COURIER_INSURED' | 'CARD_SHOW_DROPOFF'>('COURIER_INSURED');
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [generatedSubmissionId, setGeneratedSubmissionId] = useState('');
+  /** El pedido se creó pero falta pagarlo (no se pudo abrir la página de pago). */
+  const [awaitingPayment, setAwaitingPayment] = useState(false);
+  const [payError, setPayError] = useState('');
 
   const es = language === 'es';
   const { user, isLoggedIn } = useAuth();
@@ -315,7 +318,13 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
         acceptedTerms: true,
         confirmedDeclaredValues: true,
       });
+      // Con cobro activado se va directamente a la página de pago de Stripe.
+      if (order.checkoutUrl) {
+        window.location.assign(order.checkoutUrl);
+        return;
+      }
       setGeneratedSubmissionId(order.code);
+      setAwaitingPayment(order.status === 'PAYMENT_PENDING');
       setIsSubmitted(true);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err) {
@@ -349,14 +358,36 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
           <CheckCircle2 className={`w-14 h-14 ${isLight ? 'text-[#16A34A]' : 'text-[#4ADE80]'}`} />
         </div>
         <h1 className="text-2xl sm:text-3xl font-['Nunito',sans-serif] font-[900] uppercase tracking-normal mb-4">
-          {language === 'es' ? 'Pedido Confirmado' : 'Order Confirmed'}
+          {awaitingPayment
+            ? (language === 'es' ? 'Falta el pago' : 'Payment pending')
+            : (language === 'es' ? 'Pedido Confirmado' : 'Order Confirmed')}
         </h1>
         <p className={`mb-8 font-sans ${isLight ? 'text-[#656E63]' : 'text-[#A4ACA1]'}`}>
           {language === 'es' 
-            ? `Tu número de envío es #${generatedSubmissionId}. Recibirás las etiquetas por correo electrónico en breve.`
-            : `Your submission ID is #${generatedSubmissionId}. You will receive shipping labels via email shortly.`}
+            ? (awaitingPayment
+                ? `Tu pedido #${generatedSubmissionId} está guardado, pero no pudimos abrir la página de pago. Quedará registrado en cuanto lo pagues.`
+                : `Tu número de pedido es #${generatedSubmissionId}. Te hemos enviado la confirmación por correo electrónico.`)
+            : (awaitingPayment
+                ? `Your order #${generatedSubmissionId} is saved, but we could not open the payment page. It will be registered as soon as you pay.`
+                : `Your order number is #${generatedSubmissionId}. We have emailed you the confirmation.`)}
         </p>
+        {payError && <p className="mb-6 text-sm text-red-500">{payError}</p>}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          {awaitingPayment && (
+            <button
+              onClick={async () => {
+                setPayError('');
+                try {
+                  window.location.assign(await startCheckout(generatedSubmissionId));
+                } catch {
+                  setPayError(language === 'es' ? 'No se pudo abrir la página de pago. Inténtalo desde tu pedido en unos minutos.' : 'Could not open the payment page. Try again from your order in a few minutes.');
+                }
+              }}
+              className="btn-gorilla-square w-full sm:w-auto px-8 py-3.5 text-xs font-extrabold tracking-normal shadow-lg"
+            >
+              {language === 'es' ? 'PAGAR AHORA' : 'PAY NOW'}
+            </button>
+          )}
           <button
             onClick={() => onNavigate('/account')}
             className="btn-gorilla-square w-full sm:w-auto px-8 py-3.5 text-xs font-extrabold tracking-normal shadow-lg"
@@ -392,8 +423,8 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
         </h1>
         <p className={`font-sans text-sm max-w-xl mb-12 ${isLight ? 'text-[#656E63]' : 'text-[#A4ACA1]'}`}>
           {language === 'es'
-            ? 'Configura tu pedido en cuatro pasos. Al terminar recibirás el albarán y la etiqueta de transporte por correo. Nada se cobra hasta que las cartas llegan y se verifican.'
-            : 'Configure your order in four steps. Once finished, you will receive your packing slip and transport label by email. Nothing is charged until your cards arrive and are verified.'}
+            ? 'Configura tu pedido en cuatro pasos. Al terminar pagarás de forma segura con Stripe y te enviaremos la confirmación por correo.'
+            : 'Configure your order in four steps. At the end you pay securely with Stripe and we email you the confirmation.'}
         </p>
 
         {/* Minimalist Horizontal Step Indicator */}
@@ -1399,8 +1430,8 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
               </h2>
               <p className={`text-xs font-sans mb-8 ${muted}`}>
                 {es
-                  ? 'Comprueba que todo esté correcto. Al confirmar, emitiremos tu etiqueta de envío encriptada.'
-                  : 'Verify all details. Upon confirmation, your encrypted shipping label will be issued.'}
+                  ? 'Comprueba que todo esté correcto. Al confirmar irás a la página de pago segura de Stripe.'
+                  : 'Verify all details. Upon confirmation you will go to the secure Stripe payment page.'}
               </p>
 
               <div className={`p-6 font-mono text-sm space-y-4 border ${
@@ -1445,8 +1476,8 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
                     </div>
                     <p className={`text-[11px] font-sans ${muted}`}>
                       {es
-                        ? `Base imponible ${money(quote.vatBaseCents)} + IVA ${Math.round(quote.vatRate * 100)} % ${money(quote.vatCents)}. Todavía no se cobra nada.`
-                        : `Net ${money(quote.vatBaseCents)} + ${Math.round(quote.vatRate * 100)}% VAT ${money(quote.vatCents)}. Nothing is charged yet.`}
+                        ? `Base imponible ${money(quote.vatBaseCents)} + IVA ${Math.round(quote.vatRate * 100)} % ${money(quote.vatCents)}. Se cobra en el siguiente paso, en la página segura de Stripe.`
+                        : `Net ${money(quote.vatBaseCents)} + ${Math.round(quote.vatRate * 100)}% VAT ${money(quote.vatCents)}. You pay in the next step, on the secure Stripe page.`}
                     </p>
                   </>
                 ) : (
@@ -1553,7 +1584,7 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
               >
                 <span>
                   {currentStep === 4
-                    ? (submitting ? (es ? 'ENVIANDO…' : 'SUBMITTING…') : (es ? 'ENVIAR PEDIDO' : 'SUBMIT ORDER'))
+                    ? (submitting ? (es ? 'ENVIANDO…' : 'SUBMITTING…') : (es ? 'ENVIAR Y PAGAR' : 'SUBMIT AND PAY'))
                     : (es ? 'CONTINUAR' : 'CONTINUE')}
                 </span>
 

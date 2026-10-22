@@ -2,7 +2,6 @@ import React from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
 import { BrandEcosystemRibbon } from './BrandEcosystemRibbon';
-import { HeroCardStage, HeroStageBackdrop } from './HeroCardStage';
 import { 
   ShieldCheck, 
   Crosshair, 
@@ -24,6 +23,53 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
   const { t, language } = useLanguage();
   const { theme } = useTheme();
   const isLight = theme === 'light';
+
+  const videoRef = React.useRef<HTMLVideoElement>(null);
+  const ambientRef = React.useRef<HTMLVideoElement>(null);
+  // No poster image: the video fades in once its first frame is ready
+  const [videoReady, setVideoReady] = React.useState(false);
+
+  // React does not set the DOM `muted` property from the attribute, so browsers
+  // sometimes block autoplay and leave the poster/first frame on screen.
+  // Force muted and retry playback until it actually starts (main video and its blurred backdrop).
+  React.useEffect(() => {
+    const videos = [videoRef.current, ambientRef.current].filter((v): v is HTMLVideoElement => !!v);
+    if (videos.length === 0) return;
+    videos.forEach((v) => {
+      v.muted = true;
+      v.defaultMuted = true;
+    });
+
+    const tryPlay = () => {
+      videos.forEach((v) => {
+        if (v.paused) v.play().catch(() => {});
+      });
+    };
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') tryPlay();
+    };
+
+    tryPlay();
+    videos.forEach((v) => {
+      v.addEventListener('loadeddata', tryPlay);
+      v.addEventListener('canplay', tryPlay);
+      v.addEventListener('stalled', tryPlay);
+    });
+    document.addEventListener('visibilitychange', onVisible);
+    window.addEventListener('pointerdown', tryPlay);
+    window.addEventListener('scroll', tryPlay, { passive: true });
+
+    return () => {
+      videos.forEach((v) => {
+        v.removeEventListener('loadeddata', tryPlay);
+        v.removeEventListener('canplay', tryPlay);
+        v.removeEventListener('stalled', tryPlay);
+      });
+      document.removeEventListener('visibilitychange', onVisible);
+      window.removeEventListener('pointerdown', tryPlay);
+      window.removeEventListener('scroll', tryPlay);
+    };
+  }, []);
 
   return (
     <section 
@@ -267,9 +313,52 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
         }
       `}</style>
 
-      {/* Escenario por capas: fondo con luces doradas que cubre todo el hero; el texto queda sobre un degradado según el tema */}
+      {/* Full-Section Video Background - Covers the whole hero, text sits on a theme-aware gradient for legibility */}
       <div className="absolute inset-0 z-0 pointer-events-none select-none overflow-hidden">
-        <HeroStageBackdrop />
+        {/* Blurred copy of the video that fills the whole width behind the real one (desktop only),
+            so the complete video can be shown at the hero height without empty side bands */}
+        <video
+          ref={ambientRef}
+          src="/videos/gorilla_hero_loop.mp4"
+          aria-hidden="true"
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          disablePictureInPicture
+          tabIndex={-1}
+          className="hidden lg:block absolute inset-0 w-full h-full object-cover scale-110 blur-2xl"
+          style={{ opacity: videoReady ? 0.85 : 0, transition: 'opacity 0.6s ease', pointerEvents: 'none' }}
+        />
+        {/* On desktop the real video keeps its 16:9 shape at the hero height, centered, with its side
+            edges feathered into the blurred backdrop. On small screens it simply covers the hero. */}
+        <div className="absolute inset-0 flex justify-center lg:justify-end">
+          <div className="relative w-full h-full lg:w-auto lg:aspect-video lg:max-w-full shrink-0 lg:[mask-image:linear-gradient(to_right,transparent,#000_22%)] lg:[-webkit-mask-image:linear-gradient(to_right,transparent,#000_22%)]">
+            <video
+              ref={videoRef}
+              src="/videos/gorilla_hero_loop.mp4"
+              aria-label="Gorilla Grading hero video"
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="auto"
+              disablePictureInPicture
+              onLoadedData={() => setVideoReady(true)}
+              onPlaying={() => setVideoReady(true)}
+              className="w-full h-full object-cover lg:object-contain"
+              style={{
+                opacity: videoReady ? 1 : 0,
+                transition: 'opacity 0.6s ease',
+                WebkitTouchCallout: 'none',
+                userSelect: 'none',
+                WebkitUserSelect: 'none',
+                pointerEvents: 'none',
+              }}
+            />
+          </div>
+        </div>
         <div
           className="absolute inset-0"
           style={{
@@ -432,9 +521,6 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
           </div>
 
         </div>
-
-        {/* Right Stage Column: slabs animados, siempre completos dentro de su caja */}
-        <HeroCardStage className="lg:col-span-6 w-full h-[300px] sm:h-[380px] lg:h-[min(60vh,600px)]" />
 
       </div>
 

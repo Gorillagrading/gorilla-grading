@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { ArrowRight, ScanLine } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import { SlabTimelineIcon } from '../components/common/SlabTimelineIcon';
 import { OrderResults } from '../components/common/OrderResults';
+import { PaymentPanel } from '../components/common/PaymentPanel';
 import { api, ApiError } from '../api/client';
 import type { TrackingDto } from '../../shared/tracking';
 import { STATUS_LABEL, STEP_COPY } from '../utils/orderStatus';
@@ -34,6 +35,8 @@ export const TrackingPage: React.FC<TrackingPageProps> = ({ onNavigate }) => {
   const [tracking, setTracking] = useState<TrackingDto | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<{ kind: LookupError; query: string } | null>(null);
+  /** Resultado al volver de la página de pago de Stripe (?payment=success|cancelled). */
+  const [paymentReturn, setPaymentReturn] = useState<'success' | 'cancelled' | null>(null);
 
   const errorMsg = !error
     ? ''
@@ -71,11 +74,24 @@ export const TrackingPage: React.FC<TrackingPageProps> = ({ onNavigate }) => {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const code = params.get('code') || params.get('id') || params.get('tracking');
+    const payment = params.get('payment');
+    if (payment === 'success' || payment === 'cancelled') setPaymentReturn(payment);
     if (code) {
       setSearchTracking(code);
       void lookup(code);
     }
   }, []);
+
+  /** Vuelve a leer el pedido sin tocar la búsqueda (por ejemplo, mientras se confirma un pago). */
+  const refresh = useCallback(async () => {
+    if (!tracking) return;
+    try {
+      const { tracking: fresh } = await api<{ tracking: TrackingDto }>(`/tracking/${encodeURIComponent(tracking.code)}`);
+      setTracking(fresh);
+    } catch {
+      // Se reintenta en la siguiente vuelta.
+    }
+  }, [tracking]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -175,6 +191,17 @@ export const TrackingPage: React.FC<TrackingPageProps> = ({ onNavigate }) => {
               </div>
             </div>
           </section>
+
+          <PaymentPanel
+            code={tracking.code}
+            status={tracking.status}
+            isOwner={!!tracking.items}
+            paymentReturn={paymentReturn}
+            lang={lang}
+            isLight={isLight}
+            onRefresh={refresh}
+            onNavigate={onNavigate}
+          />
 
           {/* Results: Order data + Custody Timeline */}
           <section className={`w-full flex-1 py-6 sm:py-8 px-6 lg:px-12 transition-colors duration-300 ${

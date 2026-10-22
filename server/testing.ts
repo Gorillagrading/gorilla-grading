@@ -12,6 +12,8 @@ import { createApp } from './app.js';
 import { slabSerialFor } from './codes.js';
 import type { Deps } from './context.js';
 import type { Mail } from './email/transport.js';
+import type { CheckoutRequest, PaymentGateway } from './payments/gateway.js';
+import { ProblemError } from './problem.js';
 import { createSigner, generateSigningKey } from './signing.js';
 import type { ObjectStorage } from './storage.js';
 
@@ -174,6 +176,7 @@ export function createTestApp(db: TestDb, overrides: Partial<Deps> = {}) {
     },
     storage,
     getSigner: () => testSigner,
+    payments: null,
     ...overrides,
   };
   const app = createApp(deps);
@@ -238,4 +241,25 @@ export function createFakeStorage(): ObjectStorage & { put: (key: string) => voi
       removed.push(key);
     },
   };
+}
+
+/** Pasarela de pago simulada: guarda las páginas de pago creadas y acepta avisos con la firma "firma-valida". */
+export function createFakePayments() {
+  const sessions: (CheckoutRequest & { id: string })[] = [];
+  const state = { fail: false };
+  const gateway: PaymentGateway = {
+    createCheckout: async (request) => {
+      if (state.fail) throw new Error('Stripe no responde');
+      const id = `cs_test_${sessions.length + 1}`;
+      sessions.push({ id, ...request });
+      return { id, url: `https://checkout.stripe.test/${id}` };
+    },
+    parseWebhook: (raw, signature) => {
+      if (signature !== 'firma-valida') {
+        throw new ProblemError(400, 'Bad Request', 'La firma del aviso no es válida.', { code: 'invalid_signature' });
+      }
+      return JSON.parse(raw);
+    },
+  };
+  return { gateway, sessions, state };
 }

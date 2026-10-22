@@ -119,11 +119,14 @@ export interface QuoteResponse {
 
 export interface CreatedOrderDto {
   code: string;
-  status: 'SUBMITTED';
-  paymentStatus: 'unpaid';
+  /** PAYMENT_PENDING si hay que pagar antes de que el pedido quede registrado. */
+  status: 'SUBMITTED' | 'PAYMENT_PENDING';
+  paymentStatus: 'unpaid' | 'pending' | 'paid' | 'failed' | 'refunded' | 'partially_refunded';
   itemCount: number;
   totalCents: number;
   shippingMethod: SubmittableShippingMethod;
   /** True si el pedido ya existía (el mismo `clientToken` se envió dos veces). */
   alreadyExisted: boolean;
+  /** Página de pago de Stripe a la que llevar al cliente; null si no hay que pagar o no se pudo abrir. */
+  checkoutUrl?: string | null;
 }

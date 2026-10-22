@@ -46,7 +46,7 @@ export function rulesFrom(status: OrderStatus, statusBeforeHold: OrderStatus | n
   if (status === 'ON_HOLD' && statusBeforeHold) {
     rules.push({ from: 'ON_HOLD', to: statusBeforeHold, roles: ['staff', 'admin'], requiresNote: true });
   }
-  if (IN_LAB.includes(status) || status === 'ON_HOLD') {
+  if (IN_LAB.includes(status) || status === 'ON_HOLD' || status === 'PAYMENT_PENDING') {
     rules.push({ from: status, to: 'CANCELLED', roles: ['admin'], requiresNote: true });
   }
   return rules;

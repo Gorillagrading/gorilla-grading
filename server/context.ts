@@ -2,6 +2,7 @@ import type { Db } from '../db/client.js';
 import type { UserDto } from '../shared/auth.js';
 import type { SendLoginCode } from './email/login-code.js';
 import type { SendMail } from './email/transport.js';
+import type { PaymentGateway } from './payments/gateway.js';
 import type { Signer } from './signing.js';
 import type { ObjectStorage } from './storage.js';
 
@@ -13,6 +14,8 @@ export type Deps = {
   storage: ObjectStorage;
   /** Firmador de certificados. Falla con 503 si no hay clave configurada. */
   getSigner: () => Signer;
+  /** Pasarela de cobro. null: no se cobra y los pedidos quedan registrados al enviarse (desarrollo y pruebas). */
+  payments: PaymentGateway | null;
 };
 
 export type AppEnv = {
