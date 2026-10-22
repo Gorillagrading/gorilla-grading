@@ -75,6 +75,27 @@ export const TechnologySection: React.FC<TechnologySectionProps> = ({
     v.play().catch(() => {});
   };
 
+  // The video is far below the hero: do not download it until the section is about to be seen,
+  // so it does not compete with the hero for bandwidth. It pauses again when out of view.
+  React.useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.muted = true;
+    if (typeof IntersectionObserver === 'undefined') {
+      v.play().catch(() => {});
+      return;
+    }
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) v.play().catch(() => {});
+        else v.pause();
+      },
+      { rootMargin: '300px' },
+    );
+    observer.observe(v);
+    return () => observer.disconnect();
+  }, [isLight]);
+
   return (
     <section
       id="how-it-works"
@@ -87,7 +108,7 @@ export const TechnologySection: React.FC<TechnologySectionProps> = ({
         <video
           key={isLight ? 'video-light' : 'video-dark'}
           ref={videoRef}
-          autoPlay
+          preload="none"
           muted
           playsInline
           onTimeUpdate={handleTimeUpdate}

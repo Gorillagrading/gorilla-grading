@@ -14,6 +14,28 @@ export const HomeTechnologySection: React.FC<HomeTechnologySectionProps> = ({
   const { language } = useLanguage();
   const { theme } = useTheme();
   const isLight = theme === 'light';
+  const videoRef = React.useRef<HTMLVideoElement>(null);
+
+  // The video sits below the hero: do not download it until the section is about to be seen,
+  // so it does not compete with the hero for bandwidth. It pauses again when out of view.
+  React.useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.muted = true;
+    if (typeof IntersectionObserver === 'undefined') {
+      v.play().catch(() => {});
+      return;
+    }
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) v.play().catch(() => {});
+        else v.pause();
+      },
+      { rootMargin: '300px' },
+    );
+    observer.observe(v);
+    return () => observer.disconnect();
+  }, [isLight]);
 
   const handleExplore = () => {
     if (onOpenTechModal) {
@@ -101,9 +123,10 @@ export const HomeTechnologySection: React.FC<HomeTechnologySectionProps> = ({
                 {/* Seamless 4-Card Sequence Video */}
                 <video 
                   key={isLight ? 'video-tech-light' : 'video-tech-dark'}
-                  src={isLight ? '/images/tecnologia_seamless.mp4' : '/images/tecnologia_seamless_Dark.mp4'} 
-                  autoPlay 
-                  loop 
+                  ref={videoRef}
+                  src={isLight ? '/images/tecnologia_seamless.mp4' : '/images/tecnologia_seamless_Dark.mp4'}
+                  preload="none"
+                  loop
                   muted 
                   playsInline 
                   onLoadedMetadata={(e) => {
