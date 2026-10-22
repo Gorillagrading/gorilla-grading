@@ -16,7 +16,7 @@ export const GradedCardsCounter: React.FC = () => {
 
   useEffect(() => {
     let cancelled = false;
-    api<{ certified: number }>('/stats/certificates')
+    api<{ certified: number }>('/registry/summary')
       .then((r) => !cancelled && setCount(r.certified))
       .catch(() => !cancelled && setCount(null));
     return () => {

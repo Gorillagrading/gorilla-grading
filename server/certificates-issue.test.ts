@@ -271,7 +271,7 @@ describe('email de salida', () => {
 
 describe('contador público de cartas certificadas', () => {
   it('cuenta los certificados vigentes: sube al emitir y no suma los revocados', async () => {
-    const certified = async () => (await read(await api('/stats/certificates'))).certified;
+    const certified = async () => (await read(await api('/registry/summary'))).certified;
     expect(await certified()).toBe(0);
 
     const code = await readyToShip();
@@ -284,7 +284,7 @@ describe('contador público de cartas certificadas', () => {
   });
 
   it('se puede guardar en caché unos minutos', async () => {
-    const res = await api('/stats/certificates');
+    const res = await api('/registry/summary');
     expect(res.headers.get('cache-control')).toBe('public, max-age=300');
   });
 });

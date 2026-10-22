@@ -23,7 +23,8 @@ export function certificateRoutes(deps: Deps) {
   });
 
   // Público: cuántas cartas tienen hoy un certificado vigente (el contador del pie de la web).
-  routes.get('/stats/certificates', async (c) => {
+  // La dirección evita palabras como "stats" o "analytics": los bloqueadores de anuncios las cortan.
+  routes.get('/registry/summary', async (c) => {
     const [{ certified }] = await deps
       .getDb()
       .select({ certified: count() })
