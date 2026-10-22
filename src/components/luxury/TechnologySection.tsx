@@ -56,24 +56,6 @@ export const TechnologySection: React.FC<TechnologySectionProps> = ({
   const isLight = theme === 'light';
 
   const videoRef = React.useRef<HTMLVideoElement>(null);
-  const FADE_SECONDS = 0.8;
-
-  // Fade out during the last moments of the clip
-  const handleTimeUpdate = () => {
-    const v = videoRef.current;
-    if (!v || !v.duration) return;
-    const remaining = v.duration - v.currentTime;
-    v.style.opacity = String(remaining < FADE_SECONDS ? Math.max(remaining / FADE_SECONDS, 0) : 1);
-  };
-
-  // Restart from the beginning; timeupdate then fades it back in
-  const handleEnded = () => {
-    const v = videoRef.current;
-    if (!v) return;
-    v.style.opacity = '0';
-    v.currentTime = 0;
-    v.play().catch(() => {});
-  };
 
   // The video is far below the hero: do not download it until the section is about to be seen,
   // so it does not compete with the hero for bandwidth. It pauses again when out of view.
@@ -103,21 +85,19 @@ export const TechnologySection: React.FC<TechnologySectionProps> = ({
         isLight ? 'bg-[#F1ECE5] text-[#1C201D]' : 'bg-[#14170F] text-white'
       }`}
     >
-      {/* Full Width Background Video - fades out at the end and back in, so the loop is not abrupt */}
+      {/* Full Width Background Video - the clip is edited as a seamless loop, so native loop is enough */}
       <div className="absolute inset-0 z-0 overflow-hidden">
         <video
           key={isLight ? 'video-light' : 'video-dark'}
           ref={videoRef}
           preload="none"
+          loop
           muted
           playsInline
-          onTimeUpdate={handleTimeUpdate}
-          onEnded={handleEnded}
-          style={{ transition: 'opacity 0.25s linear' }}
           className="w-full h-full object-cover object-center pointer-events-none"
           poster={isLight ? '/images/tecnoSeccion.png' : '/images/Dark/tecnoSeccion.png'}
         >
-          <source src="/images/tecnoSeccionScn.mp4" type="video/mp4" />
+          <source src="/images/tecnoSeccionScn_loop.mp4" type="video/mp4" />
         </video>
       </div>
       
