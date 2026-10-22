@@ -44,13 +44,16 @@ async function loadImage(db: Db, code: string, position: number, imageId: string
   return { image, order };
 }
 
-const toDto = async (storage: ObjectStorage, row: typeof itemImages.$inferSelect, ttl: number): Promise<ImageDto> => ({
-  id: row.id,
-  kind: row.kind,
-  contentType: row.contentType,
-  byteSize: row.byteSize,
-  url: await storage.createDownloadUrl(row.storageKey, ttl),
-});
+/** Una foto cuyo archivo ya no está en el almacenamiento se omite en vez de romper la lista entera. */
+const toDto = async (storage: ObjectStorage, row: typeof itemImages.$inferSelect, ttl: number): Promise<ImageDto | null> => {
+  try {
+    return { id: row.id, kind: row.kind, contentType: row.contentType, byteSize: row.byteSize, url: await storage.createDownloadUrl(row.storageKey, ttl) };
+  } catch (error) {
+    console.error('[storage] no se pudo firmar una foto', row.id, error instanceof Error ? error.message : error);
+    return null;
+  }
+};
+const present = (images: (ImageDto | null)[]): ImageDto[] => images.filter((i): i is ImageDto => i !== null);
 
 const audit = (db: Db, actor: UserDto, action: string, orderCode: string, position: number, extra: object, ip: string | null) =>
   db.insert(auditLogs).values({
@@ -100,7 +103,7 @@ export async function confirmImage(
     .where(eq(itemImages.id, image.id))
     .returning();
   await audit(db, actor, 'image.uploaded', order.code, position, { imageId: image.id, kind: image.kind }, context.ip);
-  return toDto(storage, updated, STAFF_URL_TTL);
+  return (await toDto(storage, updated, STAFF_URL_TTL))!;
 }
 
 export async function deleteImage(
@@ -141,7 +144,7 @@ export async function listOrderImages(db: Db, storage: ObjectStorage, code: stri
     items: await Promise.all(
       items.map(async (item) => ({
         position: item.position,
-        images: await Promise.all(images.filter((i) => i.orderItemId === item.id).map((i) => toDto(storage, i, STAFF_URL_TTL))),
+        images: present(await Promise.all(images.filter((i) => i.orderItemId === item.id).map((i) => toDto(storage, i, STAFF_URL_TTL)))),
       })),
     ),
   };
@@ -189,7 +192,7 @@ export async function getOrderResults(db: Db, storage: ObjectStorage, userId: st
           game: item.game,
           setName: item.setName,
           grading,
-          images: await Promise.all(images.filter((i) => i.orderItemId === item.id).map((i) => toDto(storage, i, CUSTOMER_URL_TTL))),
+          images: present(await Promise.all(images.filter((i) => i.orderItemId === item.id).map((i) => toDto(storage, i, CUSTOMER_URL_TTL)))),
         };
       }),
     ),

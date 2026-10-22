@@ -96,7 +96,15 @@ export function adminRoutes(deps: Deps) {
     };
     await attempt('Preparar una subida firmada', async () => (await deps.storage.createUpload(probe, 'text/plain')).url.split('?')[0]);
     await attempt('Comprobar si existe un archivo', async () => String(await deps.storage.exists(probe)));
-    await attempt('Firmar un enlace de lectura', async () => (await deps.storage.createDownloadUrl(probe, 60)).split('?')[0]);
+    // El archivo de prueba no existe: que Supabase conteste "no encontrado" demuestra que la firma funciona.
+    await attempt('Firmar un enlace de lectura', async () => {
+      try {
+        return (await deps.storage.createDownloadUrl(probe, 60)).split('?')[0];
+      } catch (error) {
+        if (error instanceof Error && /NoSuchKey|not_found|Object not found/.test(error.message)) return 'responde (el archivo de prueba no existe, es lo esperado)';
+        throw error;
+      }
+    });
     c.header('Cache-Control', 'no-store');
     return c.json({ env, steps, ok: steps.every((s) => s.ok) });
   });

@@ -263,3 +263,23 @@ describe('diagnóstico del almacenamiento', () => {
     }
   });
 });
+
+describe('fotos cuyo archivo desapareció del almacenamiento', () => {
+  it('se omiten en la lista en vez de romperla', async () => {
+    const code = await received();
+    await addPhoto(code, 'front');
+    await addPhoto(code, 'back');
+    const real = t.storage.createDownloadUrl;
+    t.storage.createDownloadUrl = async (key, ttl) => {
+      if (key.includes('/front-')) throw new Error('Object not found');
+      return real(key, ttl);
+    };
+    try {
+      const res = await api(`/admin/orders/${code}/images`, 'staff@lab.test');
+      expect(res.status).toBe(200);
+      expect((await read(res)).items[0].images.map((i: any) => i.kind)).toEqual(['back']);
+    } finally {
+      t.storage.createDownloadUrl = real;
+    }
+  });
+});
