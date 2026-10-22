@@ -1,4 +1,6 @@
+import { count, eq } from 'drizzle-orm';
 import { Hono } from 'hono';
+import { certificates } from '../../db/schema.js';
 import type { VerificationChannel } from '../../shared/certificate.js';
 import type { AppEnv, Deps } from '../context.js';
 import { findPublicCertificate } from '../domain/certificates.js';
@@ -18,6 +20,17 @@ export function certificateRoutes(deps: Deps) {
     const { keyId, publicKey } = deps.getSigner();
     c.header('Cache-Control', 'public, max-age=3600');
     return c.json({ keys: [{ keyId, algorithm: 'Ed25519', publicKey, format: 'SPKI DER, base64' }] });
+  });
+
+  // Público: cuántas cartas tienen hoy un certificado vigente (el contador del pie de la web).
+  routes.get('/stats/certificates', async (c) => {
+    const [{ certified }] = await deps
+      .getDb()
+      .select({ certified: count() })
+      .from(certificates)
+      .where(eq(certificates.status, 'active'));
+    c.header('Cache-Control', 'public, max-age=300');
+    return c.json({ certified });
   });
 
   // Público: verifica un certificado por su número o por el serial de su slab.

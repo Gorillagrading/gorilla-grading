@@ -1,32 +1,30 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
-
-interface GradedCardsCounterProps {
-  /** 
-   * The number of graded cards to display.
-   * Currently static — will be connected to database in the future.
-   * Should only increment when a card completes the full grading process.
-   */
-  count?: number;
-}
+import { api } from '../../api/client';
 
 /**
- * GradedCardsCounter — Displays the total number of professionally graded cards.
- * 
- * Designed to integrate subtly into existing layouts (footer, hero, etc.)
- * without creating a new section or competing with primary content.
- * 
- * Future integration:
- * - Connect `count` prop to a Supabase real-time query
- * - Increment only when a card's grading process is fully completed
+ * GradedCardsCounter — cuántas cartas tienen hoy un certificado vigente, leído del registro.
+ * Solo cuentan los certificados activos: uno revocado o sustituido deja de sumar.
+ * Si la consulta falla no se muestra nada, nunca una cifra inventada.
  */
-export const GradedCardsCounter: React.FC<GradedCardsCounterProps> = ({ 
-  count = 5000 
-}) => {
+export const GradedCardsCounter: React.FC = () => {
   const { language } = useLanguage();
   const { theme } = useTheme();
   const isLight = theme === 'light';
+  const [count, setCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    api<{ certified: number }>('/stats/certificates')
+      .then((r) => !cancelled && setCount(r.certified))
+      .catch(() => !cancelled && setCount(null));
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (count === null) return null;
 
   // Format number with locale-appropriate separators
   const formattedCount = count.toLocaleString(language === 'es' ? 'es-ES' : 'en-US');
@@ -68,4 +66,3 @@ export const GradedCardsCounter: React.FC<GradedCardsCounterProps> = ({
     </div>
   );
 };
-

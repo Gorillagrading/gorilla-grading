@@ -268,3 +268,23 @@ describe('email de salida', () => {
     expect(mail!.html).toContain(cert.number);
   });
 });
+
+describe('contador público de cartas certificadas', () => {
+  it('cuenta los certificados vigentes: sube al emitir y no suma los revocados', async () => {
+    const certified = async () => (await read(await api('/stats/certificates'))).certified;
+    expect(await certified()).toBe(0);
+
+    const code = await readyToShip();
+    await move(code, 'qa@lab.test', 'SHIPPED', 'QUALITY_ASSURANCE');
+    // Dos cartas en el pedido, una no auténtica: solo una recibe certificado.
+    expect(await certified()).toBe(1);
+
+    await db.update(certificates).set({ status: 'revoked', revokedAt: new Date(), revokedReason: 'prueba' });
+    expect(await certified()).toBe(0);
+  });
+
+  it('se puede guardar en caché unos minutos', async () => {
+    const res = await api('/stats/certificates');
+    expect(res.headers.get('cache-control')).toBe('public, max-age=300');
+  });
+});
