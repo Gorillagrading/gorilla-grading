@@ -23,6 +23,10 @@ type CertificateImages = { front?: string; back?: string; slabMockup?: string; f
 
 const IMAGE_URL_TTL = 15 * 60;
 
+/** Valores que se guardan cuando el cliente no indicó el dato (la tabla de cartas no admite vacíos). No se muestran. */
+const PLACEHOLDERS = new Set(['Unknown', 'N/A', 'Unspecified']);
+const shown = (value: string) => (PLACEHOLDERS.has(value) ? '' : value);
+
 export type CertificateRecord = typeof certificates.$inferSelect;
 
 export interface LoadedCard {
@@ -98,12 +102,12 @@ export async function loadCards(
       id: cert.id,
       certNumber: cert.number,
       name: identity.name,
-      set: identity.setName,
+      set: shown(identity.setName),
       year: identity.year ?? 0,
-      cardNumber: identity.cardNumber,
+      cardNumber: shown(identity.cardNumber),
       rarity: identity.rarity ?? '',
       game: identity.game,
-      language: identity.language,
+      language: shown(identity.language),
       grade,
       gradeLabel: r.gradeLabel ?? '',
       subgrades: {
@@ -143,6 +147,7 @@ export async function loadCards(
           title: d.title,
           description: d.description ?? '',
           severity: d.severity,
+          side: d.side,
           x: d.x,
           y: d.y,
           deduction: d.deduction,
@@ -153,7 +158,7 @@ export async function loadCards(
         equalCount: samePrint.filter((p) => (p.grade ?? 0) === grade).length,
       },
       certDate: cert.issuedAt.toISOString().slice(0, 10),
-      verifier: r.station ?? '',
+      verifier: r.station || 'Gorilla Grading',
       securityHash: cert.signature ?? '',
       declaredValueEur: declaredValueCents / 100,
       isAuthentic: r.isAuthentic,

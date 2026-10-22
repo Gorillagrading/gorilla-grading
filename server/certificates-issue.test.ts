@@ -96,6 +96,7 @@ async function readyToShip() {
     isAuthentic: true,
     centering: { score: 9.5, frontRatio: '50/50 L/R', backRatio: '51/49 L/R', notes: 'Muy bien centrada' },
     corners: { score: 9 }, edges: { score: 9.5 }, surface: { score: 9.5 },
+    defects: [{ side: 'back', category: 'surface', severity: 'minor', title: 'Arañazo en el reverso', x: 30, y: 70 }],
     submit: true,
   });
   await grade(code, 2, { isAuthentic: false, submit: true });
@@ -177,6 +178,9 @@ describe('verificación pública de un certificado firmado', () => {
     expect(certificate).toMatchObject({ certNumber: cert.number, grade: 9.5, keyId: 'test-key-1', status: 'active' });
     expect(certificate.frontImage).toMatch(/^memory:\/\/download\/items\/.+\/front-.+\?ttl=900$/);
     expect(certificate.backImage).toContain('/back-');
+    // El cliente no indicó número, idioma ni año: no se envían valores de relleno.
+    expect(certificate.defects).toEqual([expect.objectContaining({ side: 'back', category: 'Surface', title: 'Arañazo en el reverso', x: 30, y: 70 })]);
+    expect(certificate).toMatchObject({ set: 'Base Set', cardNumber: '', language: '', year: 0, verifier: 'Gorilla Grading' });
 
     const keys = await read(await api('/certificates/keys'));
     expect(keys.keys[0]).toMatchObject({ keyId: 'test-key-1', algorithm: 'Ed25519', publicKey: testSigner.publicKey });

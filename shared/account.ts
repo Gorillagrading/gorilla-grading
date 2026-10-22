@@ -23,6 +23,8 @@ export interface CardDefectDto {
   title: string;
   description: string;
   severity: 'minor' | 'moderate' | 'critical' | 'flawless';
+  /** Cara de la carta en la que está el defecto; las coordenadas son sobre la foto de esa cara. */
+  side: 'front' | 'back';
   x: number;
   y: number;
   deduction: number;

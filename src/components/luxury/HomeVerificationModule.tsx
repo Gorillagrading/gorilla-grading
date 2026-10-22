@@ -1,3 +1,4 @@
+import { cardYear, orDash, sideScores as formatSideScores } from '../../utils/cardDisplay';
 import React, { useState } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
@@ -61,8 +62,7 @@ export const HomeVerificationModule: React.FC<HomeVerificationModuleProps> = ({ 
     }
   };
 
-  const sideScores = (s: { frontScore: number; backScore: number }) =>
-    `${language === 'es' ? 'FRENTE' : 'FRONT'} ${s.frontScore} · ${language === 'es' ? 'DORSO' : 'BACK'} ${s.backScore}`;
+  const sideScores = (s: { frontScore: number; backScore: number }) => formatSideScores(s, language === 'es', false);
 
   return (
     <section 
@@ -415,7 +415,7 @@ export const HomeVerificationModule: React.FC<HomeVerificationModuleProps> = ({ 
                 <div className="pb-5 border-b border-gray-200 dark:border-white/10">
                   <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
                     <span className="font-mono text-xs font-bold tracking-[0.2em] text-[#48C765] uppercase">
-                      {selectedCard.game} · {selectedCard.language}
+                      {[selectedCard.game, selectedCard.language].filter(Boolean).join(' · ')}
                     </span>
                   </div>
 
@@ -424,13 +424,13 @@ export const HomeVerificationModule: React.FC<HomeVerificationModuleProps> = ({ 
                   </h3>
                   
                   <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 font-sans text-xs text-gray-500 dark:text-gray-400">
-                    <span><strong>Set:</strong> {selectedCard.set}</span>
+                    <span><strong>Set:</strong> {orDash(selectedCard.set)}</span>
                     <span>•</span>
-                    <span><strong>{language === 'es' ? 'Año:' : 'Year:'}</strong> {selectedCard.year}</span>
+                    <span><strong>{language === 'es' ? 'Año:' : 'Year:'}</strong> {orDash(cardYear(selectedCard.year))}</span>
                     <span>•</span>
-                    <span><strong>{language === 'es' ? 'Número:' : 'Card #:'}</strong> {selectedCard.cardNumber}</span>
+                    <span><strong>{language === 'es' ? 'Número:' : 'Card #:'}</strong> {orDash(selectedCard.cardNumber)}</span>
                     <span>•</span>
-                    <span><strong>{language === 'es' ? 'Rareza:' : 'Rarity:'}</strong> {selectedCard.rarity}</span>
+                    <span><strong>{language === 'es' ? 'Rareza:' : 'Rarity:'}</strong> {orDash(selectedCard.rarity)}</span>
                     <span>•</span>
                   </div>
                 </div>

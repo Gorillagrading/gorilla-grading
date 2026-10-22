@@ -6,6 +6,8 @@ export interface CardDefect {
   title: string;
   description: string;
   severity: 'minor' | 'moderate' | 'critical' | 'flawless';
+  /** Cara en la que está el defecto. Los datos antiguos no la tienen: se toma el anverso. */
+  side?: 'front' | 'back';
   x: number; // percentage coordinates 0-100 on card image
   y: number;
   deduction: number;

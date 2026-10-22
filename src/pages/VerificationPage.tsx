@@ -1,3 +1,4 @@
+import { cardYear, orDash, sideScores as formatSideScores } from '../utils/cardDisplay';
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
@@ -70,8 +71,7 @@ export const VerificationPage: React.FC<VerificationPageProps> = ({ onNavigate }
     void lookup(searchInput, 'web');
   };
 
-  const sideScores = (s: { frontScore: number; backScore: number }) =>
-    `${es ? 'FRENTE' : 'FRONT'} ${s.frontScore.toFixed(1)} · ${es ? 'DORSO' : 'BACK'} ${s.backScore.toFixed(1)}`;
+  const sideScores = (s: { frontScore: number; backScore: number }) => formatSideScores(s, es);
 
   return (
     <div className={`w-full min-h-screen ${
@@ -213,22 +213,24 @@ export const VerificationPage: React.FC<VerificationPageProps> = ({ onNavigate }
               }`}>
                 <div className="flex flex-col gap-0.5">
                   <span className={isLight ? 'text-gray-400 text-[9px]' : 'text-white/30 text-[9px]'}>Year</span>
-                  <span className={`text-xs font-semibold ${isLight ? 'text-gray-900' : 'text-white'}`}>{activeCard.year}</span>
+                  <span className={`text-xs font-semibold ${isLight ? 'text-gray-900' : 'text-white'}`}>{orDash(cardYear(activeCard.year))}</span>
                 </div>
                 <div className="flex flex-col gap-0.5">
                   <span className={isLight ? 'text-gray-400 text-[9px]' : 'text-white/30 text-[9px]'}>Set</span>
-                  <span className={`text-xs font-semibold truncate ${isLight ? 'text-gray-900' : 'text-white'}`} title={activeCard.set}>{activeCard.set}</span>
+                  <span className={`text-xs font-semibold truncate ${isLight ? 'text-gray-900' : 'text-white'}`} title={activeCard.set}>{orDash(activeCard.set)}</span>
                 </div>
                 <div className="flex flex-col gap-0.5">
                   <span className={isLight ? 'text-gray-400 text-[9px]' : 'text-white/30 text-[9px]'}>Card No.</span>
-                  <span className={`text-xs font-semibold ${isLight ? 'text-gray-900' : 'text-white'}`}>{activeCard.cardNumber}</span>
+                  <span className={`text-xs font-semibold ${isLight ? 'text-gray-900' : 'text-white'}`}>{orDash(activeCard.cardNumber)}</span>
                 </div>
                 <div className="flex flex-col gap-0.5">
                   <span className={isLight ? 'text-gray-400 text-[9px]' : 'text-white/30 text-[9px]'}>Rarity</span>
                   <div>
-                    <span className="badge-rarity-gold text-[9px] px-2 py-0.5">
-                      {activeCard.rarity}
-                    </span>
+                    {activeCard.rarity ? (
+                      <span className="badge-rarity-gold text-[9px] px-2 py-0.5">{activeCard.rarity}</span>
+                    ) : (
+                      <span className={`text-xs font-semibold ${isLight ? 'text-gray-900' : 'text-white'}`}>—</span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -279,7 +281,7 @@ export const VerificationPage: React.FC<VerificationPageProps> = ({ onNavigate }
               
               <div className="flex flex-col gap-2">
                 {[
-                  { label: t('verify.subCentering'), score: activeCard.subgrades.centering.score, desc: activeCard.subgrades.centering.frontRatio.split(',')[0] },
+                  { label: t('verify.subCentering'), score: activeCard.subgrades.centering.score, desc: activeCard.subgrades.centering.frontRatio.split(',')[0] || '' },
                   { label: t('verify.subCorners'), score: activeCard.subgrades.corners.score, desc: sideScores(activeCard.subgrades.corners) },
                   { label: t('verify.subEdges'), score: activeCard.subgrades.edges.score, desc: sideScores(activeCard.subgrades.edges) },
                   { label: t('verify.subSurface'), score: activeCard.subgrades.surface.score, desc: sideScores(activeCard.subgrades.surface) }

@@ -5,6 +5,7 @@ import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
 import { ApiError } from '../api/client';
 import { channelFromUrl, fetchCertificate, type PublicCertificate } from '../api/certificates';
+import { cardYear } from '../utils/cardDisplay';
 import { 
   ShieldCheck, 
   Printer, 
@@ -179,13 +180,20 @@ export const CertificateDetailPage: React.FC<CertificateDetailPageProps> = ({
             <p className={`text-xs sm:text-sm font-mono tracking-wide leading-relaxed ${
               isLight ? 'text-gray-700' : 'text-gray-300'
             }`}>
-              <strong className={isLight ? 'text-gray-950 font-black' : 'text-white'}>{card.year}</strong>
-              <span className={`mx-2 ${isLight ? 'text-gray-400' : 'text-white/30'}`}>•</span>
-              <strong className={isLight ? 'text-gray-950 font-black' : 'text-white'}>{card.set}</strong>
-              <span className={`mx-2 ${isLight ? 'text-gray-400' : 'text-white/30'}`}>•</span>
-              <strong className={isLight ? 'text-gray-950 font-black' : 'text-white'}>#{card.cardNumber}</strong>
-              <span className={`mx-2 ${isLight ? 'text-gray-400' : 'text-white/30'}`}>•</span>
-              <span>{card.game} ({card.language})</span>
+              {/* Solo los datos que se conocen: un año 0 o un número vacío no se muestran. */}
+              {[
+                cardYear(card.year),
+                card.set || null,
+                card.cardNumber ? `#${card.cardNumber}` : null,
+                card.language ? `${card.game} (${card.language})` : card.game,
+              ]
+                .filter((part): part is string => !!part)
+                .map((part, i) => (
+                  <React.Fragment key={i}>
+                    {i > 0 && <span className={`mx-2 ${isLight ? 'text-gray-400' : 'text-white/30'}`}>•</span>}
+                    <strong className={isLight ? 'text-gray-950 font-black' : 'text-white'}>{part}</strong>
+                  </React.Fragment>
+                ))}
             </p>
 
             {/* Clear Metrology Laboratory Authority Row */}
@@ -236,10 +244,10 @@ export const CertificateDetailPage: React.FC<CertificateDetailPageProps> = ({
             <div className={`border-l pl-4 sm:pl-5 text-right font-mono text-[11px] sm:text-xs space-y-1.5 ${
               isLight ? 'border-gray-300 text-gray-700' : 'border-white/15 text-gray-300'
             }`}>
-              <div>Centering: <strong className="text-emerald-600 dark:text-emerald-400 font-black ml-1">{card.subgrades.centering.score.toFixed(1)}</strong></div>
-              <div>Corners: <strong className="text-emerald-600 dark:text-emerald-400 font-black ml-1">{card.subgrades.corners.score.toFixed(1)}</strong></div>
-              <div>Edges: <strong className="text-emerald-600 dark:text-emerald-400 font-black ml-1">{card.subgrades.edges.score.toFixed(1)}</strong></div>
-              <div>Surface: <strong className="text-emerald-600 dark:text-emerald-400 font-black ml-1">{card.subgrades.surface.score.toFixed(1)}</strong></div>
+              <div>{es ? 'Centrado' : 'Centering'}: <strong className="text-emerald-600 dark:text-emerald-400 font-black ml-1">{card.subgrades.centering.score.toFixed(1)}</strong></div>
+              <div>{es ? 'Esquinas' : 'Corners'}: <strong className="text-emerald-600 dark:text-emerald-400 font-black ml-1">{card.subgrades.corners.score.toFixed(1)}</strong></div>
+              <div>{es ? 'Bordes' : 'Edges'}: <strong className="text-emerald-600 dark:text-emerald-400 font-black ml-1">{card.subgrades.edges.score.toFixed(1)}</strong></div>
+              <div>{es ? 'Superficie' : 'Surface'}: <strong className="text-emerald-600 dark:text-emerald-400 font-black ml-1">{card.subgrades.surface.score.toFixed(1)}</strong></div>
             </div>
           </div>
 
