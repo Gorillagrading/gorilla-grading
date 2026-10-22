@@ -1085,9 +1085,9 @@ export const CollectorVaultPage: React.FC<CollectorVaultPageProps> = ({ onNaviga
             <div className="animate-in fade-in duration-700">
               <EmptyPanel
                 isLight={isLight}
-                title={language === 'es' ? 'Facturaci�n' : 'Invoices'}
+                title={language === 'es' ? 'Facturación' : 'Invoices'}
                 text={language === 'es'
-                  ? 'Tus facturas aparecer�n aqu� cuando se active el pago online de los pedidos.'
+                  ? 'Tus facturas aparecerán aquí cuando se active el pago online de los pedidos.'
                   : 'Your invoices will appear here once online payment is enabled for orders.'}
               />
             </div>

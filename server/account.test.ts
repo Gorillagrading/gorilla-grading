@@ -201,7 +201,7 @@ describe('GET /me/cards', () => {
 describe('GET /me', () => {
   it('incluye el código de cliente y la fecha de alta', async () => {
     const { user } = await loginAs('ana@example.com');
-    expect(user.customerCode).toMatch(/^GOR-[0-9A-F]{6}$/);
+    expect(user.customerCode).toMatch(/^GGI-CLI-[0-9A-F]{6}$/);
     expect(new Date(user.createdAt).getTime()).not.toBeNaN();
   });
 });

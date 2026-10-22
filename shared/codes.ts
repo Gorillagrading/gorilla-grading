@@ -6,6 +6,7 @@
  *   Ticket       GGI-TKT-3FX8RB   6 caracteres aleatorios
  *   Certificado  GGI-892401       6 dígitos
  *   Slab         GGI-SLB-892401   los mismos 6 dígitos que su certificado
+ *   Cliente      GGI-CLI-3F2A9C   derivado del id de la cuenta (solo para mostrar)
  */
 export const CODE_PREFIX = 'GGI';
 

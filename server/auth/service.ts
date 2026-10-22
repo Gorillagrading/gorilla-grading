@@ -2,6 +2,7 @@ import { and, count, desc, eq, gt, gte, isNull, lt, max, sql } from 'drizzle-orm
 import type { Db } from '../../db/client.js';
 import { otpChallenges, sessions, users } from '../../db/schema.js';
 import type { UserDto } from '../../shared/auth.js';
+import { CODE_PREFIX } from '../../shared/codes.js';
 import { ProblemError, tooManyRequests } from '../problem.js';
 import { hashIp, hashLoginCode, hashSessionToken, newLoginCode, newSessionToken, safeEqual } from './crypto.js';
 
@@ -163,7 +164,7 @@ export function toUserDto(user: typeof users.$inferSelect): UserDto {
     locale: user.locale,
     role: user.role,
     createdAt: user.createdAt.toISOString(),
-    customerCode: `GOR-${user.id.slice(0, 6).toUpperCase()}`,
+    customerCode: `${CODE_PREFIX}-CLI-${user.id.slice(0, 6).toUpperCase()}`,
   };
 }
 
