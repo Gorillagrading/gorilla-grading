@@ -92,10 +92,10 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ onNavigate }) => {
 
   const tiersWithTheme = tiers.map(t => {
     switch(t.id) {
-      case 'standard': return { ...t, color: '#3B82F6', shortName: 'STANDARD' };
+      case 'standard': return { ...t, color: '#48C765', shortName: 'STANDARD' };
       case 'premium': return { ...t, color: '#48C765', shortName: 'PREMIUM' };
-      case 'express': return { ...t, color: '#F97316', shortName: 'EXPRESS' };
-      case 'event': return { ...t, color: '#D4AF37', shortName: 'EVENT' };
+      case 'express': return { ...t, color: '#48C765', shortName: 'EXPRESS' };
+      case 'event': return { ...t, color: '#48C765', shortName: 'EVENT' };
       default: return { ...t, color: '#48C765', shortName: 'TIER' };
     }
   });

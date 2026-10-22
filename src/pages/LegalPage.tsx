@@ -78,7 +78,7 @@ export const LegalPage: React.FC<LegalPageProps> = ({ type: initialType, onNavig
       metrics: [
         { label: isEs ? 'Régimen Jurídico' : 'Legal Jurisdiction', val: isEs ? 'Derecho Mercantil UE' : 'EU Commercial Law' },
         { label: isEs ? 'Protección Marcaria' : 'Trademark Treaty', val: 'Tratado de Madrid · WIPO' },
-        { label: isEs ? 'Auditoría Técnica' : 'Technical Standard', val: 'ISO/IEC 17025 & ISO 9001' },
+        { label: isEs ? 'Estándar de Graduación' : 'Grading Standard', val: isEs ? 'Regla de nota pública' : 'Public grading rule' },
         { label: isEs ? 'Custodia y Depósito' : 'Vault Protocol', val: isEs ? 'Póliza a Todo Riesgo' : 'All-Risk Insured' },
       ],
       articles: [
@@ -329,7 +329,7 @@ export const LegalPage: React.FC<LegalPageProps> = ({ type: initialType, onNavig
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-current/15">
             <div>
               <div className="font-mono text-[10px] font-bold tracking-[0.25em] uppercase text-[#15803D] dark:text-[#48C765]">
-                GORILLA GRADING INTERNATIONAL · ISO/IEC 17025
+                GORILLA GRADING INTERNATIONAL
               </div>
               <h1 className={`font-['Nunito',sans-serif] text-2xl sm:text-3xl lg:text-4xl font-[900] uppercase tracking-normal mt-2 ${
                 isLight ? 'text-[#14170F]' : 'text-white'

@@ -62,9 +62,6 @@ export const LuxuryPricingSection: React.FC<LuxuryPricingSectionProps> = ({ onNa
       turnaround: language === 'es' ? '10 días hábiles' : '10 business days',
       maxInsurance: '500 €',
       maxInsuranceNum: 500,
-      scope: language === 'es' 
-        ? 'Encapsulado sónico 35 kHz · Chip NFC de seguridad · Escaneo maestro 1200 DPI' 
-        : '35 kHz ultrasonic encapsulation · NFC security chip · 1200 DPI master scan',
       bullets: language === 'es'
         ? ['Encapsulado ultrasónico 35 kHz', 'Chip de seguridad criptográfica NFC', 'Escaneo digital forense 1200 DPI']
         : ['35 kHz ultrasonic encapsulation', 'NFC cryptographic security chip', '1200 DPI master digital scan'],
@@ -82,9 +79,6 @@ export const LuxuryPricingSection: React.FC<LuxuryPricingSectionProps> = ({ onNa
       turnaround: language === 'es' ? '5 días hábiles' : '5 business days',
       maxInsurance: '1.500 €',
       maxInsuranceNum: 1500,
-      scope: language === 'es' 
-        ? '4 Subgrados láser 0.01mm · Escaneo forense 4K · Registro público en blockchain' 
-        : '4 Laser 0.01mm subgrades · 4K forensic scan · Blockchain public registry',
       bullets: language === 'es'
         ? ['4 Subgrados ópticos (Centrado, Esquinas, Bordes, Superficie)', 'Escaneo micro-fotométrico 4K UHD', 'Certificación pública en Blockchain']
         : ['4 Optical Subgrades (Centering, Corners, Edges, Surface)', '4K UHD micro-photometric scan', 'Public Blockchain certification registry'],
@@ -102,9 +96,6 @@ export const LuxuryPricingSection: React.FC<LuxuryPricingSectionProps> = ({ onNa
       turnaround: language === 'es' ? '2 días hábiles' : '2 business days',
       maxInsurance: '3.000 €',
       maxInsuranceNum: 3000,
-      scope: language === 'es' 
-        ? 'Cola preferente de laboratorio · Auditoría óptica doble · Canal directo de soporte' 
-        : 'Priority lab queue · Dual optical audit · Direct laboratory support channel',
       bullets: language === 'es'
         ? ['Cola preferente acelerada (2 días)', 'Auditoría óptica doble por 2 inspectores', 'Canal directo de soporte prioritario']
         : ['Accelerated priority queue (2 days)', 'Dual optical audit by 2 senior graders', 'Direct laboratory priority support'],
@@ -122,9 +113,6 @@ export const LuxuryPricingSection: React.FC<LuxuryPricingSectionProps> = ({ onNa
       turnaround: '48 h',
       maxInsurance: '1.000 €',
       maxInsuranceNum: 1000,
-      scope: language === 'es' 
-        ? 'Solo entrega presencial en pop ups · Entrega rápida 48h · Encapsulado sónico' 
-        : 'In-person drop-off only at pop ups · 48h express turnaround · Sonic encapsulation',
       bullets: language === 'es'
         ? ['Solo entrega presencial en pop ups', 'Graduación exprés presencial en 48 horas', 'Encapsulado sónico y chip criptográfico NFC']
         : ['In-person drop-off only at pop ups', 'Express in-person 48h turnaround', 'Sonic encapsulation & cryptographic NFC chip'],
@@ -324,7 +312,7 @@ export const LuxuryPricingSection: React.FC<LuxuryPricingSectionProps> = ({ onNa
         }`}>
           
           {/* Matrix Top Header Bar - Limpio, Sobrio y Profesional */}
-          <div className={`px-4 sm:px-6 py-2.5 sm:py-3.5 border-b flex flex-wrap items-center justify-between gap-2 sm:gap-4 font-mono text-[11px] sm:text-xs ${
+          <div className={`px-4 sm:px-6 py-2 sm:py-2.5 border-b flex flex-wrap items-center justify-between gap-2 sm:gap-4 font-mono text-[11px] sm:text-xs ${
             isLight 
               ? 'bg-gray-100 border-[#E5E7EB] text-gray-800' 
               : 'bg-white/[0.04] border-white/10 text-gray-200'
@@ -333,8 +321,6 @@ export const LuxuryPricingSection: React.FC<LuxuryPricingSectionProps> = ({ onNa
               {language === 'es' ? 'CUADRO REGULATORIO DE GRADUACIÓN ÓPTICA' : 'OPTICAL GRADING REGULATORY MATRIX'}
             </span>
             <div className="flex items-center gap-3 sm:gap-4 text-[10px] sm:text-[11px] font-semibold text-gray-600 dark:text-gray-400">
-              <span>ISO-9001 CLEANROOM AUDITED</span>
-              <span>/</span>
               <span>{language === 'es' ? 'CALIBRE LÁSER 0.01mm' : '0.01mm LASER CALIPER'}</span>
             </div>
           </div>
@@ -346,12 +332,11 @@ export const LuxuryPricingSection: React.FC<LuxuryPricingSectionProps> = ({ onNa
                 <tr className={`border-b font-mono text-[11px] uppercase tracking-wider font-bold ${
                   isLight ? 'bg-gray-100 text-gray-900 border-gray-300' : 'bg-black/70 text-gray-300 border-white/10'
                 }`}>
-                  <th className="py-3.5 px-6 font-bold">{language === 'es' ? 'NIVEL DE SERVICIO' : 'SERVICE TIER'}</th>
-                  <th className="py-3.5 px-6 font-bold">{language === 'es' ? 'PLAZO DE RETORNO' : 'ESTIMATED TURNAROUND'}</th>
-                  <th className="py-3.5 px-6 font-bold">{language === 'es' ? 'SEGURO MÁXIMO' : 'MAX INSURANCE'}</th>
-                  <th className="py-3.5 px-6 font-bold">{language === 'es' ? 'ALCANCE TÉCNICO' : 'TECHNICAL SCOPE'}</th>
-                  <th className="py-3.5 px-6 font-bold text-right">{language === 'es' ? 'TARIFA / CARTA' : 'RATE / CARD'}</th>
-                  <th className="py-3.5 px-6 font-bold text-center">{language === 'es' ? 'ACCIÓN' : 'ACTION'}</th>
+                  <th className="py-2 px-4 font-bold">{language === 'es' ? 'NIVEL DE SERVICIO' : 'SERVICE TIER'}</th>
+                  <th className="py-2 px-4 font-bold">{language === 'es' ? 'PLAZO DE RETORNO' : 'ESTIMATED TURNAROUND'}</th>
+                  <th className="py-2 px-4 font-bold">{language === 'es' ? 'SEGURO MÁXIMO' : 'MAX INSURANCE'}</th>
+                  <th className="py-2 px-4 font-bold text-right">{language === 'es' ? 'TARIFA / CARTA' : 'RATE / CARD'}</th>
+                  <th className="py-2 px-4 font-bold text-center">{language === 'es' ? 'ACCIÓN' : 'ACTION'}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200/70 dark:divide-white/10 font-mono text-xs">
@@ -359,28 +344,19 @@ export const LuxuryPricingSection: React.FC<LuxuryPricingSectionProps> = ({ onNa
                   const isSelected = selectedTierId === lvl.id;
                   const isEven = index % 2 === 0;
 
-                  // Distinctive neon tier colors for Dark Mode
-                  const darkTierColor = 
-                    lvl.id === 'standard' ? '#60A5FA' : 
-                    lvl.id === 'premium' ? '#4ADE80' : 
-                    lvl.id === 'express' ? '#FB923C' : '#FBBF24';
+                  // Dark Mode uses only two colors: neutral grays plus a single green accent
+                  const darkTierColor = '#4ADE80';
 
-                  // Alternating background shades: 
+                  // Alternating background shades:
                   // In Light Mode: exactly as original
-                  // In Dark Mode: subtle luxury gradient matching tier's identity
-                  const rowBg = isSelected 
-                    ? (isLight 
-                        ? 'bg-[#E7F6EA]' 
-                        : 'bg-gradient-to-r from-emerald-950/60 via-[#102917] to-[#0D1F13] shadow-[inset_0_0_24px_rgba(74,222,128,0.15)]') 
-                    : (isLight 
+                  // In Dark Mode: two neutral grays; the selected row gets a subtle green tint
+                  const rowBg = isSelected
+                    ? (isLight
+                        ? 'bg-[#E7F6EA]'
+                        : 'bg-[#14301C]')
+                    : (isLight
                         ? (isEven ? 'bg-white' : 'bg-[#F2EFE8]')
-                        : (lvl.id === 'standard' 
-                            ? 'bg-gradient-to-r from-blue-950/30 via-[#0F1722]/90 to-[#0C121B]' 
-                            : lvl.id === 'premium' 
-                            ? 'bg-gradient-to-r from-emerald-950/30 via-[#0E1C12]/90 to-[#0A160E]' 
-                            : lvl.id === 'express' 
-                            ? 'bg-gradient-to-r from-orange-950/30 via-[#1F150E]/90 to-[#170F0A]' 
-                            : 'bg-gradient-to-r from-amber-950/35 via-[#211B0D]/90 to-[#191409]'));
+                        : (isEven ? 'bg-[#141815]' : 'bg-[#1A1E1A]'));
 
                   const hoverBg = isLight 
                     ? 'hover:bg-[#E7F6EA] hover:border-l-[#16A34A]' 
@@ -394,20 +370,19 @@ export const LuxuryPricingSection: React.FC<LuxuryPricingSectionProps> = ({ onNa
                       style={{
                         borderLeftColor: isLight
                           ? (isSelected ? '#16A34A' : 'transparent')
-                          : (isSelected ? '#4ADE80' : darkTierColor)
+                          : (isSelected ? '#4ADE80' : 'transparent')
                       }}
                     >
                       {/* Name & Purpose */}
-                      <td className="py-4 px-6">
+                      <td className="py-2.5 px-4">
                         <div 
-                          className="font-['Nunito',sans-serif] text-base sm:text-lg uppercase font-[900] tracking-normal"
-                          style={{
-                            color: !isLight ? darkTierColor : undefined
-                          }}
+                          className={`font-['Nunito',sans-serif] text-sm sm:text-base uppercase font-[900] tracking-normal ${
+                            isLight ? '' : 'text-white'
+                          }`}
                         >
                           {lvl.name}
                         </div>
-                        <div className={`font-sans text-xs leading-relaxed max-w-xs mt-1 ${
+                        <div className={`font-sans text-[11.5px] leading-snug max-w-sm mt-0.5 ${
                           isLight ? 'text-gray-800' : 'text-gray-300'
                         }`}>
                           {lvl.purpose}
@@ -415,7 +390,7 @@ export const LuxuryPricingSection: React.FC<LuxuryPricingSectionProps> = ({ onNa
                       </td>
 
                       {/* Turnaround */}
-                      <td className={`py-4 px-6 font-extrabold ${isLight ? 'text-gray-900' : 'text-white'}`}>
+                      <td className={`py-2.5 px-4 font-extrabold ${isLight ? 'text-gray-900' : 'text-white'}`}>
                         <div className="flex items-center gap-2">
                           <Clock 
                             className="w-3.5 h-3.5 shrink-0" 
@@ -428,7 +403,7 @@ export const LuxuryPricingSection: React.FC<LuxuryPricingSectionProps> = ({ onNa
                       </td>
 
                       {/* Max Insurance / Cobertura */}
-                      <td className={`py-4 px-6 font-extrabold ${isLight ? 'text-gray-900' : 'text-white'}`}>
+                      <td className={`py-2.5 px-4 font-extrabold ${isLight ? 'text-gray-900' : 'text-white'}`}>
                         <div className="flex items-center gap-1.5">
                           <ShieldCheck 
                             className="w-3.5 h-3.5 shrink-0 text-emerald-500" 
@@ -445,15 +420,8 @@ export const LuxuryPricingSection: React.FC<LuxuryPricingSectionProps> = ({ onNa
                         </span>
                       </td>
 
-                      {/* Scope */}
-                      <td className={`py-4 px-6 font-sans text-xs sm:text-[12.5px] leading-relaxed max-w-sm ${
-                        isLight ? 'text-gray-800' : 'text-gray-300'
-                      }`}>
-                        {lvl.scope}
-                      </td>
-
                       {/* Price */}
-                      <td className="py-4 px-6 text-right font-['Nunito',sans-serif] text-2xl font-[900]">
+                      <td className="py-2.5 px-4 text-right font-['Nunito',sans-serif] text-xl font-[900]">
                         <span style={{ color: !isLight && isSelected ? '#4ADE80' : undefined }}>
                           {lvl.price} €
                         </span>
@@ -465,7 +433,7 @@ export const LuxuryPricingSection: React.FC<LuxuryPricingSectionProps> = ({ onNa
                       </td>
 
                       {/* Action */}
-                      <td className="py-4 px-6 text-center">
+                      <td className="py-2.5 px-4 text-center">
                         <button
                           type="button"
                           onClick={(e) => {
@@ -490,6 +458,114 @@ export const LuxuryPricingSection: React.FC<LuxuryPricingSectionProps> = ({ onNa
                 })}
               </tbody>
             </table>
+          </div>
+
+          {/* Volume estimation: merged into the tariff card, compact */}
+          <div className={`border-t px-4 py-3 ${
+            isLight ? 'border-[#E5E7EB] bg-[#FAFAF8]' : 'border-white/10 bg-black/30'
+          }`}>
+            <div className="grid grid-cols-12 gap-4 items-center">
+
+              {/* Left: quantity selection */}
+              <div className="col-span-7 space-y-2">
+                <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
+                  <h3 className="font-['Nunito',sans-serif] text-sm font-[900] uppercase tracking-normal">
+                    {language === 'es' ? 'Calcular tarifa por cantidad' : 'Volume estimation'}
+                  </h3>
+                  <span className={`font-sans text-[11px] ${isLight ? 'text-gray-600' : 'text-gray-300'}`}>
+                    {language === 'es'
+                      ? 'Descuentos: 5% desde 10 cartas, 8% desde 25 y 12% desde 50.'
+                      : 'Bulk discounts: 5% from 10 cards, 8% from 25, 12% from 50.'}
+                  </span>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {[1, 5, 10, 25, 50, 100].map((vol) => {
+                    const isSelected = cardCount === vol;
+                    return (
+                      <button
+                        key={vol}
+                        type="button"
+                        onClick={() => setCardCount(vol)}
+                        className={`px-2.5 py-1 font-mono text-[11px] font-bold transition-colors cursor-pointer border ${
+                          isSelected
+                            ? 'border-[#16A34A] bg-[#16A34A] text-white'
+                            : (isLight ? 'border-gray-300 bg-white text-gray-800 hover:border-gray-500' : 'border-white/15 bg-white/5 text-gray-100 hover:border-white/30')
+                        }`}
+                      >
+                        {vol} {vol === 1 ? (language === 'es' ? 'carta' : 'card') : (language === 'es' ? 'cartas' : 'cards')}
+                      </button>
+                    );
+                  })}
+
+                  {/* Direct stepper input */}
+                  <div className={`flex items-center border ${
+                    isLight ? 'border-gray-300 bg-white' : 'border-white/15 bg-white/5'
+                  }`}>
+                    <button
+                      type="button"
+                      onClick={() => setCardCount(Math.max(1, cardCount - 1))}
+                      className="w-7 h-7 flex items-center justify-center font-mono font-bold text-sm hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer text-current"
+                    >
+                      -
+                    </button>
+                    <input
+                      type="number"
+                      min={1}
+                      max={1000}
+                      value={cardCount}
+                      onChange={(e) => setCardCount(Math.max(1, parseInt(e.target.value) || 1))}
+                      className="w-11 text-center font-mono text-xs font-bold bg-transparent outline-none text-current"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setCardCount(Math.min(1000, cardCount + 1))}
+                      className="w-7 h-7 flex items-center justify-center font-mono font-bold text-sm hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer text-current"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+
+                <div className={`font-mono text-[10.5px] flex flex-wrap items-center gap-x-2 ${
+                  isLight ? 'text-gray-600' : 'text-gray-300'
+                }`}>
+                  <span className="font-semibold">{language === 'es' ? `Servicio: ${currentLevel.name}` : `Service: ${currentLevel.name}`}</span>
+                  <span className="text-gray-400">/</span>
+                  <span>{language === 'es' ? `Plazo: ${currentLevel.turnaround}` : `Turnaround: ${currentLevel.turnaround}`}</span>
+                  <span className="text-gray-400">/</span>
+                  <span>{language === 'es' ? 'Envío asegurado 100%' : '100% Insured Transit'}</span>
+                </div>
+              </div>
+
+              {/* Right: total and action */}
+              <div className="col-span-5 flex items-center justify-end gap-4">
+                <div className="text-right">
+                  <span className={`font-mono text-[10px] uppercase tracking-wider block font-semibold ${
+                    isLight ? 'text-gray-600' : 'text-gray-300'
+                  }`}>
+                    {language === 'es' ? 'Total estimado' : 'Estimated total'} · {unitPrice} € / {language === 'es' ? 'carta' : 'card'} {discountRate > 0 && `(-${Math.round(discountRate * 100)}%)`}
+                  </span>
+                  <span className="font-['Nunito',sans-serif] text-3xl font-[900] tracking-tight leading-none">
+                    {totalAmount} €
+                  </span>
+                  <span className={`block font-mono text-[9.5px] font-medium ${
+                    isLight ? 'text-gray-600' : 'text-gray-300'
+                  }`}>
+                    {language === 'es' ? 'IVA 21% y seguro incluidos' : 'VAT 21% & insurance included'}
+                  </span>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => onNavigate && onNavigate(`/submit?tier=${selectedTierId || currentLevel.id}&qty=${cardCount}&fromConfig=true&step=2`)}
+                  className="btn-gorilla-pill shrink-0 py-3 px-5 text-xs font-bold tracking-normal gap-2 shadow-lg"
+                >
+                  <span>{language === 'es' ? `Configurar envío (${cardCount}) →` : `Configure shipment (${cardCount}) →`}</span>
+                </button>
+              </div>
+
+            </div>
           </div>
         </div>
 
@@ -536,7 +612,7 @@ export const LuxuryPricingSection: React.FC<LuxuryPricingSectionProps> = ({ onNa
             {/* Top Color Accent Bar */}
             <div 
               className="h-1.5 w-full transition-colors duration-300"
-              style={{ backgroundColor: currentLevel.accentColor }} 
+              style={{ backgroundColor: isLight ? currentLevel.accentColor : '#4ADE80' }} 
             />
 
             <div className="p-4 sm:p-5">
@@ -704,137 +780,6 @@ export const LuxuryPricingSection: React.FC<LuxuryPricingSectionProps> = ({ onNa
                 </button>
               </div>
             </div>
-          </div>
-        </div>
-
-        {/* 3. ESTIMACIÓN DE REMESA (Desktop Only Volume Calculator) */}
-        <div className={`hidden lg:block w-full border p-4 sm:p-8 lg:p-10 mb-8 sm:mb-14 transition-colors ${
-          isLight ? 'bg-white border-[#E5E7EB]' : 'bg-[#181B18] border-white/10'
-        }`}>
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 sm:gap-6 pb-4 sm:pb-6 border-b border-gray-100 dark:border-white/5">
-            <div>
-              <h3 className="font-['Nunito',sans-serif] text-lg sm:text-2xl font-[900] uppercase tracking-normal">
-                {language === 'es' ? 'CALCULAR TARIFA POR CANTIDAD DE CARTAS' : 'VOLUME ESTIMATION'}
-              </h3>
-              <p className={`mt-1 font-sans text-xs max-w-xl leading-relaxed ${
-                isLight ? 'text-gray-700' : 'text-gray-200'
-              }`}>
-                {language === 'es'
-                  ? 'Descuentos por volumen: 5% a partir de 10 cartas, 8% desde 25 cartas y 12% para más de 50 cartas.'
-                  : 'Bulk discounts: 5% for 10+ cards, 8% for 25+ cards, and 12% for 50+ cards.'}
-              </p>
-            </div>
-          </div>
-
-          {/* Main interactive area: Volume buttons & Real-time result */}
-          <div className="pt-4 sm:pt-6 grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-center">
-            
-            {/* Left: Volume selector buttons + custom input */}
-            <div className="lg:col-span-7 space-y-3 sm:space-y-4">
-              <span className={`font-mono text-[11px] sm:text-xs uppercase tracking-wider font-semibold block ${
-                isLight ? 'text-gray-700' : 'text-gray-200'
-              }`}>
-                {language === 'es' ? 'Selecciona o introduce la cantidad de cartas:' : 'Select or enter number of cards:'}
-              </span>
-
-              <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-                {[1, 5, 10, 25, 50, 100].map((vol) => {
-                  const isSelected = cardCount === vol;
-                  return (
-                    <button
-                      key={vol}
-                      type="button"
-                      onClick={() => setCardCount(vol)}
-                      className={`px-3 py-1.5 sm:px-4 sm:py-2 font-mono text-xs font-bold transition-colors cursor-pointer border ${
-                        isSelected
-                          ? 'border-[#16A34A] bg-[#16A34A] text-white'
-                          : (isLight ? 'border-gray-300 bg-gray-50 text-gray-800 hover:border-gray-500' : 'border-white/15 bg-white/5 text-gray-100 hover:border-white/30')
-                      }`}
-                    >
-                      {vol} {vol === 1 ? (language === 'es' ? 'carta' : 'card') : (language === 'es' ? 'cartas' : 'cards')}
-                    </button>
-                  );
-                })}
-
-                {/* Direct Stepper Input */}
-                <div className={`flex items-center border ml-auto ${
-                  isLight ? 'border-gray-300 bg-gray-50' : 'border-white/15 bg-white/5'
-                }`}>
-                  <button
-                    type="button"
-                    onClick={() => setCardCount(Math.max(1, cardCount - 1))}
-                    className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center font-mono font-bold text-sm hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer text-white"
-                  >
-                    -
-                  </button>
-                  <input
-                    type="number"
-                    min={1}
-                    max={1000}
-                    value={cardCount}
-                    onChange={(e) => setCardCount(Math.max(1, parseInt(e.target.value) || 1))}
-                    className="w-12 sm:w-14 text-center font-mono text-xs sm:text-sm font-bold bg-transparent outline-none text-current"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setCardCount(Math.min(1000, cardCount + 1))}
-                    className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center font-mono font-bold text-sm hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer text-white"
-                  >
-                    +
-                  </button>
-                </div>
-              </div>
-
-              <div className={`font-mono text-[11px] sm:text-xs pt-2 flex flex-wrap items-center gap-2 sm:gap-3 ${
-                isLight ? 'text-gray-700' : 'text-gray-200'
-              }`}>
-                <span className="font-semibold">{language === 'es' ? `Servicio: ${currentLevel.name}` : `Service: ${currentLevel.name}`}</span>
-                <span className="text-gray-400">/</span>
-                <span>{language === 'es' ? `Plazo: ${currentLevel.turnaround}` : `Turnaround: ${currentLevel.turnaround}`}</span>
-                <span className="text-gray-400">/</span>
-                <span>{language === 'es' ? 'Envío asegurado 100%' : '100% Insured Transit'}</span>
-              </div>
-            </div>
-
-            {/* Right: Clean Price Display & Action */}
-            <div className={`lg:col-span-5 p-4 sm:p-6 border flex flex-col justify-between gap-4 ${
-              isLight ? 'bg-gray-50/90 border-gray-200' : 'bg-black/40 border-white/15'
-            }`}>
-              <div className="flex items-baseline justify-between">
-                <div>
-                  <span className={`font-mono text-[10px] sm:text-[11px] uppercase tracking-wider block font-semibold ${
-                    isLight ? 'text-gray-700' : 'text-gray-300'
-                  }`}>
-                    {language === 'es' ? 'Total estimado' : 'Estimated total'}
-                  </span>
-                  <span className={`font-mono text-xs font-semibold ${
-                    isLight ? 'text-gray-800' : 'text-gray-200'
-                  }`}>
-                    {unitPrice} € / {language === 'es' ? 'carta' : 'card'} {discountRate > 0 && `(-${Math.round(discountRate * 100)}%)`}
-                  </span>
-                </div>
-
-                <div className="text-right">
-                  <span className="font-['Nunito',sans-serif] text-3xl sm:text-5xl font-[900] tracking-tight">
-                    {totalAmount} €
-                  </span>
-                  <span className={`block font-mono text-[10px] font-medium mt-0.5 ${
-                    isLight ? 'text-gray-700' : 'text-gray-300'
-                  }`}>
-                    {language === 'es' ? 'IVA 21% y seguro incluidos' : 'VAT 21% & insurance included'}
-                  </span>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => onNavigate && onNavigate(`/submit?tier=${selectedTierId || currentLevel.id}&qty=${cardCount}&fromConfig=true&step=2`)}
-                className="btn-gorilla-pill w-full py-3.5 sm:py-4 px-6 sm:px-8 text-xs font-bold tracking-normal gap-2 shadow-lg"
-              >
-                <span>{language === 'es' ? `Configurar envío (${cardCount} ${cardCount === 1 ? 'carta' : 'cartas'}) →` : `Configure shipment (${cardCount} ${cardCount === 1 ? 'card' : 'cards'}) →`}</span>
-              </button>
-            </div>
-
           </div>
         </div>
 

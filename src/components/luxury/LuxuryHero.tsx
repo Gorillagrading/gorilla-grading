@@ -369,51 +369,6 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
         />
       </div>
 
-      {/* Contenedor de Escáneres Ópticos (Z-20, no interactivo, estricta precisión) */}
-      <div className="absolute inset-0 pointer-events-none z-20 overflow-hidden">
-        
-
-        {/* ================================================================= */}
-        {/* ESCÁNER ULTRAVIOLETA λ 395nm (ASCIENDE LENTO DE ABAJO A ARRIBA)    */}
-        {/* ================================================================= */}
-        <div
-          className="absolute left-0 right-0 pointer-events-none will-change-transform"
-          style={{
-            animation: 'scannerUltravioletaSube 26s cubic-bezier(0.25, 0.1, 0.25, 1.0) infinite',
-            opacity: 0
-          }}
-        >
-          {/* Línea Láser Ultravioleta */}
-          <div className="relative w-full flex items-center">
-            {/* Micro telemetría óptica izquierda */}
-            <div className="absolute left-4 sm:left-10 flex items-center opacity-50 select-none">
-              <span className="font-mono text-[6px] sm:text-[6.5px] tracking-[0.25em] text-purple-300 font-bold uppercase">
-                [ λ: 395nm · UV FLUORESCENCE ]
-              </span>
-            </div>
-
-            {/* Filamento Láser Ultravioleta Fino */}
-            <div
-              className="w-full h-[1px]"
-              style={{
-                background: 'linear-gradient(90deg, transparent 0%, rgba(168,85,247,0.30) 8%, #FAF5FF 48%, #A855F7 52%, rgba(168,85,247,0.30) 92%, transparent 100%)',
-                boxShadow: isLight
-                  ? '0 0 6px #A855F7, 0 0 14px rgba(168,85,247,0.45)'
-                  : '0 0 8px #C084FC, 0 0 18px rgba(168,85,247,0.7), 0 0 35px rgba(126,34,206,0.4)'
-              }}
-            />
-          </div>
-
-          {/* Estela sutil de luz ultravioleta inferior */}
-          <div
-            className="w-full h-10 pointer-events-none"
-            style={{
-              background: 'linear-gradient(to bottom, rgba(168,85,247,0.08) 0%, transparent 100%)'
-            }}
-          />
-        </div>
-      </div>
-
       <div className="relative z-10 max-w-[1440px] w-full mx-auto px-6 lg:px-12 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center flex-1 my-auto py-4 sm:py-6">
         
         {/* Left Editorial Column */}

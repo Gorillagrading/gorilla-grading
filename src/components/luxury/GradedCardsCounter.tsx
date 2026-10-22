@@ -40,7 +40,7 @@ export const GradedCardsCounter: React.FC = () => {
         <span className={`font-mono text-[9px] tracking-wider uppercase font-semibold ${
           isLight ? 'text-gray-700' : 'text-gray-300'
         }`}>
-          ISO-9001 · EU
+          EU
         </span>
       </div>
 

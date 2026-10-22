@@ -159,10 +159,6 @@ export const TechDetailModal: React.FC<TechDetailModalProps> = ({ isOpen, onClos
 
           {/* Dossier Top Controls: Return Button */}
           <div className="flex items-center gap-2 sm:gap-4 shrink-0">
-            <span className="hidden md:inline font-mono text-[10px] uppercase tracking-wider opacity-60">
-              ISO/IEC 17025 ACCREDITED
-            </span>
-
             <button
               type="button"
               onClick={onClose}
