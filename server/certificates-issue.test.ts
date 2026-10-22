@@ -118,7 +118,7 @@ describe('emisión de certificados', () => {
 
     const [slab] = await db.select().from(slabs);
     expect(slab.serial).toBe(`GGI-SLB-${cert.number.slice(4)}`);
-    expect(slab.qrPayload).toBe(`https://gorillagrading.com/certificates/${cert.number}?via=qr`);
+    expect(slab.qrPayload).toBe(`https://gorilla-grading.vercel.app/certificates/${cert.number}?via=qr`);
 
     const { images, ...record } = cert.payload as Record<string, any>;
     expect(record).toMatchObject({
@@ -250,5 +250,21 @@ describe('firma', () => {
       if (saved.key) process.env.CERT_SIGNING_KEY = saved.key; else delete process.env.CERT_SIGNING_KEY;
       if (saved.id) process.env.CERT_KEY_ID = saved.id; else delete process.env.CERT_KEY_ID;
     }
+  });
+});
+
+describe('email de salida', () => {
+  it('al aprobar la salida, el correo del cliente lleva su certificado, la nota y el seguimiento', async () => {
+    const code = await readyToShip();
+    await move(code, 'qa@lab.test', 'SHIPPED', 'QUALITY_ASSURANCE');
+    const [cert] = await db.select().from(certificates);
+    const mail = t.mails.find((m) => m.subject.includes(code) && m.text.includes(cert.number));
+    expect(mail, 'correo de salida').toBeDefined();
+    expect(mail!.to).toBe('cliente@example.com');
+    expect(mail!.text).toContain(`/certificates/${cert.number}`);
+    expect(mail!.text).toContain('Mint+ 9.5');
+    expect(mail!.text).toContain('ES-1');
+    expect(mail!.text).toContain('Falsa Pikachu');
+    expect(mail!.html).toContain(cert.number);
   });
 });

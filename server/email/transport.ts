@@ -1,7 +1,8 @@
 import nodemailer from 'nodemailer';
 import { isProduction } from '../env.js';
 
-export type Mail = { to: string; subject: string; text: string };
+/** `html` es opcional: los clientes de correo muestran el HTML y, si no pueden, el texto. */
+export type Mail = { to: string; subject: string; text: string; html?: string };
 export type SendMail = (mail: Mail) => Promise<void>;
 
 /** Configuración SMTP. Sirve para Postmark, IONOS, Amazon SES…: solo cambian las variables. */

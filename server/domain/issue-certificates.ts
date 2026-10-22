@@ -2,13 +2,18 @@ import { and, desc, eq, inArray, isNotNull, ne } from 'drizzle-orm';
 import type { Db } from '../../db/client.js';
 import { auditLogs, cardIdentities, certificates, gradingResults, itemImages, orderItems, slabs } from '../../db/schema.js';
 import { newCertificateNumber, slabSerialFor } from '../codes.js';
+import { publicBaseUrl } from '../env.js';
 import { ProblemError } from '../problem.js';
 import type { Signer } from '../signing.js';
 
 type Tx = Pick<Db, 'select' | 'insert' | 'update'>;
 
 const MAX_NUMBER_ATTEMPTS = 25;
-const PUBLIC_BASE_URL = () => (process.env.PUBLIC_BASE_URL ?? 'https://gorillagrading.com').replace(/\/+$/, '');
+
+/** Lo que se emitió para cada carta, para el email de salida del pedido. */
+export type IssuedCard =
+  | { position: number; cardName: string; authentic: true; number: string; grade: number; label: string }
+  | { position: number; cardName: string; authentic: false };
 
 /** Registro que se firma. Cualquiera puede verificarlo con la clave pública, sin acceder a nada privado. */
 export interface SignedRecord {
@@ -34,7 +39,7 @@ export interface SignedRecord {
 export async function issueCertificates(
   tx: Tx,
   args: { orderId: string; orderCode: string; actorId: string; signer: Signer; now: Date },
-): Promise<string[]> {
+): Promise<IssuedCard[]> {
   const items = await tx.select().from(orderItems).where(eq(orderItems.orderId, args.orderId));
   if (items.length === 0) return [];
   const itemIds = items.map((i) => i.id);
@@ -52,14 +57,17 @@ export async function issueCertificates(
       .orderBy(desc(itemImages.createdAt)),
   ]);
 
-  const issued: string[] = [];
+  const issued: IssuedCard[] = [];
   for (const item of items) {
     if (existingSlabs.some((s) => s.itemId === item.id)) continue;
     const result = results.find((r) => r.orderItemId === item.id);
     if (!result || result.status !== 'approved') {
       throw new ProblemError(409, 'Conflict', 'Falta el resultado aprobado de una carta.', { code: 'grading_incomplete' });
     }
-    if (!result.isAuthentic) continue;
+    if (!result.isAuthentic) {
+      issued.push({ position: item.position, cardName: item.cardName, authentic: false });
+      continue;
+    }
     if (
       result.finalGrade === null || !result.gradeLabel || result.centeringScore === null || result.cornersScore === null ||
       result.edgesScore === null || result.surfaceScore === null
@@ -103,7 +111,7 @@ export async function issueCertificates(
           orderItemId: item.id,
           gradingResultId: result.id,
           serial,
-          qrPayload: `${PUBLIC_BASE_URL()}/certificates/${number}?via=qr`,
+          qrPayload: `${publicBaseUrl()}/certificates/${number}?via=qr`,
           encapsulatedAt: args.now,
         })
         .onConflictDoNothing({ target: slabs.serial })
@@ -161,7 +169,7 @@ export async function issueCertificates(
       entityId: number,
       after: { order: args.orderCode, slab: slab.serial, grade: result.finalGrade },
     });
-    issued.push(number);
+    issued.push({ position: item.position, cardName: item.cardName, authentic: true, number, grade: result.finalGrade, label: result.gradeLabel });
   }
-  return issued;
+  return issued.sort((a, b) => a.position - b.position);
 }

@@ -133,3 +133,54 @@ describe('textos de los emails', () => {
     expect(mail.text).toContain('Order GGI-ORD-ABC123');
   });
 });
+
+describe('email de salida con certificados', () => {
+  const shipped = (over: Record<string, unknown> = {}) =>
+    renderOrderEmail('order_shipped', 'es', 'a@b.c', {
+      orderCode: 'GGI-ORD-ABC123',
+      label: 'Devolución en camino',
+      description: 'Tus cartas salen hacia ti con envío asegurado y firma.',
+      carrier: 'GLS',
+      trackingNumber: 'ES-GLS-1',
+      cards: [
+        { position: 1, cardName: 'Charizard <Holo>', authentic: true, number: 'GGI-437137', grade: 9.5, label: 'Mint+ 9.5' },
+        { position: 2, cardName: 'Pikachu falso', authentic: false },
+      ],
+      ...over,
+    });
+
+  it('lleva cada certificado con su nota y un enlace directo, el seguimiento y las cartas sin certificado', () => {
+    const mail = shipped();
+    expect(mail.subject).toBe('Devolución en camino · GGI-ORD-ABC123');
+    for (const body of [mail.text, mail.html!]) {
+      expect(body).toContain('GGI-437137');
+      expect(body).toContain('https://gorilla-grading.vercel.app/certificates/GGI-437137');
+      expect(body).toContain('9,5');
+      expect(body).toContain('Mint+ 9.5');
+      expect(body).toContain('ES-GLS-1');
+      expect(body).toContain('Pikachu falso');
+      expect(body).toContain('https://gorilla-grading.vercel.app/track?code=GGI-ORD-ABC123');
+    }
+  });
+
+  it('escapa los nombres de las cartas en el HTML', () => {
+    const { html } = shipped();
+    expect(html).toContain('Charizard &lt;Holo&gt;');
+    expect(html).not.toContain('Charizard <Holo>');
+  });
+
+  it('usa el dominio que se configure', () => {
+    process.env.PUBLIC_BASE_URL = 'gorillagrading.com/';
+    try {
+      expect(shipped().text).toContain('https://gorillagrading.com/certificates/GGI-437137');
+    } finally {
+      delete process.env.PUBLIC_BASE_URL;
+    }
+  });
+
+  it('sin certificados (otros estados) no añade esa sección', () => {
+    const mail = renderOrderEmail('order_delivered', 'en', 'a@b.c', { orderCode: 'GGI-ORD-ABC123', label: 'Delivered', description: 'Order delivered.' });
+    expect(mail.text).not.toContain('Your certificates');
+    expect(mail.html).toContain('View my order');
+  });
+});

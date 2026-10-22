@@ -128,6 +128,12 @@ function businessBlock(ctx: Context, rule: TransitionRule, actorId: string): Adm
   return undefined;
 }
 
+/** Transportista y número de la devolución más reciente, si se registró. */
+function returnShipment(ctx: Context): { carrier?: string; trackingNumber?: string } {
+  const outbound = ctx.shipments.find((s) => s.direction === 'outbound' && s.trackingNumber);
+  return outbound ? { carrier: outbound.carrier, trackingNumber: outbound.trackingNumber ?? undefined } : {};
+}
+
 function buildDetail(ctx: Context, viewer: UserDto): AdminOrderDetail {
   const { order, customer } = ctx;
   const transitions = rulesFrom(order.status, order.statusBeforeHold)
@@ -311,7 +317,9 @@ export async function transitionOrder(
       })
       .returning({ id: custodyEvents.id });
 
-    if (signer) await issueCertificates(tx, { orderId: order.id, orderCode: order.code, actorId: actor.id, signer, now });
+    const issued = signer
+      ? await issueCertificates(tx, { orderId: order.id, orderCode: order.code, actorId: actor.id, signer, now })
+      : null;
 
     await tx.insert(auditLogs).values({
       actorId: actor.id,
@@ -331,7 +339,15 @@ export async function transitionOrder(
           toEmail: customer.email,
           template: `order_${body.to.toLowerCase()}`,
           locale: customer.locale,
-          data: { orderCode: order.code, status: body.to, label: copy.label, description: publicDescription },
+          data: {
+            orderCode: order.code,
+            status: body.to,
+            label: copy.label,
+            description: publicDescription,
+            // Al salir del laboratorio el email lleva los certificados y el seguimiento de la devolución.
+            ...(issued && { cards: issued }),
+            ...(body.to === 'SHIPPED' && returnShipment(ctx)),
+          },
         })
         .onConflictDoNothing();
     }
