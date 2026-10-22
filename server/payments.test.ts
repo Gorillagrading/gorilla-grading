@@ -256,3 +256,54 @@ describe('firma real de Stripe', () => {
   });
 });
 
+
+describe('pagos y recibos del cliente', () => {
+  it('lista los pagos cobrados con su recibo de Stripe, sin los pendientes', async () => {
+    const first = (await placeOrder()).body.order;
+    await placeOrder(); // pendiente de pago: no aparece
+    await webhook(completed('cs_test_1', first.code));
+
+    const res = await api('/me/payments', 'cliente@example.com');
+    expect(res.status).toBe(200);
+    expect(res.headers.get('cache-control')).toBe('private, no-store');
+    const { payments: list } = await read(res);
+    expect(list).toEqual([
+      {
+        orderCode: first.code,
+        amountCents: first.totalCents,
+        currency: 'EUR',
+        status: 'paid',
+        paidAt: expect.any(String),
+        receiptUrl: 'https://pay.stripe.test/receipts/pi_test_1',
+      },
+    ]);
+  });
+
+  it('si el recibo no llegó al cobrar, se pide al listar', async () => {
+    const order = (await placeOrder()).body.order;
+    fake.state.fail = true;
+    await webhook(completed('cs_test_1', order.code));
+    expect((await db.select().from(payments))[0].receiptUrl).toBeNull();
+
+    fake.state.fail = false;
+    const { payments: list } = await read(await api('/me/payments', 'cliente@example.com'));
+    expect(list[0].receiptUrl).toBe('https://pay.stripe.test/receipts/pi_test_1');
+    expect((await db.select().from(payments))[0].receiptUrl).toBe('https://pay.stripe.test/receipts/pi_test_1');
+  });
+
+  it('una devolución sigue apareciendo, con su estado', async () => {
+    const order = (await placeOrder()).body.order;
+    await webhook(completed('cs_test_1', order.code));
+    await webhook({ id: 'evt_r', type: 'charge.refunded', object: { payment_intent: 'pi_test_1', amount: order.totalCents, amount_refunded: order.totalCents } });
+    const { payments: list } = await read(await api('/me/payments', 'cliente@example.com'));
+    expect(list[0]).toMatchObject({ status: 'refunded' });
+  });
+
+  it('cada cliente ve solo sus pagos, y hace falta sesión', async () => {
+    const order = (await placeOrder()).body.order;
+    await webhook(completed('cs_test_1', order.code));
+    await loginAs('otro@example.com');
+    expect((await read(await api('/me/payments', 'otro@example.com'))).payments).toEqual([]);
+    expect((await api('/me/payments')).status).toBe(401);
+  });
+});

@@ -1,8 +1,9 @@
-import { and, asc, count, eq } from 'drizzle-orm';
+import { and, asc, count, desc, eq, inArray } from 'drizzle-orm';
 import type { Db } from '../../db/client.js';
 import {
   auditLogs, custodyEvents, emailOutbox, orderItems, orders, payments, serviceTiers, users, webhookEvents,
 } from '../../db/schema.js';
+import type { PaymentReceiptDto } from '../../shared/account.js';
 import { publicBaseUrl } from '../env.js';
 import type { CheckoutLine, PaymentEvent, PaymentGateway } from '../payments/gateway.js';
 import { ProblemError } from '../problem.js';
@@ -107,7 +108,7 @@ async function markPaid(tx: Tx, session: Record<string, unknown>, now: Date) {
   if (!order) return 'ignored' as const;
 
   if (payment) {
-    await tx.update(payments).set({ status: 'paid', paymentIntentId }).where(eq(payments.id, payment.id));
+    await tx.update(payments).set({ status: 'paid', paymentIntentId, paidAt: now }).where(eq(payments.id, payment.id));
   } else {
     await tx.insert(payments).values({
       orderId: order.id,
@@ -115,6 +116,7 @@ async function markPaid(tx: Tx, session: Record<string, unknown>, now: Date) {
       paymentIntentId,
       amountCents: typeof session.amount_total === 'number' ? session.amount_total : (order.totalCents ?? 0),
       status: 'paid',
+      paidAt: now,
     });
   }
 
@@ -199,7 +201,12 @@ async function markRefunded(tx: Tx, charge: Record<string, unknown>) {
  * Procesa un aviso de Stripe una sola vez: el id del aviso queda guardado y una repetición no
  * hace nada. Si algo falla, el aviso queda sin procesar y Stripe lo reenvía más tarde.
  */
-export async function handlePaymentEvent(db: Db, event: PaymentEvent, now = new Date()): Promise<'processed' | 'duplicate' | 'ignored'> {
+export async function handlePaymentEvent(
+  db: Db,
+  event: PaymentEvent,
+  now = new Date(),
+  gateway?: PaymentGateway,
+): Promise<'processed' | 'duplicate' | 'ignored'> {
   const [known] = await db.select().from(webhookEvents).where(eq(webhookEvents.eventId, event.id)).limit(1);
   if (known?.processedAt) return 'duplicate';
   if (!known) {
@@ -235,6 +242,11 @@ export async function handlePaymentEvent(db: Db, event: PaymentEvent, now = new 
       await tx.update(webhookEvents).set({ processedAt: now, error: null }).where(eq(webhookEvents.eventId, event.id));
       return outcome;
     });
+    // El recibo se pide fuera de la transacción y sin bloquear: si falla, se vuelve a pedir al listar los pagos.
+    const intentId = str(event.object.payment_intent);
+    if (gateway && result === 'processed' && intentId && event.type.startsWith('checkout.session.')) {
+      await storeReceipt(db, gateway, intentId);
+    }
     return result;
   } catch (error) {
     await db
@@ -243,4 +255,38 @@ export async function handlePaymentEvent(db: Db, event: PaymentEvent, now = new 
       .where(eq(webhookEvents.eventId, event.id));
     throw error;
   }
+}
+
+/** Pide a Stripe el recibo de un cobro y lo guarda. Nunca falla: un recibo que no llega se vuelve a pedir más tarde. */
+async function storeReceipt(db: Db, gateway: PaymentGateway, paymentIntentId: string): Promise<string | null> {
+  try {
+    const url = await gateway.getReceiptUrl(paymentIntentId);
+    if (url) await db.update(payments).set({ receiptUrl: url }).where(eq(payments.paymentIntentId, paymentIntentId));
+    return url;
+  } catch (error) {
+    console.error('[pagos] no se pudo obtener el recibo', paymentIntentId, error instanceof Error ? error.message : error);
+    return null;
+  }
+}
+
+/** Pagos cobrados de un cliente, del más reciente al más antiguo, con su recibo de Stripe. */
+export async function listUserPayments(db: Db, gateway: PaymentGateway | null, userId: string): Promise<PaymentReceiptDto[]> {
+  const rows = await db
+    .select({ payment: payments, orderCode: orders.code })
+    .from(payments)
+    .innerJoin(orders, eq(orders.id, payments.orderId))
+    .where(and(eq(orders.userId, userId), inArray(payments.status, ['paid', 'refunded', 'partially_refunded'])))
+    .orderBy(desc(payments.paidAt), desc(payments.createdAt));
+
+  return Promise.all(
+    rows.map(async ({ payment: p, orderCode }) => ({
+      orderCode,
+      amountCents: p.amountCents,
+      currency: p.currency,
+      status: p.status as PaymentReceiptDto['status'],
+      paidAt: (p.paidAt ?? p.updatedAt).toISOString(),
+      // Un recibo que no se pudo guardar al cobrar se pide ahora.
+      receiptUrl: p.receiptUrl ?? (gateway && p.paymentIntentId ? await storeReceipt(db, gateway, p.paymentIntentId) : null),
+    })),
+  );
 }

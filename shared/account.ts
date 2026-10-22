@@ -62,3 +62,13 @@ export interface GradedCardDto {
   declaredValueEur: number;
   isAuthentic: boolean;
 }
+
+/** Un pago cobrado del cliente. El recibo es el justificante de pago de Stripe, no una factura. */
+export interface PaymentReceiptDto {
+  orderCode: string;
+  amountCents: number;
+  currency: string;
+  status: 'paid' | 'refunded' | 'partially_refunded';
+  paidAt: string;
+  receiptUrl: string | null;
+}

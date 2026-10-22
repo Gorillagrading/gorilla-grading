@@ -30,6 +30,8 @@ export interface PaymentGateway {
   createCheckout(request: CheckoutRequest): Promise<{ id: string; url: string }>;
   /** Comprueba la firma de un aviso y lo devuelve. Lanza 400 si la firma no es válida. */
   parseWebhook(rawBody: string, signature: string | undefined): PaymentEvent;
+  /** Dirección del recibo de un cobro (justificante de pago de Stripe), o null si no lo tiene. */
+  getReceiptUrl(paymentIntentId: string): Promise<string | null>;
 }
 
 const badSignature = () =>
@@ -73,6 +75,12 @@ export function createStripeGateway(secretKey: string, webhookSecret: string | u
       } catch {
         throw badSignature();
       }
+    },
+
+    async getReceiptUrl(paymentIntentId) {
+      const intent = await stripe.paymentIntents.retrieve(paymentIntentId, { expand: ['latest_charge'] });
+      const charge = intent.latest_charge;
+      return charge && typeof charge === 'object' ? (charge.receipt_url ?? null) : null;
     },
   };
 }

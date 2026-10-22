@@ -50,6 +50,13 @@
       "when": 1792585753317,
       "tag": "0006_approve_not_authentic",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1792681470046,
+      "tag": "0007_payment_receipts",
+      "breakpoints": true
     }
   ]
 }

@@ -18,7 +18,7 @@ export function paymentRoutes(deps: Deps) {
     // La firma se calcula sobre el cuerpo exacto: se lee como texto, sin interpretarlo antes.
     const raw = await c.req.text();
     const event = deps.payments.parseWebhook(raw, c.req.header('stripe-signature'));
-    const result = await handlePaymentEvent(deps.getDb(), event);
+    const result = await handlePaymentEvent(deps.getDb(), event, new Date(), deps.payments);
     await flushOutbox(deps);
     return c.json({ received: true, result });
   });

@@ -374,6 +374,10 @@ export const payments = pgTable(
     amountCents: integer('amount_cents').notNull(),
     currency: text('currency').notNull().default('EUR'),
     status: paymentStatus('status').notNull().default('pending'),
+    /** Cuándo se confirmó el cobro. */
+    paidAt: tstz('paid_at'),
+    /** Recibo de Stripe (justificante de pago, no factura). Se guarda al confirmarse el cobro. */
+    receiptUrl: text('receipt_url'),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },

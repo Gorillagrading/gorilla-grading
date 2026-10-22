@@ -260,6 +260,7 @@ export function createFakePayments() {
       }
       return JSON.parse(raw);
     },
+    getReceiptUrl: async (paymentIntentId) => (state.fail ? null : `https://pay.stripe.test/receipts/${paymentIntentId}`),
   };
   return { gateway, sessions, state };
 }

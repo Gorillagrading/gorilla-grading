@@ -2,8 +2,9 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
-import { fetchCards, fetchOrders } from '../api/account';
-import type { OrderSummaryDto } from '../../shared/account';
+import { fetchCards, fetchOrders, fetchPayments } from '../api/account';
+import type { OrderSummaryDto, PaymentReceiptDto } from '../../shared/account';
+import { PaymentReceipts } from '../components/common/PaymentReceipts';
 import type { OrderStatus } from '../../shared/domain';
 import type { GradedCard } from '../types';
 import { STATUS_LABEL } from '../utils/orderStatus';
@@ -81,6 +82,8 @@ export const CollectorVaultPage: React.FC<CollectorVaultPageProps> = ({ onNaviga
   const [filterGame, setFilterGame] = useState('ALL');
 
   const [data, setData] = useState<{ orders: OrderSummaryDto[]; cards: GradedCard[] } | null>(null);
+  /** Los pagos se cargan aparte: si fallan, el resto de la cuenta sigue funcionando. */
+  const [paymentList, setPaymentList] = useState<PaymentReceiptDto[] | null>(null);
   const [loadFailed, setLoadFailed] = useState(false);
 
   const load = useCallback(() => {
@@ -88,6 +91,9 @@ export const CollectorVaultPage: React.FC<CollectorVaultPageProps> = ({ onNaviga
     Promise.all([fetchOrders(), fetchCards()])
       .then(([orders, cards]) => setData({ orders, cards }))
       .catch(() => setLoadFailed(true));
+    fetchPayments()
+      .then(setPaymentList)
+      .catch(() => setPaymentList([]));
   }, []);
 
   useEffect(() => {
@@ -125,7 +131,7 @@ export const CollectorVaultPage: React.FC<CollectorVaultPageProps> = ({ onNaviga
     { id: 'overview', index: '01', label: es ? 'RESUMEN' : 'OVERVIEW', count: null },
     { id: 'submissions', index: '02', label: es ? 'EXPEDIENTES' : 'ORDERS', count: data ? `${allOrders.length}` : null },
     { id: 'vault', index: '03', label: es ? 'BÓVEDA DIGITAL' : 'GRADED VAULT', count: data ? `${userCards.length}` : null },
-    { id: 'invoices', index: '04', label: es ? 'FACTURACIÓN' : 'INVOICES', count: null },
+    { id: 'invoices', index: '04', label: es ? 'PAGOS Y RECIBOS' : 'PAYMENTS', count: paymentList ? `${paymentList.length}` : null },
   ];
 
   const renderOrderStatusBadge = (status: string, isActive: boolean) => {
@@ -1083,12 +1089,11 @@ export const CollectorVaultPage: React.FC<CollectorVaultPageProps> = ({ onNaviga
           {/* TAB: INVOICES */}
           {activeTab === 'invoices' && (
             <div className="animate-in fade-in duration-700">
-              <EmptyPanel
+              <PaymentReceipts
+                payments={paymentList ?? []}
+                lang={es ? 'es' : 'en'}
                 isLight={isLight}
-                title={language === 'es' ? 'Facturación' : 'Invoices'}
-                text={language === 'es'
-                  ? 'Tus facturas aparecerán aquí cuando se active el pago online de los pedidos.'
-                  : 'Your invoices will appear here once online payment is enabled for orders.'}
+                onOpenOrder={(code) => onNavigate(`/track?code=${code}`)}
               />
             </div>
           )}

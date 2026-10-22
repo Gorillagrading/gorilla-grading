@@ -3,6 +3,7 @@ import { requireUser } from '../auth/middleware.js';
 import type { AppEnv, Deps } from '../context.js';
 import { getOrderResults } from '../domain/item-images.js';
 import { listUserOrders } from '../domain/orders.js';
+import { listUserPayments } from '../domain/payments.js';
 import { listUserVault } from '../domain/vault.js';
 
 /** Datos del dashboard. Todo se filtra por el usuario de la sesión; nunca se acepta un id de usuario del cliente. */
@@ -18,6 +19,12 @@ export function accountRoutes(deps: Deps) {
   routes.get('/orders/:code/results', signedIn, async (c) => {
     c.header('Cache-Control', 'private, no-store');
     return c.json({ results: await getOrderResults(deps.getDb(), deps.storage, c.get('user').id, c.req.param('code')) });
+  });
+
+  // Pagos cobrados y sus recibos de Stripe.
+  routes.get('/me/payments', signedIn, async (c) => {
+    c.header('Cache-Control', 'private, no-store');
+    return c.json({ payments: await listUserPayments(deps.getDb(), deps.payments, c.get('user').id) });
   });
 
   routes.get('/me/cards', signedIn, async (c) =>
