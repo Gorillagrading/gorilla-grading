@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { DefectInspector } from '../components/common/DefectInspector';
 import { CertificateStatusBanner } from '../components/common/CertificateStatusBanner';
+import { CertificatePrint } from '../components/common/CertificatePrint';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
 import { ApiError } from '../api/client';
@@ -136,6 +137,9 @@ export const CertificateDetailPage: React.FC<CertificateDetailPageProps> = ({
       </div>
 
       <CertificateStatusBanner certificate={card} onNavigate={onNavigate} />
+
+      {/* Versión para imprimir: una hoja A4 propia, solo visible en papel. */}
+      <CertificatePrint card={card} lang={es ? 'es' : 'en'} />
 
       {/* Official Certificate Header Plaque — Solid High-Contrast Luxury Design */}
       <div 

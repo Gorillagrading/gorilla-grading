@@ -4,7 +4,7 @@ import { api } from './client';
 
 /** Certificado público: la misma carta que ven los componentes, más su estado y firma. */
 export type PublicCertificate = PublicGradedCard &
-  Pick<PublicCertificateDto, 'status' | 'issuedAt' | 'revokedAt' | 'supersededBy' | 'signature' | 'keyId'>;
+  Pick<PublicCertificateDto, 'status' | 'issuedAt' | 'revokedAt' | 'supersededBy' | 'signature' | 'keyId' | 'signedRecord'>;
 
 /** Verifica un certificado. Lanza `ApiError` con estado 404 si no existe. */
 export const fetchCertificate = (query: string, via: VerificationChannel = 'web') =>

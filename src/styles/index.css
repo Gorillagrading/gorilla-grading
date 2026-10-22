@@ -1359,3 +1359,114 @@ html.light-theme .about-page .title-3d-green,
 
 
 
+/* ==========================================================================
+   Dossier de impresión del certificado (src/components/common/CertificatePrint.tsx)
+   En pantalla no se ve; al imprimir se oculta la web entera y solo sale el dossier.
+   ========================================================================== */
+@media screen {
+  .print-dossier { display: none; }
+}
+
+@media print {
+  @page { size: A4; margin: 11mm 12mm; }
+  /* Los temas fuerzan el fondo con !important y selectores como `.light-theme .bg-[#111311]`:
+     :root repetido da más prioridad que cualquiera de ellos, sea cual sea el tema. */
+  :root:root:root, :root:root:root body {
+    background: #fff !important;
+    background-image: none !important;
+    color: #111827 !important;
+    /* La web anima el cambio de fondo (0,4 s); en papel no puede quedar a medias. */
+    transition: none !important;
+  }
+  body > *:not(.print-dossier) { display: none !important; }
+
+  .print-dossier {
+    display: block;
+    position: relative;
+    color: #111827;
+    font-family: 'Nunito', system-ui, sans-serif;
+    font-size: 9pt;
+    line-height: 1.35;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .print-dossier * { box-sizing: border-box; }
+
+  .cp-watermark {
+    position: fixed; top: 42%; left: 0; right: 0; text-align: center;
+    font-size: 72pt; font-weight: 900; letter-spacing: 0.1em; color: rgba(220, 38, 38, 0.14);
+    transform: rotate(-24deg); pointer-events: none; z-index: 10;
+  }
+
+  .cp-header {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    padding-bottom: 4mm; border-bottom: 1.2pt solid #15803D;
+  }
+  .cp-brand { display: flex; align-items: center; gap: 3mm; }
+  .cp-brand img { height: 13mm; width: auto; }
+  .cp-brand-name { font-weight: 900; font-size: 15pt; letter-spacing: 0.02em; line-height: 1; }
+  .cp-brand-sub { font-weight: 700; font-size: 7pt; color: #15803D; letter-spacing: 0.12em; }
+  .cp-header-right { text-align: right; }
+  .cp-kicker { font-size: 7pt; font-weight: 800; letter-spacing: 0.18em; text-transform: uppercase; color: #4B5563; }
+  .cp-number { font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace; font-size: 20pt; font-weight: 800; letter-spacing: 0.04em; margin: 1mm 0; }
+  .cp-small { font-size: 7.5pt; color: #4B5563; }
+  .cp-label { font-size: 6.5pt; font-weight: 800; letter-spacing: 0.18em; text-transform: uppercase; color: #6B7280; }
+  .cp-muted { color: #6B7280; margin: 0; }
+  .cp-num { text-align: right; font-weight: 800; font-variant-numeric: tabular-nums; }
+
+  .cp-main { display: grid; grid-template-columns: 1fr 38mm; gap: 7mm; margin-top: 5mm; }
+  .cp-identity h1 { font-size: 19pt; font-weight: 900; line-height: 1.1; margin: 0 0 2.5mm; }
+  .cp-meta { display: flex; flex-wrap: wrap; gap: 1.5mm 6mm; margin: 0 0 4mm; }
+  .cp-meta dt { font-size: 6pt; font-weight: 800; letter-spacing: 0.16em; text-transform: uppercase; color: #6B7280; }
+  .cp-meta dd { margin: 0; font-weight: 700; }
+
+  .cp-grade { display: grid; grid-template-columns: 34mm 1fr; gap: 5mm; align-items: stretch; }
+  .cp-grade-box {
+    border: 1.4pt solid #15803D; background: #F3FAF5; text-align: center;
+    padding: 3mm 2mm; display: flex; flex-direction: column; justify-content: center;
+  }
+  .cp-grade-value { font-size: 34pt; font-weight: 900; color: #15803D; line-height: 1; margin: 1.5mm 0 1mm; }
+  .cp-grade-label { font-size: 8.5pt; font-weight: 900; text-transform: uppercase; letter-spacing: 0.06em; }
+
+  .cp-subgrades { width: 100%; border-collapse: collapse; }
+  .cp-subgrades th { text-align: left; font-size: 6.5pt; font-weight: 800; letter-spacing: 0.18em; text-transform: uppercase; color: #6B7280; padding: 0 0 1.5mm; border-bottom: 0.6pt solid #D1D5DB; }
+  .cp-subgrades td { padding: 1.6mm 0; border-bottom: 0.4pt solid #E5E7EB; vertical-align: baseline; }
+  .cp-subgrades td:first-child { font-weight: 700; width: 24mm; }
+  .cp-subgrades .cp-num { width: 12mm; color: #15803D; font-size: 10.5pt; padding-right: 4mm; }
+  .cp-subgrades .cp-detail { color: #4B5563; font-size: 7.5pt; }
+
+  .cp-verify { border: 0.6pt solid #D1D5DB; padding: 3mm; text-align: center; align-self: start; }
+  .cp-qr { width: 30mm; height: 30mm; margin: 2mm auto; }
+  .cp-qr svg { width: 100%; height: 100%; display: block; }
+  .cp-verify p { font-size: 6.5pt; color: #4B5563; margin: 0 0 1.5mm; }
+  .cp-url { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 6pt; word-break: break-all; }
+
+  .cp-faces { display: flex; justify-content: center; gap: 12mm; margin-top: 6mm; break-inside: avoid; }
+  .cp-face { margin: 0; text-align: center; }
+  .cp-face-frame { border: 0.6pt solid #D1D5DB; padding: 2mm; background: #fff; }
+  .cp-face-img { position: relative; display: inline-block; }
+  .cp-face-img img { display: block; height: 78mm; width: auto; max-width: 62mm; object-fit: contain; }
+  .cp-face-empty { height: 78mm; width: 56mm; display: flex; align-items: center; justify-content: center; background: #F3F4F6; color: #9CA3AF; font-size: 7pt; letter-spacing: 0.14em; text-transform: uppercase; }
+  .cp-face figcaption { margin-top: 1.5mm; font-size: 6.5pt; font-weight: 800; letter-spacing: 0.18em; text-transform: uppercase; color: #4B5563; }
+  .cp-pin {
+    position: absolute; transform: translate(-50%, -50%);
+    width: 4.2mm; height: 4.2mm; border-radius: 50%;
+    background: #DC2626; color: #fff; border: 0.6pt solid #fff;
+    font-size: 6pt; font-weight: 900; display: flex; align-items: center; justify-content: center;
+  }
+
+  .cp-block { margin-top: 5mm; break-inside: avoid; }
+  .cp-block h2 { font-size: 6.5pt; font-weight: 800; letter-spacing: 0.18em; text-transform: uppercase; color: #6B7280; margin: 0 0 1.5mm; padding-bottom: 1mm; border-bottom: 0.6pt solid #D1D5DB; }
+  .cp-table { width: 100%; border-collapse: collapse; font-size: 8pt; }
+  .cp-table th { text-align: left; font-size: 6.5pt; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: #6B7280; padding: 1mm 2mm 1mm 0; }
+  .cp-table td { padding: 1.2mm 2mm 1.2mm 0; border-top: 0.4pt solid #E5E7EB; vertical-align: top; }
+  .cp-table tr { break-inside: avoid; }
+  .cp-table td.cp-num { width: 6mm; text-align: left; color: #DC2626; }
+  .cp-notes { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5mm 6mm; margin: 0; }
+  .cp-notes dt { font-weight: 800; font-size: 7.5pt; }
+  .cp-notes dd { margin: 0; color: #374151; }
+  .cp-sig { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 6.5pt; word-break: break-all; background: #F9FAFB; border: 0.4pt solid #E5E7EB; padding: 1.5mm 2mm; margin-bottom: 1mm; }
+
+  .cp-footer { margin-top: 6mm; padding-top: 2mm; border-top: 0.6pt solid #D1D5DB; font-size: 6.5pt; color: #6B7280; }
+  .cp-footer p { margin: 0 0 0.8mm; }
+}
