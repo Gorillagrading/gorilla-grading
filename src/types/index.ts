@@ -1,5 +1,3 @@
-export type ConceptType = 'precision' | 'gallery' | 'jungle' | 'hybrid';
-
 export interface CardDefect {
   id: string;
   category: 'Centering' | 'Corners' | 'Edges' | 'Surface';

@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { ConceptProvider } from './context/ConceptContext';
 import { LanguageProvider } from './context/LanguageContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
@@ -9,7 +8,6 @@ import { PrecisionScrollDatum } from './components/luxury/PrecisionScrollDatum';
 
 // Pages
 import { HomePage } from './pages/HomePage';
-import { ConceptsComparisonPage } from './pages/ConceptsComparisonPage';
 import { ServicesPage } from './pages/ServicesPage';
 import { HowItWorksPage } from './pages/HowItWorksPage';
 import { SubmissionWizardPage } from './pages/SubmissionWizardPage';
@@ -37,7 +35,6 @@ import { EventsCalendarPage } from './pages/EventsCalendarPage';
 import { LoginPage } from './pages/LoginPage';
 import { AdminPage } from './pages/AdminPage';
 import { GradingScalePage } from './pages/GradingScalePage';
-import { TeamVisualMapPage } from './pages/TeamVisualMapPage';
 
 export const AppContent: React.FC = () => {
   const { isLoggedIn, status: authStatus } = useAuth();
@@ -96,8 +93,6 @@ export const AppContent: React.FC = () => {
         return <ContactPage onNavigate={handleNavigate} />;
       case '/faq':
         return <FAQPage onNavigate={handleNavigate} />;
-      case '/concepts':
-        return <ConceptsComparisonPage onNavigate={handleNavigate} />;
       case '/services':
         return <ServicesPage onNavigate={handleNavigate} />;
       case '/how-it-works':
@@ -145,8 +140,6 @@ export const AppContent: React.FC = () => {
         return <LegalPage type="cookie-consent" onNavigate={handleNavigate} />;
       case '/legal-notice':
         return <LegalPage type="legal-notice" onNavigate={handleNavigate} />;
-      case '/mapa':
-        return <TeamVisualMapPage onNavigate={handleNavigate} />;
       case '/grading-scale':
         return <GradingScalePage onNavigate={handleNavigate} />;
       case '/admin':
@@ -162,10 +155,6 @@ export const AppContent: React.FC = () => {
         return <NotFoundPage onNavigate={handleNavigate} />;
     }
   };
-
-  if (currentPath === '/mapa') {
-    return <TeamVisualMapPage onNavigate={handleNavigate} />;
-  }
 
   return (
     <div className={`min-h-screen flex flex-col font-sans transition-colors duration-300 relative ${
@@ -189,11 +178,9 @@ export default function App() {
   return (
     <ThemeProvider>
       <LanguageProvider>
-        <ConceptProvider>
-          <AuthProvider>
-            <AppContent />
-          </AuthProvider>
-        </ConceptProvider>
+        <AuthProvider>
+          <AppContent />
+        </AuthProvider>
       </LanguageProvider>
     </ThemeProvider>
   );
