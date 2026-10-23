@@ -26,6 +26,11 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
   const { theme } = useTheme();
   const isLight = theme === 'light';
 
+  // Arriving with a tier chosen (e.g. from the home cards) shows only that tier plus the calculator
+  const [showAllTiers, setShowAllTiers] = useState<boolean>(
+    () => !new URLSearchParams(window.location.search).get('tier'),
+  );
+
   const [isFromConfigureShipment, setIsFromConfigureShipment] = useState<boolean>(() => {
     const params = new URLSearchParams(window.location.search);
     return params.get('fromConfig') === 'true';
@@ -591,6 +596,8 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
                 isLight ? 'bg-white border-[#E5E7EB]' : 'bg-[#141815] border-white/10'
               }`}>
                 
+                {showAllTiers ? (
+                <>
                 {/* Matrix Top Header Bar - Limpio, Sobrio y Profesional */}
                 <div className={`px-4 py-2 border-b flex flex-wrap items-center justify-between gap-4 font-mono text-xs ${
                   isLight 
@@ -793,6 +800,43 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
                     );
                   })}
                 </div>
+                </>
+                ) : (
+                  <div className={`px-4 py-5 sm:px-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
+                    isLight ? 'bg-[#F7F5EF]' : 'bg-white/[0.03]'
+                  }`}>
+                    <div>
+                      <span className="font-mono text-[10px] uppercase tracking-wider font-semibold opacity-60">
+                        {language === 'es' ? 'Servicio seleccionado' : 'Selected service'}
+                      </span>
+                      <div className="mt-1 flex flex-wrap items-baseline gap-x-4 gap-y-1">
+                        <h3 className="font-['Nunito',sans-serif] text-2xl sm:text-3xl font-[900] uppercase tracking-normal">
+                          {currentSelectedLevel.name}
+                        </h3>
+                        <span className={`font-['Nunito',sans-serif] text-2xl sm:text-3xl font-[900] ${isLight ? 'text-[#15803D]' : 'text-[#4ADE80]'}`}>
+                          {currentSelectedLevel.price} €
+                          <span className="ml-1 font-mono text-xs font-normal opacity-60">/ {language === 'es' ? 'carta' : 'card'}</span>
+                        </span>
+                      </div>
+                      <p className="mt-1 max-w-xl font-sans text-xs opacity-70">{currentSelectedLevel.purpose}</p>
+                      <div className="mt-2 flex flex-wrap gap-x-5 gap-y-1 font-mono text-[11px] uppercase tracking-wider opacity-80">
+                        <span>{language === 'es' ? 'Plazo' : 'Turnaround'}: <b>{currentSelectedLevel.turnaround}</b></span>
+                        <span>{language === 'es' ? 'Valor máx. declarado' : 'Max declared value'}: <b>{currentSelectedLevel.maxInsurance}</b></span>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowAllTiers(true)}
+                      className={`shrink-0 cursor-pointer border px-4 py-2 font-mono text-[11px] font-bold uppercase tracking-wider transition-colors ${
+                        isLight
+                          ? 'border-[#D8D2C5] bg-white text-[#14170F] hover:border-[#16A34A]'
+                          : 'border-white/20 bg-white/5 text-white hover:border-[#4ADE80]'
+                      }`}
+                    >
+                      {language === 'es' ? 'Cambiar de servicio' : 'Change service'}
+                    </button>
+                  </div>
+                )}
 
 
           {/* Volume estimation: merged into the tariff card, compact */}

@@ -139,9 +139,9 @@ export const LuxuryPricingSection: React.FC<LuxuryPricingSectionProps> = ({ onNa
   const discountAmount = subtotal - totalAmount;
   const totalInsuredCoverage = currentLevel.maxInsuranceNum * cardCount;
 
-  // Volume estimation bar. `boxed` draws it as a standalone box (home) instead of a card footer.
-  const renderVolumeCalculator = (boxed: boolean) => (
-          <div className={`${boxed ? 'border' : 'border-t'} px-4 py-3 ${
+  // Volume estimation bar, drawn as the footer of the tariff card.
+  const renderVolumeCalculator = () => (
+          <div className={`border-t px-4 py-3 ${
             isLight ? 'border-[#E5E7EB] bg-[#FAFAF8]' : 'border-white/10 bg-black/30'
           }`}>
             <div className="grid grid-cols-12 gap-4 items-center">
@@ -254,7 +254,6 @@ export const LuxuryPricingSection: React.FC<LuxuryPricingSectionProps> = ({ onNa
     <div className="w-full mb-2">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 lg:gap-6 items-stretch pt-3">
         {serviceLevels.map((lvl) => {
-          const isSelected = selectedTierId === lvl.id;
           const isPopular = lvl.id === 'premium';
           const badge =
             lvl.id === 'premium' ? (language === 'es' ? 'MÁS POPULAR' : 'MOST POPULAR')
@@ -264,7 +263,7 @@ export const LuxuryPricingSection: React.FC<LuxuryPricingSectionProps> = ({ onNa
 
           const t = isLight
             ? {
-                card: `bg-white text-[#14170F] shadow-md ${isSelected ? 'border-[#15803D] ring-1 ring-[#15803D]/40' : 'border-[#E2DBD0]'}`,
+                card: 'bg-white text-[#14170F] shadow-md border-[#E2DBD0]',
                 badgeMain: 'bg-[#15803D] text-white',
                 badgeAlt: 'border border-[#14170F]/25 bg-white text-[#14170F]',
                 purpose: 'text-gray-600',
@@ -278,7 +277,7 @@ export const LuxuryPricingSection: React.FC<LuxuryPricingSectionProps> = ({ onNa
                 btnAlt: 'border border-[#D8D2C5] bg-white text-[#14170F] hover:border-[#16A34A]',
               }
             : {
-                card: `text-white bg-gradient-to-b from-[#222636] to-[#141720] shadow-xl ${isSelected ? 'border-[#4ADE80] ring-1 ring-[#4ADE80]/50' : 'border-white/10'}`,
+                card: 'text-white bg-gradient-to-b from-[#222636] to-[#141720] shadow-xl border-white/10',
                 badgeMain: 'bg-[#4ADE80] text-[#0F1A12]',
                 badgeAlt: 'border border-white/30 bg-[#1B1F2C] text-white',
                 purpose: 'text-white/65',
@@ -339,14 +338,12 @@ export const LuxuryPricingSection: React.FC<LuxuryPricingSectionProps> = ({ onNa
 
               <button
                 type="button"
-                onClick={() => setSelectedTierId(lvl.id)}
+                onClick={() => onNavigate && onNavigate(`/submit?tier=${lvl.id}`)}
                 className={`w-full cursor-pointer py-3 font-mono text-[11px] font-bold uppercase tracking-wider transition-colors ${
-                  isPopular || isSelected ? t.btnMain : t.btnAlt
+                  isPopular ? t.btnMain : t.btnAlt
                 }`}
               >
-                {language === 'es'
-                  ? (isSelected ? '✓ Nivel seleccionado' : 'Seleccionar nivel →')
-                  : (isSelected ? '✓ Tier selected' : 'Select tier →')}
+                {language === 'es' ? 'Seleccionar nivel →' : 'Select tier →'}
               </button>
             </div>
           );
@@ -524,8 +521,7 @@ export const LuxuryPricingSection: React.FC<LuxuryPricingSectionProps> = ({ onNa
 
         {isHome ? (
           <>
-            {homeCards}
-            <div className="mt-6 mb-8 sm:mb-14">{renderVolumeCalculator(true)}</div>
+            <div className="mb-8 sm:mb-14">{homeCards}</div>
           </>
         ) : (
           <>
@@ -683,7 +679,7 @@ export const LuxuryPricingSection: React.FC<LuxuryPricingSectionProps> = ({ onNa
             </table>
           </div>
 
-          {renderVolumeCalculator(false)}
+          {renderVolumeCalculator()}
         </div>
 
         {/* 2. DEDICATED MOBILE SERVICE & PRICING SUITE (Zero Overload, Single-Screen Mobile Hub - Mobile Only) */}
