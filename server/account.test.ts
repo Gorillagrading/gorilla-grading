@@ -62,8 +62,8 @@ describe('GET /orders', () => {
   it('devuelve solo los pedidos del usuario con sesión', async () => {
     const { ana, bea, grader, qa, tier } = await setup();
     const common = { tierId: tier.id, graderId: grader.id, qaId: qa.id, grade: 10 };
-    await insertGradedOrder(db, { ...common, ownerId: ana.id, orderCode: 'GGI-ORD-000001', certNumber: 'GGI-000001', cardName: 'Charizard' });
-    await insertGradedOrder(db, { ...common, ownerId: bea.id, orderCode: 'GGI-ORD-000002', certNumber: 'GGI-000002', cardName: 'Blastoise' });
+    await insertGradedOrder(db, { ...common, ownerId: ana.id, orderCode: 'GGI-ORD-000001', certNumber: 'GGI-00000100', cardName: 'Charizard' });
+    await insertGradedOrder(db, { ...common, ownerId: bea.id, orderCode: 'GGI-ORD-000002', certNumber: 'GGI-00000200', cardName: 'Blastoise' });
 
     const { cookie } = await loginAs('ana@example.com');
     const body = await read(await get('/api/v1/orders', cookie));
@@ -77,7 +77,7 @@ describe('GET /orders', () => {
     const { ana, grader, qa, tier } = await setup();
     const { orderId } = await insertGradedOrder(db, {
       ownerId: ana.id, tierId: tier.id, graderId: grader.id, qaId: qa.id, grade: 10,
-      orderCode: 'GGI-ORD-000001', certNumber: 'GGI-000001', cardName: 'Charizard',
+      orderCode: 'GGI-ORD-000001', certNumber: 'GGI-00000100', cardName: 'Charizard',
     });
     await db.insert(orderItems).values({
       orderId, position: 2, cardName: 'Pikachu', game: 'Pokemon', declaredValueCents: 1000,
@@ -146,13 +146,13 @@ describe('GET /me/cards', () => {
     const { ana, grader, qa, tier } = await setup();
     await insertGradedOrder(db, {
       ownerId: ana.id, tierId: tier.id, graderId: grader.id, qaId: qa.id, grade: 9.5,
-      orderCode: 'GGI-ORD-000001', certNumber: 'GGI-000001', cardName: 'Charizard', declaredValueCents: 45000,
+      orderCode: 'GGI-ORD-000001', certNumber: 'GGI-00000100', cardName: 'Charizard', declaredValueCents: 45000,
     });
     const { cookie } = await loginAs('ana@example.com');
     const [card] = (await read(await get('/api/v1/me/cards', cookie))).cards;
 
     expect(card).toMatchObject({
-      certNumber: 'GGI-000001',
+      certNumber: 'GGI-00000100',
       name: 'Charizard',
       grade: 9.5,
       declaredValueEur: 450,
@@ -166,21 +166,21 @@ describe('GET /me/cards', () => {
   it('no muestra cartas de otro usuario', async () => {
     const { ana, bea, grader, qa, tier } = await setup();
     const common = { tierId: tier.id, graderId: grader.id, qaId: qa.id, grade: 10 };
-    await insertGradedOrder(db, { ...common, ownerId: bea.id, orderCode: 'GGI-ORD-000002', certNumber: 'GGI-000002', cardName: 'Blastoise' });
-    await insertGradedOrder(db, { ...common, ownerId: ana.id, orderCode: 'GGI-ORD-000001', certNumber: 'GGI-000001', cardName: 'Charizard' });
+    await insertGradedOrder(db, { ...common, ownerId: bea.id, orderCode: 'GGI-ORD-000002', certNumber: 'GGI-00000200', cardName: 'Blastoise' });
+    await insertGradedOrder(db, { ...common, ownerId: ana.id, orderCode: 'GGI-ORD-000001', certNumber: 'GGI-00000100', cardName: 'Charizard' });
 
     const { cookie } = await loginAs('ana@example.com');
     const { cards } = await read(await get('/api/v1/me/cards', cookie));
-    expect(cards.map((c: { certNumber: string }) => c.certNumber)).toEqual(['GGI-000001']);
+    expect(cards.map((c: { certNumber: string }) => c.certNumber)).toEqual(['GGI-00000100']);
   });
 
   it('calcula la población con todas las cartas iguales, sean de quien sean', async () => {
     const { ana, bea, grader, qa, tier } = await setup();
     const common = { tierId: tier.id, graderId: grader.id, qaId: qa.id, cardName: 'Charizard' };
-    const first = await insertGradedOrder(db, { ...common, ownerId: ana.id, orderCode: 'GGI-ORD-000001', certNumber: 'GGI-000001', grade: 9 });
+    const first = await insertGradedOrder(db, { ...common, ownerId: ana.id, orderCode: 'GGI-ORD-000001', certNumber: 'GGI-00000100', grade: 9 });
     // Otras dos copias de la misma carta, de otra persona: una mejor y otra igual.
-    await insertGradedOrder(db, { ...common, ownerId: bea.id, orderCode: 'GGI-ORD-000002', certNumber: 'GGI-000002', grade: 10, identityId: first.identityId });
-    await insertGradedOrder(db, { ...common, ownerId: bea.id, orderCode: 'GGI-ORD-000003', certNumber: 'GGI-000003', grade: 9, identityId: first.identityId });
+    await insertGradedOrder(db, { ...common, ownerId: bea.id, orderCode: 'GGI-ORD-000002', certNumber: 'GGI-00000200', grade: 10, identityId: first.identityId });
+    await insertGradedOrder(db, { ...common, ownerId: bea.id, orderCode: 'GGI-ORD-000003', certNumber: 'GGI-00000300', grade: 9, identityId: first.identityId });
 
     const { cookie } = await loginAs('ana@example.com');
     const [card] = (await read(await get('/api/v1/me/cards', cookie))).cards;
@@ -191,7 +191,7 @@ describe('GET /me/cards', () => {
     const { ana, grader, qa, tier } = await setup();
     await insertGradedOrder(db, {
       ownerId: ana.id, tierId: tier.id, graderId: grader.id, qaId: qa.id, grade: 10,
-      orderCode: 'GGI-ORD-000001', certNumber: 'GGI-000001', cardName: 'Charizard', certStatus: 'revoked',
+      orderCode: 'GGI-ORD-000001', certNumber: 'GGI-00000100', cardName: 'Charizard', certStatus: 'revoked',
     });
     const { cookie } = await loginAs('ana@example.com');
     expect(await read(await get('/api/v1/me/cards', cookie))).toEqual({ cards: [] });

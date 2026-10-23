@@ -113,7 +113,7 @@ describe('emisión de certificados', () => {
     const certs = await db.select().from(certificates);
     expect(certs).toHaveLength(1);
     const [cert] = certs;
-    expect(cert.number).toMatch(/^GGI-\d{6}$/);
+    expect(cert.number).toMatch(/^GGI-\d{8}$/);
     expect(cert).toMatchObject({ status: 'active', keyId: 'test-key-1' });
 
     const [slab] = await db.select().from(slabs);
@@ -228,8 +228,8 @@ describe('firma', () => {
   it('una firma solo es válida con su clave y su registro', () => {
     const one = createSigner(generateSigningKey().privateKey, 'a');
     const other = createSigner(generateSigningKey().privateKey, 'b');
-    const record = { n: 'GGI-123456', g: 9.5 };
-    const signature = one.sign({ g: 9.5, n: 'GGI-123456' });
+    const record = { n: 'GGI-12345600', g: 9.5 };
+    const signature = one.sign({ g: 9.5, n: 'GGI-12345600' });
     expect(verifySignature(one.publicKey, record, signature)).toBe(true);
     expect(verifySignature(other.publicKey, record, signature)).toBe(false);
     expect(verifySignature(one.publicKey, { ...record, g: 10 }, signature)).toBe(false);

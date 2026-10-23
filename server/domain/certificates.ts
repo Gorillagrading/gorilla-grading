@@ -10,15 +10,15 @@ import { loadCards } from './vault.js';
 type Lookup = { kind: 'number' | 'serial'; value: string };
 
 /**
- * Entiende lo que la persona escribe o lo que trae el QR: GGI-892401, ggi-892401, GGI892401,
- * 892401 o el serial del slab (GGI-SLB-892401). Devuelve null si no puede ser un certificado.
+ * Entiende lo que la persona escribe o lo que trae el QR: GGI-48271936, ggi-48271936, GGI48271936,
+ * 48271936 o el serial del slab (GGI-SLB-48271936). Devuelve null si no puede ser un certificado.
  */
 export function parseCertificateQuery(raw: string): Lookup | null {
   const s = raw.trim().toUpperCase().replace(/\s+/g, '');
-  if (/^\d{6}$/.test(s)) return { kind: 'number', value: `GGI-${s}` };
-  const serial = /^GGI-?SLB-?(\d{6})$/.exec(s);
+  if (/^\d{8}$/.test(s)) return { kind: 'number', value: `GGI-${s}` };
+  const serial = /^GGI-?SLB-?(\d{8})$/.exec(s);
   if (serial) return { kind: 'serial', value: `GGI-SLB-${serial[1]}` };
-  const number = /^GGI-?(\d{6})$/.exec(s);
+  const number = /^GGI-?(\d{8})$/.exec(s);
   if (number) return { kind: 'number', value: `GGI-${number[1]}` };
   return null;
 }

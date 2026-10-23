@@ -100,7 +100,7 @@ describe('en la tabla real de resultados', () => {
     const [tier] = await db.execute(sql`select id from service_tiers where code = 'premium'`).then((r) => r.rows as { id: string }[]);
     await insertGradedOrder(db, {
       ownerId: owner.id, tierId: tier.id, graderId: grader.id, qaId: qa.id, grade: 9.5,
-      orderCode: 'GGI-ORD-AAAAA1', certNumber: 'GGI-111111', cardName: 'Charizard',
+      orderCode: 'GGI-ORD-AAAAA1', certNumber: 'GGI-11111100', cardName: 'Charizard',
     });
     const [result] = await db.select().from(gradingResults);
     expect(result).toMatchObject({ finalGrade: 9.5, gradeLabel: 'Mint+ 9.5' });

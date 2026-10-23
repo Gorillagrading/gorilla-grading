@@ -9,7 +9,7 @@ export const newOrderCode = () => `${CODE_PREFIX}-ORD-${randomChars(6)}`;
 
 export const newTicketCode = () => `${CODE_PREFIX}-TKT-${randomChars(6)}`;
 
-export const newCertificateNumber = () => `${CODE_PREFIX}-${String(randomInt(0, 1_000_000)).padStart(6, '0')}`;
+export const newCertificateNumber = () => `${CODE_PREFIX}-${String(randomInt(0, 100_000_000)).padStart(8, '0')}`;
 
 /** El serial del slab lleva los mismos dígitos que el certificado que contiene. */
 export const slabSerialFor = (certificateNumber: string) =>

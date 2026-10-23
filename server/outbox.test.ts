@@ -143,7 +143,7 @@ describe('email de salida con certificados', () => {
       carrier: 'GLS',
       trackingNumber: 'ES-GLS-1',
       cards: [
-        { position: 1, cardName: 'Charizard <Holo>', authentic: true, number: 'GGI-437137', grade: 9.5, label: 'Mint+ 9.5' },
+        { position: 1, cardName: 'Charizard <Holo>', authentic: true, number: 'GGI-43713700', grade: 9.5, label: 'Mint+ 9.5' },
         { position: 2, cardName: 'Pikachu falso', authentic: false },
       ],
       ...over,
@@ -153,8 +153,8 @@ describe('email de salida con certificados', () => {
     const mail = shipped();
     expect(mail.subject).toBe('Devolución en camino · GGI-ORD-ABC123');
     for (const body of [mail.text, mail.html!]) {
-      expect(body).toContain('GGI-437137');
-      expect(body).toContain('https://gorilla-grading.vercel.app/certificates/GGI-437137');
+      expect(body).toContain('GGI-43713700');
+      expect(body).toContain('https://gorilla-grading.vercel.app/certificates/GGI-43713700');
       expect(body).toContain('9,5');
       expect(body).toContain('Mint+ 9.5');
       expect(body).toContain('ES-GLS-1');
@@ -172,7 +172,7 @@ describe('email de salida con certificados', () => {
   it('usa el dominio que se configure', () => {
     process.env.PUBLIC_BASE_URL = 'gorillagrading.com/';
     try {
-      expect(shipped().text).toContain('https://gorillagrading.com/certificates/GGI-437137');
+      expect(shipped().text).toContain('https://gorillagrading.com/certificates/GGI-43713700');
     } finally {
       delete process.env.PUBLIC_BASE_URL;
     }
