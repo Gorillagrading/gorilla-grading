@@ -253,13 +253,6 @@ export const CollectorVaultPage: React.FC<CollectorVaultPageProps> = ({ onNaviga
                 : 'bg-[#383838] border-[#4E4E4E] text-[#F5F6F2]'
             }`}
           >
-            {/* Header Badge: Verified Status */}
-            <div className={`flex items-center justify-between pb-1 border-b ${isLight ? 'border-black/10' : 'border-[#4E4E4E]'}`}>
-              <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-                {language === 'es' ? 'Socio Premier' : 'Premier Member'}
-              </span>
-            </div>
-
             {/* Profile Identity Lockup */}
             <div className="flex items-center gap-4 relative z-10">
               {/* Prestigious Monogram Badge */}
@@ -273,12 +266,6 @@ export const CollectorVaultPage: React.FC<CollectorVaultPageProps> = ({ onNaviga
 
               <div className="flex flex-col min-w-0">
                 <div className="flex items-center gap-1.5 mb-1">
-                  <span className={`text-[10px] font-bold uppercase tracking-wide ${
-                    isLight ? 'text-[#15803D]' : 'text-[#61B663]'
-                  }`}>
-                    {language === 'es' ? 'Bóveda Activa' : 'Active Vault'}
-                  </span>
-                  <span className="text-neutral-400 text-xs">•</span>
                   <span className={`text-[10px] font-mono tracking-wider ${isLight ? 'text-neutral-500' : 'text-[#8C9185]'}`}>
                     #{user?.customerCode ?? ''}
                   </span>
@@ -287,8 +274,8 @@ export const CollectorVaultPage: React.FC<CollectorVaultPageProps> = ({ onNaviga
                 <h1 className="font-['Nunito',sans-serif] text-2xl uppercase tracking-normal leading-tight truncate font-[900]">
                   {displayName}
                 </h1>
-                <span className={`text-[11px] mt-0.5 ${isLight ? 'text-neutral-500' : 'text-[#8C9185]'}`}>
-                  {language === 'es' ? 'Coleccionista Certificado' : 'Certified Collector'}
+                <span className={`text-[11px] mt-0.5 truncate ${isLight ? 'text-neutral-500' : 'text-[#8C9185]'}`}>
+                  {user?.email}
                 </span>
               </div>
             </div>
@@ -306,30 +293,13 @@ export const CollectorVaultPage: React.FC<CollectorVaultPageProps> = ({ onNaviga
 
               <div className="flex justify-between items-center">
                 <span className={`text-[10px] uppercase tracking-wide ${isLight ? 'text-neutral-500' : 'text-[#8C9185]'}`}>
-                  {language === 'es' ? 'Acreditación' : 'Member Since'}
+                  {language === 'es' ? 'Cliente desde' : 'Member since'}
                 </span>
                 <span className="font-medium text-current">
                   {memberSince} · {es ? 'Verificado' : 'Verified'}
                 </span>
               </div>
 
-              <div className="flex justify-between items-center">
-                <span className={`text-[10px] uppercase tracking-wide ${isLight ? 'text-neutral-500' : 'text-[#8C9185]'}`}>
-                  {language === 'es' ? 'Custodia Oficial' : 'Custody Center'}
-                </span>
-                <span className="font-medium text-current">
-                  {language === 'es' ? 'Madrid, España' : 'Madrid, Spain'}
-                </span>
-              </div>
-
-              <div className="flex justify-between items-center">
-                <span className={`text-[10px] uppercase tracking-wide ${isLight ? 'text-neutral-500' : 'text-[#8C9185]'}`}>
-                  {language === 'es' ? 'Bóveda Asignada' : 'Vault Tier'}
-                </span>
-                <span className={`font-semibold ${isLight ? 'text-[#15803D]' : 'text-[#61B663]'}`}>
-                  {language === 'es' ? 'Bóveda de Seguridad A' : 'Security Vault A'}
-                </span>
-              </div>
             </div>
 
             {/* Gorilla Grading Submission Action Button */}

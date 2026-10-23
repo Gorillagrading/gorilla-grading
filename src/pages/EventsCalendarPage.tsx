@@ -38,131 +38,13 @@ export const EventsCalendarPage: React.FC<EventsCalendarPageProps> = ({ onNaviga
   const [activeTab, setActiveTab] = useState<'convention' | 'hub'>('convention');
   const [selectedEvent, setSelectedEvent] = useState<EventEntry | null>(null);
 
-  const conventions: EventEntry[] = [
-    {
-      id: 'madrid-tcg-2026',
-      type: 'convention',
-      dateLabel: '14 - 15 NOV 2026',
-      city: 'Madrid',
-      country: isEs ? 'España' : 'Spain',
-      title: 'Iberian TCG Masters & Card Show',
-      venue: 'Pabellón de Cristal · Casa de Campo',
-      address: 'Avenida Principal 16, 28011 Madrid',
-      hours: '10:00 - 20:00',
-      standInfo: 'Stand Gorilla Lab #G-14',
-      services: isEs 
-        ? ['Servicio Express 48h in situ', 'Pre-check óptico de centrado', 'Recibo de custodia con código QR']
-        : ['On-site 48h express grading', 'Optical centering pre-check', 'Digital QR custody receipt']
-    },
-    {
-      id: 'paris-card-2026',
-      type: 'convention',
-      dateLabel: '28 - 29 NOV 2026',
-      city: 'París',
-      country: isEs ? 'Francia' : 'France',
-      title: 'Paris International Collector Expo',
-      venue: 'Paris Expo Porte de Versailles · Hall 4',
-      address: '1 Place de la Porte de Versailles, 75015 Paris',
-      hours: '09:30 - 19:30',
-      standInfo: 'Stand Gorilla #P-08',
-      services: isEs 
-        ? ['Admisión directa de colecciones', 'Revisión técnica en mano', 'Precinto de seguridad en valija']
-        : ['Direct collection intake', 'Technical on-site review', 'Sealed tamper-proof case transfer']
-    },
-    {
-      id: 'london-card-2026',
-      type: 'convention',
-      dateLabel: '12 - 13 DIC 2026',
-      city: 'Londres',
-      country: isEs ? 'Reino Unido' : 'United Kingdom',
-      title: 'London International Card Show',
-      venue: 'ExCeL London · Royal Victoria Dock',
-      address: 'One Western Gateway, London E16 1XL',
-      hours: '10:00 - 18:30',
-      standInfo: 'Booth Gorilla #UK-21',
-      services: isEs 
-        ? ['Punto de entrega oficial UK', 'Escaneo previo de alta resolución', 'Trazabilidad directa a laboratorio']
-        : ['Official UK intake hub', 'High-res pre-inspection', 'Direct laboratory tracking']
-    },
-    {
-      id: 'barcelona-popup-2026',
-      type: 'convention',
-      dateLabel: '19 DIC 2026',
-      city: 'Barcelona',
-      country: isEs ? 'España' : 'Spain',
-      title: 'Gorilla Pop-Up Lab Barcelona',
-      venue: 'Espai Poblenou · Sala de Bóveda',
-      address: 'Carrer de Pujades 102, 08005 Barcelona',
-      hours: '11:00 - 20:00',
-      standInfo: isEs ? 'Mostrador de Admisión Exclusiva' : 'Exclusive Intake Desk',
-      services: isEs 
-        ? ['Entrega presencial sin cita previa', 'Atención directa con el equipo técnico', 'Asesoramiento de sub-grados']
-        : ['Walk-in submissions welcome', 'Direct technical team consultation', 'Sub-grade advice']
-    },
-    {
-      id: 'milan-tcg-2027',
-      type: 'convention',
-      dateLabel: '16 - 17 ENE 2027',
-      city: 'Milán',
-      country: isEs ? 'Italia' : 'Italy',
-      title: 'Milano TCG & Numismatic Expo',
-      venue: 'Fiera Milano City · Gate 3',
-      address: 'Piazzale Carlo Magno 1, 20149 Milano',
-      hours: '09:00 - 19:00',
-      standInfo: 'Stand Gorilla #IT-12',
-      services: isEs 
-        ? ['Admisión internacional', 'Emisión de recibo digital inmediato', 'Tránsito blindado']
-        : ['International intake', 'Instant digital receipt', 'Armored custody transport']
-    }
-  ];
-
-  const partnerHubs: EventEntry[] = [
-    {
-      id: 'hub-madrid-centro',
-      type: 'hub',
-      dateLabel: isEs ? 'PERMANENTE' : 'PERMANENT',
-      city: 'Madrid',
-      country: isEs ? 'España' : 'Spain',
-      title: 'Metropolis TCG Vault',
-      venue: isEs ? 'Punto Permanente de Entrega' : 'Permanent Drop-Off Hub',
-      address: 'Calle del Arenal 8, 28013 Madrid',
-      hours: 'Lun - Sáb: 11:00 - 20:30',
-      standInfo: isEs ? 'Urna de Custodia Oficial' : 'Official Custody Vault',
-      services: isEs 
-        ? ['Entrega presencial todo el año', 'Sin costes de envío de ida', 'Comprobante de depósito firmado']
-        : ['Year-round physical drop-off', 'Zero inbound shipping cost', 'Signed deposit receipt']
-    },
-    {
-      id: 'hub-lisboa-centro',
-      type: 'hub',
-      dateLabel: isEs ? 'PERMANENTE' : 'PERMANENT',
-      city: 'Lisboa',
-      country: 'Portugal',
-      title: 'Lisboa Collectibles Hub',
-      venue: isEs ? 'Punto Permanente de Entrega' : 'Permanent Drop-Off Hub',
-      address: 'Avenida da Liberdade 142, 1250-146 Lisboa',
-      hours: 'Mar - Sáb: 10:30 - 19:30',
-      standInfo: isEs ? 'Punto Asociado Autorizado' : 'Authorized Partner Desk',
-      services: isEs 
-        ? ['Recogida quincenal por mensajería blindada', 'Recepción de paquetes precintados', 'Trazabilidad online']
-        : ['Bi-weekly armored courier pickup', 'Sealed package intake', 'Online portal tracking']
-    },
-    {
-      id: 'hub-valencia-centro',
-      type: 'hub',
-      dateLabel: isEs ? 'PERMANENTE' : 'PERMANENT',
-      city: 'Valencia',
-      country: isEs ? 'España' : 'Spain',
-      title: 'Turia TCG Space',
-      venue: isEs ? 'Punto Permanente de Entrega' : 'Permanent Drop-Off Hub',
-      address: 'Carrer de Colón 24, 46004 Valencia',
-      hours: 'Lun - Vie: 10:00 - 14:00, 16:30 - 20:00',
-      standInfo: isEs ? 'Punto Asociado Autorizado' : 'Authorized Partner Desk',
-      services: isEs 
-        ? ['Depósito gratuito para pedidos web', 'Confirmación por correo en 24h', 'Precinto de seguridad']
-        : ['Free drop-off for online orders', 'Email confirmation in 24h', 'Security seal verification']
-    }
-  ];
+  /**
+   * Calendario de eventos. Está vacío a propósito: solo se publican eventos y puntos de entrega confirmados.
+   * Para añadir uno, crea una entrada con el formato de EventEntry (fecha, recinto, dirección y horario reales).
+   */
+  const conventions: EventEntry[] = [];
+  const partnerHubs: EventEntry[] = [];
+  const noEvents = conventions.length === 0 && partnerHubs.length === 0;
 
   const currentList = activeTab === 'convention' ? conventions : partnerHubs;
 
@@ -230,13 +112,40 @@ export const EventsCalendarPage: React.FC<EventsCalendarPageProps> = ({ onNaviga
             isLight ? 'text-[#4A5048]' : 'text-[#A4ACA1]'
           }`}>
             {isEs
-              ? 'Entrega tus cartas en mano a nuestros graduadores en ferias especializadas o en tiendas asociadas permanentes. Sin riesgos de mensajería postal y con confirmación inmediata de custodia.'
-              : 'Hand-deliver your collectibles directly to our grading team at major conventions or permanent partner shops. Eliminate shipping friction and receive instant digital proof of custody.'}
+              ? 'La entrega en mano en eventos permite enviar tus cartas sin mensajería postal. Publicaremos aquí cada evento cuando esté confirmado.'
+              : 'Hand delivery at events lets you submit your cards without postal shipping. We will publish each event here once it is confirmed.'}
           </p>
         </div>
 
+        {noEvents && (
+          <div className={`p-8 sm:p-10 border mb-16 ${isLight ? 'bg-[#FAF8F5] border-black/10' : 'bg-[#121612] border-white/10'}`}>
+            <h2 className="font-['Nunito',sans-serif] font-[900] text-xl sm:text-2xl uppercase tracking-normal mb-3">
+              {isEs ? 'Próximamente' : 'Coming soon'}
+            </h2>
+            <p className={`font-sans text-sm leading-relaxed max-w-2xl mb-6 ${isLight ? 'text-[#4A5048]' : 'text-[#A4ACA1]'}`}>
+              {isEs
+                ? 'Todavía no hay eventos ni puntos de entrega confirmados. Mientras tanto puedes enviar tus cartas por mensajería asegurada. Si quieres que te avisemos de los próximos eventos, escríbenos.'
+                : 'There are no confirmed events or drop-off points yet. Meanwhile you can send your cards by insured courier. If you would like to hear about upcoming events, write to us.'}
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <button
+                onClick={() => onNavigate('/submit')}
+                className="btn-gorilla-square px-6 py-3 text-xs font-extrabold tracking-normal cursor-pointer"
+              >
+                {isEs ? 'ENVIAR CARTAS' : 'SUBMIT CARDS'}
+              </button>
+              <button
+                onClick={() => onNavigate('/contact')}
+                className="btn-gorilla-square-secondary px-6 py-3 text-xs font-bold tracking-normal cursor-pointer"
+              >
+                {isEs ? 'CONTACTAR' : 'CONTACT US'}
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Tab Switcher */}
-        <div className="flex items-center gap-3 mb-8 border-b border-black/10 dark:border-white/10 pb-4">
+        <div className={`flex items-center gap-3 mb-8 border-b border-black/10 dark:border-white/10 pb-4 ${noEvents ? 'hidden' : ''}`}>
           <button
             onClick={() => setActiveTab('convention')}
             className={`font-mono text-xs font-bold uppercase tracking-wider py-2 px-4 transition-all ${
@@ -269,7 +178,7 @@ export const EventsCalendarPage: React.FC<EventsCalendarPageProps> = ({ onNaviga
         </div>
 
         {/* Schedule List */}
-        <div className="space-y-4 mb-16">
+        <div className={`space-y-4 mb-16 ${noEvents ? 'hidden' : ''}`}>
           {currentList.map((item) => (
             <div
               key={item.id}

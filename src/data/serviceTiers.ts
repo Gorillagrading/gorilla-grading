@@ -1,6 +1,11 @@
 import { ServiceTier } from '../types';
 
-export const MOCK_SERVICES: ServiceTier[] = [
+/**
+ * Servicios y precios que muestra la web. Son datos reales de la empresa y deben coincidir con la tabla
+ * service_tiers de la base de datos (que es la que manda al calcular y cobrar un pedido).
+ */
+
+export const SERVICE_TIERS: ServiceTier[] = [
   {
     id: 'standard',
     name: 'Standard',

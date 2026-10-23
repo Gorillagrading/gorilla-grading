@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
-import { MOCK_SERVICES } from '../data/mockServices';
+import { SERVICE_TIERS } from '../data/serviceTiers';
 import { OrderItem, ServiceTier } from '../types';
 import { useAuth } from '../context/AuthContext';
 import { ApiError } from '../api/client';
@@ -50,17 +50,17 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
     const params = new URLSearchParams(window.location.search);
     const tierId = params.get('tier');
     if (tierId) {
-      const found = MOCK_SERVICES.find(s => s.id === tierId || (tierId === 'regular' && s.id === 'standard') || (tierId === 'walkthrough' && s.id === 'event'));
+      const found = SERVICE_TIERS.find(s => s.id === tierId || (tierId === 'regular' && s.id === 'standard') || (tierId === 'walkthrough' && s.id === 'event'));
       if (found) return found;
     }
-    return MOCK_SERVICES[0];
+    return SERVICE_TIERS[0];
   }); 
   
   const [items, setItems] = useState<OrderItem[]>(() => {
     const params = new URLSearchParams(window.location.search);
     const qty = parseInt(params.get('qty') || '0', 10);
     const tierId = params.get('tier');
-    const tier = (tierId ? MOCK_SERVICES.find(s => s.id === tierId || (tierId === 'regular' && s.id === 'standard') || (tierId === 'walkthrough' && s.id === 'event')) : null) || MOCK_SERVICES[0];
+    const tier = (tierId ? SERVICE_TIERS.find(s => s.id === tierId || (tierId === 'regular' && s.id === 'standard') || (tierId === 'walkthrough' && s.id === 'event')) : null) || SERVICE_TIERS[0];
 
     if (qty > 0) {
       return Array.from({ length: qty }, (_, i) => ({
@@ -106,7 +106,7 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
     }
 
     if (tierId) {
-      const found = MOCK_SERVICES.find(s => s.id === tierId || (tierId === 'regular' && s.id === 'standard') || (tierId === 'walkthrough' && s.id === 'event'));
+      const found = SERVICE_TIERS.find(s => s.id === tierId || (tierId === 'regular' && s.id === 'standard') || (tierId === 'walkthrough' && s.id === 'event'));
       if (found) {
         setSelectedTier(found);
       }
@@ -119,7 +119,7 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
         setNewCardQuantity(String(qty));
         setItems(prevItems => {
           if (prevItems.length === 0 || fromConfigParam === 'true') {
-            const currentTier = (tierId ? MOCK_SERVICES.find(s => s.id === tierId || (tierId === 'regular' && s.id === 'standard') || (tierId === 'walkthrough' && s.id === 'event')) : null) || selectedTier || MOCK_SERVICES[0];
+            const currentTier = (tierId ? SERVICE_TIERS.find(s => s.id === tierId || (tierId === 'regular' && s.id === 'standard') || (tierId === 'walkthrough' && s.id === 'event')) : null) || selectedTier || SERVICE_TIERS[0];
             return Array.from({ length: qty }, (_, i) => ({
               id: `preset-${Date.now()}-${i}`,
               cardName: language === 'es' ? `Carta #${i + 1} (${currentTier.name})` : `Card #${i + 1} (${currentTier.name})`,
@@ -216,7 +216,7 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
     const n = String(issue.index + 1).padStart(2, '0');
     switch (issue.code) {
       case 'declared_value_exceeds_limit': {
-        const name = MOCK_SERVICES.find((s) => s.id === issue.tier)?.name ?? issue.tier;
+        const name = SERVICE_TIERS.find((s) => s.id === issue.tier)?.name ?? issue.tier;
         return es
           ? `Carta #${n}: el valor declarado (${formatEur(issue.declaredValueCents, 'es')}) supera el límite del servicio ${name} (${formatEur(issue.maxCents, 'es')}). Baja el valor o elige un servicio superior en el paso 1.`
           : `Card #${n}: the declared value (${formatEur(issue.declaredValueCents, 'en')}) exceeds the ${name} service limit (${formatEur(issue.maxCents, 'en')}). Lower the value or choose a higher service in step 1.`;
@@ -527,13 +527,13 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
           ];
 
           const handleSelectTier = (lvlId: string) => {
-            const found = MOCK_SERVICES.find(s => s.id === lvlId) || MOCK_SERVICES[0];
+            const found = SERVICE_TIERS.find(s => s.id === lvlId) || SERVICE_TIERS[0];
             setSelectedTier(found);
           };
 
           const handleProceedToStep2 = () => {
             const targetQty = Math.max(1, wizardCardCount);
-            const currentTier = selectedTier || MOCK_SERVICES[0];
+            const currentTier = selectedTier || SERVICE_TIERS[0];
             
             const presetItems: OrderItem[] = Array.from({ length: targetQty }, (_, i) => ({
               id: `preset-${Date.now()}-${i}`,

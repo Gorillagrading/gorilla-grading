@@ -32,7 +32,7 @@ La aplicación queda disponible en `http://localhost:5173`.
 ### Backend
 
 1. Copia `.env.example` como `.env` y rellena las cadenas de conexión de tu proyecto de Supabase.
-2. Aplica las migraciones y carga los datos de ejemplo:
+2. Aplica las migraciones y carga los niveles de servicio:
 
    ```bash
    npm run db:migrate
@@ -62,7 +62,7 @@ Todas las tablas tienen RLS activado y sin políticas, así que la Data API de S
 | `npm run db:generate` | Genera una migración SQL a partir de los cambios en `db/schema.ts` |
 | `npm run db:migrate` | Aplica las migraciones pendientes |
 | `npm run db:check` | Comprueba la coherencia de las migraciones |
-| `npm run db:seed` | Carga los datos de `src/data/` en una base vacía (no se ejecuta en producción) |
+| `npm run db:seed` | Carga los niveles de servicio en una base vacía (no crea datos de ejemplo) |
 | `npm run db:studio` | Abre Drizzle Studio para explorar la base de datos |
 
 ## Estructura
