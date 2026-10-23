@@ -242,7 +242,7 @@ export const LuxuryFooter: React.FC<LuxuryFooterProps> = ({ onNavigate }) => {
                   type="text" 
                   value={searchCert}
                   onChange={(e) => setSearchCert(e.target.value)}
-                  placeholder={language === 'es' ? 'Ej. GGI-892401' : 'e.g. GGI-892401'}
+                  placeholder={language === 'es' ? 'Ej. GGI-XXXXXX' : 'e.g. GGI-XXXXXX'}
                   className={`w-full text-xs px-4 py-2.5 rounded-none focus:outline-none transition-colors uppercase font-mono border ${
                     isLight 
                       ? 'bg-white border-[#D0C9BC] text-[#111827] placeholder:text-[#8C948B] focus:border-[#16A34A] shadow-xs' 

@@ -148,7 +148,7 @@ export const HomeVerificationModule: React.FC<HomeVerificationModuleProps> = ({ 
               type="text"
               value={inputVal}
               onChange={(e) => setInputVal(e.target.value)}
-              placeholder="E.G. GGI-892401"
+              placeholder="E.G. GGI-XXXXXX"
               className={`flex-1 w-full bg-transparent px-3 py-3.5 sm:py-3 font-mono text-sm sm:text-base tracking-[0.18em] uppercase font-bold outline-none placeholder:font-sans placeholder:normal-case placeholder:tracking-normal placeholder:font-normal ${
                 isLight 
                   ? 'text-[#111827] placeholder-gray-400' 
