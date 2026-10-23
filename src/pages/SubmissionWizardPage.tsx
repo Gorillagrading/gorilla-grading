@@ -987,6 +987,13 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
                         {quote.discountRate > 0 ? ` · −${Math.round(quote.discountRate * 100)} %` : ''} ={' '}
                       </span>
                       <strong className={`font-bold text-sm ${isLight ? 'text-gray-950' : 'text-white'}`}>{formatEur(quote.subtotalCents, language)}</strong>
+                      {/* El total del botón incluye la devolución: se muestra para que las dos cifras cuadren. */}
+                      {quote.shippingCents > 0 && (
+                        <div className="mt-1 text-[11px]">
+                          + {formatEur(quote.shippingCents, language)} {es ? 'devolución asegurada' : 'insured return'} ={' '}
+                          <strong className={`font-bold ${isLight ? 'text-gray-950' : 'text-white'}`}>{formatEur(quote.totalCents, language)}</strong>
+                        </div>
+                      )}
                     </>
                   ) : (
                     <span>…</span>
