@@ -139,6 +139,222 @@ export const LuxuryPricingSection: React.FC<LuxuryPricingSectionProps> = ({ onNa
   const discountAmount = subtotal - totalAmount;
   const totalInsuredCoverage = currentLevel.maxInsuranceNum * cardCount;
 
+  // Volume estimation bar. `boxed` draws it as a standalone box (home) instead of a card footer.
+  const renderVolumeCalculator = (boxed: boolean) => (
+          <div className={`${boxed ? 'border' : 'border-t'} px-4 py-3 ${
+            isLight ? 'border-[#E5E7EB] bg-[#FAFAF8]' : 'border-white/10 bg-black/30'
+          }`}>
+            <div className="grid grid-cols-12 gap-4 items-center">
+
+              {/* Left: quantity selection */}
+              <div className="col-span-7 space-y-2">
+                <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
+                  <h3 className="font-['Nunito',sans-serif] text-sm font-[900] uppercase tracking-normal">
+                    {language === 'es' ? 'Calcular tarifa por cantidad' : 'Volume estimation'}
+                  </h3>
+                  <span className={`font-sans text-[11px] ${isLight ? 'text-gray-600' : 'text-gray-300'}`}>
+                    {language === 'es'
+                      ? 'Descuentos: 5% desde 10 cartas, 8% desde 25 y 12% desde 50.'
+                      : 'Bulk discounts: 5% from 10 cards, 8% from 25, 12% from 50.'}
+                  </span>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {[1, 5, 10, 25, 50, 100].map((vol) => {
+                    const isSelected = cardCount === vol;
+                    return (
+                      <button
+                        key={vol}
+                        type="button"
+                        onClick={() => setCardCount(vol)}
+                        className={`px-2.5 py-1 font-mono text-[11px] font-bold transition-colors cursor-pointer border ${
+                          isSelected
+                            ? 'border-[#16A34A] bg-[#16A34A] text-white'
+                            : (isLight ? 'border-gray-300 bg-white text-gray-800 hover:border-gray-500' : 'border-white/15 bg-white/5 text-gray-100 hover:border-white/30')
+                        }`}
+                      >
+                        {vol} {vol === 1 ? (language === 'es' ? 'carta' : 'card') : (language === 'es' ? 'cartas' : 'cards')}
+                      </button>
+                    );
+                  })}
+
+                  {/* Direct stepper input */}
+                  <div className={`flex items-center border ${
+                    isLight ? 'border-gray-300 bg-white' : 'border-white/15 bg-white/5'
+                  }`}>
+                    <button
+                      type="button"
+                      onClick={() => setCardCount(Math.max(1, cardCount - 1))}
+                      className="w-7 h-7 flex items-center justify-center font-mono font-bold text-sm hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer text-current"
+                    >
+                      -
+                    </button>
+                    <input
+                      type="number"
+                      min={1}
+                      max={1000}
+                      value={cardCount}
+                      onChange={(e) => setCardCount(Math.max(1, parseInt(e.target.value) || 1))}
+                      className="w-11 text-center font-mono text-xs font-bold bg-transparent outline-none text-current"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setCardCount(Math.min(1000, cardCount + 1))}
+                      className="w-7 h-7 flex items-center justify-center font-mono font-bold text-sm hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer text-current"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+
+                <div className={`font-mono text-[10.5px] flex flex-wrap items-center gap-x-2 ${
+                  isLight ? 'text-gray-600' : 'text-gray-300'
+                }`}>
+                  <span className="font-semibold">{language === 'es' ? `Servicio: ${currentLevel.name}` : `Service: ${currentLevel.name}`}</span>
+                  <span className="text-gray-400">/</span>
+                  <span>{language === 'es' ? `Plazo: ${currentLevel.turnaround}` : `Turnaround: ${currentLevel.turnaround}`}</span>
+                  <span className="text-gray-400">/</span>
+                  <span>{language === 'es' ? 'Envío asegurado 100%' : '100% Insured Transit'}</span>
+                </div>
+              </div>
+
+              {/* Right: total and action */}
+              <div className="col-span-5 flex items-center justify-end gap-4">
+                <div className="text-right">
+                  <span className={`font-mono text-[10px] uppercase tracking-wider block font-semibold ${
+                    isLight ? 'text-gray-600' : 'text-gray-300'
+                  }`}>
+                    {language === 'es' ? 'Total estimado' : 'Estimated total'} · {unitPrice} € / {language === 'es' ? 'carta' : 'card'} {discountRate > 0 && `(-${Math.round(discountRate * 100)}%)`}
+                  </span>
+                  <span className="font-['Nunito',sans-serif] text-3xl font-[900] tracking-tight leading-none">
+                    {totalAmount} €
+                  </span>
+                  <span className={`block font-mono text-[9.5px] font-medium ${
+                    isLight ? 'text-gray-600' : 'text-gray-300'
+                  }`}>
+                    {language === 'es' ? 'IVA 21% y seguro incluidos' : 'VAT 21% & insurance included'}
+                  </span>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => onNavigate && onNavigate(`/submit?tier=${selectedTierId || currentLevel.id}&qty=${cardCount}&fromConfig=true&step=2`)}
+                  className="btn-gorilla-pill shrink-0 py-3 px-5 text-xs font-bold tracking-normal gap-2 shadow-lg"
+                >
+                  <span>{language === 'es' ? `Configurar envío (${cardCount}) →` : `Configure shipment (${cardCount}) →`}</span>
+                </button>
+              </div>
+
+            </div>
+          </div>
+  );
+
+  // Card-style tiers, used only on the home page. Dark navy cards in dark mode, white cards in light mode.
+  const homeCards = (
+    <div className="w-full mb-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 lg:gap-6 items-stretch pt-3">
+        {serviceLevels.map((lvl) => {
+          const isSelected = selectedTierId === lvl.id;
+          const isPopular = lvl.id === 'premium';
+          const badge =
+            lvl.id === 'premium' ? (language === 'es' ? 'MÁS POPULAR' : 'MOST POPULAR')
+            : lvl.id === 'express' ? (language === 'es' ? 'COLA PRIORITARIA' : 'PRIORITY QUEUE')
+            : lvl.id === 'event' ? (language === 'es' ? 'POP UP PRESENCIAL' : 'POP UP IN-PERSON')
+            : null;
+
+          const t = isLight
+            ? {
+                card: `bg-white text-[#14170F] shadow-md ${isSelected ? 'border-[#15803D] ring-1 ring-[#15803D]/40' : 'border-[#E2DBD0]'}`,
+                badgeMain: 'bg-[#15803D] text-white',
+                badgeAlt: 'border border-[#14170F]/25 bg-white text-[#14170F]',
+                purpose: 'text-gray-600',
+                perCard: 'text-gray-500',
+                rule: 'border-black/10',
+                label: 'text-gray-500',
+                value: 'text-[#14170F]',
+                accent: 'text-[#15803D]',
+                bullet: 'text-gray-700',
+                btnMain: 'bg-[#15803D] text-white hover:bg-[#166534]',
+                btnAlt: 'border border-[#D8D2C5] bg-white text-[#14170F] hover:border-[#16A34A]',
+              }
+            : {
+                card: `text-white bg-gradient-to-b from-[#222636] to-[#141720] shadow-xl ${isSelected ? 'border-[#4ADE80] ring-1 ring-[#4ADE80]/50' : 'border-white/10'}`,
+                badgeMain: 'bg-[#4ADE80] text-[#0F1A12]',
+                badgeAlt: 'border border-white/30 bg-[#1B1F2C] text-white',
+                purpose: 'text-white/65',
+                perCard: 'text-white/55',
+                rule: 'border-white/10',
+                label: 'text-white/55',
+                value: 'text-white',
+                accent: 'text-[#4ADE80]',
+                bullet: 'text-white/80',
+                btnMain: 'bg-[#4ADE80] text-[#0F1A12] hover:bg-[#6EE79A]',
+                btnAlt: 'border border-white/20 bg-white/[0.04] text-white hover:border-[#4ADE80] hover:bg-white/10',
+              };
+
+          return (
+            <div
+              key={lvl.id}
+              className={`relative flex flex-col rounded-xl border p-5 sm:p-6 transition-all duration-200 hover:-translate-y-1 ${t.card}`}
+            >
+              {badge && (
+                <span
+                  className={`absolute -top-3 left-5 px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-wider ${
+                    isPopular ? t.badgeMain : t.badgeAlt
+                  }`}
+                >
+                  {badge}
+                </span>
+              )}
+
+              <h3 className="mt-1 font-['Nunito',sans-serif] text-2xl font-[900] uppercase tracking-normal">{lvl.name}</h3>
+              <p className={`mt-2 min-h-[3.6rem] font-sans text-[12.5px] leading-relaxed ${t.purpose}`}>{lvl.purpose}</p>
+
+              <div className="mt-4 flex items-baseline gap-1.5">
+                <span className="font-['Nunito',sans-serif] text-4xl font-[900] leading-none">{lvl.price} €</span>
+                <span className={`font-mono text-[11px] ${t.perCard}`}>/ {language === 'es' ? 'carta' : 'card'}</span>
+              </div>
+
+              <div className={`my-4 border-t ${t.rule}`} />
+
+              <dl className="space-y-2 font-mono text-[10.5px] uppercase tracking-wider">
+                <div className="flex items-baseline justify-between gap-3">
+                  <dt className={t.label}>{language === 'es' ? 'Plazo' : 'Turnaround'}:</dt>
+                  <dd className={`text-right font-bold ${t.value}`}>{lvl.turnaround}</dd>
+                </div>
+                <div className="flex items-baseline justify-between gap-3">
+                  <dt className={t.label}>{language === 'es' ? 'Valor máx. declarado' : 'Max declared value'}:</dt>
+                  <dd className={`font-bold ${t.accent}`}>{lvl.maxInsurance}</dd>
+                </div>
+              </dl>
+
+              <ul className="mt-4 mb-6 flex-1 space-y-2">
+                {lvl.bullets.map((bullet, idx) => (
+                  <li key={idx} className={`flex items-start gap-2 font-sans text-[12.5px] leading-snug ${t.bullet}`}>
+                    <Check className={`mt-0.5 h-3.5 w-3.5 shrink-0 ${t.accent}`} strokeWidth={3} />
+                    <span>{bullet}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <button
+                type="button"
+                onClick={() => setSelectedTierId(lvl.id)}
+                className={`w-full cursor-pointer py-3 font-mono text-[11px] font-bold uppercase tracking-wider transition-colors ${
+                  isPopular || isSelected ? t.btnMain : t.btnAlt
+                }`}
+              >
+                {language === 'es'
+                  ? (isSelected ? '✓ Nivel seleccionado' : 'Seleccionar nivel →')
+                  : (isSelected ? '✓ Tier selected' : 'Select tier →')}
+              </button>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+
   return (
     <section 
       id="pricing" 
@@ -306,6 +522,13 @@ export const LuxuryPricingSection: React.FC<LuxuryPricingSectionProps> = ({ onNa
           </div>
         </div>
 
+        {isHome ? (
+          <>
+            {homeCards}
+            <div className="mt-6 mb-8 sm:mb-14">{renderVolumeCalculator(true)}</div>
+          </>
+        ) : (
+          <>
         {/* 1. TECHNICAL TARIFF MATRIX (Tabla Oficial de Laboratorio - Desktop Only) */}
         <div className={`hidden lg:block w-full border overflow-hidden shadow-sm mb-8 sm:mb-14 ${
           isLight ? 'bg-white border-[#E5E7EB]' : 'bg-[#141815] border-white/10'
@@ -460,113 +683,7 @@ export const LuxuryPricingSection: React.FC<LuxuryPricingSectionProps> = ({ onNa
             </table>
           </div>
 
-          {/* Volume estimation: merged into the tariff card, compact */}
-          <div className={`border-t px-4 py-3 ${
-            isLight ? 'border-[#E5E7EB] bg-[#FAFAF8]' : 'border-white/10 bg-black/30'
-          }`}>
-            <div className="grid grid-cols-12 gap-4 items-center">
-
-              {/* Left: quantity selection */}
-              <div className="col-span-7 space-y-2">
-                <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
-                  <h3 className="font-['Nunito',sans-serif] text-sm font-[900] uppercase tracking-normal">
-                    {language === 'es' ? 'Calcular tarifa por cantidad' : 'Volume estimation'}
-                  </h3>
-                  <span className={`font-sans text-[11px] ${isLight ? 'text-gray-600' : 'text-gray-300'}`}>
-                    {language === 'es'
-                      ? 'Descuentos: 5% desde 10 cartas, 8% desde 25 y 12% desde 50.'
-                      : 'Bulk discounts: 5% from 10 cards, 8% from 25, 12% from 50.'}
-                  </span>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-1.5">
-                  {[1, 5, 10, 25, 50, 100].map((vol) => {
-                    const isSelected = cardCount === vol;
-                    return (
-                      <button
-                        key={vol}
-                        type="button"
-                        onClick={() => setCardCount(vol)}
-                        className={`px-2.5 py-1 font-mono text-[11px] font-bold transition-colors cursor-pointer border ${
-                          isSelected
-                            ? 'border-[#16A34A] bg-[#16A34A] text-white'
-                            : (isLight ? 'border-gray-300 bg-white text-gray-800 hover:border-gray-500' : 'border-white/15 bg-white/5 text-gray-100 hover:border-white/30')
-                        }`}
-                      >
-                        {vol} {vol === 1 ? (language === 'es' ? 'carta' : 'card') : (language === 'es' ? 'cartas' : 'cards')}
-                      </button>
-                    );
-                  })}
-
-                  {/* Direct stepper input */}
-                  <div className={`flex items-center border ${
-                    isLight ? 'border-gray-300 bg-white' : 'border-white/15 bg-white/5'
-                  }`}>
-                    <button
-                      type="button"
-                      onClick={() => setCardCount(Math.max(1, cardCount - 1))}
-                      className="w-7 h-7 flex items-center justify-center font-mono font-bold text-sm hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer text-current"
-                    >
-                      -
-                    </button>
-                    <input
-                      type="number"
-                      min={1}
-                      max={1000}
-                      value={cardCount}
-                      onChange={(e) => setCardCount(Math.max(1, parseInt(e.target.value) || 1))}
-                      className="w-11 text-center font-mono text-xs font-bold bg-transparent outline-none text-current"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setCardCount(Math.min(1000, cardCount + 1))}
-                      className="w-7 h-7 flex items-center justify-center font-mono font-bold text-sm hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer text-current"
-                    >
-                      +
-                    </button>
-                  </div>
-                </div>
-
-                <div className={`font-mono text-[10.5px] flex flex-wrap items-center gap-x-2 ${
-                  isLight ? 'text-gray-600' : 'text-gray-300'
-                }`}>
-                  <span className="font-semibold">{language === 'es' ? `Servicio: ${currentLevel.name}` : `Service: ${currentLevel.name}`}</span>
-                  <span className="text-gray-400">/</span>
-                  <span>{language === 'es' ? `Plazo: ${currentLevel.turnaround}` : `Turnaround: ${currentLevel.turnaround}`}</span>
-                  <span className="text-gray-400">/</span>
-                  <span>{language === 'es' ? 'Envío asegurado 100%' : '100% Insured Transit'}</span>
-                </div>
-              </div>
-
-              {/* Right: total and action */}
-              <div className="col-span-5 flex items-center justify-end gap-4">
-                <div className="text-right">
-                  <span className={`font-mono text-[10px] uppercase tracking-wider block font-semibold ${
-                    isLight ? 'text-gray-600' : 'text-gray-300'
-                  }`}>
-                    {language === 'es' ? 'Total estimado' : 'Estimated total'} · {unitPrice} € / {language === 'es' ? 'carta' : 'card'} {discountRate > 0 && `(-${Math.round(discountRate * 100)}%)`}
-                  </span>
-                  <span className="font-['Nunito',sans-serif] text-3xl font-[900] tracking-tight leading-none">
-                    {totalAmount} €
-                  </span>
-                  <span className={`block font-mono text-[9.5px] font-medium ${
-                    isLight ? 'text-gray-600' : 'text-gray-300'
-                  }`}>
-                    {language === 'es' ? 'IVA 21% y seguro incluidos' : 'VAT 21% & insurance included'}
-                  </span>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => onNavigate && onNavigate(`/submit?tier=${selectedTierId || currentLevel.id}&qty=${cardCount}&fromConfig=true&step=2`)}
-                  className="btn-gorilla-pill shrink-0 py-3 px-5 text-xs font-bold tracking-normal gap-2 shadow-lg"
-                >
-                  <span>{language === 'es' ? `Configurar envío (${cardCount}) →` : `Configure shipment (${cardCount}) →`}</span>
-                </button>
-              </div>
-
-            </div>
-          </div>
+          {renderVolumeCalculator(false)}
         </div>
 
         {/* 2. DEDICATED MOBILE SERVICE & PRICING SUITE (Zero Overload, Single-Screen Mobile Hub - Mobile Only) */}
@@ -783,6 +900,8 @@ export const LuxuryPricingSection: React.FC<LuxuryPricingSectionProps> = ({ onNa
           </div>
         </div>
 
+          </>
+        )}
       </div>
     </section>
   );
