@@ -86,7 +86,7 @@ export const UnderstandPage: React.FC<PageProps> = ({ onNavigate }) => {
             </li>
             <li className="flex gap-4 items-center">
               <span className={`px-2 py-1 rounded text-xs font-bold ${isLight ? 'text-white bg-[#15803D]' : 'text-white bg-[#14170F]'}`}>03</span> 
-              {language === 'es' ? 'Registro criptográfico internacional' : 'International cryptographic registry'}
+              {language === 'es' ? 'Registro público de certificados' : 'Public certificate registry'}
             </li>
             <li className="flex gap-4 items-center">
               <span className={`px-2 py-1 rounded text-xs font-bold ${isLight ? 'text-white bg-[#15803D]' : 'text-white bg-[#14170F]'}`}>04</span> 

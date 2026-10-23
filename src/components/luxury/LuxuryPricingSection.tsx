@@ -63,8 +63,8 @@ export const LuxuryPricingSection: React.FC<LuxuryPricingSectionProps> = ({ onNa
       maxInsurance: '500 €',
       maxInsuranceNum: 500,
       bullets: language === 'es'
-        ? ['Encapsulado ultrasónico 35 kHz', 'Chip de seguridad criptográfica NFC', 'Escaneo digital forense 1200 DPI']
-        : ['35 kHz ultrasonic encapsulation', 'NFC cryptographic security chip', '1200 DPI master digital scan'],
+        ? ['Encapsulado ultrasónico 35 kHz', 'Código QR único enlazado al certificado público', 'Escaneo digital forense 1200 DPI']
+        : ['35 kHz ultrasonic encapsulation', 'Unique QR code linked to the public certificate', '1200 DPI master digital scan'],
       price: 19,
       accentColor: '#3B82F6'
     },
@@ -80,8 +80,8 @@ export const LuxuryPricingSection: React.FC<LuxuryPricingSectionProps> = ({ onNa
       maxInsurance: '1.500 €',
       maxInsuranceNum: 1500,
       bullets: language === 'es'
-        ? ['4 Subgrados ópticos (Centrado, Esquinas, Bordes, Superficie)', 'Escaneo micro-fotométrico 4K UHD', 'Certificación pública en Blockchain']
-        : ['4 Optical Subgrades (Centering, Corners, Edges, Surface)', '4K UHD micro-photometric scan', 'Public Blockchain certification registry'],
+        ? ['4 Subgrados ópticos (Centrado, Esquinas, Bordes, Superficie)', 'Escaneo micro-fotométrico 4K UHD', 'Certificado público firmado digitalmente']
+        : ['4 Optical Subgrades (Centering, Corners, Edges, Surface)', '4K UHD micro-photometric scan', 'Digitally signed public certificate'],
       price: 25,
       accentColor: '#16A34A'
     },
@@ -114,8 +114,8 @@ export const LuxuryPricingSection: React.FC<LuxuryPricingSectionProps> = ({ onNa
       maxInsurance: '1.000 €',
       maxInsuranceNum: 1000,
       bullets: language === 'es'
-        ? ['Solo entrega presencial en pop ups', 'Graduación exprés presencial en 48 horas', 'Encapsulado sónico y chip criptográfico NFC']
-        : ['In-person drop-off only at pop ups', 'Express in-person 48h turnaround', 'Sonic encapsulation & cryptographic NFC chip'],
+        ? ['Solo entrega presencial en pop ups', 'Graduación exprés presencial en 48 horas', 'Encapsulado sónico y código QR de verificación']
+        : ['In-person drop-off only at pop ups', 'Express in-person 48h turnaround', 'Sonic encapsulation & verification QR code'],
       price: 15,
       accentColor: '#CA8A04'
     }

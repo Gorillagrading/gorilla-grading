@@ -70,8 +70,8 @@ export const GRADING_SECURITY_FEATURES = [
     icon: 'ShieldCheck'
   },
   {
-    title: 'Optical Telemetry QR & NFC',
-    description: 'Each slab embeds a cryptographic NFC chip and laser-engraved micro-QR linking directly to the digital certificate registry.',
+    title: 'Unique QR & Public Certificate',
+    description: 'Each slab carries a unique QR code that links directly to its digitally signed certificate in the public registry.',
     icon: 'Cpu'
   },
   {

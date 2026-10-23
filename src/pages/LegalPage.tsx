@@ -93,15 +93,15 @@ export const LegalPage: React.FC<LegalPageProps> = ({ type: initialType, onNavig
           num: '02',
           title: isEs ? 'Propiedad Intelectual, Patentes y Algoritmos' : 'Intellectual Property, Patents & Algorithms',
           text: isEs
-            ? 'Todos los signos distintivos, la marca Gorilla Grading, los diseños industriales del slab de polímero con sellado ultrasónico a 35 kHz, los algoritmos matemáticos de cálculo subpíxel de centrado y los registros criptográficos son propiedad exclusiva de Gorilla Grading International S.L., protegidos por tratados internacionales de propiedad industrial (CUP, OMPI/WIPO).'
-            : 'All trademarks, logos, industrial designs of the 35 kHz ultrasonic acrylic encapsulation slab, proprietary sub-pixel optical centering algorithms, and cryptographic verification ledger architectures remain the exclusive property of Gorilla Grading International S.L., protected under international intellectual property treaties (WIPO, Paris Convention).'
+            ? 'Todos los signos distintivos, la marca Gorilla Grading, los diseños industriales del slab de polímero con sellado ultrasónico a 35 kHz, los algoritmos matemáticos de cálculo subpíxel de centrado y el sistema de certificados y verificación son propiedad exclusiva de Gorilla Grading International S.L., protegidos por tratados internacionales de propiedad industrial (CUP, OMPI/WIPO).'
+            : 'All trademarks, logos, industrial designs of the 35 kHz ultrasonic acrylic encapsulation slab, proprietary sub-pixel optical centering algorithms, and the certificate and verification system remain the exclusive property of Gorilla Grading International S.L., protected under international intellectual property treaties (WIPO, Paris Convention).'
         },
         {
           num: '03',
           title: isEs ? 'Uso Autorizado y Protección de la Base de Datos' : 'Authorized Access & Registry Database Protection',
           text: isEs
-            ? 'El explorador público de certificados y la base de datos de cartas graduadas se ofrecen para verificación de autenticidad. Queda estrictamente prohibida la copia no autorizada, el raspado automatizado (scraping), la alteración de identificadores NFC criptográficos o la clonación de etiquetas inviolables.'
-            : 'The public certificate ledger is provided strictly for verification of specimen authenticity. Unauthorized automated data extraction (scraping), cloning of cryptographic NFC tags, alteration of optical certification labels, or reverse engineering of metrological telemetry is strictly prohibited.'
+            ? 'El explorador público de certificados y la base de datos de cartas graduadas se ofrecen para verificación de autenticidad. Queda estrictamente prohibida la copia no autorizada, el raspado automatizado (scraping), la alteración o falsificación de códigos QR y etiquetas de certificación.'
+            : 'The public certificate registry is provided strictly for verification of specimen authenticity. Unauthorized automated data extraction (scraping), forging or altering QR codes and certification labels, or reverse engineering of metrological telemetry is strictly prohibited.'
         },
         {
           num: '04',

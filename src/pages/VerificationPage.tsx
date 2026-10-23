@@ -110,8 +110,8 @@ export const VerificationPage: React.FC<VerificationPageProps> = ({ onNavigate }
           isLight ? 'text-gray-600' : 'text-gray-400'
         }`}>
           {language === 'es'
-            ? 'Consulte instantáneamente los datos de auditoría óptica a 1200 DPI, historial de sub-grados y certificado criptográfico oficial registrado en el ledger de Gorilla.'
-            : 'Instantly query 1200 DPI master optical audit scans, subgrade records, and official cryptographic certificates verified on the Gorilla ledger.'}
+            ? 'Consulte instantáneamente los datos de auditoría óptica a 1200 DPI, historial de sub-grados y certificado oficial firmado digitalmente en el registro público de Gorilla.'
+            : 'Instantly query 1200 DPI master optical audit scans, subgrade records, and official digitally signed certificates in the Gorilla public registry.'}
         </p>
 
         {/* Futuristic Search Form */}

@@ -118,7 +118,7 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ onNavigate }) => {
       standard: true, premium: true, express: true, event: true
     },
     {
-      feature: language === 'es' ? 'Chip Criptográfico NFC con enlace al Registro Internacional' : 'Cryptographic NFC chip linked to International Registry',
+      feature: language === 'es' ? 'Código QR único con enlace al certificado público' : 'Unique QR code linked to the public certificate',
       standard: true, premium: true, express: true, event: true
     },
     {

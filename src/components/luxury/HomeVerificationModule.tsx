@@ -104,12 +104,12 @@ export const HomeVerificationModule: React.FC<HomeVerificationModuleProps> = ({ 
             {(language === 'es' ? [
               'Verificar Certificado.',
               'Consulta instantánea para compradores y vendedores del mercado secundario.',
-              'Acceso al historial criptográfico.',
+              'Acceso al historial de certificados.',
               'Datos de auditoría láser y escaneos master a 1200 DPI.'
             ] : [
               'Verify Certificate.',
               'Instant consultation for secondary market buyers and sellers.',
-              'Access cryptographic history.',
+              'Access certificate history.',
               'Laser Audit data and 1200 DPI master scan.'
             ]).map((text, idx) => (
               <div key={idx} className="flex items-center gap-3">
@@ -178,8 +178,8 @@ export const HomeVerificationModule: React.FC<HomeVerificationModuleProps> = ({ 
 
           <p className={`mt-4 px-1 font-mono text-[10px] uppercase tracking-wider ${isLight ? 'text-gray-500' : 'text-white/50'}`}>
             {language === 'es'
-              ? 'También puedes verificar escaneando el QR del slab o acercando el móvil a su chip NFC.'
-              : 'You can also verify by scanning the QR on the slab or tapping your phone on its NFC chip.'}
+              ? 'También puedes verificar escaneando el QR del slab.'
+              : 'You can also verify by scanning the QR on the slab.'}
           </p>
 
           {errorMsg && (

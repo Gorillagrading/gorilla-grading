@@ -51,8 +51,8 @@ export const STEP_COPY: Partial<Record<OrderStatus, { label: Bilingual; descript
   ENCAPSULATION: {
     label: { es: 'Encapsulado', en: 'Encapsulation' },
     description: {
-      es: 'Sellamos cada carta en su slab, con número de serie y chip NFC.',
-      en: 'We seal each card in its slab, with serial number and NFC chip.',
+      es: 'Sellamos cada carta en su slab, con número de serie y código QR de verificación.',
+      en: 'We seal each card in its slab, with serial number and verification QR code.',
     },
   },
   QUALITY_ASSURANCE: {

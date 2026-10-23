@@ -114,7 +114,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onNavigate }) => {
                 <h3 className={`font-['Nunito',sans-serif] text-xl uppercase font-[900] tracking-normal ${
                   isLight ? 'text-[#14170F]' : 'text-white'
                 }`}>
-                  {language === 'es' ? 'Transparencia de Datos en Blockchain' : 'Verifiable Public Cert Registry'}
+                  {language === 'es' ? 'Registro Público de Certificados Verificable' : 'Verifiable Public Cert Registry'}
                 </h3>
               </div>
               <p className={`font-sans text-xs sm:text-sm leading-relaxed text-justify ${

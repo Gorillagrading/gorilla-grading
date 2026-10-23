@@ -77,7 +77,7 @@ export const translations = {
     'ref.mission.eyebrow': 'NUESTRA MISIÓN',
     'ref.mission.title': 'UN ESTÁNDAR NUMISMÁTICO DEFINITIVO A NIVEL GLOBAL',
     'ref.mission.title2': 'POR UN FUTURO DEL COLECCIONISMO MÁS FUERTE',
-    'ref.mission.desc': 'Sustituimos la subjetividad artesanal por metrología óptica reproducible, trazabilidad digital inmutable y rigor de laboratorio. Diseñado a nivel internacional para blindar el patrimonio del coleccionista moderno.',
+    'ref.mission.desc': 'Sustituimos la subjetividad artesanal por metrología óptica reproducible, trazabilidad digital verificable y rigor de laboratorio. Diseñado a nivel internacional para blindar el patrimonio del coleccionista moderno.',
     'ref.mission.desc2': 'Creemos en un mercado de coleccionables transparente, accesible y de confianza. Gorilla Grading está creado para coleccionistas, por coleccionistas, con una visión a largo plazo.',
     'ref.mission.cta': 'CONOCE NUESTRO LABORATORIO',
     'ref.mission.btn1': 'Nuestra Misión',
@@ -101,7 +101,7 @@ export const translations = {
     'pricing.feat.subgrades': '4 Sub-grados en escala 0.1 (Centrado, Esquinas, Bordes, Superficie)',
     'pricing.feat.scans': 'Escaneos microscópicos de campo oscuro a 40x',
     'pricing.feat.slab': 'Encapsulado sónico hermético a 35 kHz con filtro UV 99.4%',
-    'pricing.feat.nfc': 'Chip criptográfico NFC y registro público global',
+    'pricing.feat.nfc': 'Código QR único enlazado al certificado público',
     'pricing.feat.insurance': 'Seguro de tránsito intracomunitario incluido',
     'pricing.feat.priority': 'Cola preferente en cámara acorazada',
     'pricing.feat.dualAudit': 'Doble peritaje independiente por Conservador Jefe',
@@ -131,9 +131,9 @@ export const translations = {
     'how.step5.sub': 'Inspección de campo oscuro en esquinas, bordes y superficie.',
     'how.step5.desc': 'Luz polarizada oblicua revela micro-arañazos, líneas de impresión, compresión de esquinas y desgaste de foil. Cada defecto se cataloga con coordenadas exactas X/Y para el coleccionista.',
     'how.step6.num': '06',
-    'how.step6.title': 'Encapsulado Ultrasónico a 35 kHz & Tag NFC',
+    'how.step6.title': 'Encapsulado Ultrasónico a 35 kHz & Código QR',
     'how.step6.sub': 'Fusión molecular en acrílico virgen con filtro UV 99.4%.',
-    'how.step6.desc': 'La carta descansa en una cuna interior suspendida sin presión y el estuche se suelda herméticamente mediante ultrasonidos a 35 kHz. Se integra un chip NFC encriptado que enlaza al registro oficial global.',
+    'how.step6.desc': 'La carta descansa en una cuna interior suspendida sin presión y el estuche se suelda herméticamente mediante ultrasonidos a 35 kHz. Se incorpora un código QR único que enlaza al certificado en el registro público.',
 
 
     // Navigation (Classic)
@@ -178,7 +178,7 @@ export const translations = {
     'lab.protocolP4Title': 'Mapeo a 40x en Campo Oscuro',
     'lab.protocolP4Desc': 'La luz rasante revela microarañazos, líneas de impresión, plateado en holos y fracturas de fibra en esquinas.',
     'lab.protocolP5Title': 'Soldadura Sónica & Registro',
-    'lab.protocolP5Desc': 'Fusión acrílica ultrasónica a 35kHz con chip NFC criptográfico y registro holográfico a prueba de manipulaciones.',
+    'lab.protocolP5Desc': 'Fusión acrílica ultrasónica a 35kHz con un código QR único enlazado al certificado público.',
     
     // Model 02 Collector Gallery
     'gallery.tag': 'MODELO 02: GALERÍA DE COLECCIÓN — EL ESTÁNDAR ARCHIVÍSTICO',
@@ -244,7 +244,7 @@ export const translations = {
 
     // Verification
     'verify.title': 'Verificar Certificado Gorilla',
-    'verify.subtitle': 'Autentica la procedencia del slab, consulta la telemetría a 40x y comprueba el registro criptográfico.',
+    'verify.subtitle': 'Autentica la procedencia del slab, consulta la telemetría a 40x y comprueba el certificado firmado digitalmente.',
     'verify.placeholder': 'Introduce el nº de certificado (ej. GGI-XXXXXX)',
     'verify.scanQR': 'Escanear QR con Cámara',
     'verify.officialGrade': 'Nota Oficial',
@@ -352,7 +352,7 @@ export const translations = {
     'ref.mission.eyebrow': 'OUR MISSION',
     'ref.mission.title': 'THE DEFINITIVE NUMISMATIC & OPTICAL GLOBAL STANDARD',
     'ref.mission.title2': 'FOR A STRONGER COLLECTING FUTURE',
-    'ref.mission.desc': 'Replacing subjective guesswork with reproducible optical metrology, immutable digital provenance, and laboratory rigor. Engineered to international standards to safeguard collector heritage.',
+    'ref.mission.desc': 'Replacing subjective guesswork with reproducible optical metrology, verifiable digital provenance, and laboratory rigor. Engineered to international standards to safeguard collector heritage.',
     'ref.mission.desc2': 'We believe in a transparent, accessible and trustworthy collectibles market. Gorilla Grading is built for collectors, by collectors, with a long-term vision.',
     'ref.mission.cta': 'DISCOVER OUR LAB',
     'ref.mission.btn1': 'Our Mission',
@@ -376,7 +376,7 @@ export const translations = {
     'pricing.feat.subgrades': '4 Subgrades on 0.1 scale (Centering, Corners, Edges, Surface)',
     'pricing.feat.scans': '40x Darkfield polarized microscopic scans',
     'pricing.feat.slab': '35 kHz Ultrasonic hermetic seal with 99.4% UV filtration',
-    'pricing.feat.nfc': 'Cryptographic NFC chip linked to public European registry',
+    'pricing.feat.nfc': 'Unique QR code linked to the public certificate registry',
     'pricing.feat.insurance': 'Intra-European insured transit included',
     'pricing.feat.priority': 'Priority queue in climate-controlled vault',
     'pricing.feat.dualAudit': 'Independent dual audit by Senior Numismatic Conservator',
@@ -406,9 +406,9 @@ export const translations = {
     'how.step5.sub': 'Sub-surface inspection of corners, edges, and holofoil.',
     'how.step5.desc': 'Oblique polarized darkfield illumination uncovers micro-scratches, print lines, corner fiber compaction, and edge silvering. Every defect is logged with exact X/Y coordinates for collector review.',
     'how.step6.num': '06',
-    'how.step6.title': '35 kHz Ultrasonic Fusion & Cryptographic NFC',
+    'how.step6.title': '35 kHz Ultrasonic Fusion & QR Code',
     'how.step6.sub': 'Molecular acrylic bond with 99.4% UV filtration.',
-    'how.step6.desc': 'The card is placed in a custom zero-pressure inner cradle, and the casing is molecularly fused via 35 kHz ultrasonic welding. An encrypted NFC tag is embedded, linking directly to the European registry.',
+    'how.step6.desc': 'The card is placed in a custom zero-pressure inner cradle, and the casing is molecularly fused via 35 kHz ultrasonic welding. A unique QR code is added, linking directly to the certificate in the public registry.',
 
     // Navigation (Classic)
     'nav.services': 'Services & Pricing',
@@ -452,7 +452,7 @@ export const translations = {
     'lab.protocolP4Title': '40x Darkfield Defect Mapping',
     'lab.protocolP4Desc': 'Specular reflection reveals scratches, print lines, holo silvering, corner fiber separation and roller marks.',
     'lab.protocolP5Title': 'Sonic Weld & Cert',
-    'lab.protocolP5Desc': '35kHz ultrasonic acrylic fusion with cryptographic NFC tag and tamper-proof holographic registration.',
+    'lab.protocolP5Desc': '35kHz ultrasonic acrylic fusion with a unique QR code linked to the public certificate.',
 
     // Model 02 Collector Gallery
     'gallery.tag': 'MODEL 02: COLLECTOR GALLERY — THE ARCHIVAL STANDARD',
@@ -518,7 +518,7 @@ export const translations = {
 
     // Verification
     'verify.title': 'Verify Gorilla Certificate',
-    'verify.subtitle': 'Authenticate slab provenance, inspect 40x optical defect telemetry, and verify cryptographic security seals.',
+    'verify.subtitle': 'Authenticate slab provenance, inspect 40x optical defect telemetry, and verify the digitally signed certificate.',
     'verify.placeholder': 'Enter the certificate number (e.g. GGI-XXXXXX)',
     'verify.scanQR': 'Scan QR via Camera',
     'verify.officialGrade': 'Official Grade',

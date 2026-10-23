@@ -112,8 +112,8 @@ export const TechDetailModal: React.FC<TechDetailModalProps> = ({ isOpen, onClos
       id: 'grade' as const,
       num: 'IV',
       code: 'FOLIO-04',
-      title: isEs ? 'Sellado Sónico & NFC' : 'Piezo-Sonic Seal & NFC',
-      metric: '35 kHz · NTAG 424',
+      title: isEs ? 'Sellado Sónico & QR' : 'Piezo-Sonic Seal & QR',
+      metric: '35 kHz · QR',
     },
   ];
 
@@ -797,7 +797,7 @@ export const TechDetailModal: React.FC<TechDetailModalProps> = ({ isOpen, onClos
             )}
 
             {/* ════════════════════════════════════════════════════════════════════
-                FOLIO IV: SELLADO MOLECULAR SÓNICO & NFC CRIPTOGRÁFICO
+                FOLIO IV: SELLADO MOLECULAR SÓNICO & CÓDIGO QR
             ════════════════════════════════════════════════════════════════════ */}
             {activeFolio === 'grade' && (
               <motion.div
@@ -819,7 +819,7 @@ export const TechDetailModal: React.FC<TechDetailModalProps> = ({ isOpen, onClos
                     <div className="flex items-center gap-2">
                       <span className="font-bold tracking-wider text-[#15803D] dark:text-[#48C765]">LÁMINA IV</span>
                       <span className="opacity-40">|</span>
-                      <span className="uppercase opacity-80">{isEs ? 'CÁPSULA SELLADA & CHIP NFC' : 'SEALED SLAB & NFC CHIP'}</span>
+                      <span className="uppercase opacity-80">{isEs ? 'CÁPSULA SELLADA & CÓDIGO QR' : 'SEALED SLAB & QR CODE'}</span>
                     </div>
                     <span className="opacity-60">HERMÉTICO PIEZO-SÓNICO</span>
                   </div>
@@ -861,7 +861,7 @@ export const TechDetailModal: React.FC<TechDetailModalProps> = ({ isOpen, onClos
                   {/* Plate Technical Legend */}
                   <div className="pt-3 border-t border-current/15 flex items-center justify-between font-mono text-[9.5px] opacity-70">
                     <span>POLÍMERO ÓPTICO GRADO MUSEO</span>
-                    <span>CHIP NFC NTAG 424 DNA (AES-128)</span>
+                    <span>CÓDIGO QR ÚNICO POR SLAB</span>
                   </div>
                 </div>
 
@@ -879,16 +879,16 @@ export const TechDetailModal: React.FC<TechDetailModalProps> = ({ isOpen, onClos
                       isLight ? 'text-[#14170F]' : 'text-white'
                     }`}>
                       {isEs 
-                        ? 'Encapsulado Hermético y Registro Inmutable' 
-                        : 'Piezo-Sonic Encapsulation & Immutable Ledger'}
+                        ? 'Encapsulado Hermético y Certificado Verificable' 
+                        : 'Piezo-Sonic Encapsulation & Verifiable Certificate'}
                     </h3>
 
                     <p className={`font-sans text-xs sm:text-sm leading-relaxed mt-2.5 ${
                       isLight ? 'text-neutral-700' : 'text-neutral-300'
                     }`}>
                       {isEs
-                        ? 'La cápsula de polímero acrílico virgen de grado museo se fusiona molecularmente a 35 kHz mediante transductor ultrasónico piezoeléctrico, sin adhesivos químicos ni vapores residuales. La protección óptica UV400 bloquea más del 99.8% de la radiación actínica, integrando un microchip criptográfico NFC NTAG 424 DNA con firma SUN (Secure Unique NFC).'
-                        : 'The museum-grade virgin acrylic polymer capsule undergoes molecular fusion at 35 kHz via piezoelectric ultrasonic sonotrode, eliminating chemical adhesives and volatile outgassing. Optical UV400 filtration blocks >99.8% of actinic radiation, accompanied by an embedded cryptographic NFC NTAG 424 DNA chip with hardware AES-128 SUN signatures.'}
+                        ? 'La cápsula de polímero acrílico virgen de grado museo se fusiona molecularmente a 35 kHz mediante transductor ultrasónico piezoeléctrico, sin adhesivos químicos ni vapores residuales. La protección óptica UV400 bloquea más del 99.8% de la radiación actínica, y cada slab lleva un código QR único que enlaza a su certificado público firmado digitalmente.'
+                        : 'The museum-grade virgin acrylic polymer capsule undergoes molecular fusion at 35 kHz via piezoelectric ultrasonic sonotrode, eliminating chemical adhesives and volatile outgassing. Optical UV400 filtration blocks >99.8% of actinic radiation, and each slab carries a unique QR code linking to its digitally signed public certificate.'}
                     </p>
                   </div>
 
@@ -923,9 +923,9 @@ export const TechDetailModal: React.FC<TechDetailModalProps> = ({ isOpen, onClos
 
                     <div className="p-3 flex items-center justify-between">
                       <span className="opacity-60 uppercase text-[10.5px]">
-                        {isEs ? 'Criptografía Integrada' : 'Embedded Cryptography'}
+                        {isEs ? 'Certificado Digital' : 'Digital Certificate'}
                       </span>
-                      <span className="font-bold tracking-tight">NTAG 424 DNA (AES-128 SUN Cripto)</span>
+                      <span className="font-bold tracking-tight">Firma digital Ed25519 verificable en línea</span>
                     </div>
                   </div>
 

@@ -72,8 +72,8 @@ const COPY: Partial<Record<OrderStatus, Record<Locale, Copy>>> = {
     en: { label: 'Optical grading in progress', description: 'We measure centering, corners, edges and surface, and log any defects.' },
   },
   ENCAPSULATION: {
-    es: { label: 'Encapsulado', description: 'Sellamos cada carta en su slab, con número de serie y chip NFC.' },
-    en: { label: 'Encapsulation', description: 'We seal each card in its slab, with serial number and NFC chip.' },
+    es: { label: 'Encapsulado', description: 'Sellamos cada carta en su slab, con número de serie y código QR de verificación.' },
+    en: { label: 'Encapsulation', description: 'We seal each card in its slab, with serial number and verification QR code.' },
   },
   QUALITY_ASSURANCE: {
     es: { label: 'Control de calidad', description: 'Un segundo experto revisa la nota y firma el certificado.' },
