@@ -272,19 +272,49 @@ async function storeReceipt(db: Db, gateway: PaymentGateway, paymentIntentId: st
 /** Pagos cobrados de un cliente, del más reciente al más antiguo, con su recibo de Stripe. */
 export async function listUserPayments(db: Db, gateway: PaymentGateway | null, userId: string): Promise<PaymentReceiptDto[]> {
   const rows = await db
-    .select({ payment: payments, orderCode: orders.code })
+    .select({ payment: payments, order: orders, customerName: users.fullName, customerEmail: users.email })
     .from(payments)
     .innerJoin(orders, eq(orders.id, payments.orderId))
+    .innerJoin(users, eq(users.id, orders.userId))
     .where(and(eq(orders.userId, userId), inArray(payments.status, ['paid', 'refunded', 'partially_refunded'])))
     .orderBy(desc(payments.paidAt), desc(payments.createdAt));
+  if (rows.length === 0) return [];
+
+  const items = await db
+    .select({ orderId: orderItems.orderId, tierName: serviceTiers.name, unitCents: orderItems.unitPriceCents })
+    .from(orderItems)
+    .innerJoin(serviceTiers, eq(serviceTiers.id, orderItems.serviceTierId))
+    .where(inArray(orderItems.orderId, [...new Set(rows.map((r) => r.order.id))]))
+    .orderBy(asc(orderItems.position));
+
+  const linesOf = (orderId: string) => {
+    const grouped = new Map<string, PaymentReceiptDto['lines'][number]>();
+    for (const i of items.filter((x) => x.orderId === orderId)) {
+      const key = `${i.tierName}:${i.unitCents}`;
+      const line = grouped.get(key);
+      if (line) line.quantity += 1;
+      else grouped.set(key, { tierName: i.tierName, quantity: 1, unitCents: i.unitCents });
+    }
+    return [...grouped.values()];
+  };
 
   return Promise.all(
-    rows.map(async ({ payment: p, orderCode }) => ({
-      orderCode,
+    rows.map(async ({ payment: p, order, customerName, customerEmail }) => ({
+      orderCode: order.code,
       amountCents: p.amountCents,
       currency: p.currency,
       status: p.status as PaymentReceiptDto['status'],
       paidAt: (p.paidAt ?? p.updatedAt).toISOString(),
+      lines: linesOf(order.id),
+      breakdown: {
+        insuranceCents: order.insuranceCents ?? 0,
+        shippingCents: order.shippingCents ?? 0,
+        // El IVA va incluido en el precio: la base es el total menos el IVA.
+        baseCents: (order.totalCents ?? p.amountCents) - (order.taxCents ?? 0),
+        vatCents: order.taxCents ?? 0,
+        totalCents: order.totalCents ?? p.amountCents,
+      },
+      customer: { name: customerName, email: customerEmail },
       // Un recibo que no se pudo guardar al cobrar se pide ahora.
       receiptUrl: p.receiptUrl ?? (gateway && p.paymentIntentId ? await storeReceipt(db, gateway, p.paymentIntentId) : null),
     })),

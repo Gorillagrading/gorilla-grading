@@ -1469,4 +1469,32 @@ html.light-theme .about-page .title-3d-green,
 
   .cp-footer { margin-top: 6mm; padding-top: 2mm; border-top: 0.6pt solid #D1D5DB; font-size: 6.5pt; color: #6B7280; }
   .cp-footer p { margin: 0 0 0.8mm; }
+  /* Justificante de pago (src/components/common/PaymentReceipts.tsx) */
+  .print-receipt .rp-header { display: flex; justify-content: space-between; align-items: flex-end; padding-bottom: 4mm; border-bottom: 1.2pt solid #15803D; }
+  .print-receipt .rp-brand { display: flex; align-items: center; gap: 3mm; }
+  .print-receipt .rp-brand img { height: 13mm; width: auto; }
+  .print-receipt .rp-brand-name { font-weight: 900; font-size: 15pt; letter-spacing: 0.02em; line-height: 1; }
+  .print-receipt .rp-brand-sub { font-weight: 700; font-size: 7pt; color: #15803D; letter-spacing: 0.12em; }
+  .print-receipt .rp-header-right { text-align: right; }
+  .print-receipt .rp-kicker { font-size: 7pt; font-weight: 800; letter-spacing: 0.18em; text-transform: uppercase; color: #4B5563; }
+  .print-receipt .rp-number { font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace; font-size: 18pt; font-weight: 800; letter-spacing: 0.04em; margin: 1mm 0; }
+  .print-receipt .rp-small, .print-receipt .rp-muted { color: #6B7280; }
+  .print-receipt .rp-small { font-size: 7.5pt; }
+  .print-receipt .rp-label { font-size: 6.5pt; font-weight: 800; letter-spacing: 0.18em; text-transform: uppercase; color: #6B7280; margin-bottom: 1mm; }
+  .print-receipt .rp-strong { font-weight: 800; }
+  .print-receipt .rp-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 8mm; margin: 6mm 0; padding: 4mm 0; border-bottom: 0.6pt solid #D1D5DB; }
+  .print-receipt .rp-table { width: 100%; border-collapse: collapse; }
+  .print-receipt .rp-table th { text-align: left; font-size: 6.5pt; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: #6B7280; padding: 0 0 1.5mm; border-bottom: 0.6pt solid #D1D5DB; }
+  .print-receipt .rp-table td { padding: 2.4mm 0; border-bottom: 0.4pt solid #E5E7EB; }
+  .print-receipt .rp-table .rp-r { text-align: right; font-variant-numeric: tabular-nums; }
+  .print-receipt .rp-totals-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 10mm; margin-top: 6mm; break-inside: avoid; }
+  .print-receipt .rp-stamp { width: 30mm; height: 30mm; border: 1.4pt solid #15803D; color: #15803D; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; transform: rotate(-6deg); font-weight: 900; font-size: 11pt; letter-spacing: 0.06em; }
+  .print-receipt .rp-stamp small { font-size: 6.5pt; font-weight: 700; margin-top: 1mm; }
+  .print-receipt .rp-totals { width: 78mm; }
+  .print-receipt .rp-totals > div { display: flex; justify-content: space-between; padding: 1.6mm 0; border-bottom: 0.4pt solid #E5E7EB; }
+  .print-receipt .rp-totals .rp-grand { border-bottom: 0; border-top: 1.2pt solid #111827; margin-top: 1mm; padding-top: 2.5mm; font-weight: 900; font-size: 12pt; }
+  .print-receipt .rp-included { font-size: 7pt; margin: 3mm 0 0; }
+  .print-receipt .rp-footer { margin-top: 14mm; padding-top: 2mm; border-top: 0.6pt solid #D1D5DB; font-size: 6.8pt; color: #6B7280; }
+  .print-receipt .rp-footer p { margin: 0 0 1mm; }
+
 }

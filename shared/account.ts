@@ -63,12 +63,21 @@ export interface GradedCardDto {
   isAuthentic: boolean;
 }
 
-/** Un pago cobrado del cliente. El recibo es el justificante de pago de Stripe, no una factura. */
+/**
+ * Un pago cobrado del cliente con el desglose del pedido. Es un justificante de pago, no una factura:
+ * no lleva datos fiscales de la empresa ni numeración de factura.
+ */
 export interface PaymentReceiptDto {
   orderCode: string;
   amountCents: number;
   currency: string;
   status: 'paid' | 'refunded' | 'partially_refunded';
   paidAt: string;
+  /** Recibo oficial de Stripe, si ya se obtuvo. */
   receiptUrl: string | null;
+  /** Servicios del pedido agrupados por nivel y precio unitario (ya con el descuento por volumen aplicado). */
+  lines: { tierName: string; quantity: number; unitCents: number }[];
+  /** Cómo se compone el total. El IVA y el seguro ya van incluidos en el precio de los servicios. */
+  breakdown: { insuranceCents: number; shippingCents: number; baseCents: number; vatCents: number; totalCents: number };
+  customer: { name: string | null; email: string };
 }

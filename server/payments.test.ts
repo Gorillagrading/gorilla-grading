@@ -275,6 +275,10 @@ describe('pagos y recibos del cliente', () => {
         status: 'paid',
         paidAt: expect.any(String),
         receiptUrl: 'https://pay.stripe.test/receipts/pi_test_1',
+        // 12 cartas Standard con el 5 % de descuento (18,05 € cada una) y la devolución: 231,10 €.
+        lines: [{ tierName: 'Standard', quantity: 12, unitCents: 1805 }],
+        breakdown: { insuranceCents: 0, shippingCents: 1450, baseCents: first.totalCents - 4011, vatCents: 4011, totalCents: first.totalCents },
+        customer: { name: 'Carla Cliente', email: 'cliente@example.com' },
       },
     ]);
   });
