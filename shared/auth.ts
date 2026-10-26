@@ -29,7 +29,7 @@ export const UserDto = z.object({
   locale: z.string(),
   role: UserRole,
   createdAt: z.string(),
-  /** Código para mostrar en la cuenta (GGI-CLI-XXXXXX). Se deriva del id; no sustituye al id. */
+  /** Código para mostrar en la cuenta (seis cifras). Se deriva del id; no sustituye al id. */
   customerCode: z.string(),
 });
 export type UserDto = z.infer<typeof UserDto>;

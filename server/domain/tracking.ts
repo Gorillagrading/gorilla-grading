@@ -1,4 +1,5 @@
 import { and, asc, desc, eq, ne, sql } from 'drizzle-orm';
+import { normalizeCode } from '../../shared/codes.js';
 import type { Db } from '../../db/client.js';
 import { custodyEvents, orderItems, orders, shipments } from '../../db/schema.js';
 import type { OrderStatus } from '../../shared/domain.js';
@@ -21,7 +22,7 @@ const FINISHED: OrderStatus[] = ['DELIVERED', 'CANCELLED', 'RETURNED'];
 const QUERY_SHAPE = /^[A-Z0-9][A-Z0-9 _-]{2,63}$/;
 
 /**
- * Busca un pedido por su código (GGI-ORD-...) o por el número de seguimiento del transportista.
+ * Busca un pedido por su código (284719365, también escrito con espacios) o por el número de seguimiento del transportista.
  * Los borradores no se pueden consultar. `viewerId` es el usuario con sesión, si lo hay:
  * solo su dueño recibe el detalle de las cartas.
  */
@@ -32,7 +33,7 @@ export async function findTracking(db: Db, rawQuery: string, viewerId: string | 
   let [order] = await db
     .select()
     .from(orders)
-    .where(and(eq(orders.code, query), ne(orders.status, 'DRAFT')))
+    .where(and(eq(orders.code, normalizeCode(query)), ne(orders.status, 'DRAFT')))
     .limit(1);
 
   if (!order) {

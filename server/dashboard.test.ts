@@ -38,7 +38,7 @@ async function business() {
   const tier = await insertTier(db);
   const { orderId } = await insertGradedOrder(db, {
     ownerId: ana.id, tierId: tier.id, graderId: grader.id, qaId: qa.id, grade: 9.5,
-    orderCode: 'GGI-ORD-7K4M9Q', certNumber: 'GGI-89240100', cardName: 'Charizard',
+    orderCode: '284728482', certNumber: '89240100', cardName: 'Charizard',
   });
   await db.update(orders).set({ submittedAt: daysAgo(3), totalCents: 6450 }).where(sql`${orders.id} = ${orderId}`);
   await db.insert(payments).values([
@@ -47,11 +47,11 @@ async function business() {
     { orderId, amountCents: 3000, status: 'paid', paidAt: daysAgo(45) },
     { orderId, amountCents: 9999, status: 'pending' },
   ]);
-  await db.insert(orders).values({ code: 'GGI-ORD-8K5N2R', userId: luis.id, status: 'PAYMENT_PENDING', submittedAt: daysAgo(1), totalCents: 2500 });
+  await db.insert(orders).values({ code: '284729495', userId: luis.id, status: 'PAYMENT_PENDING', submittedAt: daysAgo(1), totalCents: 2500 });
   const [cert] = await db.select().from(certificates);
   await db.insert(certificateChecks).values([
     { certificateNumber: cert.number, certificateId: cert.id, channel: 'qr' },
-    { certificateNumber: 'GGI-00000000', channel: 'web' },
+    { certificateNumber: '00000000', channel: 'web' },
   ]);
 }
 
@@ -78,7 +78,7 @@ describe('panel de negocio', () => {
     expect(d.notAuthentic).toBe(0);
     expect(d.services).toEqual([{ code: 'premium', name: 'Premium', cards: 1, revenueCents: 2500 }]);
     expect(d.recentPayments.map((p) => p.amountCents)).toEqual([1000, 6450, 3000]);
-    expect(d.recentPayments[0]).toMatchObject({ orderCode: 'GGI-ORD-7K4M9Q', customerEmail: 'ana@example.com', customerName: null });
+    expect(d.recentPayments[0]).toMatchObject({ orderCode: '284728482', customerEmail: 'ana@example.com', customerName: null });
   });
 
   it('reparte el periodo en tramos sin huecos y suma lo mismo que el total', async () => {
@@ -111,20 +111,20 @@ describe('panel de negocio', () => {
     const [tier] = await db.select().from(serviceTiers);
     await insertGradedOrder(db, {
       ownerId: luis.id, tierId: tier.id, graderId: grader.id, qaId: qa.id, grade: 10,
-      orderCode: 'GGI-ORD-9P3Q4R', certNumber: 'GGI-00012345', cardName: 'Pikachu Illustrator',
+      orderCode: '284730508', certNumber: '00012345', cardName: 'Pikachu Illustrator',
     });
 
     const all = await listCertificateHistory(db, { page: 1 });
     expect(all.total).toBe(2);
     expect(all.rows[0]).toMatchObject({
-      certNumber: 'GGI-00012345', cardName: 'Pikachu Illustrator', grade: 10, orderCode: 'GGI-ORD-9P3Q4R',
+      certNumber: '00012345', cardName: 'Pikachu Illustrator', grade: 10, orderCode: '284730508',
       customerEmail: 'luis@example.com', status: 'active',
     });
-    expect(all.rows[1]).toMatchObject({ certNumber: 'GGI-89240100', customerEmail: 'ana@example.com', grade: 9.5 });
+    expect(all.rows[1]).toMatchObject({ certNumber: '89240100', customerEmail: 'ana@example.com', grade: 9.5 });
 
-    for (const q of ['ana@', 'GGI-8924', 'charizard', '7K4M9Q']) {
+    for (const q of ['ana@', '8924', 'charizard', '284728482']) {
       const found = await listCertificateHistory(db, { q, page: 1 });
-      expect(found.rows.map((r) => r.certNumber), q).toEqual(['GGI-89240100']);
+      expect(found.rows.map((r) => r.certNumber), q).toEqual(['89240100']);
     }
     // Lo escrito se busca tal cual: un % no es un comodín.
     expect((await listCertificateHistory(db, { q: '%', page: 1 })).total).toBe(0);

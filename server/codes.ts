@@ -1,16 +1,15 @@
 import { randomInt } from 'node:crypto';
-import { CODE_ALPHABET, CODE_PREFIX } from '../shared/codes.js';
+import { CERTIFICATE_DIGITS, ORDER_CODE_DIGITS, TICKET_CODE_DIGITS } from '../shared/codes.js';
 
-const randomChars = (length: number) =>
-  Array.from({ length }, () => CODE_ALPHABET[randomInt(CODE_ALPHABET.length)]).join('');
+/** Número al azar con exactamente `digits` cifras; puede empezar por cero. */
+const randomDigits = (digits: number) => String(randomInt(0, 10 ** digits)).padStart(digits, '0');
 
 /** Código de pedido no adivinable. Quien lo crea debe reintentar si choca con uno existente (índice único). */
-export const newOrderCode = () => `${CODE_PREFIX}-ORD-${randomChars(6)}`;
+export const newOrderCode = () => randomDigits(ORDER_CODE_DIGITS);
 
-export const newTicketCode = () => `${CODE_PREFIX}-TKT-${randomChars(6)}`;
+export const newTicketCode = () => randomDigits(TICKET_CODE_DIGITS);
 
-export const newCertificateNumber = () => `${CODE_PREFIX}-${String(randomInt(0, 100_000_000)).padStart(8, '0')}`;
+export const newCertificateNumber = () => randomDigits(CERTIFICATE_DIGITS);
 
-/** El serial del slab lleva los mismos dígitos que el certificado que contiene. */
-export const slabSerialFor = (certificateNumber: string) =>
-  `${CODE_PREFIX}-SLB-${certificateNumber.slice(CODE_PREFIX.length + 1)}`;
+/** El slab lleva el mismo número que el certificado que contiene. */
+export const slabSerialFor = (certificateNumber: string) => certificateNumber;

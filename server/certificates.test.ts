@@ -34,7 +34,7 @@ async function setup(over: { certNumber?: string; certStatus?: 'active' | 'revok
   const graded = await insertGradedOrder(db, {
     ownerId: owner.id, tierId: tier.id, graderId: grader.id, qaId: qa.id,
     grade: over.grade ?? 9.5,
-    orderCode: 'GGI-ORD-7K4M9Q', certNumber: over.certNumber ?? 'GGI-89240100', cardName: 'Charizard',
+    orderCode: '284728482', certNumber: over.certNumber ?? '89240100', cardName: 'Charizard',
     declaredValueCents: 4_567_800, certStatus: over.certStatus,
   });
   return { owner, grader, qa, tier, ...graded };
@@ -42,21 +42,20 @@ async function setup(over: { certNumber?: string; certStatus?: 'active' | 'revok
 
 describe('parseCertificateQuery', () => {
   it.each([
-    ['GGI-89240100', 'GGI-89240100'],
-    ['ggi-89240100', 'GGI-89240100'],
-    ['  GGI 89240100 ', 'GGI-89240100'],
-    ['GGI89240100', 'GGI-89240100'],
-    ['89240100', 'GGI-89240100'],
-  ])('entiende el número "%s"', (input, expected) => {
-    expect(parseCertificateQuery(input)).toEqual({ kind: 'number', value: expected });
+    '89240100',
+    '  89240100 ',
+    '8924 0100',
+    '8924-0100',
+    // Formato antiguo, con prefijo: se sigue entendiendo.
+    'GGI-89240100',
+    'ggi 89240100',
+    'GGI-SLB-89240100',
+    'GGISLB89240100',
+  ])('entiende "%s"', (input) => {
+    expect(parseCertificateQuery(input)).toBe('89240100');
   });
 
-  it('entiende el serial del slab', () => {
-    expect(parseCertificateQuery('ggi-slb-89240100')).toEqual({ kind: 'serial', value: 'GGI-SLB-89240100' });
-    expect(parseCertificateQuery('GGISLB89240100')).toEqual({ kind: 'serial', value: 'GGI-SLB-89240100' });
-  });
-
-  it.each(['', 'hola', 'GG-89240100', 'GGI-8924010', 'GGI-892401000', 'GGI-892401', '892401', 'GGI-SLB-892401', 'GGI-ABCDEFGH', "GGI-89240100'; --", 'GGI-ORD-7K4M9Q'])(
+  it.each(['', 'hola', 'GG-89240100', '8924010', '892401000', 'GGI-892401', '892401', 'GGI-ABCDEFGH', "89240100'; --", '284728482'])(
     'descarta "%s"',
     (input) => {
       expect(parseCertificateQuery(input)).toBeNull();
@@ -66,7 +65,7 @@ describe('parseCertificateQuery', () => {
 
 describe('GET /certificates/:number', () => {
   it('un número que no existe devuelve 404, sin necesidad de sesión', async () => {
-    const res = await verify('GGI-12345600');
+    const res = await verify('12345600');
     expect(res.status).toBe(404);
     expect(res.headers.get('content-type')).toBe('application/problem+json');
     expect(await read(res)).toMatchObject({ code: 'certificate_not_found' });
@@ -81,11 +80,11 @@ describe('GET /certificates/:number', () => {
 
   it('devuelve el certificado con su informe', async () => {
     await setup();
-    const res = await verify('GGI-89240100');
+    const res = await verify('89240100');
     expect(res.status).toBe(200);
     const { certificate } = await read(res);
     expect(certificate).toMatchObject({
-      certNumber: 'GGI-89240100',
+      certNumber: '89240100',
       name: 'Charizard',
       grade: 9.5,
       status: 'active',
@@ -100,24 +99,24 @@ describe('GET /certificates/:number', () => {
 
   it('se puede consultar por el número sin prefijo o por el serial del slab', async () => {
     await setup();
-    for (const q of ['89240100', 'ggi-89240100', 'GGI-SLB-89240100']) {
+    for (const q of ['89240100', 'ggi-89240100', '89240100']) {
       const res = await verify(q);
       expect(res.status, q).toBe(200);
-      expect((await read(res)).certificate.certNumber).toBe('GGI-89240100');
+      expect((await read(res)).certificate.certNumber).toBe('89240100');
     }
   });
 
   it('nunca expone el valor declarado, el dueño ni el pedido', async () => {
     const { owner } = await setup();
-    const text = await (await verify('GGI-89240100')).text();
-    for (const secret of ['declared', '4567800', '45678', 'dueno.privado', owner.id, 'GGI-ORD-7K4M9Q', 'userId', 'orderId']) {
+    const text = await (await verify('89240100')).text();
+    for (const secret of ['declared', '4567800', '45678', 'dueno.privado', owner.id, '284728482', 'userId', 'orderId']) {
       expect(text, secret).not.toContain(secret);
     }
   });
 
   it('un certificado revocado sigue siendo consultable y dice que está revocado', async () => {
     await setup({ certStatus: 'revoked' });
-    const res = await verify('GGI-89240100');
+    const res = await verify('89240100');
     expect(res.status).toBe(200);
     const { certificate } = await read(res);
     expect(certificate.status).toBe('revoked');
@@ -130,7 +129,7 @@ describe('GET /certificates/:number', () => {
     const { owner, grader, qa, tier } = await setup();
     await insertGradedOrder(db, {
       ownerId: owner.id, tierId: tier.id, graderId: grader.id, qaId: qa.id, grade: 10,
-      orderCode: 'GGI-ORD-8K5N2R', certNumber: 'GGI-89240200', cardName: 'Charizard (reemision)',
+      orderCode: '284729495', certNumber: '89240200', cardName: 'Charizard (reemision)',
     });
     const [old, replacement] = await db.select().from(certificates).orderBy(certificates.number);
     await db.update(certificates).set({ status: 'superseded', supersededById: replacement.id }).where(eq(certificates.id, old.id));
@@ -141,17 +140,17 @@ describe('GET /certificates/:number', () => {
 
   it('no se guarda en cachés compartidas', async () => {
     await setup();
-    expect((await verify('GGI-89240100')).headers.get('cache-control')).toBe('no-store');
+    expect((await verify('89240100')).headers.get('cache-control')).toBe('no-store');
   });
 });
 
 describe('registro de verificaciones', () => {
   it('guarda cada consulta con su canal y la IP con hash', async () => {
     await setup();
-    await verify('GGI-89240100', { ip: '203.0.113.5' });
-    await verify('GGI-89240100', { via: 'qr', ip: '203.0.113.5' });
-    await verify('GGI-89240100', { via: 'nfc' });
-    await verify('GGI-89240100', { via: 'inventado' });
+    await verify('89240100', { ip: '203.0.113.5' });
+    await verify('89240100', { via: 'qr', ip: '203.0.113.5' });
+    await verify('89240100', { via: 'nfc' });
+    await verify('89240100', { via: 'inventado' });
 
     const rows = await db.select().from(certificateChecks).orderBy(certificateChecks.checkedAt);
     expect(rows.map((r) => r.channel)).toEqual(['web', 'qr', 'nfc', 'web']);
@@ -162,9 +161,9 @@ describe('registro de verificaciones', () => {
   });
 
   it('también guarda las consultas de números que no existen, para detectar intentos de adivinar', async () => {
-    await verify('GGI-65432100');
+    await verify('65432100');
     const [row] = await db.select().from(certificateChecks);
-    expect(row).toMatchObject({ certificateNumber: 'GGI-65432100', certificateId: null });
+    expect(row).toMatchObject({ certificateNumber: '65432100', certificateId: null });
   });
 
   it('no guarda texto libre del visitante', async () => {
@@ -176,15 +175,15 @@ describe('registro de verificaciones', () => {
 
 describe('límite de consultas', () => {
   it('permite 120 consultas por IP y bloquea la siguiente', async () => {
-    for (let i = 0; i < 120; i++) expect((await verify('GGI-65432100', { ip: '203.0.113.9' })).status).toBe(404);
-    const blocked = await verify('GGI-65432100', { ip: '203.0.113.9' });
+    for (let i = 0; i < 120; i++) expect((await verify('65432100', { ip: '203.0.113.9' })).status).toBe(404);
+    const blocked = await verify('65432100', { ip: '203.0.113.9' });
     expect(blocked.status).toBe(429);
     expect(Number(blocked.headers.get('retry-after'))).toBeGreaterThan(0);
     expect(await read(blocked)).toMatchObject({ code: 'too_many_requests' });
   });
 
   it('otra IP no se ve afectada', async () => {
-    for (let i = 0; i < 120; i++) await verify('GGI-65432100', { ip: '203.0.113.9' });
-    expect((await verify('GGI-65432100', { ip: '203.0.113.10' })).status).toBe(404);
+    for (let i = 0; i < 120; i++) await verify('65432100', { ip: '203.0.113.9' });
+    expect((await verify('65432100', { ip: '203.0.113.10' })).status).toBe(404);
   });
 });

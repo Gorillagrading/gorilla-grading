@@ -25,7 +25,7 @@ const enqueue = (over: Partial<typeof emailOutbox.$inferInsert> = {}) =>
       toEmail: 'ana@example.com',
       template: 'order_shipped',
       locale: 'es',
-      data: { orderCode: 'GGI-ORD-ABC123', label: 'Devolución en camino', description: 'Tus cartas salen hacia ti.' },
+      data: { orderCode: '284732534', label: 'Devolución en camino', description: 'Tus cartas salen hacia ti.' },
       nextAttemptAt: T0,
       ...over,
     })
@@ -39,7 +39,7 @@ describe('cola de emails', () => {
     const result = await deliverPendingEmails(db, async (m) => void sent.push(m), { now: T0 });
 
     expect(result).toEqual({ sent: 1, failed: 0 });
-    expect(sent[0]).toMatchObject({ to: 'ana@example.com', subject: 'Devolución en camino · GGI-ORD-ABC123' });
+    expect(sent[0]).toMatchObject({ to: 'ana@example.com', subject: 'Devolución en camino · 284732534' });
     const [after] = await db.select().from(emailOutbox).where(eq(emailOutbox.id, row.id));
     expect(after).toMatchObject({ status: 'sent', attempts: 1, lastError: null });
     expect(after.sentAt).not.toBeNull();
@@ -111,39 +111,39 @@ describe('cola de emails', () => {
 
 describe('textos de los emails', () => {
   it('pedido registrado, en español y en inglés', () => {
-    const data = { orderCode: 'GGI-ORD-ABC123', itemCount: 3, totalCents: 3350 };
+    const data = { orderCode: '284732534', itemCount: 3, totalCents: 3350 };
     const es = renderOrderEmail('order_submitted', 'es', 'a@b.c', data);
-    expect(es.subject).toBe('Hemos registrado tu pedido GGI-ORD-ABC123');
+    expect(es.subject).toBe('Hemos registrado tu pedido 284732534');
     expect(es.text).toContain('3 cartas');
     expect(es.text).toMatch(/33,50\s€/);
 
     const en = renderOrderEmail('order_submitted', 'en', 'a@b.c', data);
-    expect(en.subject).toBe('We registered your order GGI-ORD-ABC123');
+    expect(en.subject).toBe('We registered your order 284732534');
     expect(en.text).toContain('3 cards');
   });
 
   it('los cambios de estado usan el título y la descripción ya traducidos', () => {
     const mail = renderOrderEmail('order_package_received', 'en', 'a@b.c', {
-      orderCode: 'GGI-ORD-ABC123',
+      orderCode: '284732534',
       label: 'Package received in the vault',
       description: 'We received your package.',
     });
-    expect(mail.subject).toBe('Package received in the vault · GGI-ORD-ABC123');
+    expect(mail.subject).toBe('Package received in the vault · 284732534');
     expect(mail.text).toContain('We received your package.');
-    expect(mail.text).toContain('Order GGI-ORD-ABC123');
+    expect(mail.text).toContain('Order 284732534');
   });
 });
 
 describe('email de salida con certificados', () => {
   const shipped = (over: Record<string, unknown> = {}) =>
     renderOrderEmail('order_shipped', 'es', 'a@b.c', {
-      orderCode: 'GGI-ORD-ABC123',
+      orderCode: '284732534',
       label: 'Devolución en camino',
       description: 'Tus cartas salen hacia ti con envío asegurado y firma.',
       carrier: 'GLS',
       trackingNumber: 'ES-GLS-1',
       cards: [
-        { position: 1, cardName: 'Charizard <Holo>', authentic: true, number: 'GGI-43713700', grade: 9.5, label: 'Mint+ 9.5' },
+        { position: 1, cardName: 'Charizard <Holo>', authentic: true, number: '43713700', grade: 9.5, label: 'Mint+ 9.5' },
         { position: 2, cardName: 'Pikachu falso', authentic: false },
       ],
       ...over,
@@ -151,15 +151,15 @@ describe('email de salida con certificados', () => {
 
   it('lleva cada certificado con su nota y un enlace directo, el seguimiento y las cartas sin certificado', () => {
     const mail = shipped();
-    expect(mail.subject).toBe('Devolución en camino · GGI-ORD-ABC123');
+    expect(mail.subject).toBe('Devolución en camino · 284732534');
     for (const body of [mail.text, mail.html!]) {
-      expect(body).toContain('GGI-43713700');
-      expect(body).toContain('https://gorilla-grading.vercel.app/certificates/GGI-43713700');
+      expect(body).toContain('43713700');
+      expect(body).toContain('https://gorilla-grading.vercel.app/certificates/43713700');
       expect(body).toContain('9,5');
       expect(body).toContain('Mint+ 9.5');
       expect(body).toContain('ES-GLS-1');
       expect(body).toContain('Pikachu falso');
-      expect(body).toContain('https://gorilla-grading.vercel.app/track?code=GGI-ORD-ABC123');
+      expect(body).toContain('https://gorilla-grading.vercel.app/track?code=284732534');
     }
   });
 
@@ -172,14 +172,14 @@ describe('email de salida con certificados', () => {
   it('usa el dominio que se configure', () => {
     process.env.PUBLIC_BASE_URL = 'gorillagrading.com/';
     try {
-      expect(shipped().text).toContain('https://gorillagrading.com/certificates/GGI-43713700');
+      expect(shipped().text).toContain('https://gorillagrading.com/certificates/43713700');
     } finally {
       delete process.env.PUBLIC_BASE_URL;
     }
   });
 
   it('sin certificados (otros estados) no añade esa sección', () => {
-    const mail = renderOrderEmail('order_delivered', 'en', 'a@b.c', { orderCode: 'GGI-ORD-ABC123', label: 'Delivered', description: 'Order delivered.' });
+    const mail = renderOrderEmail('order_delivered', 'en', 'a@b.c', { orderCode: '284732534', label: 'Delivered', description: 'Order delivered.' });
     expect(mail.text).not.toContain('Your certificates');
     expect(mail.html).toContain('View my order');
   });

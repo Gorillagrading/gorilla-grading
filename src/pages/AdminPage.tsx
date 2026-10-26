@@ -16,7 +16,7 @@ const ROLE_LABEL: Record<string, string> = {
 export const DASHBOARD_PATH = '/admin/dashboard';
 
 interface AdminPageProps {
-  /** Ruta actual: /admin (cola) o /admin/orders/GGI-ORD-XXXXXX (detalle). */
+  /** Ruta actual: /admin (cola) o /admin/orders/284719365 (detalle). */
   path: string;
   onNavigate: (path: string) => void;
 }

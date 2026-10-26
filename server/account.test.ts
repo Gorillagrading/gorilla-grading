@@ -62,14 +62,14 @@ describe('GET /orders', () => {
   it('devuelve solo los pedidos del usuario con sesión', async () => {
     const { ana, bea, grader, qa, tier } = await setup();
     const common = { tierId: tier.id, graderId: grader.id, qaId: qa.id, grade: 10 };
-    await insertGradedOrder(db, { ...common, ownerId: ana.id, orderCode: 'GGI-ORD-000001', certNumber: 'GGI-00000100', cardName: 'Charizard' });
-    await insertGradedOrder(db, { ...common, ownerId: bea.id, orderCode: 'GGI-ORD-000002', certNumber: 'GGI-00000200', cardName: 'Blastoise' });
+    await insertGradedOrder(db, { ...common, ownerId: ana.id, orderCode: '284719365', certNumber: '00000100', cardName: 'Charizard' });
+    await insertGradedOrder(db, { ...common, ownerId: bea.id, orderCode: '284720378', certNumber: '00000200', cardName: 'Blastoise' });
 
     const { cookie } = await loginAs('ana@example.com');
     const body = await read(await get('/api/v1/orders', cookie));
 
-    expect(body.orders.map((o: { code: string }) => o.code)).toEqual(['GGI-ORD-000001']);
-    expect(JSON.stringify(body)).not.toContain('GGI-ORD-000002');
+    expect(body.orders.map((o: { code: string }) => o.code)).toEqual(['284719365']);
+    expect(JSON.stringify(body)).not.toContain('284720378');
     expect(JSON.stringify(body)).not.toContain('Blastoise');
   });
 
@@ -77,7 +77,7 @@ describe('GET /orders', () => {
     const { ana, grader, qa, tier } = await setup();
     const { orderId } = await insertGradedOrder(db, {
       ownerId: ana.id, tierId: tier.id, graderId: grader.id, qaId: qa.id, grade: 10,
-      orderCode: 'GGI-ORD-000001', certNumber: 'GGI-00000100', cardName: 'Charizard',
+      orderCode: '284719365', certNumber: '00000100', cardName: 'Charizard',
     });
     await db.insert(orderItems).values({
       orderId, position: 2, cardName: 'Pikachu', game: 'Pokemon', declaredValueCents: 1000,
@@ -88,7 +88,7 @@ describe('GET /orders', () => {
     const { cookie } = await loginAs('ana@example.com');
     const [order] = (await read(await get('/api/v1/orders', cookie))).orders;
     expect(order).toMatchObject({
-      code: 'GGI-ORD-000001',
+      code: '284719365',
       status: 'DELIVERED',
       itemCount: 2,
       firstCardName: 'Charizard',
@@ -99,7 +99,7 @@ describe('GET /orders', () => {
 
   it('no incluye los borradores', async () => {
     const { ana } = await setup();
-    await db.insert(orders).values({ code: 'GGI-ORD-000009', userId: ana.id, status: 'DRAFT' });
+    await db.insert(orders).values({ code: '284721391', userId: ana.id, status: 'DRAFT' });
     const { cookie } = await loginAs('ana@example.com');
     expect((await read(await get('/api/v1/orders', cookie))).orders).toEqual([]);
   });
@@ -107,12 +107,12 @@ describe('GET /orders', () => {
   it('ordena del más reciente al más antiguo', async () => {
     const { ana } = await setup();
     await db.insert(orders).values([
-      { code: 'GGI-ORD-000001', userId: ana.id, status: 'SUBMITTED', submittedAt: new Date('2026-08-01') },
-      { code: 'GGI-ORD-000002', userId: ana.id, status: 'SUBMITTED', submittedAt: new Date('2026-09-15') },
+      { code: '284719365', userId: ana.id, status: 'SUBMITTED', submittedAt: new Date('2026-08-01') },
+      { code: '284720378', userId: ana.id, status: 'SUBMITTED', submittedAt: new Date('2026-09-15') },
     ]);
     const { cookie } = await loginAs('ana@example.com');
     const codes = (await read(await get('/api/v1/orders', cookie))).orders.map((o: { code: string }) => o.code);
-    expect(codes).toEqual(['GGI-ORD-000002', 'GGI-ORD-000001']);
+    expect(codes).toEqual(['284720378', '284719365']);
   });
 
   it('no expone direcciones, notas internas ni datos de otros usuarios', async () => {
@@ -120,7 +120,7 @@ describe('GET /orders', () => {
     const [o] = await db
       .insert(orders)
       .values({
-        code: 'GGI-ORD-000001', userId: ana.id, status: 'PRE_INSPECTION', submittedAt: new Date(),
+        code: '284719365', userId: ana.id, status: 'PRE_INSPECTION', submittedAt: new Date(),
         shippingAddress: { fullName: 'Ana', line1: 'Calle Secreta 1', city: 'Madrid', postalCode: '28001', countryCode: 'ES' },
       })
       .returning();
@@ -146,13 +146,13 @@ describe('GET /me/cards', () => {
     const { ana, grader, qa, tier } = await setup();
     await insertGradedOrder(db, {
       ownerId: ana.id, tierId: tier.id, graderId: grader.id, qaId: qa.id, grade: 9.5,
-      orderCode: 'GGI-ORD-000001', certNumber: 'GGI-00000100', cardName: 'Charizard', declaredValueCents: 45000,
+      orderCode: '284719365', certNumber: '00000100', cardName: 'Charizard', declaredValueCents: 45000,
     });
     const { cookie } = await loginAs('ana@example.com');
     const [card] = (await read(await get('/api/v1/me/cards', cookie))).cards;
 
     expect(card).toMatchObject({
-      certNumber: 'GGI-00000100',
+      certNumber: '00000100',
       name: 'Charizard',
       grade: 9.5,
       declaredValueEur: 450,
@@ -166,21 +166,21 @@ describe('GET /me/cards', () => {
   it('no muestra cartas de otro usuario', async () => {
     const { ana, bea, grader, qa, tier } = await setup();
     const common = { tierId: tier.id, graderId: grader.id, qaId: qa.id, grade: 10 };
-    await insertGradedOrder(db, { ...common, ownerId: bea.id, orderCode: 'GGI-ORD-000002', certNumber: 'GGI-00000200', cardName: 'Blastoise' });
-    await insertGradedOrder(db, { ...common, ownerId: ana.id, orderCode: 'GGI-ORD-000001', certNumber: 'GGI-00000100', cardName: 'Charizard' });
+    await insertGradedOrder(db, { ...common, ownerId: bea.id, orderCode: '284720378', certNumber: '00000200', cardName: 'Blastoise' });
+    await insertGradedOrder(db, { ...common, ownerId: ana.id, orderCode: '284719365', certNumber: '00000100', cardName: 'Charizard' });
 
     const { cookie } = await loginAs('ana@example.com');
     const { cards } = await read(await get('/api/v1/me/cards', cookie));
-    expect(cards.map((c: { certNumber: string }) => c.certNumber)).toEqual(['GGI-00000100']);
+    expect(cards.map((c: { certNumber: string }) => c.certNumber)).toEqual(['00000100']);
   });
 
   it('calcula la población con todas las cartas iguales, sean de quien sean', async () => {
     const { ana, bea, grader, qa, tier } = await setup();
     const common = { tierId: tier.id, graderId: grader.id, qaId: qa.id, cardName: 'Charizard' };
-    const first = await insertGradedOrder(db, { ...common, ownerId: ana.id, orderCode: 'GGI-ORD-000001', certNumber: 'GGI-00000100', grade: 9 });
+    const first = await insertGradedOrder(db, { ...common, ownerId: ana.id, orderCode: '284719365', certNumber: '00000100', grade: 9 });
     // Otras dos copias de la misma carta, de otra persona: una mejor y otra igual.
-    await insertGradedOrder(db, { ...common, ownerId: bea.id, orderCode: 'GGI-ORD-000002', certNumber: 'GGI-00000200', grade: 10, identityId: first.identityId });
-    await insertGradedOrder(db, { ...common, ownerId: bea.id, orderCode: 'GGI-ORD-000003', certNumber: 'GGI-00000300', grade: 9, identityId: first.identityId });
+    await insertGradedOrder(db, { ...common, ownerId: bea.id, orderCode: '284720378', certNumber: '00000200', grade: 10, identityId: first.identityId });
+    await insertGradedOrder(db, { ...common, ownerId: bea.id, orderCode: '284722404', certNumber: '00000300', grade: 9, identityId: first.identityId });
 
     const { cookie } = await loginAs('ana@example.com');
     const [card] = (await read(await get('/api/v1/me/cards', cookie))).cards;
@@ -191,7 +191,7 @@ describe('GET /me/cards', () => {
     const { ana, grader, qa, tier } = await setup();
     await insertGradedOrder(db, {
       ownerId: ana.id, tierId: tier.id, graderId: grader.id, qaId: qa.id, grade: 10,
-      orderCode: 'GGI-ORD-000001', certNumber: 'GGI-00000100', cardName: 'Charizard', certStatus: 'revoked',
+      orderCode: '284719365', certNumber: '00000100', cardName: 'Charizard', certStatus: 'revoked',
     });
     const { cookie } = await loginAs('ana@example.com');
     expect(await read(await get('/api/v1/me/cards', cookie))).toEqual({ cards: [] });
@@ -201,7 +201,7 @@ describe('GET /me/cards', () => {
 describe('GET /me', () => {
   it('incluye el código de cliente y la fecha de alta', async () => {
     const { user } = await loginAs('ana@example.com');
-    expect(user.customerCode).toMatch(/^GGI-CLI-[0-9A-F]{6}$/);
+    expect(user.customerCode).toMatch(/^[0-9]{6}$/);
     expect(new Date(user.createdAt).getTime()).not.toBeNaN();
   });
 });

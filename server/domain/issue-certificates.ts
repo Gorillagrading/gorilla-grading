@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray, isNotNull, ne } from 'drizzle-orm';
+import { and, desc, eq, inArray, isNotNull, isNull, ne } from 'drizzle-orm';
 import type { Db } from '../../db/client.js';
 import { auditLogs, cardIdentities, certificates, gradingResults, itemImages, orderItems, slabs } from '../../db/schema.js';
 import { newCertificateNumber, slabSerialFor } from '../codes.js';
@@ -172,4 +172,24 @@ export async function issueCertificates(
     issued.push({ position: item.position, cardName: item.cardName, authentic: true, number, grade: result.finalGrade, label: result.gradeLabel });
   }
   return issued.sort((a, b) => a.position - b.position);
+}
+
+/**
+ * Firma los certificados que se quedaron sin firma (por ejemplo, tras convertir su número a otro
+ * formato: el número forma parte del registro firmado). Lo llama la tarea diaria. Devuelve cuántos firmó.
+ */
+export async function signUnsignedCertificates(db: Db, signer: Signer): Promise<number> {
+  const pending = await db
+    .select({ id: certificates.id, payload: certificates.payload })
+    .from(certificates)
+    .where(isNull(certificates.signature));
+  for (const cert of pending) {
+    // El registro firmado es el payload sin las rutas privadas de las fotos, igual que al emitirlo.
+    const { images: _images, ...record } = cert.payload as Record<string, unknown>;
+    await db
+      .update(certificates)
+      .set({ signature: signer.sign(record), keyId: signer.keyId })
+      .where(and(eq(certificates.id, cert.id), isNull(certificates.signature)));
+  }
+  return pending.length;
 }

@@ -278,7 +278,7 @@ export const ContactPage: React.FC<ContactPageProps> = ({ onNavigate }) => {
                       type="text" 
                       value={orderNumber}
                       onChange={(e) => setOrderNumber(e.target.value)}
-                      placeholder="Ej. GGI-ORD-7K4M9Q"
+                      placeholder="Ej. 284719365"
                       className={`w-full px-4 py-3 text-sm focus:outline-none transition-colors border ${
                         isLight 
                           ? 'bg-[#EAE2D5] border-black/15 text-[#14170F] placeholder-black/40 focus:border-[#15803D]' 

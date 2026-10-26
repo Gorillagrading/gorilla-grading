@@ -257,7 +257,7 @@ export const orders = pgTable(
   'orders',
   {
     id: id(),
-    // GGI-ORD-xxxxxx
+    // 9 dígitos al azar
     code: text('code').notNull().unique(),
     userId: uuid('user_id')
       .notNull()
@@ -568,7 +568,7 @@ export const slabs = pgTable('slabs', {
   gradingResultId: uuid('grading_result_id')
     .notNull()
     .references(() => gradingResults.id),
-  // GGI-SLB-xxxxxx
+  // El mismo número que su certificado
   serial: text('serial').notNull().unique(),
   nfcUid: text('nfc_uid').unique(),
   qrPayload: text('qr_payload'),
@@ -590,7 +590,7 @@ export const certificates = pgTable(
   'certificates',
   {
     id: id(),
-    // GGI-xxxxxx
+    // 8 dígitos al azar
     number: text('number').notNull().unique(),
     slabId: uuid('slab_id')
       .notNull()
@@ -646,7 +646,7 @@ export const certificateChecks = pgTable(
 
 export const contactMessages = pgTable('contact_messages', {
   id: id(),
-  // GGI-TKT-xxxxxx
+  // 7 dígitos al azar
   ticket: text('ticket').notNull().unique(),
   userId: uuid('user_id').references(() => users.id),
   name: text('name').notNull(),

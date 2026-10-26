@@ -29,7 +29,7 @@ export const HERO_STAGE_ITEMS: StageItem[] = [
     kind: 'card',
     src: '/images/cards/cade_cunningham_front.jpg',
     alt: 'Cade Cunningham NBA Hoops GGI 10',
-    label: { grade: '10', cert: 'GGI 0001024', line1: '2024-25 NBA HOOPS', line2: 'HARD WIRED', line3: 'CADE CUNNINGHAM' },
+    label: { grade: '10', cert: '48271936', line1: '2024-25 NBA HOOPS', line2: 'HARD WIRED', line3: 'CADE CUNNINGHAM' },
   },
   { id: 'pokemon-back', kind: 'slab-image', src: '/images/slab/back.png', alt: 'Gorila Grading International' },
 ];

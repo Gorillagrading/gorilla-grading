@@ -88,23 +88,23 @@ describe('GET /tracking/:query', () => {
     expect(await read(res)).toMatchObject({ code: 'order_not_found' });
   });
 
-  it('encuentra el pedido por su código, sin importar mayúsculas', async () => {
-    await createOrder({ ownerEmail: 'ana@example.com', code: 'GGI-ORD-7K4M9Q', status: 'OPTICAL_GRADING', events: IN_GRADING });
-    const res = await track('ggi-ord-7k4m9q');
+  it('encuentra el pedido por su código, aunque se escriba con espacios', async () => {
+    await createOrder({ ownerEmail: 'ana@example.com', code: '284728482', status: 'OPTICAL_GRADING', events: IN_GRADING });
+    const res = await track(' 284 728 482 ');
     expect(res.status).toBe(200);
-    expect((await read(res)).tracking).toMatchObject({ code: 'GGI-ORD-7K4M9Q', status: 'OPTICAL_GRADING', itemCount: 2 });
+    expect((await read(res)).tracking).toMatchObject({ code: '284728482', status: 'OPTICAL_GRADING', itemCount: 2 });
   });
 
   it('encuentra el pedido por el número de seguimiento del transportista', async () => {
-    await createOrder({ ownerEmail: 'ana@example.com', code: 'GGI-ORD-7K4M9Q', status: 'OPTICAL_GRADING', trackingNumber: 'ES-GLS-9928174620', events: IN_GRADING });
+    await createOrder({ ownerEmail: 'ana@example.com', code: '284728482', status: 'OPTICAL_GRADING', trackingNumber: 'ES-GLS-9928174620', events: IN_GRADING });
     const res = await track('es-gls-9928174620');
     expect(res.status).toBe(200);
-    expect((await read(res)).tracking).toMatchObject({ code: 'GGI-ORD-7K4M9Q', carrier: 'GLS', trackingNumber: 'ES-GLS-9928174620' });
+    expect((await read(res)).tracking).toMatchObject({ code: '284728482', carrier: 'GLS', trackingNumber: 'ES-GLS-9928174620' });
   });
 
   it('los borradores no se pueden consultar', async () => {
-    await createOrder({ ownerEmail: 'ana@example.com', code: 'GGI-ORD-DRAFT9', status: 'DRAFT' });
-    expect((await track('GGI-ORD-DRAFT9')).status).toBe(404);
+    await createOrder({ ownerEmail: 'ana@example.com', code: '284733547', status: 'DRAFT' });
+    expect((await track('284733547')).status).toBe(404);
   });
 
   it('una consulta con caracteres raros no llega a la base de datos y da 404', async () => {
@@ -116,10 +116,10 @@ describe('GET /tracking/:query', () => {
 
 describe('privacidad', () => {
   it('nunca expone dirección, notas internas, valores declarados ni datos del dueño', async () => {
-    const { owner } = await createOrder({ ownerEmail: 'ana@example.com', code: 'GGI-ORD-7K4M9Q', status: 'OPTICAL_GRADING', events: IN_GRADING });
+    const { owner } = await createOrder({ ownerEmail: 'ana@example.com', code: '284728482', status: 'OPTICAL_GRADING', events: IN_GRADING });
     // Incluso el dueño con sesión recibe solo lo público.
     const cookie = await loginAs('ana@example.com');
-    for (const text of [await (await track('GGI-ORD-7K4M9Q')).text(), await (await track('GGI-ORD-7K4M9Q', cookie)).text()]) {
+    for (const text of [await (await track('284728482')).text(), await (await track('284728482', cookie)).text()]) {
       expect(text).not.toContain('Calle Secreta');
       expect(text).not.toContain('Persona Privada');
       expect(text).not.toContain('28001');
@@ -132,8 +132,8 @@ describe('privacidad', () => {
   });
 
   it('sin sesión solo se ve cuántas cartas hay, no cuáles', async () => {
-    await createOrder({ ownerEmail: 'ana@example.com', code: 'GGI-ORD-7K4M9Q', status: 'OPTICAL_GRADING', events: IN_GRADING });
-    const text = await (await track('GGI-ORD-7K4M9Q')).text();
+    await createOrder({ ownerEmail: 'ana@example.com', code: '284728482', status: 'OPTICAL_GRADING', events: IN_GRADING });
+    const text = await (await track('284728482')).text();
     const { tracking } = JSON.parse(text);
     expect(tracking.items).toBeNull();
     expect(tracking.itemCount).toBe(2);
@@ -142,17 +142,17 @@ describe('privacidad', () => {
   });
 
   it('otra persona con sesión tampoco ve las cartas', async () => {
-    await createOrder({ ownerEmail: 'ana@example.com', code: 'GGI-ORD-7K4M9Q', status: 'OPTICAL_GRADING', events: IN_GRADING });
+    await createOrder({ ownerEmail: 'ana@example.com', code: '284728482', status: 'OPTICAL_GRADING', events: IN_GRADING });
     const cookie = await loginAs('bea@example.com');
-    const text = await (await track('GGI-ORD-7K4M9Q', cookie)).text();
+    const text = await (await track('284728482', cookie)).text();
     expect(JSON.parse(text).tracking.items).toBeNull();
     expect(text).not.toContain('Charizard');
   });
 
   it('el dueño con sesión ve sus cartas', async () => {
-    await createOrder({ ownerEmail: 'ana@example.com', code: 'GGI-ORD-7K4M9Q', status: 'OPTICAL_GRADING', events: IN_GRADING });
+    await createOrder({ ownerEmail: 'ana@example.com', code: '284728482', status: 'OPTICAL_GRADING', events: IN_GRADING });
     const cookie = await loginAs('ana@example.com');
-    const { tracking } = await read(await track('GGI-ORD-7K4M9Q', cookie));
+    const { tracking } = await read(await track('284728482', cookie));
     expect(tracking.items).toEqual([
       { position: 1, cardName: 'Charizard Holo', game: 'Pokemon', set: 'Base Set' },
       { position: 2, cardName: 'Gengar VMAX', game: 'Pokemon', set: 'Fusion Strike' },
@@ -160,15 +160,15 @@ describe('privacidad', () => {
   });
 
   it('no se guarda en cachés compartidas', async () => {
-    await createOrder({ ownerEmail: 'ana@example.com', code: 'GGI-ORD-7K4M9Q', status: 'OPTICAL_GRADING', events: IN_GRADING });
-    expect((await track('GGI-ORD-7K4M9Q')).headers.get('cache-control')).toBe('private, no-store');
+    await createOrder({ ownerEmail: 'ana@example.com', code: '284728482', status: 'OPTICAL_GRADING', events: IN_GRADING });
+    expect((await track('284728482')).headers.get('cache-control')).toBe('private, no-store');
   });
 });
 
 describe('línea de tiempo', () => {
   it('marca el último evento como en curso y añade las fases que faltan', async () => {
-    await createOrder({ ownerEmail: 'ana@example.com', code: 'GGI-ORD-7K4M9Q', status: 'OPTICAL_GRADING', events: IN_GRADING });
-    const { tracking } = await read(await track('GGI-ORD-7K4M9Q'));
+    await createOrder({ ownerEmail: 'ana@example.com', code: '284728482', status: 'OPTICAL_GRADING', events: IN_GRADING });
+    const { tracking } = await read(await track('284728482'));
     expect(tracking.steps.map((s: any) => [s.status, s.state])).toEqual([
       ['SUBMITTED', 'completed'],
       ['PACKAGE_RECEIVED', 'completed'],
@@ -180,57 +180,57 @@ describe('línea de tiempo', () => {
 
   it('ordena los eventos por fecha aunque se hayan registrado en otro orden', async () => {
     await createOrder({
-      ownerEmail: 'ana@example.com', code: 'GGI-ORD-7K4M9Q', status: 'PACKAGE_RECEIVED',
+      ownerEmail: 'ana@example.com', code: '284728482', status: 'PACKAGE_RECEIVED',
       events: [
         { status: 'PACKAGE_RECEIVED', at: '2026-09-19T12:00:00Z' },
         { status: 'SUBMITTED', at: '2026-09-18T08:00:00Z' },
       ],
     });
-    const { tracking } = await read(await track('GGI-ORD-7K4M9Q'));
+    const { tracking } = await read(await track('284728482'));
     expect(tracking.steps.map((s: any) => s.status)).toEqual(['SUBMITTED', 'PACKAGE_RECEIVED']);
   });
 
   it('un pedido entregado lo tiene todo completado y nada pendiente', async () => {
     await createOrder({
-      ownerEmail: 'ana@example.com', code: 'GGI-ORD-3FX8RB', status: 'DELIVERED',
+      ownerEmail: 'ana@example.com', code: '284734560', status: 'DELIVERED',
       events: [
         { status: 'SUBMITTED', at: '2026-09-08T08:00:00Z' },
         { status: 'QUALITY_ASSURANCE', at: '2026-09-14T08:00:00Z' },
         { status: 'DELIVERED', at: '2026-09-16T08:00:00Z' },
       ],
     });
-    const { tracking } = await read(await track('GGI-ORD-3FX8RB'));
+    const { tracking } = await read(await track('284734560'));
     expect(tracking.steps.every((s: any) => s.state === 'completed')).toBe(true);
     expect(tracking.pending).toEqual([]);
   });
 
   it('un pedido en pausa sigue mostrando lo que falta desde donde estaba', async () => {
     await createOrder({
-      ownerEmail: 'ana@example.com', code: 'GGI-ORD-HOLD55', status: 'ON_HOLD', statusBeforeHold: 'PRE_INSPECTION',
+      ownerEmail: 'ana@example.com', code: '284735573', status: 'ON_HOLD', statusBeforeHold: 'PRE_INSPECTION',
       events: [
         { status: 'SUBMITTED', at: '2026-09-18T08:00:00Z' },
         { status: 'PRE_INSPECTION', at: '2026-09-20T08:00:00Z' },
         { status: 'ON_HOLD', at: '2026-09-21T08:00:00Z' },
       ],
     });
-    const { tracking } = await read(await track('GGI-ORD-HOLD55'));
+    const { tracking } = await read(await track('284735573'));
     expect(tracking.status).toBe('ON_HOLD');
     expect(tracking.pending[0]).toBe('OPTICAL_GRADING');
   });
 
   it('un pedido cancelado no tiene fases pendientes', async () => {
     await createOrder({
-      ownerEmail: 'ana@example.com', code: 'GGI-ORD-CANC66', status: 'CANCELLED',
+      ownerEmail: 'ana@example.com', code: '284736586', status: 'CANCELLED',
       events: [{ status: 'SUBMITTED', at: '2026-09-18T08:00:00Z' }, { status: 'CANCELLED', at: '2026-09-19T08:00:00Z' }],
     });
-    const { tracking } = await read(await track('GGI-ORD-CANC66'));
+    const { tracking } = await read(await track('284736586'));
     expect(tracking.pending).toEqual([]);
     expect(tracking.steps.every((s: any) => s.state === 'completed')).toBe(true);
   });
 
   it('un pedido recién enviado sin eventos muestra todo el recorrido pendiente', async () => {
-    await createOrder({ ownerEmail: 'ana@example.com', code: 'GGI-ORD-NEW111', status: 'SUBMITTED' });
-    const { tracking } = await read(await track('GGI-ORD-NEW111'));
+    await createOrder({ ownerEmail: 'ana@example.com', code: '284737599', status: 'SUBMITTED' });
+    const { tracking } = await read(await track('284737599'));
     expect(tracking.steps).toEqual([]);
     expect(tracking.pending[0]).toBe('PACKAGE_RECEIVED');
   });

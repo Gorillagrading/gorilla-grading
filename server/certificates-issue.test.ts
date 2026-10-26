@@ -2,6 +2,7 @@ import { eq, sql } from 'drizzle-orm';
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { auditLogs, certificates, orders, slabs } from '../db/schema.js';
 import { advanceDueOrders } from './domain/automation.js';
+import { signUnsignedCertificates } from './domain/issue-certificates.js';
 import { ProblemError } from './problem.js';
 import { canonicalJson, createSigner, generateSigningKey, verifySignature } from './signing.js';
 import { createTestApp, createTestDb, insertAllTiers, insertUser, testSigner, type TestDb } from './testing.js';
@@ -113,11 +114,11 @@ describe('emisión de certificados', () => {
     const certs = await db.select().from(certificates);
     expect(certs).toHaveLength(1);
     const [cert] = certs;
-    expect(cert.number).toMatch(/^GGI-\d{8}$/);
+    expect(cert.number).toMatch(/^\d{8}$/);
     expect(cert).toMatchObject({ status: 'active', keyId: 'test-key-1' });
 
     const [slab] = await db.select().from(slabs);
-    expect(slab.serial).toBe(`GGI-SLB-${cert.number.slice(4)}`);
+    expect(slab.serial).toBe(cert.number);
     expect(slab.qrPayload).toBe(`https://gorilla-grading.vercel.app/certificates/${cert.number}?via=qr`);
 
     const { images, ...record } = cert.payload as Record<string, any>;
@@ -129,6 +130,23 @@ describe('emisión de certificados', () => {
     expect(images.frontKey).toMatch(/^items\/.+\/front-/);
     expect(verifySignature(testSigner.publicKey, record, cert.signature!)).toBe(true);
     expect((await db.select().from(auditLogs)).map((a) => a.action)).toContain('certificate.issued');
+  });
+
+  it('un certificado que se quedó sin firma (por un cambio de formato) se vuelve a firmar con su registro actual', async () => {
+    const code = await readyToShip();
+    await move(code, 'qa@lab.test', 'SHIPPED', 'QUALITY_ASSURANCE');
+    const [before] = await db.select().from(certificates);
+    // Simula la conversión de formato: cambia el registro y se pierde la firma.
+    const payload = { ...(before.payload as Record<string, unknown>), slab: 'cambiado' };
+    await db.update(certificates).set({ payload, signature: null, keyId: null }).where(eq(certificates.id, before.id));
+
+    expect(await signUnsignedCertificates(db, testSigner)).toBe(1);
+    const [after] = await db.select().from(certificates);
+    const { images: _images, ...record } = after.payload as Record<string, unknown>;
+    expect(after.keyId).toBe('test-key-1');
+    expect(verifySignature(testSigner.publicKey, record, after.signature!)).toBe(true);
+    // Los que ya están firmados no se tocan.
+    expect(await signUnsignedCertificates(db, testSigner)).toBe(0);
   });
 
   it('una carta que no es auténtica no recibe certificado ni slab', async () => {
@@ -228,8 +246,8 @@ describe('firma', () => {
   it('una firma solo es válida con su clave y su registro', () => {
     const one = createSigner(generateSigningKey().privateKey, 'a');
     const other = createSigner(generateSigningKey().privateKey, 'b');
-    const record = { n: 'GGI-12345600', g: 9.5 };
-    const signature = one.sign({ g: 9.5, n: 'GGI-12345600' });
+    const record = { n: '12345600', g: 9.5 };
+    const signature = one.sign({ g: 9.5, n: '12345600' });
     expect(verifySignature(one.publicKey, record, signature)).toBe(true);
     expect(verifySignature(other.publicKey, record, signature)).toBe(false);
     expect(verifySignature(one.publicKey, { ...record, g: 10 }, signature)).toBe(false);

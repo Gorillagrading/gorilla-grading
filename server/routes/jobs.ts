@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { safeEqual } from '../auth/crypto.js';
 import type { AppEnv, Deps } from '../context.js';
 import { advanceDueOrders } from '../domain/automation.js';
+import { signUnsignedCertificates } from '../domain/issue-certificates.js';
 import { deliverPendingEmails } from '../domain/outbox.js';
 import { mailAvailable } from '../email/transport.js';
 import { ProblemError, unauthenticated } from '../problem.js';
@@ -23,8 +24,10 @@ export function jobRoutes(deps: Deps) {
     const advanced = await advanceDueOrders(deps.getDb());
     // Reintenta los emails que no pudieron salir en su momento.
     const emails = mailAvailable() ? await deliverPendingEmails(deps.getDb(), deps.sendMail) : null;
+    // Firma los certificados que hayan quedado sin firma.
+    const signed = await signUnsignedCertificates(deps.getDb(), deps.getSigner());
     c.header('Cache-Control', 'no-store');
-    return c.json({ advanced: advanced.length, orders: advanced, emails });
+    return c.json({ advanced: advanced.length, orders: advanced, emails, signed });
   });
 
   return routes;

@@ -168,7 +168,7 @@ describe('introducir el resultado', () => {
     const code = await received();
     expect((await grade(code, 'grader@lab.test', scores(9, 9, 9, 9), 3)).status).toBe(404);
     expect((await grade(code, 'grader@lab.test', scores(9, 9, 9, 9), 0)).status).toBe(404);
-    expect((await grade('GGI-ORD-ZZZZZZ', 'grader@lab.test', scores(9, 9, 9, 9))).status).toBe(404);
+    expect((await grade('284727469', 'grader@lab.test', scores(9, 9, 9, 9))).status).toBe(404);
   });
 
   it('queda registrado quién hizo cada cosa', async () => {

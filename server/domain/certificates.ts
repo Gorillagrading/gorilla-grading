@@ -1,26 +1,19 @@
-import { eq } from 'drizzle-orm';
 import type { Db } from '../../db/client.js';
-import { certificateChecks, certificates, slabs } from '../../db/schema.js';
+import { certificateChecks } from '../../db/schema.js';
 import { hashIp } from '../auth/crypto.js';
-import { CERTIFICATE_NUMBER, SLAB_SERIAL } from '../../shared/codes.js';
+import { CERTIFICATE_NUMBER, normalizeCode } from '../../shared/codes.js';
 import type { PublicCertificateDto, VerificationChannel } from '../../shared/certificate.js';
 import type { ObjectStorage } from '../storage.js';
 import { loadCards } from './vault.js';
 
-type Lookup = { kind: 'number' | 'serial'; value: string };
-
 /**
- * Entiende lo que la persona escribe o lo que trae el QR: GGI-48271936, ggi-48271936, GGI48271936,
- * 48271936 o el serial del slab (GGI-SLB-48271936). Devuelve null si no puede ser un certificado.
+ * Entiende lo que la persona escribe o lo que trae el QR: 48271936, "4827 1936" o "4827-1936".
+ * La funda lleva el mismo número que el certificado. También acepta el formato antiguo con
+ * prefijo (GGI-48271936, GGI-SLB-48271936). Devuelve null si no puede ser un certificado.
  */
-export function parseCertificateQuery(raw: string): Lookup | null {
-  const s = raw.trim().toUpperCase().replace(/\s+/g, '');
-  if (/^\d{8}$/.test(s)) return { kind: 'number', value: `GGI-${s}` };
-  const serial = /^GGI-?SLB-?(\d{8})$/.exec(s);
-  if (serial) return { kind: 'serial', value: `GGI-SLB-${serial[1]}` };
-  const number = /^GGI-?(\d{8})$/.exec(s);
-  if (number) return { kind: 'number', value: `GGI-${number[1]}` };
-  return null;
+export function parseCertificateQuery(raw: string): string | null {
+  const s = normalizeCode(raw.toUpperCase()).replace(/^GGI(SLB)?/, '');
+  return CERTIFICATE_NUMBER.test(s) ? s : null;
 }
 
 /**
@@ -33,26 +26,11 @@ export async function findPublicCertificate(
   visit: { channel: VerificationChannel; ip: string | null; userAgent: string | null },
   storage?: ObjectStorage,
 ): Promise<PublicCertificateDto | null> {
-  const lookup = parseCertificateQuery(rawQuery);
-  if (!lookup) return null;
-
-  let number = lookup.value;
-  if (lookup.kind === 'serial') {
-    const [row] = await db
-      .select({ number: certificates.number })
-      .from(slabs)
-      .innerJoin(certificates, eq(certificates.slabId, slabs.id))
-      .where(eq(slabs.serial, lookup.value))
-      .limit(1);
-    if (!row) {
-      await logCheck(db, lookup.value, null, visit);
-      return null;
-    }
-    number = row.number;
-  }
+  const number = parseCertificateQuery(rawQuery);
+  if (!number) return null;
 
   const [found] = await loadCards(db, { number, activeOnly: false }, storage);
-  await logCheck(db, lookup.value, found?.certificate.id ?? null, visit);
+  await logCheck(db, number, found?.certificate.id ?? null, visit);
   if (!found) return null;
 
   const { declaredValueEur: _owner, ...card } = found.card;
@@ -77,8 +55,8 @@ async function logCheck(
   certificateId: string | null,
   visit: { channel: VerificationChannel; ip: string | null; userAgent: string | null },
 ) {
-  // Los dos formatos válidos son los únicos que se guardan: nunca texto libre del visitante.
-  if (!CERTIFICATE_NUMBER.test(queried) && !SLAB_SERIAL.test(queried)) return;
+  // Solo se guardan números de certificado válidos: nunca texto libre del visitante.
+  if (!CERTIFICATE_NUMBER.test(queried)) return;
   await db.insert(certificateChecks).values({
     certificateNumber: queried,
     certificateId,

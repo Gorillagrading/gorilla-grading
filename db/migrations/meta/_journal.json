@@ -64,6 +64,13 @@
       "when": 1792757968022,
       "tag": "0008_certificate_numbers_8_digits",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1793018008336,
+      "tag": "0009_numeric_codes",
+      "breakpoints": true
     }
   ]
 }

@@ -231,7 +231,7 @@ describe('resultados para el cliente', () => {
     expect((await results(code, 'otro@example.com')).status).toBe(404);
     expect((await results(code, 'staff@lab.test')).status).toBe(404);
     expect((await results(code)).status).toBe(401);
-    expect((await results('GGI-ORD-ZZZZZZ', 'cliente@example.com')).status).toBe(404);
+    expect((await results('284727469', 'cliente@example.com')).status).toBe(404);
   });
 
   it('las respuestas no se guardan en cachés', async () => {

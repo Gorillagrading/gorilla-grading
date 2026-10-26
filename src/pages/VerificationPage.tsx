@@ -128,7 +128,7 @@ export const VerificationPage: React.FC<VerificationPageProps> = ({ onNavigate }
             
             <input
               type="text"
-              placeholder={language === 'es' ? 'INGRESE ID DE CERTIFICADO (EJ. GGI-XXXXXXXX)' : 'ENTER CERTIFICATE ID (E.G. GGI-XXXXXXXX)'}
+              placeholder={language === 'es' ? 'INGRESE ID DE CERTIFICADO (EJ. 48271936)' : 'ENTER CERTIFICATE ID (E.G. 48271936)'}
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               className={`w-full bg-transparent py-2 text-sm sm:text-base font-mono uppercase tracking-widest focus:outline-none placeholder:font-mono placeholder:text-xs sm:placeholder:text-sm ${

@@ -100,7 +100,7 @@ describe('POST /orders: quién puede enviar', () => {
 });
 
 describe('POST /orders: crear el pedido', () => {
-  it('crea un pedido enviado y sin pagar, con código GGI-ORD', async () => {
+  it('crea un pedido enviado y sin pagar, con un código de 9 cifras', async () => {
     const cookie = await loginAs('ana@example.com');
     const res = await submit(orderBody(), cookie);
     expect(res.status).toBe(201);

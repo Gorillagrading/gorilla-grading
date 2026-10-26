@@ -91,9 +91,9 @@ const track = async (code: string) => (await read(await t.app.request(`/api/v1/t
 describe('acceso al panel', () => {
   const calls: [string, string, unknown?][] = [
     ['GET', '/admin/orders'],
-    ['GET', '/admin/orders/GGI-ORD-AAAAAA'],
-    ['POST', '/admin/orders/GGI-ORD-AAAAAA/transitions', { to: 'PACKAGE_RECEIVED', expectedStatus: 'SUBMITTED' }],
-    ['POST', '/admin/orders/GGI-ORD-AAAAAA/shipments', { direction: 'outbound', carrier: 'GLS', trackingNumber: 'X1' }],
+    ['GET', '/admin/orders/284723417'],
+    ['POST', '/admin/orders/284723417/transitions', { to: 'PACKAGE_RECEIVED', expectedStatus: 'SUBMITTED' }],
+    ['POST', '/admin/orders/284723417/shipments', { direction: 'outbound', carrier: 'GLS', trackingNumber: 'X1' }],
   ];
 
   it.each(calls)('%s %s sin sesión devuelve 401', async (method, path, body) => {
@@ -134,7 +134,7 @@ describe('listado', () => {
     await placeOrder('b@example.com');
     await move(a, 'staff@lab.test', 'PACKAGE_RECEIVED', 'SUBMITTED');
     const [owner] = await db.select().from(users).where(eq(users.email, 'a@example.com'));
-    await db.insert(orders).values({ code: 'GGI-ORD-DRAFT1', userId: owner.id, status: 'DRAFT' });
+    await db.insert(orders).values({ code: '284724430', userId: owner.id, status: 'DRAFT' });
 
     const body = await read(await api('/admin/orders', 'staff@lab.test'));
     expect(body.total).toBe(2);
@@ -171,7 +171,7 @@ describe('listado', () => {
     const [owner] = await Promise.all([insertUser(db, 'masivo@example.com')]);
     await db.insert(orders).values(
       Array.from({ length: 30 }, (_, i) => ({
-        code: `GGI-ORD-P${String(i).padStart(5, '0')}`,
+        code: String(100_000_000 + i),
         userId: owner.id,
         status: 'SUBMITTED' as const,
         submittedAt: new Date(Date.UTC(2026, 8, 1 + i)),
@@ -180,11 +180,11 @@ describe('listado', () => {
     const first = await read(await api('/admin/orders', 'staff@lab.test'));
     expect(first).toMatchObject({ total: 30, page: 1, pageSize: 25 });
     expect(first.orders).toHaveLength(25);
-    expect(first.orders[0].code).toBe('GGI-ORD-P00000');
+    expect(first.orders[0].code).toBe('100000000');
     const second = await read(await api('/admin/orders?page=2', 'staff@lab.test'));
     expect(second.orders).toHaveLength(5);
     const newest = await read(await api('/admin/orders?sort=newest', 'staff@lab.test'));
-    expect(newest.orders[0].code).toBe('GGI-ORD-P00029');
+    expect(newest.orders[0].code).toBe('100000029');
   });
 
   it('rechaza filtros inválidos con 422', async () => {
@@ -215,7 +215,7 @@ describe('detalle', () => {
 
   it('devuelve 404 para un pedido que no existe', async () => {
     await staffSetup();
-    const res = await api('/admin/orders/GGI-ORD-ZZZZZZ', 'staff@lab.test');
+    const res = await api('/admin/orders/284727469', 'staff@lab.test');
     expect(res.status).toBe(404);
     expect(await read(res)).toMatchObject({ code: 'order_not_found' });
   });
@@ -574,6 +574,6 @@ describe('envíos', () => {
 
   it('devuelve 404 si el pedido no existe', async () => {
     await staffSetup();
-    expect((await ship('GGI-ORD-ZZZZZZ', 'staff@lab.test', { direction: 'outbound', carrier: 'GLS', trackingNumber: 'X' })).status).toBe(404);
+    expect((await ship('284727469', 'staff@lab.test', { direction: 'outbound', carrier: 'GLS', trackingNumber: 'X' })).status).toBe(404);
   });
 });
