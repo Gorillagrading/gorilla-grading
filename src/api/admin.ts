@@ -1,4 +1,4 @@
-import type { DashboardData, DashboardRange } from '../../shared/dashboard';
+import type { CertificateHistory, DashboardData, DashboardRange } from '../../shared/dashboard';
 import type {
   AdminOrderDetail, AdminOrderList, ShipmentBody, TransitionBody,
 } from '../../shared/admin';
@@ -117,3 +117,9 @@ export function adminErrorMessage(err: unknown): string {
 }
 
 export const fetchDashboard = (range: DashboardRange) => api<DashboardData>(`/admin/dashboard?range=${range}`);
+
+export const fetchCertificateHistory = (q: string, page: number) => {
+  const params = new URLSearchParams({ page: String(page) });
+  if (q) params.set('q', q);
+  return api<CertificateHistory>(`/admin/dashboard/certificates?${params}`);
+};

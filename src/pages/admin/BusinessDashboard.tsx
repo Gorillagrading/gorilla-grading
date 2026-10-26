@@ -1,18 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { ArrowDownRight, ArrowUpRight, Minus, RefreshCw } from 'lucide-react';
-import type { DashboardBucket, DashboardData, DashboardMetric, DashboardRange } from '../../../shared/dashboard';
+import { ArrowDownRight, ArrowUpRight, Minus, RefreshCw, Search } from 'lucide-react';
+import type { CertificateHistory, DashboardBucket, DashboardData, DashboardMetric, DashboardRange } from '../../../shared/dashboard';
 import type { OrderStatus } from '../../../shared/domain';
 import { GRADE_LABELS } from '../../../shared/grading';
-import { adminErrorMessage, fetchDashboard } from '../../api/admin';
+import { adminErrorMessage, fetchCertificateHistory, fetchDashboard } from '../../api/admin';
 import { STATUS_LABEL } from '../../utils/orderStatus';
 import { BarList, ColumnChart, Sparkline, type Point } from './charts';
-import { formatDateTime, money, usePanelTheme } from './ui';
+import { formatDate, formatDateTime, money, usePanelTheme } from './ui';
 
-const RANGES: { key: DashboardRange; label: string; previous: string }[] = [
-  { key: '30d', label: '30 días', previous: 'los 30 días anteriores' },
-  { key: '90d', label: '90 días', previous: 'los 90 días anteriores' },
-  { key: '12m', label: '12 meses', previous: 'los 12 meses anteriores' },
-  { key: 'all', label: 'Todo', previous: '' },
+const RANGES: { key: DashboardRange; label: string; during: string; previous: string }[] = [
+  { key: '30d', label: '30 días', during: 'En los últimos 30 días', previous: 'los 30 días anteriores' },
+  { key: '90d', label: '90 días', during: 'En los últimos 90 días', previous: 'los 90 días anteriores' },
+  { key: '12m', label: '12 meses', during: 'En los últimos 12 meses', previous: 'los 12 meses anteriores' },
+  { key: 'all', label: 'Todo', during: 'Desde el inicio', previous: '' },
 ];
 
 /** Orden del recorrido del pedido, para la lista de estados. */
@@ -40,7 +40,9 @@ function bucketLabels(start: string, unit: DashboardData['unit']) {
 const series = (data: DashboardData, field: keyof Omit<DashboardBucket, 'start'>): Point[] =>
   data.buckets.map((b) => ({ key: b.start, value: b[field], ...bucketLabels(b.start, data.unit) }));
 
-export const BusinessDashboard: React.FC = () => {
+const plural = (n: number, one: string, many: string) => `${whole(n)} ${n === 1 ? one : many}`;
+
+export const BusinessDashboard: React.FC<{ onOpenOrder: (code: string) => void }> = ({ onOpenOrder }) => {
   const t = usePanelTheme();
   const [range, setRange] = useState<DashboardRange>(() => {
     try {
@@ -121,6 +123,14 @@ export const BusinessDashboard: React.FC = () => {
       {data && (
         // Al recargar se mantiene lo anterior atenuado, sin saltos.
         <div className={`space-y-5 transition-opacity ${loading ? 'opacity-50' : ''}`} aria-busy={loading}>
+          {/* El resumen en una frase, para leerlo de un vistazo. */}
+          <p className={`text-lg leading-relaxed ${t.text}`}>
+            {current.during} se cobraron <strong>{money(data.metrics.revenueCents.current)}</strong> en{' '}
+            <strong>{plural(data.metrics.payments.current, 'pago', 'pagos')}</strong>, se registraron{' '}
+            <strong>{plural(data.metrics.newCustomers.current, 'cliente nuevo', 'clientes nuevos')}</strong> y el laboratorio calificó{' '}
+            <strong>{plural(data.metrics.cardsGraded.current, 'carta', 'cartas')}</strong>.
+          </p>
+
           {/* La cifra principal: lo cobrado en el periodo, con su evolución. */}
           <section className={card}>
             <div className="flex flex-wrap items-start justify-between gap-4">
@@ -150,11 +160,11 @@ export const BusinessDashboard: React.FC = () => {
 
           {/* Cifras clave del periodo. */}
           <section className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-            <Tile label="Clientes nuevos" metric={data.metrics.newCustomers} previous={current.previous} trend={data.buckets.map((b) => b.newCustomers)} />
-            <Tile label="Pedidos recibidos" metric={data.metrics.orders} previous={current.previous} trend={data.buckets.map((b) => b.orders)} />
-            <Tile label="Cartas calificadas" metric={data.metrics.cardsGraded} previous={current.previous} trend={data.buckets.map((b) => b.cardsGraded)} />
-            <Tile label="Certificados emitidos" metric={data.metrics.certificates} previous={current.previous} />
-            <Tile label="Verificaciones de certificados" hint="Consultas en la web o con el QR" metric={data.metrics.verifications} previous={current.previous} />
+            <Tile label="Clientes nuevos" hint="Personas que crearon su cuenta" metric={data.metrics.newCustomers} previous={current.previous} trend={data.buckets.map((b) => b.newCustomers)} />
+            <Tile label="Pedidos recibidos" hint="Pedidos que enviaron los clientes" metric={data.metrics.orders} previous={current.previous} trend={data.buckets.map((b) => b.orders)} />
+            <Tile label="Cartas calificadas" hint="Con nota aprobada por control de calidad" metric={data.metrics.cardsGraded} previous={current.previous} trend={data.buckets.map((b) => b.cardsGraded)} />
+            <Tile label="Certificados emitidos" hint="Uno por carta auténtica enviada de vuelta" metric={data.metrics.certificates} previous={current.previous} />
+            <Tile label="Verificaciones" hint="Veces que alguien comprobó un certificado (web o QR)" metric={data.metrics.verifications} previous={current.previous} />
           </section>
 
           <section className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -224,12 +234,24 @@ export const BusinessDashboard: React.FC = () => {
               {data.recentPayments.length ? (
                 <div className="mt-3 overflow-x-auto">
                   <table className="w-full text-sm">
+                    <thead>
+                      <tr className={`text-left text-[11px] uppercase tracking-wider ${t.muted}`}>
+                        <th className="pb-2 pr-3 font-bold">Fecha</th>
+                        <th className="pb-2 pr-3 font-bold">Cliente</th>
+                        <th className="pb-2 pr-3 font-bold">Pedido</th>
+                        <th className="pb-2 text-right font-bold">Importe</th>
+                      </tr>
+                    </thead>
                     <tbody>
                       {data.recentPayments.map((p) => (
-                        <tr key={`${p.orderCode}-${p.paidAt}`} className={`border-b last:border-0 ${t.rule}`}>
+                        <tr key={`${p.orderCode}-${p.paidAt}`} className={`border-t ${t.rule}`}>
                           <td className={`py-2 pr-3 whitespace-nowrap ${t.muted}`}>{formatDateTime(p.paidAt)}</td>
-                          <td className={`py-2 pr-3 font-mono text-xs whitespace-nowrap ${t.text}`}>{p.orderCode}</td>
-                          <td className={`py-2 pr-3 truncate max-w-[14rem] ${t.text}`}>{p.customer}</td>
+                          <td className="py-2 pr-3">
+                            <Customer email={p.customerEmail} name={p.customerName} />
+                          </td>
+                          <td className="py-2 pr-3">
+                            <OrderLink code={p.orderCode} onOpen={onOpenOrder} />
+                          </td>
                           <td className={`py-2 text-right font-bold tabular-nums whitespace-nowrap ${t.text}`}>{money(p.amountCents)}</td>
                         </tr>
                       ))}
@@ -258,6 +280,8 @@ export const BusinessDashboard: React.FC = () => {
             </div>
           </section>
 
+          <CertificateHistorySection onOpenOrder={onOpenOrder} />
+
           <p className={`text-xs ${t.muted}`}>
             Ingresos: pagos confirmados por Stripe (con IVA). Clientes: cuentas de clientes, sin el personal del laboratorio.
             Cartas calificadas: resultados aprobados por control de calidad. Las fechas se cuentan en hora de Madrid.
@@ -275,15 +299,20 @@ const Delta: React.FC<{ metric: DashboardMetric; previous: string }> = ({ metric
   const diff = metric.current - metric.previous;
   const Icon = diff > 0 ? ArrowUpRight : diff < 0 ? ArrowDownRight : Minus;
   const tone = diff > 0 ? t.positive : diff < 0 ? t.negative : t.muted;
-  const text =
-    diff === 0 ? 'Igual' : metric.previous === 0 ? 'Nuevo' : `${diff > 0 ? '+' : '−'}${Math.round((Math.abs(diff) / metric.previous) * 100)}%`;
+  // En palabras: "64% más que los 30 días anteriores".
+  const [strong, rest] =
+    diff === 0
+      ? ['Igual', `que ${previous}`]
+      : metric.previous === 0
+        ? ['Nuevo', `(ninguno en ${previous})`]
+        : [`${Math.round((Math.abs(diff) / metric.previous) * 100)}% ${diff > 0 ? 'más' : 'menos'}`, `que ${previous}`];
   return (
-    <div className="mt-1 flex items-center gap-1.5 text-xs">
-      <span className={`inline-flex items-center gap-0.5 font-bold ${tone}`}>
+    <div className="mt-1 flex items-start gap-1.5 text-xs">
+      <span className={`inline-flex items-center gap-0.5 font-bold whitespace-nowrap ${tone}`}>
         <Icon className="w-3.5 h-3.5" aria-hidden="true" />
-        {text}
+        {strong}
       </span>
-      <span className={t.muted}>frente a {previous}</span>
+      <span className={t.muted}>{rest}</span>
     </div>
   );
 };
@@ -304,5 +333,166 @@ const Tile: React.FC<{ label: string; hint?: string; metric: DashboardMetric; pr
       </div>
       <Delta metric={metric} previous={previous} />
     </div>
+  );
+};
+
+const Customer: React.FC<{ email: string; name: string | null }> = ({ email, name }) => {
+  const t = usePanelTheme();
+  return (
+    <div className="min-w-0">
+      {name && <div className={`font-bold truncate ${t.text}`}>{name}</div>}
+      <div className={`truncate ${name ? `text-xs ${t.muted}` : t.text}`}>{email}</div>
+    </div>
+  );
+};
+
+const OrderLink: React.FC<{ code: string; onOpen: (code: string) => void }> = ({ code, onOpen }) => {
+  const t = usePanelTheme();
+  return (
+    <button
+      type="button"
+      onClick={() => onOpen(code)}
+      className={`font-mono text-xs whitespace-nowrap underline-offset-2 hover:underline cursor-pointer ${t.positive}`}
+    >
+      {code}
+    </button>
+  );
+};
+
+const CERT_STATUS: Record<string, string> = { revoked: 'Revocado', superseded: 'Sustituido' };
+
+/** Todas las cartas certificadas, con su cliente y su número de certificado. Con buscador y páginas. */
+const CertificateHistorySection: React.FC<{ onOpenOrder: (code: string) => void }> = ({ onOpenOrder }) => {
+  const t = usePanelTheme();
+  const [search, setSearch] = useState('');
+  const [q, setQ] = useState('');
+  const [page, setPage] = useState(1);
+  const [data, setData] = useState<CertificateHistory | null>(null);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true);
+
+  // El buscador espera a que termines de escribir.
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setQ(search.trim());
+      setPage(1);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    fetchCertificateHistory(q, page)
+      .then((h) => {
+        if (!cancelled) {
+          setData(h);
+          setError('');
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) setError(adminErrorMessage(err));
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [q, page]);
+
+  const pages = data ? Math.max(1, Math.ceil(data.total / data.pageSize)) : 1;
+  const pageButton = `px-3 py-2 border rounded-lg font-bold cursor-pointer disabled:opacity-40 disabled:cursor-default ${t.secondary}`;
+
+  return (
+    <section className={`border rounded-2xl p-5 ${t.card}`}>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h2 className={`text-xs font-bold uppercase tracking-wider ${t.muted}`}>Historial de cartas certificadas</h2>
+          <p className={`mt-1 text-sm ${t.muted}`}>
+            Todas las cartas, desde el inicio{data ? ` · ${plural(data.total, 'certificado', 'certificados')}` : ''}.
+          </p>
+        </div>
+        <label className="relative w-full sm:w-80">
+          <span className="sr-only">Buscar en el historial</span>
+          <Search className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${t.muted}`} aria-hidden="true" />
+          <input
+            type="search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Correo, nº de certificado, carta o pedido"
+            className={`w-full pl-9 pr-3 py-2 border rounded-lg text-sm outline-none ${t.input}`}
+          />
+        </label>
+      </div>
+
+      {error && <p className={`mt-3 text-sm font-bold ${t.negative}`} role="alert">{error}</p>}
+
+      {data && (
+        <div className={`mt-4 overflow-x-auto transition-opacity ${loading ? 'opacity-50' : ''}`}>
+          {data.rows.length ? (
+            <table className="w-full text-sm">
+              <thead>
+                <tr className={`text-left text-[11px] uppercase tracking-wider ${t.muted}`}>
+                  <th className="pb-2 pr-3 font-bold">Fecha</th>
+                  <th className="pb-2 pr-3 font-bold">Nº de certificado</th>
+                  <th className="pb-2 pr-3 font-bold">Carta</th>
+                  <th className="pb-2 pr-3 font-bold text-right">Nota</th>
+                  <th className="pb-2 pr-3 font-bold">Cliente</th>
+                  <th className="pb-2 font-bold">Pedido</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.rows.map((r) => (
+                  <tr key={r.certNumber} className={`border-t align-top ${t.rule}`}>
+                    <td className={`py-2.5 pr-3 whitespace-nowrap ${t.muted}`}>{formatDate(r.issuedAt)}</td>
+                    <td className="py-2.5 pr-3 whitespace-nowrap">
+                      <span className={`font-mono font-bold ${t.text}`}>{r.certNumber}</span>
+                      {CERT_STATUS[r.status] && <div className={`text-xs font-bold ${t.negative}`}>{CERT_STATUS[r.status]}</div>}
+                    </td>
+                    <td className="py-2.5 pr-3 min-w-[10rem]">
+                      <div className={`font-bold ${t.text}`}>{r.cardName}</div>
+                      <div className={`text-xs ${t.muted}`}>{[r.game, r.setName].filter(Boolean).join(' · ')}</div>
+                    </td>
+                    <td className={`py-2.5 pr-3 text-right whitespace-nowrap ${t.text}`}>
+                      {r.grade != null ? (
+                        <>
+                          <div className="font-[800] text-base tabular-nums">{r.grade.toLocaleString('es-ES')}</div>
+                          <div className={`text-xs ${t.muted}`}>{r.gradeLabel?.replace(/\s[\d.]+$/, '')}</div>
+                        </>
+                      ) : (
+                        <span className={t.muted}>—</span>
+                      )}
+                    </td>
+                    <td className="py-2.5 pr-3 max-w-[16rem]">
+                      <Customer email={r.customerEmail} name={r.customerName} />
+                    </td>
+                    <td className="py-2.5">
+                      <OrderLink code={r.orderCode} onOpen={onOpenOrder} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <p className={`text-sm ${t.muted}`}>{q ? 'Ningún certificado coincide con la búsqueda.' : 'Todavía no hay cartas certificadas.'}</p>
+          )}
+        </div>
+      )}
+
+      {data && pages > 1 && (
+        <div className="mt-4 flex items-center justify-between gap-3 text-xs">
+          <span className={t.muted}>Página {data.page} de {pages}</span>
+          <div className="flex gap-2">
+            <button type="button" disabled={page <= 1} onClick={() => setPage((p) => p - 1)} className={pageButton}>
+              Anterior
+            </button>
+            <button type="button" disabled={page >= pages} onClick={() => setPage((p) => p + 1)} className={pageButton}>
+              Siguiente
+            </button>
+          </div>
+        </div>
+      )}
+    </section>
   );
 };

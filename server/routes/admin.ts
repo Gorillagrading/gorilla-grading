@@ -4,8 +4,8 @@ import { ImageBody } from '../../shared/photos.js';
 import { GradingBody, RejectGradingBody } from '../../shared/grading-admin.js';
 import { requireRole, requireUser } from '../auth/middleware.js';
 import type { AppEnv, Deps } from '../context.js';
-import { DashboardQuery } from '../../shared/dashboard.js';
-import { getDashboard } from '../domain/dashboard.js';
+import { CertificateHistoryQuery, DashboardQuery } from '../../shared/dashboard.js';
+import { getDashboard, listCertificateHistory } from '../domain/dashboard.js';
 import { flushOutbox } from '../domain/outbox.js';
 import { confirmImage, createImageUpload, deleteImage, listOrderImages } from '../domain/item-images.js';
 import { approveGrading, rejectGrading, saveGrading } from '../domain/grading-results.js';
@@ -84,6 +84,15 @@ export function adminRoutes(deps: Deps) {
       throw new ProblemError(422, 'Validation Error', 'El periodo no es válido.', { code: 'validation_error' });
     }
     return c.json(await getDashboard(deps.getDb(), parsed.data.range));
+  });
+
+  // Historial de todas las cartas certificadas, con el correo del cliente y el número de certificado.
+  routes.get('/admin/dashboard/certificates', requireUser(deps), requireRole('admin'), async (c) => {
+    const parsed = CertificateHistoryQuery.safeParse(c.req.query());
+    if (!parsed.success) {
+      throw new ProblemError(422, 'Validation Error', 'La búsqueda no es válida.', { code: 'validation_error' });
+    }
+    return c.json(await listCertificateHistory(deps.getDb(), parsed.data));
   });
 
   // Diagnóstico del almacenamiento: prueba cada paso y dice dónde falla. Nunca muestra claves.

@@ -97,7 +97,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ path, onNavigate }) => {
         )}
 
         {showDashboard ? (
-          <BusinessDashboard />
+          <BusinessDashboard onOpenOrder={(c) => onNavigate(`${detailPrefix}${encodeURIComponent(c)}`)} />
         ) : code ? (
           <OrderDetail code={code} onBack={() => onNavigate('/admin')} />
         ) : (

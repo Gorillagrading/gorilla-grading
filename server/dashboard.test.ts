@@ -1,7 +1,7 @@
 import { sql } from 'drizzle-orm';
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import { certificateChecks, certificates, orders, payments, users } from '../db/schema.js';
-import { getDashboard } from './domain/dashboard.js';
+import { certificateChecks, certificates, orders, payments, serviceTiers, users } from '../db/schema.js';
+import { getDashboard, listCertificateHistory } from './domain/dashboard.js';
 import { createTestApp, createTestDb, insertGradedOrder, insertTier, insertUser, type TestDb } from './testing.js';
 
 const read = (res: Response) => res.json() as Promise<any>;
@@ -78,7 +78,7 @@ describe('panel de negocio', () => {
     expect(d.notAuthentic).toBe(0);
     expect(d.services).toEqual([{ code: 'premium', name: 'Premium', cards: 1, revenueCents: 2500 }]);
     expect(d.recentPayments.map((p) => p.amountCents)).toEqual([1000, 6450, 3000]);
-    expect(d.recentPayments[0]).toMatchObject({ orderCode: 'GGI-ORD-7K4M9Q', customer: 'ana@example.com' });
+    expect(d.recentPayments[0]).toMatchObject({ orderCode: 'GGI-ORD-7K4M9Q', customerEmail: 'ana@example.com', customerName: null });
   });
 
   it('reparte el periodo en tramos sin huecos y suma lo mismo que el total', async () => {
@@ -103,6 +103,33 @@ describe('panel de negocio', () => {
     expect(d.recentPayments).toEqual([]);
   });
 
+  it('el historial lista cada carta certificada con el correo del cliente y su número de certificado', async () => {
+    await business();
+    const luis = (await db.select().from(users).where(sql`${users.email} = 'luis@example.com'`))[0];
+    const grader = (await db.select().from(users).where(sql`${users.email} = 'grader@lab.test'`))[0];
+    const qa = (await db.select().from(users).where(sql`${users.email} = 'qa@lab.test'`))[0];
+    const [tier] = await db.select().from(serviceTiers);
+    await insertGradedOrder(db, {
+      ownerId: luis.id, tierId: tier.id, graderId: grader.id, qaId: qa.id, grade: 10,
+      orderCode: 'GGI-ORD-9P3Q4R', certNumber: 'GGI-00012345', cardName: 'Pikachu Illustrator',
+    });
+
+    const all = await listCertificateHistory(db, { page: 1 });
+    expect(all.total).toBe(2);
+    expect(all.rows[0]).toMatchObject({
+      certNumber: 'GGI-00012345', cardName: 'Pikachu Illustrator', grade: 10, orderCode: 'GGI-ORD-9P3Q4R',
+      customerEmail: 'luis@example.com', status: 'active',
+    });
+    expect(all.rows[1]).toMatchObject({ certNumber: 'GGI-89240100', customerEmail: 'ana@example.com', grade: 9.5 });
+
+    for (const q of ['ana@', 'GGI-8924', 'charizard', '7K4M9Q']) {
+      const found = await listCertificateHistory(db, { q, page: 1 });
+      expect(found.rows.map((r) => r.certNumber), q).toEqual(['GGI-89240100']);
+    }
+    // Lo escrito se busca tal cual: un % no es un comodín.
+    expect((await listCertificateHistory(db, { q: '%', page: 1 })).total).toBe(0);
+  });
+
   it('solo lo ve el rol admin', async () => {
     await insertUser(db, 'admin@lab.test', 'admin');
     await insertUser(db, 'qa@lab.test', 'qa');
@@ -112,7 +139,8 @@ describe('panel de negocio', () => {
 
     expect((await get()).status).toBe(401);
     expect((await get(await loginAs('ana@example.com'))).status).toBe(403);
-    expect((await get(await loginAs('qa@lab.test'))).status).toBe(403);
+    const qa = await loginAs('qa@lab.test');
+    expect((await get(qa)).status).toBe(403);
 
     const admin = await loginAs('admin@lab.test');
     const res = await get(admin);
@@ -120,5 +148,11 @@ describe('panel de negocio', () => {
     expect(res.headers.get('cache-control')).toBe('private, no-store');
     expect((await read(res)).range).toBe('30d');
     expect((await get(admin, 'siempre')).status).toBe(422);
+
+    const history = (cookie: string) => t.app.request('/api/v1/admin/dashboard/certificates?q=GGI', { headers: { cookie } });
+    expect((await history(qa)).status).toBe(403);
+    const ok = await history(admin);
+    expect(ok.status).toBe(200);
+    expect(await read(ok)).toMatchObject({ rows: [], total: 0, page: 1 });
   });
 });

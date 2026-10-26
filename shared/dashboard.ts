@@ -65,8 +65,38 @@ export interface DashboardData {
   services: { code: string; name: string; cards: number; revenueCents: number }[];
   recentPayments: {
     orderCode: string;
-    customer: string;
+    customerEmail: string;
+    customerName: string | null;
     amountCents: number;
     paidAt: string;
   }[];
+}
+
+export const CertificateHistoryQuery = z.object({
+  /** Número de certificado, correo o nombre del cliente, carta o pedido. */
+  q: z.string().trim().max(100).optional(),
+  page: z.coerce.number().int().min(1).default(1),
+});
+export type CertificateHistoryQuery = z.infer<typeof CertificateHistoryQuery>;
+
+/** Una carta certificada, con su cliente. Es el historial completo, sin depender del periodo. */
+export interface CertificateHistoryRow {
+  certNumber: string;
+  status: string;
+  issuedAt: string;
+  cardName: string;
+  game: string;
+  setName: string | null;
+  grade: number | null;
+  gradeLabel: string | null;
+  orderCode: string;
+  customerEmail: string;
+  customerName: string | null;
+}
+
+export interface CertificateHistory {
+  rows: CertificateHistoryRow[];
+  total: number;
+  page: number;
+  pageSize: number;
 }

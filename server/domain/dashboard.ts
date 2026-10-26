@@ -1,10 +1,10 @@
-import { and, desc, eq, gte, isNotNull, ne, sql, type AnyColumn, type SQL } from 'drizzle-orm';
+import { and, desc, eq, gte, ilike, isNotNull, ne, or, sql, type AnyColumn, type SQL } from 'drizzle-orm';
 import type { Db } from '../../db/client.js';
 import {
   certificateChecks, certificates, gradingResults, orderItems, orders, payments, serviceTiers, users,
 } from '../../db/schema.js';
 import type {
-  DashboardBucket, DashboardBucketUnit, DashboardData, DashboardMetric, DashboardRange,
+  CertificateHistory, CertificateHistoryQuery, DashboardBucket, DashboardBucketUnit, DashboardData, DashboardMetric, DashboardRange,
 } from '../../shared/dashboard.js';
 
 /** Los días, semanas y meses se cuentan en hora de Madrid, como los vive el negocio. */
@@ -224,9 +224,82 @@ export async function getDashboard(db: Db, range: DashboardRange, now = new Date
       .sort((a, b) => b.cards - a.cards),
     recentPayments: recent.map((r) => ({
       orderCode: r.code,
-      customer: r.name ?? r.email,
+      customerEmail: r.email,
+      customerName: r.name,
       amountCents: r.amount,
       paidAt: r.paidAt!.toISOString(),
     })),
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Historial de cartas certificadas
+// ---------------------------------------------------------------------------
+
+export const HISTORY_PAGE_SIZE = 20;
+
+/** Escapa % y _ para que lo escrito en el buscador se busque tal cual. */
+const likePattern = (q: string) => `%${q.replace(/[\%_]/g, (c) => `\${c}`)}%`;
+
+/** Todas las cartas certificadas, de la más reciente a la más antigua, con el correo de su cliente. */
+export async function listCertificateHistory(db: Db, query: CertificateHistoryQuery): Promise<CertificateHistory> {
+  const pattern = query.q ? likePattern(query.q) : null;
+  const where = pattern
+    ? or(
+        ilike(certificates.number, pattern),
+        ilike(users.email, pattern),
+        ilike(users.fullName, pattern),
+        ilike(orderItems.cardName, pattern),
+        ilike(orders.code, pattern),
+      )
+    : undefined;
+  const base = () =>
+    db
+      .select({
+        certificate: certificates,
+        grading: { grade: gradingResults.finalGrade, label: gradingResults.gradeLabel },
+        item: { cardName: orderItems.cardName, game: orderItems.game, setName: orderItems.setName },
+        orderCode: orders.code,
+        customer: { email: users.email, name: users.fullName },
+      })
+      .from(certificates)
+      .innerJoin(gradingResults, eq(gradingResults.id, certificates.gradingResultId))
+      .innerJoin(orderItems, eq(orderItems.id, gradingResults.orderItemId))
+      .innerJoin(orders, eq(orders.id, orderItems.orderId))
+      .innerJoin(users, eq(users.id, orders.userId))
+      .where(where);
+
+  const [rows, [{ total }]] = await Promise.all([
+    base()
+      .orderBy(desc(certificates.issuedAt), desc(certificates.number))
+      .limit(HISTORY_PAGE_SIZE)
+      .offset((query.page - 1) * HISTORY_PAGE_SIZE),
+    db
+      .select({ total: sql<number>`count(*)::int` })
+      .from(certificates)
+      .innerJoin(gradingResults, eq(gradingResults.id, certificates.gradingResultId))
+      .innerJoin(orderItems, eq(orderItems.id, gradingResults.orderItemId))
+      .innerJoin(orders, eq(orders.id, orderItems.orderId))
+      .innerJoin(users, eq(users.id, orders.userId))
+      .where(where),
+  ]);
+
+  return {
+    rows: rows.map((r) => ({
+      certNumber: r.certificate.number,
+      status: r.certificate.status,
+      issuedAt: r.certificate.issuedAt.toISOString(),
+      cardName: r.item.cardName,
+      game: r.item.game,
+      setName: r.item.setName,
+      grade: r.grading.grade == null ? null : Number(r.grading.grade),
+      gradeLabel: r.grading.label,
+      orderCode: r.orderCode,
+      customerEmail: r.customer.email,
+      customerName: r.customer.name,
+    })),
+    total: Number(total),
+    page: query.page,
+    pageSize: HISTORY_PAGE_SIZE,
   };
 }
