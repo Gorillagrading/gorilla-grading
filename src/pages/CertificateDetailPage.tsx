@@ -101,12 +101,11 @@ export const CertificateDetailPage: React.FC<CertificateDetailPageProps> = ({
               window.location.href = `/verify?cert=${card.certNumber}`;
             }
           }}
-          className={`inline-flex items-center gap-2 text-xs font-mono transition-colors cursor-pointer ${
-            isLight ? 'text-gray-600 hover:text-emerald-600' : 'text-gray-400 hover:text-emerald-400'
-          }`}
+          aria-label={language === 'es' ? 'Volver al certificado' : 'Back to the certificate'}
+          className="btn-gorilla-square group inline-flex w-full sm:w-auto items-center justify-center gap-2.5 px-5 py-3 text-xs sm:text-[13px] font-extrabold tracking-normal cursor-pointer shadow-md"
         >
-          <ArrowLeft className="w-4 h-4 shrink-0" />
-          <span className="truncate">{language === 'es' ? 'Volver al Registro de Certificados' : 'Back to Certificate Registry Search'}</span>
+          <ArrowLeft className="w-4 h-4 shrink-0 transition-transform duration-200 group-hover:-translate-x-1" strokeWidth={3} />
+          <span className="truncate">{language === 'es' ? 'Volver al certificado' : 'Back to certificate'}</span>
         </button>
 
         <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
