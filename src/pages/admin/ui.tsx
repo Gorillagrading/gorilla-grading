@@ -19,6 +19,13 @@ export function usePanelTheme() {
     secondary: isLight
       ? 'bg-white border-[#D8D2C5] text-[#14170F] hover:border-[#16A34A]'
       : 'bg-[#2A2A2A] border-[#4E4E4E] text-white hover:border-[#61B663]',
+    ghostHover: isLight ? 'hover:bg-black/5' : 'hover:bg-white/10',
+    positive: isLight ? 'text-[#15803D]' : 'text-[#61B663]',
+    negative: isLight ? 'text-red-600' : 'text-red-400',
+    // Colores de las gráficas (SVG). La superficie es el fondo de `card`.
+    chart: isLight
+      ? { mark: '#15803D', grid: 'rgba(0,0,0,0.08)', wash: 'rgba(0,0,0,0.04)', trend: '#D4D4D4', surface: '#FFFFFF' }
+      : { mark: '#61B663', grid: 'rgba(255,255,255,0.12)', wash: 'rgba(255,255,255,0.06)', trend: '#737373', surface: '#383838' },
   };
 }
 

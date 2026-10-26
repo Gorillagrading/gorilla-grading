@@ -1,3 +1,4 @@
+import type { DashboardData, DashboardRange } from '../../shared/dashboard';
 import type {
   AdminOrderDetail, AdminOrderList, ShipmentBody, TransitionBody,
 } from '../../shared/admin';
@@ -114,3 +115,5 @@ export function adminErrorMessage(err: unknown): string {
       return `Algo salió mal (${err.status}${err.code ? `, ${err.code}` : ''}). Inténtalo de nuevo.`;
   }
 }
+
+export const fetchDashboard = (range: DashboardRange) => api<DashboardData>(`/admin/dashboard?range=${range}`);

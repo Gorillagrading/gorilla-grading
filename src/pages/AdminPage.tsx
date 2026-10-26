@@ -2,6 +2,7 @@ import React from 'react';
 import { STAFF_ROLES } from '../../shared/admin';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import { BusinessDashboard } from './admin/BusinessDashboard';
 import { OrderDetail } from './admin/OrderDetail';
 import { OrderQueue } from './admin/OrderQueue';
 
@@ -11,6 +12,8 @@ const ROLE_LABEL: Record<string, string> = {
   qa: 'Control de calidad',
   admin: 'Administración',
 };
+
+export const DASHBOARD_PATH = '/admin/dashboard';
 
 interface AdminPageProps {
   /** Ruta actual: /admin (cola) o /admin/orders/GGI-ORD-XXXXXX (detalle). */
@@ -48,15 +51,36 @@ export const AdminPage: React.FC<AdminPageProps> = ({ path, onNavigate }) => {
 
   const detailPrefix = '/admin/orders/';
   const code = path.startsWith(detailPrefix) ? decodeURIComponent(path.slice(detailPrefix.length)) : null;
+  const isAdmin = user.role === 'admin';
+  // El panel de negocio es solo para la dirección; el servidor también lo comprueba.
+  const showDashboard = isAdmin && path === DASHBOARD_PATH;
+  const tab = (to: string, label: string, selected: boolean) => (
+    <button
+      key={to}
+      type="button"
+      role="tab"
+      aria-selected={selected}
+      onClick={() => onNavigate(to)}
+      className={`px-4 py-2 rounded-lg text-xs font-bold cursor-pointer transition-colors ${
+        selected
+          ? isLight ? 'bg-[#15803D] text-white' : 'bg-[#61B663] text-[#111311]'
+          : `${muted} ${isLight ? 'hover:bg-black/5' : 'hover:bg-white/10'}`
+      }`}
+    >
+      {label}
+    </button>
+  );
 
   return (
     <div className={shell}>
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
         <header className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#15803D] dark:text-[#61B663] font-bold">Laboratorio</div>
+            <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#15803D] dark:text-[#61B663] font-bold">
+              {showDashboard ? 'Dirección' : 'Laboratorio'}
+            </div>
             <h1 className={`font-['Nunito',sans-serif] text-2xl sm:text-3xl font-[900] uppercase ${text}`}>
-              {code ? 'Pedido' : 'Pedidos'}
+              {showDashboard ? 'Negocio' : code ? 'Pedido' : 'Pedidos'}
             </h1>
           </div>
           <div className={`text-xs text-right ${muted}`}>
@@ -65,7 +89,16 @@ export const AdminPage: React.FC<AdminPageProps> = ({ path, onNavigate }) => {
           </div>
         </header>
 
-        {code ? (
+        {isAdmin && !code && (
+          <nav className="flex gap-2" role="tablist" aria-label="Secciones del panel">
+            {tab(DASHBOARD_PATH, 'Negocio', showDashboard)}
+            {tab('/admin', 'Pedidos', !showDashboard)}
+          </nav>
+        )}
+
+        {showDashboard ? (
+          <BusinessDashboard />
+        ) : code ? (
           <OrderDetail code={code} onBack={() => onNavigate('/admin')} />
         ) : (
           <OrderQueue onOpen={(c) => onNavigate(`${detailPrefix}${encodeURIComponent(c)}`)} />
