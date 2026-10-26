@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Check } from 'lucide-react';
 import { PublicGradedCard, CardDefect } from '../../types';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
@@ -24,6 +25,15 @@ const SEVERITY_LABEL: Record<CardDefect['severity'], { es: string; en: string }>
   minor: { es: 'Leve', en: 'Minor' },
   moderate: { es: 'Moderado', en: 'Moderate' },
   critical: { es: 'Grave', en: 'Critical' },
+};
+
+/** Cada área con su artículo, para las frases en español. */
+const AREA_ES: Record<TabType, string> = {
+  Global: 'la carta',
+  Centering: 'el centrado',
+  Corners: 'las esquinas',
+  Edges: 'los bordes',
+  Surface: 'la superficie',
 };
 
 /** Los datos antiguos no indican la cara: se toma el anverso. */
@@ -98,10 +108,10 @@ export const DefectInspector: React.FC<DefectInspectorProps> = ({ card, large = 
       {/* Cabecera */}
       <div className="flex flex-col mb-3">
         <span className={`font-mono text-[9px] tracking-[0.2em] uppercase font-bold mb-1 ${isLight ? 'text-gray-500' : 'text-gray-400'}`}>
-          {es ? 'Inspector de Defectos' : 'Defect Inspector'}
+          {es ? 'Informe de defectos' : 'Defect report'}
         </span>
         <h3 className={`font-['Space_Grotesk',sans-serif] font-bold uppercase tracking-wide ${large ? 'text-xl sm:text-3xl' : 'text-base sm:text-lg'} ${strong}`}>
-          {es ? 'Mapeo Óptico de Anomalías' : 'Optical Anomaly Mapping'}
+          {es ? 'Mapa de defectos' : 'Defect map'}
         </h3>
       </div>
 
@@ -230,13 +240,35 @@ export const DefectInspector: React.FC<DefectInspectorProps> = ({ card, large = 
             <div className={`flex flex-col items-center justify-center gap-2 min-h-[140px] p-4 sm:p-6 border border-dashed text-center ${
               isLight ? 'border-gray-200 bg-gray-50/50' : 'border-white/10 bg-white/[0.01]'
             }`}>
-              <p className={`font-mono text-[11px] uppercase tracking-[0.16em] max-w-[280px] leading-relaxed font-medium ${muted}`}>
-                {visibleDefects.length > 0
-                  ? (es ? 'Selecciona una cruz en la foto para ver el defecto.' : 'Select a crosshair on the photo to view the defect.')
-                  : activeTab === 'Global'
-                    ? (es ? 'No se detectaron defectos en esta cara.' : 'No defects detected on this side.')
-                    : (es ? `No se detectaron defectos de ${TAB_LABEL[activeTab].es.toLowerCase()} en esta cara.` : `No ${TAB_LABEL[activeTab].en.toLowerCase()} defects detected on this side.`)}
-              </p>
+              {visibleDefects.length > 0 ? (
+                <p className={`font-mono text-[11px] uppercase tracking-[0.16em] max-w-[280px] leading-relaxed font-medium ${muted}`}>
+                  {es ? 'Selecciona una cruz en la foto para ver el defecto.' : 'Select a crosshair on the photo to view the defect.'}
+                </p>
+              ) : (
+                // Sin defectos: se dice qué se revisó, para que quede claro que la carta sí se estudió.
+                <div className="w-full max-w-[320px] space-y-3">
+                  <ul className="space-y-1.5">
+                    {tabs.filter((tab) => tab.id !== 'Global' && (activeTab === 'Global' || tab.id === activeTab)).map((tab) => (
+                      <li key={tab.id} className={`flex items-center justify-between gap-3 text-sm ${strong}`}>
+                        <span className="inline-flex items-center gap-2">
+                          <Check className={`w-4 h-4 ${isLight ? 'text-emerald-600' : 'text-emerald-400'}`} aria-hidden="true" />
+                          {TAB_LABEL[tab.id][lang]}
+                        </span>
+                        <span className="font-bold tabular-nums">{tab.score.toFixed(1)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <p className={`text-xs leading-relaxed ${muted}`}>
+                    {activeTab === 'Global'
+                      ? (es
+                        ? `El laboratorio revisó estas cuatro áreas en el ${side === 'front' ? 'anverso' : 'reverso'} y no marcó ningún defecto.`
+                        : `The lab reviewed these four areas on the ${side} and marked no defects.`)
+                      : (es
+                        ? `El laboratorio revisó ${AREA_ES[activeTab]} en el ${side === 'front' ? 'anverso' : 'reverso'} y no marcó ningún defecto.`
+                        : `The lab reviewed the ${TAB_LABEL[activeTab].en.toLowerCase()} on the ${side} and marked no defects.`)}
+                  </p>
+                </div>
+              )}
               {otherSideCount > 0 && (
                 <button
                   type="button"
