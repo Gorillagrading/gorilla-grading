@@ -17,7 +17,7 @@ const euros = (cents: unknown, locale: Locale) =>
 const text = (value: unknown) => (typeof value === 'string' ? value : '');
 
 /** Todo lo que viene del pedido (nombres de cartas, textos) se escapa antes de ir al HTML. */
-const esc = (value: string) =>
+export const esc = (value: string) =>
   value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
 const isIssuedCard = (v: unknown): v is IssuedCard =>

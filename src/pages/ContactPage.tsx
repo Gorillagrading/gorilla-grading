@@ -3,7 +3,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import { ArrowLeft, Mail, Clock, ShieldCheck, HelpCircle, CheckCircle2, Send, MessageSquare } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { provisionalCode } from '../utils/codes';
+import { ApiError, api } from '../api/client';
 
 interface ContactPageProps {
   onNavigate: (path: string) => void;
@@ -22,17 +22,42 @@ export const ContactPage: React.FC<ContactPageProps> = ({ onNavigate }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [ticketId, setTicketId] = useState('');
+  const [submitError, setSubmitError] = useState('');
+  // Campo trampa: invisible para las personas; los robots lo rellenan.
+  const [website, setWebsite] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!fullName.trim() || !email.trim() || !message.trim()) return;
 
     setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
+    setSubmitError('');
+    try {
+      const { ticket } = await api<{ ticket: string | null }>('/contact', {
+        body: {
+          name: fullName,
+          email,
+          subject,
+          orderCode: orderNumber.trim() || undefined,
+          message,
+          locale: language === 'es' ? 'es' : 'en',
+          website: website || undefined,
+        },
+      });
+      setTicketId(ticket ?? '');
       setIsSubmitted(true);
-      setTicketId(provisionalCode('TKT'));
-    }, 800);
+    } catch (err) {
+      const es = language === 'es';
+      setSubmitError(
+        err instanceof ApiError && err.status === 429
+          ? (es ? 'Has enviado varios mensajes seguidos. Espera un rato y vuelve a intentarlo.' : 'You have sent several messages in a row. Please wait a while and try again.')
+          : err instanceof ApiError && err.status === 422
+            ? (es ? 'Revisa los datos: el correo debe ser válido y el mensaje no puede estar vacío.' : 'Please check your details: the email must be valid and the message cannot be empty.')
+            : (es ? 'No hemos podido enviar tu mensaje. Inténtalo de nuevo en unos minutos.' : 'We could not send your message. Please try again in a few minutes.'),
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleReset = () => {
@@ -41,6 +66,7 @@ export const ContactPage: React.FC<ContactPageProps> = ({ onNavigate }) => {
     setSubject('shipping');
     setOrderNumber('');
     setMessage('');
+    setSubmitError('');
     setIsSubmitted(false);
   };
 
@@ -147,8 +173,8 @@ export const ContactPage: React.FC<ContactPageProps> = ({ onNavigate }) => {
                   isLight ? 'text-[#4A5048]' : 'text-[#A4ACA1]'
                 }`}>
                   {language === 'es'
-                    ? 'Hemos recibido tus detalles y un técnico de nuestro laboratorio los revisará de inmediato. Te responderemos directamente a tu correo electrónico en un plazo máximo de 24 horas hábiles.'
-                    : 'We have received your request and our laboratory specialists will review it immediately. We will respond directly to your email within 24 business hours.'}
+                    ? 'Hemos recibido tu mensaje y te hemos enviado una confirmación por correo con tu número de ticket. Nuestro equipo te responderá a ese correo lo antes posible.'
+                    : 'We have received your message and sent you a confirmation email with your ticket number. Our team will reply to that email as soon as possible.'}
                 </p>
 
                 <div className="flex flex-wrap items-center justify-center gap-4">
@@ -278,7 +304,7 @@ export const ContactPage: React.FC<ContactPageProps> = ({ onNavigate }) => {
                       type="text" 
                       value={orderNumber}
                       onChange={(e) => setOrderNumber(e.target.value)}
-                      placeholder="Ej. 284719365"
+                      placeholder={language === 'es' ? 'Ej. 284719365' : 'e.g. 284719365'}
                       className={`w-full px-4 py-3 text-sm focus:outline-none transition-colors border ${
                         isLight 
                           ? 'bg-[#EAE2D5] border-black/15 text-[#14170F] placeholder-black/40 focus:border-[#15803D]' 
@@ -310,6 +336,22 @@ export const ContactPage: React.FC<ContactPageProps> = ({ onNavigate }) => {
                     }`}
                   />
                 </div>
+
+                {/* Campo trampa para robots: fuera de la vista y del teclado. */}
+                <input
+                  type="text"
+                  name="website"
+                  tabIndex={-1}
+                  autoComplete="off"
+                  aria-hidden="true"
+                  value={website}
+                  onChange={(e) => setWebsite(e.target.value)}
+                  className="absolute -left-[9999px] w-px h-px opacity-0"
+                />
+
+                {submitError && (
+                  <p role="alert" className={`text-sm font-bold ${isLight ? 'text-red-700' : 'text-red-400'}`}>{submitError}</p>
+                )}
 
                 {/* Submit Action */}
                 <button

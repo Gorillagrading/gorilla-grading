@@ -1,6 +1,7 @@
 import { and, asc, eq, inArray, lte, sql } from 'drizzle-orm';
 import type { Db } from '../../db/client.js';
 import { emailOutbox } from '../../db/schema.js';
+import { renderContactEmail } from '../email/contact-notice.js';
 import { renderOrderEmail } from '../email/order-notice.js';
 import { mailAvailable, type SendMail } from '../email/transport.js';
 
@@ -44,7 +45,8 @@ export async function deliverPendingEmails(
   const result: DeliveryResult = { sent: 0, failed: 0 };
   for (const row of claimed) {
     try {
-      await send(renderOrderEmail(row.template, row.locale, row.toEmail, row.data as Record<string, unknown>));
+      const render = row.template.startsWith('contact_') ? renderContactEmail : renderOrderEmail;
+      await send(render(row.template, row.locale, row.toEmail, row.data as Record<string, unknown>));
       await db.update(emailOutbox).set({ status: 'sent', sentAt: new Date(), lastError: null }).where(eq(emailOutbox.id, row.id));
       result.sent += 1;
     } catch (error) {

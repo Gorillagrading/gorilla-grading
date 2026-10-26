@@ -66,6 +66,13 @@ export const VerificationPage: React.FC<VerificationPageProps> = ({ onNavigate }
     if (initial) void lookup(initial, channelFromUrl());
   }, []);
 
+  // Once a certificate is loaded, bring the card and its information into view
+  useEffect(() => {
+    if (!activeCard) return;
+    const t = setTimeout(() => document.getElementById('certificate-result')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 150);
+    return () => clearTimeout(t);
+  }, [activeCard?.certNumber]);
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     void lookup(searchInput, 'web');
@@ -168,7 +175,7 @@ export const VerificationPage: React.FC<VerificationPageProps> = ({ onNavigate }
 
       {/* Results - Split Layout */}
       {activeCard && (
-        <div className="w-full max-w-[1300px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 xl:gap-12 items-start">
+        <div id="certificate-result" className="scroll-mt-24 w-full max-w-[1300px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 xl:gap-12 items-start">
           
           {/* Left Column: The Slab (Hero of the page) - En móvil relative (flujo normal sin congelarse), en desktop sticky */}
           <div className="lg:col-span-5 flex flex-col items-center gap-4 relative lg:sticky lg:top-24 z-10 w-full">

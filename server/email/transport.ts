@@ -1,8 +1,11 @@
 import nodemailer from 'nodemailer';
 import { isProduction } from '../env.js';
 
-/** `html` es opcional: los clientes de correo muestran el HTML y, si no pueden, el texto. */
-export type Mail = { to: string; subject: string; text: string; html?: string };
+/**
+ * `html` es opcional: los clientes de correo muestran el HTML y, si no pueden, el texto.
+ * `replyTo` hace que "Responder" conteste a esa dirección (por ejemplo, al cliente que escribió).
+ */
+export type Mail = { to: string; subject: string; text: string; html?: string; replyTo?: string };
 export type SendMail = (mail: Mail) => Promise<void>;
 
 /** Configuración SMTP. Sirve para Postmark, IONOS, Amazon SES…: solo cambian las variables. */
