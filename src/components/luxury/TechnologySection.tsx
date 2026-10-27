@@ -95,7 +95,7 @@ export const TechnologySection: React.FC<TechnologySectionProps> = ({
           muted
           playsInline
           className="w-full h-full object-cover object-center pointer-events-none"
-          poster={isLight ? '/images/tecnoSeccion.png' : '/images/Dark/tecnoSeccion.png'}
+          poster={isLight ? '/images/tecnoSeccion.webp' : '/images/Dark/tecnoSeccion.webp'}
         >
           <source src="/images/tecnoSeccionScn_loop.mp4" type="video/mp4" />
         </video>

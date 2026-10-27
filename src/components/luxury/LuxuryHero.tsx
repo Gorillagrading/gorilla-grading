@@ -317,6 +317,7 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
       <div className="absolute inset-0 z-0 pointer-events-none select-none overflow-hidden">
         {/* Blurred copy of the video that fills the whole width behind the real one (desktop only),
             so the complete video can be shown at the hero height without empty side bands */}
+        {videoReady && (
         <video
           ref={ambientRef}
           src="/videos/gorilla_hero_loop.mp4"
@@ -329,8 +330,10 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
           disablePictureInPicture
           tabIndex={-1}
           className="hidden lg:block absolute inset-0 w-full h-full object-cover scale-110 blur-2xl"
-          style={{ opacity: videoReady ? 0.85 : 0, transition: 'opacity 0.6s ease', pointerEvents: 'none' }}
+          style={{ opacity: 0.85, pointerEvents: 'none' }}
+          onLoadedData={(e) => { e.currentTarget.muted = true; void e.currentTarget.play().catch(() => {}); }}
         />
+        )}
         {/* On desktop the real video keeps its 16:9 shape at the hero height, centered, with its side
             edges feathered into the blurred backdrop. On small screens it simply covers the hero. */}
         <div className="absolute inset-0 flex justify-center lg:justify-end">
