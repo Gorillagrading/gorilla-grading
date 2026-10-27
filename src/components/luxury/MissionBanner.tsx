@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -10,19 +10,39 @@ export const MissionBanner: React.FC<MissionBannerProps> = ({ onNavigate }) => {
   const { language } = useLanguage();
   const { theme } = useTheme();
   const isLight = theme === 'light';
-  const [activeStep, setActiveStep] = useState(0);
+  const sectionRef = useRef<HTMLElement>(null);
+  const ITEM_COUNT = 4;
+  // Promises shown so far: they appear one by one once the section is in view
+  const [revealed, setRevealed] = useState(0);
+  const [inView, setInView] = useState(false);
+  const [cycle, setCycle] = useState(0);
 
   const missionImgSrc = theme === 'dark' ? '/images/Dark/ourmission.png' : '/images/ourmission.png?v=7';
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setActiveStep((prev) => (prev >= 4 ? 0 : prev + 1));
-    }, 3000);
-    return () => clearInterval(interval);
+    const el = sectionRef.current;
+    if (!el || typeof IntersectionObserver === 'undefined') { setInView(true); return; }
+    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) { setInView(true); obs.disconnect(); } }, { threshold: 0.35 });
+    obs.observe(el);
+    return () => obs.disconnect();
   }, []);
 
+  useEffect(() => {
+    if (!inView) return;
+    if (revealed < ITEM_COUNT) {
+      const t = setTimeout(() => setRevealed((r) => r + 1), revealed === 0 ? 400 : 1100);
+      return () => clearTimeout(t);
+    }
+    const interval = setInterval(() => setCycle((c) => (c + 1) % ITEM_COUNT), 3000);
+    return () => clearInterval(interval);
+  }, [inView, revealed]);
+
+  // Highlight follows the newest item while revealing, then cycles through all of them
+  const activeStep = revealed < ITEM_COUNT ? revealed - 1 : cycle;
+  const rowIn = (i: number) => (revealed > i ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5');
+
   return (
-    <section className={`relative w-full overflow-hidden select-none min-h-[360px] flex items-center border-y transition-colors duration-300 ${
+    <section ref={sectionRef} className={`relative w-full overflow-hidden select-none min-h-[360px] flex items-center border-y transition-colors duration-300 ${
       isLight ? 'bg-[#ECE5D8] text-[#14170F] border-black/[0.06]' : 'bg-[#383838] text-white border-white/[0.04]'
     }`}>
       
@@ -85,7 +105,7 @@ export const MissionBanner: React.FC<MissionBannerProps> = ({ onNavigate }) => {
           <div className="flex flex-col">
             
             {/* 1. PERSONAL SUPPORT */}
-            <div className={`flex items-start gap-4 sm:gap-5 py-5 pl-7 pr-3 border-b group relative transition-all duration-300 opacity-100 translate-x-0 ${
+            <div className={`flex items-start gap-4 sm:gap-5 py-5 pl-7 pr-3 border-b group relative transition-all duration-700 ease-out ${rowIn(0)} ${
               isLight ? 'border-black/[0.08]' : 'border-white/5'
             } ${
               activeStep === 0 
@@ -121,7 +141,7 @@ export const MissionBanner: React.FC<MissionBannerProps> = ({ onNavigate }) => {
             </div>
 
             {/* 2. INTERNATIONAL SHIPPING */}
-            <div className={`flex items-start gap-4 sm:gap-5 py-5 pl-7 pr-3 border-b group relative transition-all duration-300 opacity-100 translate-x-0 ${
+            <div className={`flex items-start gap-4 sm:gap-5 py-5 pl-7 pr-3 border-b group relative transition-all duration-700 ease-out ${rowIn(1)} ${
               isLight ? 'border-black/[0.08]' : 'border-white/5'
             } ${
               activeStep === 1 
@@ -157,7 +177,7 @@ export const MissionBanner: React.FC<MissionBannerProps> = ({ onNavigate }) => {
             </div>
 
             {/* 3. ORDER TRACKING */}
-            <div className={`flex items-start gap-4 sm:gap-5 py-5 pl-7 pr-3 border-b group relative transition-all duration-300 opacity-100 translate-x-0 ${
+            <div className={`flex items-start gap-4 sm:gap-5 py-5 pl-7 pr-3 border-b group relative transition-all duration-700 ease-out ${rowIn(2)} ${
               isLight ? 'border-black/[0.08]' : 'border-white/5'
             } ${
               activeStep === 2 
@@ -193,7 +213,7 @@ export const MissionBanner: React.FC<MissionBannerProps> = ({ onNavigate }) => {
             </div>
 
             {/* 4. SECURE RETURN */}
-            <div className={`flex items-start gap-4 sm:gap-5 py-5 pl-7 pr-3 border-b group relative transition-all duration-300 opacity-100 translate-x-0 ${
+            <div className={`flex items-start gap-4 sm:gap-5 py-5 pl-7 pr-3 border-b group relative transition-all duration-700 ease-out ${rowIn(3)} ${
               isLight ? 'border-black/[0.08]' : 'border-white/5'
             } ${
               activeStep === 3 

@@ -102,10 +102,9 @@ export const LuxuryNavbar: React.FC<LuxuryNavbarProps> = ({ onNavigate }) => {
 
   // Executive nav link: Nunito, normal letter spacing
   const navLinkClass = (active: boolean) =>
-    `relative py-2 font-['Nunito',sans-serif] text-[13px] lg:text-[14px] font-bold tracking-normal transition-colors cursor-pointer shrink-0
-     after:absolute after:left-0 after:-bottom-0.5 after:h-[2px] after:transition-all after:duration-300
-     ${isLight ? 'after:bg-[#111827]' : 'after:bg-[#48C765]'}
-     ${active ? 'after:w-full' : 'after:w-0 hover:after:w-full'}
+    `nav-scan relative py-2 font-['Nunito',sans-serif] text-[13px] lg:text-[14px] font-bold tracking-normal transition-colors cursor-pointer shrink-0
+     ${isLight ? '[--scan-line:#111827] [--scan-glow:#22C55E]' : '[--scan-line:#48C765] [--scan-glow:#86EFAC]'}
+     ${active ? 'is-active' : ''}
      ${active
        ? (isLight ? 'text-[#111827]' : 'text-white font-black')
        : (isLight ? 'text-[#374151] hover:text-[#111827]' : 'text-[#B8BFB5] hover:text-white')}`;
