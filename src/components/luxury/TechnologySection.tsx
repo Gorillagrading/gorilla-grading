@@ -13,17 +13,33 @@ export const TechnologySection: React.FC<TechnologySectionProps> = ({
 }) => {
   const { language } = useLanguage();
   const { theme } = useTheme();
-  const [activeStep, setActiveStep] = React.useState(-1);
+  const sectionRef = React.useRef<HTMLElement>(null);
+  const STEP_COUNT = 5;
+  // Number of steps already shown: they appear one by one once the section is in view
+  const [revealed, setRevealed] = React.useState(0);
+  const [inView, setInView] = React.useState(false);
+  // Highlighted step: follows the newest one while revealing, then cycles through all of them
+  const [cycle, setCycle] = React.useState(0);
 
   React.useEffect(() => {
-    // Slower pacing so the user has time to see each step clearly.
-    // 1200ms per step.
-    const interval = setInterval(() => {
-      setActiveStep((prev) => (prev >= 5 ? -1 : prev + 1));
-    }, 3000);
-
-    return () => clearInterval(interval);
+    const el = sectionRef.current;
+    if (!el || typeof IntersectionObserver === 'undefined') { setInView(true); return; }
+    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) { setInView(true); obs.disconnect(); } }, { threshold: 0.35 });
+    obs.observe(el);
+    return () => obs.disconnect();
   }, []);
+
+  React.useEffect(() => {
+    if (!inView) return;
+    if (revealed < STEP_COUNT) {
+      const t = setTimeout(() => setRevealed((r) => r + 1), revealed === 0 ? 400 : 1100);
+      return () => clearTimeout(t);
+    }
+    const interval = setInterval(() => setCycle((c) => (c + 1) % STEP_COUNT), 3000);
+    return () => clearInterval(interval);
+  }, [inView, revealed]);
+
+  const activeStep = revealed < STEP_COUNT ? revealed - 1 : cycle;
 
   const steps = [
     {
@@ -80,6 +96,7 @@ export const TechnologySection: React.FC<TechnologySectionProps> = ({
 
   return (
     <section
+      ref={sectionRef}
       id="how-it-works"
       className={`relative w-full overflow-hidden select-none transition-colors duration-300 ${
         isLight ? 'bg-[#F1ECE5] text-[#1C201D]' : 'bg-[#14170F] text-white'
@@ -175,13 +192,13 @@ export const TechnologySection: React.FC<TechnologySectionProps> = ({
             }`}>
               
               {steps.map((step, index) => {
-                const isRevealed = activeStep >= index;
+                const isRevealed = revealed > index;
                 const isCurrent = activeStep === index;
                 
                 return (
                   <div 
                     key={step.id} 
-                    className={`flex gap-5 sm:gap-6 py-5 px-6 border-b relative transition-all duration-300 ease-out opacity-100 translate-y-0 ${
+                    className={`flex gap-5 sm:gap-6 py-5 px-6 border-b relative transition-all duration-700 ease-out ${isRevealed ? "opacity-100 translate-y-0" : "opacity-0 translate-y-5"} ${
                       isLight ? 'border-white/15' : 'border-white/5'
                     } ${
                       isCurrent 
