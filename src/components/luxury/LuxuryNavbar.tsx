@@ -310,14 +310,10 @@ export const LuxuryNavbar: React.FC<LuxuryNavbarProps> = ({ onNavigate }) => {
             </svg>
           </button>
 
-          {/* Submit a Card — High-end luxury outlined button */}
+          {/* Submit a Card — main call to action, brand green */}
           <button
             onClick={() => go('/submit')}
-            className={`hidden sm:inline-flex items-center justify-center gap-1.5 px-4 lg:px-5 py-2.5 rounded-none font-['Nunito',sans-serif] text-xs font-bold tracking-normal transition-all duration-200 cursor-pointer ${
-              isLight
-                ? 'border border-gray-900 text-gray-900 bg-transparent hover:bg-gray-900 hover:!text-white shadow-2xs'
-                : 'border border-white/25 text-white bg-transparent hover:border-white hover:bg-white/10'
-            }`}
+            className="btn-gorilla-square hidden sm:inline-flex gap-1.5 px-4 lg:px-5 py-2.5 text-xs tracking-normal"
           >
             <span>{t('ref.nav.submit')}</span>
             <span aria-hidden="true" className="text-xs">→</span>

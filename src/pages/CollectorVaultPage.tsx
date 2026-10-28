@@ -281,18 +281,18 @@ export const CollectorVaultPage: React.FC<CollectorVaultPageProps> = ({ onNaviga
             </div>
 
             {/* Collector Specification Matrix */}
-            <div className={`space-y-2.5 border-t border-b py-3.5 text-xs relative z-10 ${
-              isLight ? 'border-black/10 text-[#3E443A]' : 'border-[#4E4E4E] text-[#E2E8F0]'
+            <div className={`divide-y border-2 rounded-lg px-4 text-xs relative z-10 ${
+              isLight ? 'border-[#14170F]/30 bg-white divide-[#14170F]/15 text-[#3E443A]' : 'border-white/30 bg-[#2A2A2A] divide-white/15 text-[#E2E8F0]'
             }`}>
-              <div className="flex justify-between items-center">
-                <span className={`text-[10px] uppercase tracking-wide ${isLight ? 'text-neutral-500' : 'text-[#8C9185]'}`}>
+              <div className="flex justify-between items-center py-3">
+                <span className={`text-[10px] uppercase tracking-wide font-semibold ${isLight ? 'text-neutral-600' : 'text-[#A4ACA1]'}`}>
                   {language === 'es' ? 'Expediente Cliente' : 'Client ID'}
                 </span>
                 <span className="font-mono font-semibold text-current">#{user?.customerCode ?? ''}</span>
               </div>
 
-              <div className="flex justify-between items-center">
-                <span className={`text-[10px] uppercase tracking-wide ${isLight ? 'text-neutral-500' : 'text-[#8C9185]'}`}>
+              <div className="flex justify-between items-center py-3">
+                <span className={`text-[10px] uppercase tracking-wide font-semibold ${isLight ? 'text-neutral-600' : 'text-[#A4ACA1]'}`}>
                   {language === 'es' ? 'Cliente desde' : 'Member since'}
                 </span>
                 <span className="font-medium text-current">
@@ -606,89 +606,72 @@ export const CollectorVaultPage: React.FC<CollectorVaultPageProps> = ({ onNaviga
                 </div>
               )}
 
-              {/* Showcase / Highlight Cards */}
+              {/* Quick access panels */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                {/* 1. Spectrometry in Detail */}
-                <div 
-                  onClick={() => onNavigate('/technology')}
-                  className={`border rounded-xl relative overflow-hidden group min-h-[260px] sm:min-h-[280px] cursor-pointer shadow-md transition-all duration-300 ${
-                    isLight 
-                      ? 'border-[#D8D2C5] bg-[#F5F2EB]' 
-                      : 'border-[#4E4E4E] bg-[#383838]'
-                  }`}
-                >
-                  {/* High Clarity Photographic Background */}
-                  <img 
-                    src="/images/step_3_spectrometry.jpg" 
-                    alt="Spectrometry" 
-                    className="absolute inset-0 w-full h-full object-cover object-center brightness-125 contrast-110 saturate-110 group-hover:scale-105 group-hover:brightness-135 transition-all duration-700 pointer-events-none"
-                  />
+                {[
+                  {
+                    key: 'vault',
+                    onClick: () => setActiveTab('vault'),
+                    tag: es ? 'Tu colección' : 'Your collection',
+                    title: es ? 'Cartas graduadas' : 'Graded cards',
+                    desc: es ? 'Consulta tus cartas con su calificación y certificado verificable.' : 'Browse your cards with their grade and verifiable certificate.',
+                    cta: es ? 'Ir a la bóveda' : 'Go to vault',
+                    stat: userCards.length,
+                    statLabel: es ? 'en tu colección' : 'in your collection',
+                    icon: <path strokeLinecap="round" strokeLinejoin="round" d="M5 3h10a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2zm14 3h0a2 2 0 012 2v10a2 2 0 01-2 2" />,
+                  },
+                  {
+                    key: 'verify',
+                    onClick: () => onNavigate('/verify'),
+                    tag: es ? 'Autenticidad' : 'Authenticity',
+                    title: es ? 'Verificar un certificado' : 'Verify a certificate',
+                    desc: es ? 'Comprueba cualquier certificado Gorilla con su número o escaneando el QR de la cápsula.' : 'Check any Gorilla certificate by number or by scanning the QR on the slab.',
+                    cta: es ? 'Abrir verificación' : 'Open verification',
+                    stat: null,
+                    statLabel: '',
+                    icon: <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />,
+                  },
+                ].map((c) => (
+                  <button
+                    key={c.key}
+                    type="button"
+                    onClick={c.onClick}
+                    className={`group relative text-left border-2 rounded-xl p-6 sm:p-7 min-h-[200px] flex flex-col justify-between cursor-pointer transition-all duration-300 hover:-translate-y-0.5 ${
+                      isLight
+                        ? 'bg-white border-[#14170F]/20 hover:border-[#16A34A] shadow-sm hover:shadow-md'
+                        : 'bg-[#2A2A2A] border-white/20 hover:border-[#48C765]'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <div className="flex items-center gap-2 mb-3">
+                          <span className="w-3.5 h-[1.5px] bg-[#16A34A] dark:bg-[#48C765]" />
+                          <span className={`font-mono text-[9.5px] uppercase tracking-widest font-bold ${isLight ? 'text-[#15803D]' : 'text-[#4ADE80]'}`}>{c.tag}</span>
+                        </div>
+                        <h3 className="font-['Nunito',sans-serif] text-2xl uppercase tracking-normal font-[900] leading-tight">{c.title}</h3>
+                      </div>
+                      <div className={`w-12 h-12 shrink-0 rounded-lg border flex items-center justify-center ${
+                        isLight ? 'border-[#14170F]/15 bg-[#F5F2EB] text-[#15803D]' : 'border-white/15 bg-[#383838] text-[#4ADE80]'
+                      }`}>
+                        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">{c.icon}</svg>
+                      </div>
+                    </div>
 
-                  {/* Gradient Scrim Only Over Lower Text Zone (Upper Image is 100% Bright and Clear) */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 via-50% to-transparent pointer-events-none" />
-                  
-                  {/* Subtle Tech Hover Tint */}
-                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-gradient-to-t from-[#61B663]/15 to-transparent transition-opacity duration-500 pointer-events-none" />
-                  
-                  <div className="absolute bottom-6 left-6 right-6 z-10">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="w-3.5 h-[1.5px] bg-[#61B663]" />
-                      <span className="font-mono text-[9.5px] text-[#61B663] uppercase tracking-widest font-bold drop-shadow-sm">
-                        {language === 'es' ? 'Descubre la Tecnología' : 'Discover the Tech'}
-                      </span>
-                    </div>
-                    <h3 className="font-['Nunito',sans-serif] text-2xl sm:text-[26px] text-white uppercase tracking-normal mb-3 font-[900] drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)] leading-tight">
-                      {language === 'es' ? 'Espectrometría en Detalle' : 'Spectrometry in Detail'}
-                    </h3>
-                    <div className="inline-flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-wider text-white group-hover:text-[#61B663] transition-colors drop-shadow-md">
-                      <span className="border-b border-white/30 group-hover:border-[#61B663] pb-0.5">
-                        {language === 'es' ? 'Leer Más' : 'Read More'}
-                      </span>
-                      <span className="text-xs transition-transform duration-300 group-hover:translate-x-1">→</span>
-                    </div>
-                  </div>
-                </div>
+                    <p className={`text-sm leading-relaxed mt-4 max-w-[420px] ${isLight ? 'text-[#4A5048]' : 'text-[#C2C9C3]'}`}>{c.desc}</p>
 
-                {/* 2. View Graded Cards / Collection */}
-                <div 
-                  onClick={() => setActiveTab('vault')}
-                  className={`border rounded-xl relative overflow-hidden group min-h-[260px] sm:min-h-[280px] cursor-pointer shadow-md transition-all duration-300 ${
-                    isLight 
-                      ? 'border-[#D8D2C5] bg-[#F5F2EB]' 
-                      : 'border-[#4E4E4E] bg-[#383838]'
-                  }`}
-                >
-                  {/* High Clarity Photographic Background */}
-                  <img 
-                    src="/images/preservar.png" 
-                    alt="Your Collection" 
-                    className="absolute inset-0 w-full h-full object-cover object-center brightness-125 contrast-110 saturate-110 group-hover:scale-105 group-hover:brightness-135 transition-all duration-700 pointer-events-none"
-                  />
-
-                  {/* Gradient Scrim Only Over Lower Text Zone (Upper Image is 100% Bright and Clear) */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 via-50% to-transparent pointer-events-none" />
-                  
-                  {/* Subtle Tech Hover Tint */}
-                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-gradient-to-t from-[#61B663]/15 to-transparent transition-opacity duration-500 pointer-events-none" />
-                  
-                  <div className="absolute bottom-6 left-6 right-6 z-10">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="w-3.5 h-[1.5px] bg-[#61B663]" />
-                      <span className="font-mono text-[9.5px] text-[#A4ACA1] uppercase tracking-widest font-bold drop-shadow-sm">
-                        {language === 'es' ? 'Tu Colección' : 'Your Collection'}
+                    <div className={`flex items-center justify-between mt-6 pt-4 border-t ${isLight ? 'border-[#14170F]/10' : 'border-white/10'}`}>
+                      <span className="inline-flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-wider">
+                        {c.cta}
+                        <span className="text-xs transition-transform duration-300 group-hover:translate-x-1">→</span>
                       </span>
+                      {c.stat !== null && (
+                        <span className={`font-mono text-[10px] uppercase tracking-wide ${isLight ? 'text-neutral-500' : 'text-[#8C9185]'}`}>
+                          <span className={`text-base font-bold mr-1 ${isLight ? 'text-[#14170F]' : 'text-white'}`}>{c.stat}</span>{c.statLabel}
+                        </span>
+                      )}
                     </div>
-                    <h3 className="font-['Nunito',sans-serif] text-2xl sm:text-[26px] text-white uppercase tracking-normal mb-3 font-[900] drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)] leading-tight">
-                      {language === 'es' ? 'Ver Cartas Graduadas' : 'View Graded Cards'}
-                    </h3>
-                    <div className="inline-flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-wider text-white group-hover:text-[#61B663] transition-colors drop-shadow-md">
-                      <span className="border-b border-white/30 group-hover:border-[#61B663] pb-0.5">
-                        {language === 'es' ? 'Ir a la Bóveda' : 'Go to Vault'}
-                      </span>
-                      <span className="text-xs transition-transform duration-300 group-hover:translate-x-1">→</span>
-                    </div>
-                  </div>
-                </div>
+                  </button>
+                ))}
               </div>
 
             </div>
