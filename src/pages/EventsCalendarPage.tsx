@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { fetchUpcomingEvents } from '../api/orders';
+import type { PublicEventDto } from '../../shared/events';
 import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import { 
@@ -27,7 +29,41 @@ interface EventEntry {
   hours: string;
   standInfo?: string;
   services: string[];
+  startsAt: string;
+  endsAt: string;
 }
+
+const COUNTRY: Record<string, { es: string; en: string }> = {
+  ES: { es: 'España', en: 'Spain' },
+  PT: { es: 'Portugal', en: 'Portugal' },
+  FR: { es: 'Francia', en: 'France' },
+};
+
+/** Un evento publicado por la dirección, en el formato de esta página. */
+const toEntry = (e: PublicEventDto, isEs: boolean): EventEntry => {
+  const locale = isEs ? 'es-ES' : 'en-GB';
+  const tz = { timeZone: 'Europe/Madrid' } as const;
+  const start = new Date(e.startsAt);
+  const end = new Date(e.endsAt);
+  const time = (d: Date) => d.toLocaleTimeString(locale, { ...tz, hour: '2-digit', minute: '2-digit' });
+  return {
+    id: e.id,
+    type: e.kind === 'hub' ? 'hub' : 'convention',
+    dateLabel: start.toLocaleDateString(locale, { ...tz, day: 'numeric', month: 'long', year: 'numeric' }),
+    city: e.city,
+    country: COUNTRY[e.countryCode]?.[isEs ? 'es' : 'en'] ?? e.countryCode,
+    title: e.name,
+    venue: e.venue ?? '',
+    address: e.address ?? '',
+    hours: `${time(start)}–${time(end)}`,
+    standInfo: e.details ?? undefined,
+    services: [],
+    startsAt: e.startsAt,
+    endsAt: e.endsAt,
+  };
+};
+
+const icsDate = (iso: string) => new Date(iso).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
 
 export const EventsCalendarPage: React.FC<EventsCalendarPageProps> = ({ onNavigate }) => {
   const { language } = useLanguage();
@@ -38,12 +74,14 @@ export const EventsCalendarPage: React.FC<EventsCalendarPageProps> = ({ onNaviga
   const [activeTab, setActiveTab] = useState<'convention' | 'hub'>('convention');
   const [selectedEvent, setSelectedEvent] = useState<EventEntry | null>(null);
 
-  /**
-   * Calendario de eventos. Está vacío a propósito: solo se publican eventos y puntos de entrega confirmados.
-   * Para añadir uno, crea una entrada con el formato de EventEntry (fecha, recinto, dirección y horario reales).
-   */
-  const conventions: EventEntry[] = [];
-  const partnerHubs: EventEntry[] = [];
+  // Los eventos los publica la dirección desde su panel (Eventos); aquí solo se muestran los próximos.
+  const [published, setPublished] = useState<PublicEventDto[]>([]);
+  useEffect(() => {
+    fetchUpcomingEvents().then(setPublished).catch(() => setPublished([]));
+  }, []);
+  const entries = published.map((e) => toEntry(e, isEs));
+  const conventions = entries.filter((e) => e.type === 'convention');
+  const partnerHubs = entries.filter((e) => e.type === 'hub');
   const noEvents = conventions.length === 0 && partnerHubs.length === 0;
 
   const currentList = activeTab === 'convention' ? conventions : partnerHubs;
@@ -54,6 +92,10 @@ export const EventsCalendarPage: React.FC<EventsCalendarPageProps> = ({ onNaviga
       'VERSION:2.0',
       'PRODID:-//Gorilla Grading//Events//EN',
       'BEGIN:VEVENT',
+      `UID:${event.id}@gorillagrading.com`,
+      `DTSTAMP:${icsDate(new Date().toISOString())}`,
+      `DTSTART:${icsDate(event.startsAt)}`,
+      `DTEND:${icsDate(event.endsAt)}`,
       `SUMMARY:Gorilla Grading: ${event.title}`,
       `LOCATION:${event.venue}, ${event.address}`,
       `DESCRIPTION:Entrega presencial Gorilla Grading en ${event.city}. Horario: ${event.hours}.`,

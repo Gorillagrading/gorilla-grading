@@ -11,8 +11,7 @@ const tiers = new Map<string, TierPricing>(
   ].map((t) => [t.code, t]),
 );
 
-const cards = (n: number, tier = 'standard', declaredValueCents = 10_000): QuoteBody['items'] =>
-  Array.from({ length: n }, () => ({ tier, declaredValueCents }));
+const cards = (n: number, tier = 'standard'): QuoteBody['items'] => Array.from({ length: n }, () => ({ tier }));
 
 const quote = (items: QuoteBody['items'], shippingMethod: QuoteBody['shippingMethod'] = 'COURIER_INSURED') =>
   computeQuote({ items, shippingMethod }, tiers);
@@ -50,11 +49,10 @@ describe('importes', () => {
     expect(q.totalCents).toBe(1900);
   });
 
-  it('el seguro no se cobra aparte, sea cual sea el valor declarado', () => {
-    const cheap = quote(cards(1, 'premium', 100)).quote;
-    const dear = quote(cards(1, 'premium', 150_000)).quote;
-    expect(cheap.totalCents).toBe(dear.totalCents);
-    expect(dear.insuranceCents).toBe(0);
+  it('el seguro no se cobra aparte: va incluido en el precio del servicio', () => {
+    const { quote: q } = quote(cards(1, 'premium'));
+    expect(q.insuranceCents).toBe(0);
+    expect(q.subtotalCents).toBe(2500);
   });
 
   it('aplica el descuento a todo el pedido y lo desglosa', () => {
@@ -88,27 +86,8 @@ describe('importes', () => {
 });
 
 describe('avisos que impiden enviar el pedido', () => {
-  it('un valor declarado por encima del límite del servicio bloquea', () => {
-    const items = [...cards(1, 'standard', 50_000), ...cards(1, 'standard', 50_001)];
-    const { issues } = quote(items);
-    expect(issues).toEqual([
-      { code: 'declared_value_exceeds_limit', index: 1, tier: 'standard', maxCents: 50_000, declaredValueCents: 50_001 },
-    ]);
-  });
-
-  it('el límite es exactamente el valor del nivel, no uno menos', () => {
-    expect(quote(cards(1, 'express', 300_000)).issues).toEqual([]);
-    expect(quote(cards(1, 'express', 300_001)).issues).toHaveLength(1);
-  });
-
-  it('el valor declarado de 0 o menos de 1 € no vale', () => {
-    expect(quote(cards(1, 'standard', 0)).issues).toEqual([{ code: 'declared_value_required', index: 0 }]);
-    expect(quote(cards(1, 'standard', 99)).issues).toEqual([{ code: 'declared_value_required', index: 0 }]);
-    expect(quote(cards(1, 'standard', 100)).issues).toEqual([]);
-  });
-
   it('un servicio que no existe avisa y no suma al precio', () => {
-    const { quote: q, issues } = quote([{ tier: 'platinum', declaredValueCents: 10_000 }, ...cards(1)]);
+    const { quote: q, issues } = quote([{ tier: 'platinum' }, ...cards(1)]);
     expect(issues).toEqual([{ code: 'unknown_tier', index: 0, tier: 'platinum' }]);
     expect(q.subtotalCents).toBe(1900);
   });
@@ -119,14 +98,9 @@ describe('avisos que impiden enviar el pedido', () => {
   });
 
   it('informa de todos los problemas a la vez, cada uno con su carta', () => {
-    const { issues } = quote([
-      { tier: 'standard', declaredValueCents: 0 },
-      { tier: 'standard', declaredValueCents: 60_000 },
-      { tier: 'nope', declaredValueCents: 100 },
-    ]);
+    const { issues } = quote([{ tier: 'standard' }, { tier: 'event' }, { tier: 'nope' }]);
     expect(issues.map((i) => [i.code, i.index])).toEqual([
-      ['declared_value_required', 0],
-      ['declared_value_exceeds_limit', 1],
+      ['event_tier_requires_dropoff', 1],
       ['unknown_tier', 2],
     ]);
   });

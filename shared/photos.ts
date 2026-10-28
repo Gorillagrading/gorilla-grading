@@ -64,8 +64,8 @@ export interface OrderResultsDto {
   released: boolean;
   items: {
     position: number;
-    cardName: string;
-    game: string;
+    cardName: string | null;
+    game: string | null;
     setName: string | null;
     grading: PublicGrading | null;
     images: ImageDto[];

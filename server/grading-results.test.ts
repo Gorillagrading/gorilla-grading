@@ -2,7 +2,7 @@ import { eq, sql } from 'drizzle-orm';
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { auditLogs, gradingDefects, gradingResults, orders } from '../db/schema.js';
 import { advanceDueOrders } from './domain/automation.js';
-import { createTestApp, createTestDb, insertAllTiers, insertUser, type TestDb } from './testing.js';
+import { createTestApp, createTestDb, insertAllTiers, insertUser, type TestDb, identifyCards } from './testing.js';
 
 const read = (res: Response) => res.json() as Promise<any>;
 
@@ -48,8 +48,8 @@ async function placeOrder() {
   const res = await api('/orders', 'cliente@example.com', {
     body: {
       items: [
-        { tier: 'standard', cardName: 'Charizard Holo', game: 'Pokemon', setName: 'Base Set', declaredValueCents: 45_000 },
-        { tier: 'standard', cardName: 'Blastoise Holo', game: 'Pokemon', setName: 'Base Set', declaredValueCents: 20_000 },
+        { tier: 'standard' },
+        { tier: 'standard' },
       ],
       shippingMethod: 'COURIER_INSURED',
       fullName: 'Carla Cliente',
@@ -57,11 +57,13 @@ async function placeOrder() {
       locale: 'es',
       clientToken: `token-${Math.random().toString(36).slice(2)}-0000`,
       acceptedTerms: true,
-      confirmedDeclaredValues: true,
     },
   });
   expect(res.status).toBe(201);
-  return (await read(res)).order.code as string;
+  const code = (await read(res)).order.code as string;
+  // El cliente solo dice cuántas cartas envía; el laboratorio las identifica al recibirlas.
+  await identifyCards(db, code, [{ cardName: 'Charizard Holo', game: 'Pokemon', setName: 'Base Set' }, { cardName: 'Blastoise Holo', game: 'Pokemon', setName: 'Base Set' }]);
+  return code;
 }
 
 const move = (code: string, email: string, to: string, expectedStatus: string) =>

@@ -119,6 +119,10 @@ export async function saveGrading(
   if (!GRADABLE.includes(order.status)) {
     throw conflict('El pedido no está en una fase en la que se pueda graduar.', 'grading_not_allowed');
   }
+  // Control de calidad revisa una carta concreta: antes hay que saber cuál es.
+  if (input.submit && !item.cardName) {
+    throw conflict('Identifica la carta antes de enviarla a control de calidad.', 'card_unidentified');
+  }
 
   const authentic = input.isAuthentic;
   const defects = input.defects ?? [];

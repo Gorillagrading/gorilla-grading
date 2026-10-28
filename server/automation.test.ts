@@ -2,7 +2,7 @@ import { eq, sql } from 'drizzle-orm';
 import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { auditLogs, custodyEvents, emailOutbox, orders, users } from '../db/schema.js';
 import { AUTO_NOTE, addBusinessTime, advanceDueOrders, scheduleFor } from './domain/automation.js';
-import { createTestApp, createTestDb, insertAllTiers, insertUser, type TestDb, approveAllGrading } from './testing.js';
+import { createTestApp, createTestDb, insertAllTiers, insertUser, type TestDb, approveAllGrading, identifyCards } from './testing.js';
 
 const read = (res: Response) => res.json() as Promise<any>;
 const DAY = 86_400_000;
@@ -52,12 +52,15 @@ async function placeOrder(email = 'cliente@example.com', tier = 'standard', loca
     await db.update(users).set({ locale }).where(eq(users.email, email));
   }
   const res = await api('/orders', email, {
-    items: [{ tier, cardName: 'Charizard Holo', game: 'Pokemon', declaredValueCents: 45_000 }],
+    items: [{ tier }],
     shippingMethod: 'COURIER_INSURED', fullName: 'Carla Cliente', locale,
     shippingAddress: { line1: 'Calle 1', city: 'Madrid', postalCode: '28001', countryCode: 'ES' },
-    clientToken: `token-${Math.random().toString(36).slice(2)}-0000`, acceptedTerms: true, confirmedDeclaredValues: true,
+    clientToken: `token-${Math.random().toString(36).slice(2)}-0000`, acceptedTerms: true,
   });
-  return (await read(res)).order.code as string;
+  const code = (await read(res)).order.code as string;
+  // El cliente solo dice cuántas cartas envía; el laboratorio las identifica al recibirlas.
+  await identifyCards(db, code, [{ cardName: 'Charizard Holo', game: 'Pokemon' }]);
+  return code;
 }
 
 const move = (code: string, email: string, to: string, expectedStatus: string, extra: Record<string, unknown> = {}) =>

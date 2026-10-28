@@ -4,8 +4,10 @@ import type { AdminOrderDetail } from '../../../shared/admin';
 import type { AdminGradingResult, GradingBody } from '../../../shared/grading-admin';
 import { GRADE_LABELS, deriveGradeLabel, traceGrade } from '../../../shared/grading';
 import type { ImageDto } from '../../../shared/photos';
+import type { IdentifyCardBody } from '../../../shared/admin';
+import { cardTitle } from '../../../shared/cards';
 import {
-  adminErrorMessage, approveGrading, deleteItemImage, rejectGrading, saveGrading, uploadItemImage,
+  adminErrorMessage, approveGrading, deleteItemImage, identifyCard, rejectGrading, saveGrading, uploadItemImage,
 } from '../../api/admin';
 import { useAuth } from '../../context/AuthContext';
 import { usePanelTheme } from './ui';
@@ -47,6 +49,8 @@ export const GradingPanel: React.FC<{
   const canReview = gradable && (role === 'qa' || role === 'admin') && grading?.status === 'pending_qa';
   const ownWork = !!grading && grading.gradedBy === user?.email;
   const canPhoto = ['staff', 'grader', 'admin'].includes(role);
+  // Se identifica mientras la carta está en el laboratorio; el servidor impide cambiarla una vez certificada.
+  const canIdentify = canPhoto && (gradable || order.order.status === 'ON_HOLD');
 
   const [editing, setEditing] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -75,7 +79,10 @@ export const GradingPanel: React.FC<{
     <details className={`border rounded-lg ${t.rule}`}>
       <summary className="flex flex-wrap items-center gap-x-3 gap-y-1 px-4 py-3 cursor-pointer select-none">
         <span className={`font-mono text-xs ${t.muted}`}>{String(item.position).padStart(2, '0')}</span>
-        <span className={`font-bold text-sm ${t.text}`}>{item.cardName}</span>
+        <span className={`font-bold text-sm ${t.text}`}>{cardTitle(item.cardName, item.position)}</span>
+        {!item.cardName && (
+          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold text-white bg-[#DB2777]">Sin identificar</span>
+        )}
         <span className="flex-1" />
         {grading ? (
           <span className={`text-xs font-bold ${grading.status === 'approved' ? t.positive : t.isLight ? 'text-amber-700' : 'text-amber-300'}`}>
@@ -95,6 +102,13 @@ export const GradingPanel: React.FC<{
             {local.text}
           </p>
         )}
+
+        <Identification
+          item={item}
+          canEdit={canIdentify}
+          busy={busy}
+          onSave={(body) => run(() => identifyCard(code, item.position, body), 'Carta identificada.')}
+        />
 
         <Photos code={code} position={item.position} images={images} canPhoto={canPhoto} busy={busy} run={run} />
 
@@ -141,6 +155,123 @@ export const GradingPanel: React.FC<{
         )}
       </div>
     </details>
+  );
+};
+
+// ---------------------------------------------------------------------------
+// Identificación de la carta
+// ---------------------------------------------------------------------------
+
+const GAMES = ['Pokémon', 'Magic: The Gathering', 'Yu-Gi-Oh!', 'One Piece', 'Disney Lorcana', 'Dragon Ball Super', 'Digimon', 'Panini'];
+const LANGUAGES = ['Español', 'English', 'Japonés', 'Français', 'Deutsch', 'Italiano', 'Português', 'Coreano', 'Chino'];
+
+/** Qué carta es: el cliente solo dice cuántas envía, así que la apunta el laboratorio al abrir el paquete. */
+const Identification: React.FC<{
+  item: Item;
+  canEdit: boolean;
+  busy: boolean;
+  onSave: (body: IdentifyCardBody) => Promise<boolean>;
+}> = ({ item, canEdit, busy, onSave }) => {
+  const t = usePanelTheme();
+  const identified = !!item.cardName;
+  const [editing, setEditing] = useState(!identified);
+  const [form, setForm] = useState({
+    cardName: item.cardName ?? '',
+    game: item.game ?? '',
+    setName: item.setName ?? '',
+    cardNumber: item.cardNumber ?? '',
+    year: item.year ? String(item.year) : '',
+    language: item.language ?? '',
+  });
+  const field = `w-full px-3 py-2.5 text-sm border rounded-lg focus:outline-none ${t.input}`;
+  const label = `block font-mono text-[10px] uppercase tracking-wider mb-1 ${t.muted}`;
+  const set = (key: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) => setForm({ ...form, [key]: e.target.value });
+  const year = Number(form.year);
+  const valid = !!form.cardName.trim() && !!form.game.trim() && (!form.year || (Number.isInteger(year) && year >= 1800 && year <= 2100));
+
+  if (!editing) {
+    return (
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <div className={`font-mono text-[10px] uppercase tracking-wider ${t.muted}`}>Carta</div>
+          <div className={`text-sm font-bold ${t.text}`}>{item.cardName}</div>
+          <div className={`text-xs ${t.muted}`}>
+            {[item.game, item.setName, item.cardNumber && `nº ${item.cardNumber}`, item.year, item.language].filter(Boolean).join(' · ')}
+          </div>
+        </div>
+        {canEdit && (
+          <button type="button" onClick={() => setEditing(true)} className={`px-3 py-2 border rounded-lg text-xs font-bold cursor-pointer ${t.secondary}`}>
+            Corregir datos
+          </button>
+        )}
+      </div>
+    );
+  }
+
+  if (!canEdit) {
+    return <p className={`text-xs ${t.muted}`}>La carta todavía no está identificada.</p>;
+  }
+
+  return (
+    <form
+      className={`border rounded-lg p-4 space-y-3 ${t.rule}`}
+      onSubmit={async (e) => {
+        e.preventDefault();
+        if (!valid) return;
+        const ok = await onSave({
+          cardName: form.cardName.trim(),
+          game: form.game.trim(),
+          setName: form.setName.trim() || undefined,
+          cardNumber: form.cardNumber.trim() || undefined,
+          year: form.year ? year : undefined,
+          language: form.language.trim() || undefined,
+        });
+        if (ok) setEditing(false);
+      }}
+    >
+      <div>
+        <h4 className={`text-sm font-bold ${t.text}`}>{identified ? 'Corregir los datos de la carta' : 'Identificar la carta'}</h4>
+        <p className={`text-xs ${t.muted}`}>Es lo que saldrá en el certificado. Hace falta antes de enviarla a control de calidad.</p>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <label className="block sm:col-span-2">
+          <span className={label}>Nombre de la carta *</span>
+          <input value={form.cardName} onChange={set('cardName')} maxLength={200} required placeholder="Ej. Charizard Holo" className={field} />
+        </label>
+        <label className="block">
+          <span className={label}>Juego *</span>
+          <input value={form.game} onChange={set('game')} maxLength={80} required list="gg-games" placeholder="Ej. Pokémon" className={field} />
+          <datalist id="gg-games">{GAMES.map((g) => <option key={g} value={g} />)}</datalist>
+        </label>
+        <label className="block">
+          <span className={label}>Set o expansión</span>
+          <input value={form.setName} onChange={set('setName')} maxLength={200} placeholder="Ej. Base Set" className={field} />
+        </label>
+        <label className="block">
+          <span className={label}>Número en el set</span>
+          <input value={form.cardNumber} onChange={set('cardNumber')} maxLength={40} placeholder="Ej. 4/102" className={field} />
+        </label>
+        <label className="block">
+          <span className={label}>Año</span>
+          <input value={form.year} onChange={set('year')} inputMode="numeric" maxLength={4} placeholder="Ej. 1999" className={field} />
+        </label>
+        <label className="block sm:col-span-2">
+          <span className={label}>Idioma</span>
+          <input value={form.language} onChange={set('language')} maxLength={40} list="gg-languages" placeholder="Ej. English" className={field} />
+          <datalist id="gg-languages">{LANGUAGES.map((l) => <option key={l} value={l} />)}</datalist>
+        </label>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        <button type="submit" disabled={busy || !valid} className={`px-4 py-2.5 rounded-lg text-xs font-extrabold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${t.primary}`}>
+          Guardar carta
+        </button>
+        {identified && (
+          <button type="button" onClick={() => setEditing(false)} className={`px-4 py-2.5 text-xs font-bold cursor-pointer ${t.muted} hover:underline`}>
+            Cancelar
+          </button>
+        )}
+      </div>
+    </form>
   );
 };
 

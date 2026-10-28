@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import {
-  Camera, Check, ChevronRight, ClipboardList, FilePen, PackageCheck, PackageOpen, PauseCircle, RefreshCw,
+  Camera, Check, ChevronRight, ScanLine, ClipboardList, FilePen, PackageCheck, PackageOpen, PauseCircle, RefreshCw,
   ShieldCheck, TriangleAlert, Truck, Undo2, type LucideIcon,
 } from 'lucide-react';
 import type { UserDto } from '../../../shared/auth';
@@ -12,6 +12,7 @@ import { usePanelTheme, waiting } from './ui';
 const KIND: Record<TodaySectionKey, { title: string; hint: string; icon: LucideIcon; color: string }> = {
   late: { title: 'Con retraso', hint: 'Han pasado la fecha prevista y siguen en el laboratorio.', icon: TriangleAlert, color: '#DC2626' },
   returnedByQa: { title: 'Devueltas por calidad', hint: 'Rechazadas en control de calidad: corrígelas y vuelve a enviarlas.', icon: Undo2, color: '#EA580C' },
+  toIdentify: { title: 'Por identificar', hint: 'Cartas recibidas sin nombre: apunta qué carta es cada una.', icon: ScanLine, color: '#DB2777' },
   toReceive: { title: 'Por recibir', hint: 'Pedidos pagados cuyo paquete aún no se ha confirmado.', icon: PackageOpen, color: '#0284C7' },
   photosMissing: { title: 'Fotos por hacer', hint: 'Cartas sin la foto del anverso o del reverso.', icon: Camera, color: '#7C3AED' },
   toGrade: { title: 'Por calificar', hint: 'Cartas en el laboratorio que todavía no tienen resultado.', icon: ClipboardList, color: '#16A34A' },
@@ -290,7 +291,7 @@ const Group: React.FC<{
                 <div className="flex-1 min-w-0 grid sm:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)_minmax(0,1.2fr)] gap-x-6 gap-y-0.5 items-center">
                   <div className="min-w-0">
                     <div className={`text-sm font-bold truncate ${t.text}`}>
-                      {task.position !== undefined ? task.cardName : `Pedido ${task.orderCode}`}
+                      {task.position !== undefined ? task.cardName ?? 'Carta sin identificar' : `Pedido ${task.orderCode}`}
                     </div>
                     <div className={`font-mono text-[11px] truncate ${t.muted}`}>
                       {task.position !== undefined ? `${task.orderCode} · carta #${String(task.position).padStart(2, '0')}` : 'Pedido completo'}

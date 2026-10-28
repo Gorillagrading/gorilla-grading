@@ -451,7 +451,7 @@ const CertificateHistorySection: React.FC<{ onOpenOrder: (code: string) => void 
                       {CERT_STATUS[r.status] && <div className={`text-xs font-bold ${t.negative}`}>{CERT_STATUS[r.status]}</div>}
                     </td>
                     <td className="py-2.5 pr-3 min-w-[10rem]">
-                      <div className={`font-bold ${t.text}`}>{r.cardName}</div>
+                      <div className={`font-bold ${t.text}`}>{r.cardName ?? '—'}</div>
                       <div className={`text-xs ${t.muted}`}>{[r.game, r.setName].filter(Boolean).join(' · ')}</div>
                     </td>
                     <td className={`py-2.5 pr-3 text-right whitespace-nowrap ${t.text}`}>

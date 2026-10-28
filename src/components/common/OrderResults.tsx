@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import type { OrderResultsDto } from '../../../shared/photos';
+import { cardTitle } from '../../../shared/cards';
 import { api } from '../../api/client';
 
 type Result = OrderResultsDto['items'][number];
@@ -75,8 +76,10 @@ const Card: React.FC<{ item: Result; lang: 'es' | 'en'; text: string; muted: str
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <span className={`font-mono text-[9px] ${muted}`}>{String(item.position).padStart(2, '0')}</span>
-          <h4 className={`font-mono text-xs uppercase tracking-widest font-semibold truncate ${text}`}>{item.cardName}</h4>
-          <p className={`font-mono text-[9px] uppercase tracking-widest ${muted}`}>{item.game}{item.setName ? ` • ${item.setName}` : ''}</p>
+          <h4 className={`font-mono text-xs uppercase tracking-widest font-semibold truncate ${text}`}>{cardTitle(item.cardName, item.position, lang)}</h4>
+          <p className={`font-mono text-[9px] uppercase tracking-widest ${muted}`}>
+            {item.game ? `${item.game}${item.setName ? ` • ${item.setName}` : ''}` : es ? 'La identifica el laboratorio' : 'Identified by the lab'}
+          </p>
         </div>
         {g && g.isAuthentic && g.finalGrade !== null && (
           <div className="text-right shrink-0">

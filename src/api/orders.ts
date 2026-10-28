@@ -1,3 +1,4 @@
+import type { PublicEventDto } from '../../shared/events';
 import type { CreateOrderBody, CreatedOrderDto, QuoteBody, QuoteResponse } from '../../shared/orders';
 import { api } from './client';
 
@@ -12,3 +13,6 @@ export const submitOrder = (body: CreateOrderBody) =>
 /** Abre (otra vez) la página de pago de un pedido propio pendiente de pago y devuelve su dirección. */
 export const startCheckout = (code: string) =>
   api<{ checkoutUrl: string }>(`/orders/${encodeURIComponent(code)}/checkout`, { body: {} }).then((r) => r.checkoutUrl);
+
+/** Próximos eventos con entrega en mano, para elegir uno antes de pagar. */
+export const fetchUpcomingEvents = () => api<{ events: PublicEventDto[] }>('/events').then((r) => r.events);

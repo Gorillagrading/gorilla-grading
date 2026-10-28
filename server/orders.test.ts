@@ -4,7 +4,7 @@ import {
   addresses, consents, custodyEvents, emailOutbox, orderItems, orders, serviceTiers, users,
 } from '../db/schema.js';
 import { ORDER_CODE } from '../shared/codes.js';
-import { createTestApp, createTestDb, insertAllTiers, type TestDb } from './testing.js';
+import { createTestApp, createTestDb, insertAllTiers, type TestDb, insertEvent } from './testing.js';
 
 const read = (res: Response) => res.json() as Promise<any>;
 
@@ -32,9 +32,8 @@ async function loginAs(email: string) {
 const submit = (body: unknown, cookie?: string) =>
   t.json('/api/v1/orders', body, cookie ? { cookie } : {});
 
-const card = (over: Record<string, unknown> = {}) => ({
-  tier: 'standard', cardName: 'Charizard Holo', game: 'Pokemon', setName: 'Base Set', declaredValueCents: 45_000, ...over,
-});
+// El cliente solo dice cuántas cartas envía y con qué servicio; el laboratorio las identifica al recibirlas.
+const card = (over: Record<string, unknown> = {}) => ({ tier: 'standard', ...over });
 
 const orderBody = (over: Record<string, unknown> = {}) => ({
   items: [card()],
@@ -44,42 +43,30 @@ const orderBody = (over: Record<string, unknown> = {}) => ({
   locale: 'es',
   clientToken: 'token-de-prueba-0001',
   acceptedTerms: true,
-  confirmedDeclaredValues: true,
   ...over,
 });
 
 describe('POST /quotes', () => {
   it('es público y calcula el total', async () => {
-    const res = await t.json('/api/v1/quotes', { items: [{ tier: 'standard', declaredValueCents: 45_000 }], shippingMethod: 'COURIER_INSURED' });
+    const res = await t.json('/api/v1/quotes', { items: [{ tier: 'standard' }], shippingMethod: 'COURIER_INSURED' });
     expect(res.status).toBe(200);
     const { quote, issues } = await read(res);
     expect(issues).toEqual([]);
     expect(quote).toMatchObject({ subtotalCents: 1900, shippingCents: 1450, totalCents: 3350, insuranceCents: 0, vatBaseCents: 2769, vatCents: 581 });
   });
 
-  it('devuelve el precio y además los avisos cuando el valor supera el límite', async () => {
-    const res = await t.json('/api/v1/quotes', { items: [{ tier: 'standard', declaredValueCents: 850_000 }], shippingMethod: 'COURIER_INSURED' });
-    expect(res.status).toBe(200);
-    const { quote, issues } = await read(res);
-    expect(quote.totalCents).toBe(3350);
-    expect(issues).toEqual([
-      { code: 'declared_value_exceeds_limit', index: 0, tier: 'standard', maxCents: 50_000, declaredValueCents: 850_000 },
-    ]);
-  });
-
   it('usa el precio vigente de la base de datos', async () => {
     await db.update(serviceTiers).set({ priceCents: 2100 }).where(eq(serviceTiers.code, 'standard'));
-    const { quote } = await read(await t.json('/api/v1/quotes', { items: [{ tier: 'standard', declaredValueCents: 1000 }], shippingMethod: 'CARD_SHOW_DROPOFF' }));
+    const { quote } = await read(await t.json('/api/v1/quotes', { items: [{ tier: 'standard' }], shippingMethod: 'CARD_SHOW_DROPOFF' }));
     expect(quote.totalCents).toBe(2100);
   });
 
   it('rechaza datos mal formados con 422', async () => {
     for (const body of [
       { items: [], shippingMethod: 'COURIER_INSURED' },
-      { items: [{ tier: 'standard', declaredValueCents: 1000 }], shippingMethod: 'VAULT_STORE' },
-      { items: [{ tier: 'standard', declaredValueCents: 10.5 }], shippingMethod: 'COURIER_INSURED' },
-      { items: [{ tier: 'standard', declaredValueCents: -1 }], shippingMethod: 'COURIER_INSURED' },
-      { items: Array.from({ length: 501 }, () => ({ tier: 'standard', declaredValueCents: 1000 })), shippingMethod: 'COURIER_INSURED' },
+      { items: [{ tier: 'standard' }], shippingMethod: 'VAULT_STORE' },
+      { items: [{ tier: '' }], shippingMethod: 'COURIER_INSURED' },
+      { items: Array.from({ length: 501 }, () => ({ tier: 'standard' })), shippingMethod: 'COURIER_INSURED' },
     ]) {
       expect((await t.json('/api/v1/quotes', body)).status).toBe(422);
     }
@@ -117,15 +104,16 @@ describe('POST /orders: crear el pedido', () => {
     expect(row.shippingAddress).toMatchObject({ fullName: 'Ana Pérez', line1: 'Calle Gran Vía 42', city: 'Madrid', countryCode: 'ES' });
   });
 
-  it('guarda las cartas con el precio y el límite fijados', async () => {
+  it('guarda las cartas sin identificar, aseguradas hasta el máximo de su servicio y con el precio fijado', async () => {
     const cookie = await loginAs('ana@example.com');
-    await submit(orderBody({ items: [card(), card({ cardName: 'Gengar VMAX', declaredValueCents: 38_000, year: 2021, language: 'English', notes: 'Esquina marcada' })] }), cookie);
+    // Aunque el navegador mande datos de las cartas, no se guardan: las identifica el laboratorio.
+    await submit(orderBody({ items: [card(), card({ tier: 'express', cardName: 'Gengar VMAX', declaredValueCents: 1, notes: 'Esquina marcada' })] }), cookie);
     const items = await db.select().from(orderItems).orderBy(orderItems.position);
-    expect(items.map((i) => [i.position, i.cardName, i.unitPriceCents, i.maxDeclaredValueCents, i.declaredValueCents])).toEqual([
-      [1, 'Charizard Holo', 1900, 50_000, 45_000],
-      [2, 'Gengar VMAX', 1900, 50_000, 38_000],
+    expect(items.map((i) => [i.position, i.cardName, i.game, i.unitPriceCents, i.maxDeclaredValueCents, i.declaredValueCents])).toEqual([
+      [1, null, null, 1900, 50_000, 50_000],
+      [2, null, null, 5000, 300_000, 300_000],
     ]);
-    expect(items[1]).toMatchObject({ year: 2021, language: 'English', notes: 'Esquina marcada', setName: 'Base Set' });
+    expect(items[1].notes).toBe('Esquina marcada');
   });
 
   it('el precio lo pone el servidor: lo que envíe el navegador se ignora', async () => {
@@ -250,36 +238,6 @@ describe('POST /orders: lo que no se puede enviar', () => {
     expect(await db.select().from(addresses)).toHaveLength(0);
   };
 
-  it('un valor declarado sobre el límite del servicio se bloquea y no crea nada', async () => {
-    const cookie = await loginAs('ana@example.com');
-    const res = await submit(orderBody({ items: [card(), card({ cardName: 'Charizard 1st', declaredValueCents: 850_000 })] }), cookie);
-    expect(res.status).toBe(422);
-    expect(res.headers.get('content-type')).toBe('application/problem+json');
-    const body = await read(res);
-    expect(body.code).toBe('invalid_order');
-    expect(body.issues).toEqual([
-      { code: 'declared_value_exceeds_limit', index: 1, tier: 'standard', maxCents: 50_000, declaredValueCents: 850_000 },
-    ]);
-    await nothingCreated();
-  });
-
-  it('el límite se cumple con el mismo servicio: sube a Express y el pedido pasa', async () => {
-    const cookie = await loginAs('ana@example.com');
-    const res = await submit(orderBody({ items: [card({ tier: 'express', declaredValueCents: 850_000 })] }), cookie);
-    expect(res.status).toBe(422);
-    const ok = await submit(orderBody({ items: [card({ tier: 'express', declaredValueCents: 300_000 })] }), cookie);
-    expect(ok.status).toBe(201);
-    expect((await read(ok)).order.totalCents).toBe(5000 + 1450);
-  });
-
-  it('sin valor declarado no hay pedido', async () => {
-    const cookie = await loginAs('ana@example.com');
-    const res = await submit(orderBody({ items: [card({ declaredValueCents: 0 })] }), cookie);
-    expect(res.status).toBe(422);
-    expect((await read(res)).issues).toEqual([{ code: 'declared_value_required', index: 0 }]);
-    await nothingCreated();
-  });
-
   it('un servicio que no existe se rechaza', async () => {
     const cookie = await loginAs('ana@example.com');
     const res = await submit(orderBody({ items: [card({ tier: 'platinum' })] }), cookie);
@@ -293,7 +251,7 @@ describe('POST /orders: lo que no se puede enviar', () => {
     const bad = await submit(orderBody({ items: [card({ tier: 'event' })] }), cookie);
     expect(bad.status).toBe(422);
     expect((await read(bad)).issues[0].code).toBe('event_tier_requires_dropoff');
-    const ok = await submit(orderBody({ items: [card({ tier: 'event' })], shippingMethod: 'CARD_SHOW_DROPOFF', shippingAddress: undefined }), cookie);
+    const ok = await submit(orderBody({ items: [card({ tier: 'event' })], shippingMethod: 'CARD_SHOW_DROPOFF', shippingAddress: undefined, eventId: (await insertEvent(db)).id }), cookie);
     expect(ok.status).toBe(201);
     expect((await read(ok)).order.totalCents).toBe(1500);
   });
@@ -301,14 +259,12 @@ describe('POST /orders: lo que no se puede enviar', () => {
   it.each([
     ['sin dirección con mensajería', { shippingAddress: undefined }],
     ['sin aceptar los términos', { acceptedTerms: false }],
-    ['sin confirmar los valores declarados', { confirmedDeclaredValues: false }],
     ['sin cartas', { items: [] }],
-    ['carta sin nombre', { items: [card({ cardName: '   ' })] }],
+    ['carta sin servicio', { items: [{ tier: ' ' }] }],
     ['sin nombre de quien envía', { fullName: ' ' }],
     ['identificador demasiado corto', { clientToken: 'abc' }],
     ['país inválido', { shippingAddress: { line1: 'x', city: 'y', postalCode: '1', countryCode: 'ESP' } }],
     ['método de devolución no disponible', { shippingMethod: 'VAULT_STORE' }],
-    ['valor con decimales', { items: [card({ declaredValueCents: 100.5 })] }],
   ])('rechaza con 422: %s', async (_name, override) => {
     const cookie = await loginAs('ana@example.com');
     const res = await submit(orderBody(override), cookie);
@@ -318,7 +274,7 @@ describe('POST /orders: lo que no se puede enviar', () => {
 
   it('la devolución en evento no pide dirección y no cobra envío', async () => {
     const cookie = await loginAs('ana@example.com');
-    const res = await submit(orderBody({ shippingMethod: 'CARD_SHOW_DROPOFF', shippingAddress: undefined }), cookie);
+    const res = await submit(orderBody({ shippingMethod: 'CARD_SHOW_DROPOFF', shippingAddress: undefined, eventId: (await insertEvent(db)).id }), cookie);
     expect(res.status).toBe(201);
     const [row] = await db.select().from(orders);
     expect(row).toMatchObject({ shippingMethod: 'CARD_SHOW_DROPOFF', shippingCents: 0, totalCents: 1900, shippingAddress: null });
@@ -332,7 +288,7 @@ describe('el pedido nuevo aparece en el resto de la aplicación', () => {
     const { order } = await read(await submit(orderBody(), cookie));
 
     const mine = await read(await t.app.request('/api/v1/orders', { headers: { cookie } }));
-    expect(mine.orders[0]).toMatchObject({ code: order.code, status: 'SUBMITTED', itemCount: 1, firstCardName: 'Charizard Holo' });
+    expect(mine.orders[0]).toMatchObject({ code: order.code, status: 'SUBMITTED', itemCount: 1, firstCardName: null });
 
     const bea = await loginAs('bea@example.com');
     expect((await read(await t.app.request('/api/v1/orders', { headers: { cookie: bea } }))).orders).toEqual([]);
@@ -341,10 +297,10 @@ describe('el pedido nuevo aparece en el resto de la aplicación', () => {
     expect(publicView.tracking).toMatchObject({ code: order.code, status: 'SUBMITTED', itemCount: 1, items: null });
     expect(publicView.tracking.steps).toHaveLength(1);
     expect(publicView.tracking.pending[0]).toBe('PACKAGE_RECEIVED');
-    expect(JSON.stringify(publicView)).not.toContain('Charizard');
     expect(JSON.stringify(publicView)).not.toContain('Gran Vía');
 
     const ownerView = await read(await t.app.request(`/api/v1/tracking/${order.code}`, { headers: { cookie } }));
-    expect(ownerView.tracking.items).toEqual([{ position: 1, cardName: 'Charizard Holo', game: 'Pokemon', set: 'Base Set' }]);
+    // Hasta que el laboratorio la identifica, la carta no tiene nombre.
+    expect(ownerView.tracking.items).toEqual([{ position: 1, cardName: null, game: null, set: null }]);
   });
 });

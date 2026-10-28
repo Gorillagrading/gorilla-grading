@@ -35,6 +35,7 @@ import { EventsCalendarPage } from './pages/EventsCalendarPage';
 import { LoginPage } from './pages/LoginPage';
 import { AdminPage } from './pages/AdminPage';
 import { GradingScalePage } from './pages/GradingScalePage';
+import { forgetPendingScroll, rememberScroll, restoreScroll, storedScroll, trackScroll } from './utils/scrollMemory';
 
 export const AppContent: React.FC = () => {
   const { isLoggedIn, status: authStatus } = useAuth();
@@ -46,6 +47,9 @@ export const AppContent: React.FC = () => {
   const handleNavigate = (path: string) => {
     const [pathAndQuery, hash] = path.split('#');
     const pathname = pathAndQuery.split('?')[0] || '/';
+    // Antes de irnos, apuntamos dónde estábamos para que "atrás" vuelva justo aquí.
+    forgetPendingScroll();
+    rememberScroll();
     setCurrentPath(pathname);
     window.history.pushState({}, '', path);
 
@@ -64,9 +68,19 @@ export const AppContent: React.FC = () => {
   };
 
   useEffect(() => {
+    // La posición la gestionamos nosotros: el navegador no sabe cuándo termina de pintarse cada página.
+    if ('scrollRestoration' in window.history) window.history.scrollRestoration = 'manual';
+    const initial = storedScroll();
+    if (initial !== undefined) restoreScroll(initial);
+    const stopTracking = trackScroll();
+
     const handlePopState = () => {
+      forgetPendingScroll();
       setCurrentPath(window.location.pathname || '/');
-      if (window.location.hash) {
+      const y = storedScroll();
+      if (y !== undefined) {
+        restoreScroll(y);
+      } else if (window.location.hash) {
         const hash = window.location.hash.substring(1);
         setTimeout(() => {
           const el = document.getElementById(hash);
@@ -75,7 +89,10 @@ export const AppContent: React.FC = () => {
       }
     };
     window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+      stopTracking();
+    };
   }, []);
 
   const renderPage = () => {
@@ -145,6 +162,7 @@ export const AppContent: React.FC = () => {
       case '/admin':
       case '/admin/dashboard':
       case '/admin/orders':
+      case '/admin/events':
         return <AdminPage path={currentPath} onNavigate={handleNavigate} />;
       default:
         if (currentPath.startsWith('/admin/orders/')) {

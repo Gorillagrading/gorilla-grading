@@ -1,11 +1,12 @@
 import { and, asc, count, desc, eq, inArray } from 'drizzle-orm';
 import type { Db } from '../../db/client.js';
 import {
-  auditLogs, custodyEvents, emailOutbox, orderItems, orders, payments, serviceTiers, users, webhookEvents,
+  auditLogs, custodyEvents, emailOutbox, events, orderItems, orders, payments, serviceTiers, users, webhookEvents,
 } from '../../db/schema.js';
 import type { PaymentReceiptDto } from '../../shared/account.js';
 import { publicBaseUrl } from '../env.js';
 import type { CheckoutLine, PaymentEvent, PaymentGateway } from '../payments/gateway.js';
+import { toPublicEvent } from './events.js';
 import { ProblemError } from '../problem.js';
 
 type Tx = Pick<Db, 'select' | 'insert' | 'update'>;
@@ -135,6 +136,9 @@ async function markPaid(tx: Tx, session: Record<string, unknown>, now: Date) {
       occurredAt: now,
     });
     const [{ n }] = await tx.select({ n: count() }).from(orderItems).where(eq(orderItems.orderId, order.id));
+    // El correo lleva adónde enviar las cartas o el evento en el que entregarlas.
+    const [eventRow] = order.eventId ? await tx.select().from(events).where(eq(events.id, order.eventId)).limit(1) : [];
+    const event = eventRow ? toPublicEvent(eventRow) : null;
     if (customer) {
       await tx
         .insert(emailOutbox)
@@ -143,7 +147,7 @@ async function markPaid(tx: Tx, session: Record<string, unknown>, now: Date) {
           toEmail: customer.email,
           template: 'order_submitted',
           locale: lang,
-          data: { orderCode: order.code, itemCount: n, totalCents: order.totalCents, shippingMethod: order.shippingMethod },
+          data: { orderCode: order.code, itemCount: n, totalCents: order.totalCents, shippingMethod: order.shippingMethod, event },
         })
         .onConflictDoNothing();
     }

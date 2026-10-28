@@ -71,6 +71,20 @@
       "when": 1793018008336,
       "tag": "0009_numeric_codes",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1793193358541,
+      "tag": "0010_card_identified_in_lab",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1793194631784,
+      "tag": "0011_event_address_details",
+      "breakpoints": true
     }
   ]
 }

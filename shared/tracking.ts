@@ -3,6 +3,7 @@
  * Nunca incluye dirección, datos de contacto, notas internas ni valores declarados.
  */
 import type { OrderStatus } from './domain.js';
+import type { Handover } from './handover.js';
 
 export interface TrackingStepDto {
   status: OrderStatus;
@@ -15,8 +16,8 @@ export interface TrackingStepDto {
 
 export interface TrackingItemDto {
   position: number;
-  cardName: string;
-  game: string;
+  cardName: string | null;
+  game: string | null;
   set: string | null;
 }
 
@@ -34,4 +35,9 @@ export interface TrackingDto {
   steps: TrackingStepDto[];
   /** Fases que todavía faltan, en orden. Vacío si el pedido ya terminó. */
   pending: OrderStatus[];
+  /**
+   * Qué tiene que hacer el cliente con sus cartas (enviarlas o llevarlas al evento). Solo para el dueño
+   * y solo mientras el laboratorio no las ha recibido; si no, null.
+   */
+  handover: Handover | null;
 }

@@ -164,6 +164,7 @@ function buildDetail(ctx: Context, viewer: UserDto): AdminOrderDetail {
       cardName: item.cardName,
       game: item.game,
       setName: item.setName,
+      cardNumber: item.cardNumber,
       year: item.year,
       language: item.language,
       declaredValueCents: item.declaredValueCents,

@@ -1,6 +1,7 @@
+import type { AdminEventDto, EventBody } from '../../shared/events';
 import type { CertificateHistory, DashboardData, DashboardRange } from '../../shared/dashboard';
 import type {
-  AdminOrderDetail, AdminOrderList, ShipmentBody, TransitionBody,
+  AdminOrderDetail, AdminOrderList, IdentifyCardBody, ShipmentBody, TransitionBody,
 } from '../../shared/admin';
 import type { AdminGradingResult, GradingBody } from '../../shared/grading-admin';
 import type { StaffToday } from '../../shared/staff-today';
@@ -26,6 +27,9 @@ export const fetchAdminOrder = (code: string) =>
 
 export const transitionAdminOrder = (code: string, body: TransitionBody) =>
   api<{ order: AdminOrderDetail }>(`/admin/orders/${encodeURIComponent(code)}/transitions`, { body }).then((r) => r.order);
+
+export const identifyCard = (code: string, position: number, body: IdentifyCardBody) =>
+  api<{ order: AdminOrderDetail }>(`/admin/orders/${encodeURIComponent(code)}/items/${position}/card`, { method: 'PUT', body }).then((r) => r.order);
 
 export const addAdminShipment = (code: string, body: ShipmentBody) =>
   api<{ order: AdminOrderDetail }>(`/admin/orders/${encodeURIComponent(code)}/shipments`, { body }).then((r) => r.order);
@@ -126,3 +130,8 @@ export const fetchCertificateHistory = (q: string, page: number) => {
   if (q) params.set('q', q);
   return api<CertificateHistory>(`/admin/dashboard/certificates?${params}`);
 };
+
+export const fetchAdminEvents = () => api<{ events: AdminEventDto[] }>('/admin/events').then((r) => r.events);
+export const createAdminEvent = (body: EventBody) => api<{ id: string }>('/admin/events', { body });
+export const updateAdminEvent = (id: string, body: EventBody) => api<void>(`/admin/events/${id}`, { method: 'PUT', body });
+export const deleteAdminEvent = (id: string) => api<void>(`/admin/events/${id}`, { method: 'DELETE' });

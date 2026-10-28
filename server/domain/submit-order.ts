@@ -8,6 +8,7 @@ import { newOrderCode } from '../codes.js';
 import { ProblemError } from '../problem.js';
 import { loadActiveTiers } from './catalog.js';
 import { computeQuote } from './pricing.js';
+import { findBookableEvent, toPublicEvent } from './events.js';
 
 /** Versión de los términos y la política de privacidad que se aceptan al enviar un pedido. */
 export const CONSENT_VERSION = '2026-10-20';
@@ -38,7 +39,7 @@ const REGISTERED_TEXT = {
 /**
  * Crea un pedido para el usuario de la sesión. Con el cobro activado (`requirePayment`) nace
  * PAYMENT_PENDING y se registra al confirmarse el pago (server/domain/payments.ts); sin cobro, nace SUBMITTED.
- * El precio sale siempre del servidor: del cliente solo se leen el servicio y el valor declarado.
+ * El precio sale siempre del servidor: del cliente solo se leen el servicio y el número de cartas.
  * Si el mismo `clientToken` llega dos veces, devuelve el pedido ya creado.
  */
 export async function createOrder(
@@ -54,7 +55,7 @@ export async function createOrder(
   const tiers = await loadActiveTiers(db, now);
   const { quote, issues } = computeQuote(
     {
-      items: input.items.map((i) => ({ tier: i.tier, declaredValueCents: i.declaredValueCents })),
+      items: input.items.map((i) => ({ tier: i.tier })),
       shippingMethod: input.shippingMethod,
     },
     tiers,
@@ -64,6 +65,12 @@ export async function createOrder(
       code: 'invalid_order',
       extensions: { issues },
     });
+  }
+
+  // La entrega en mano es en un evento concreto, que tiene que seguir abierto a entregas.
+  const event = input.shippingMethod === 'CARD_SHOW_DROPOFF' && input.eventId ? await findBookableEvent(db, input.eventId, now) : undefined;
+  if (input.shippingMethod === 'CARD_SHOW_DROPOFF' && !event) {
+    throw new ProblemError(422, 'Invalid Order', 'El evento elegido ya no admite entregas. Elige otro.', { code: 'event_unavailable' });
   }
 
   const unitCentsByTier = new Map(quote.lines.map((l) => [l.tier, l.unitCents]));
@@ -85,6 +92,7 @@ export async function createOrder(
           userId: user.id,
           status,
           shippingMethod: input.shippingMethod,
+          eventId: event?.id ?? null,
           shippingAddress:
             courier && input.shippingAddress ? { fullName: input.fullName, ...input.shippingAddress } : null,
           currency: 'EUR',
@@ -114,12 +122,11 @@ export async function createOrder(
         return {
           orderId: order!.id,
           position: i + 1,
-          cardName: item.cardName,
-          game: item.game,
-          setName: item.setName || null,
-          year: item.year ?? null,
-          language: item.language || null,
-          declaredValueCents: item.declaredValueCents,
+          // La carta se identifica en el laboratorio al recibirla (server/domain/card-identification.ts).
+          cardName: null,
+          game: null,
+          // Asegurada hasta el máximo de su servicio.
+          declaredValueCents: tier.maxDeclaredValueCents,
           serviceTierId: tier.id,
           // Precio y límite quedan fijados: un cambio de tarifas posterior no altera este pedido.
           unitPriceCents: unitCentsByTier.get(tier.code)!,
@@ -151,6 +158,7 @@ export async function createOrder(
           itemCount: quote.itemCount,
           totalCents: quote.totalCents,
           shippingMethod: input.shippingMethod,
+          event: event ? toPublicEvent(event) : null,
         },
       })
       .onConflictDoNothing();

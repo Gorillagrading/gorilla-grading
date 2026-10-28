@@ -1,6 +1,7 @@
 /**
  * Contratos para presupuestar y enviar un pedido. Los importes son siempre céntimos enteros.
- * El cliente nunca envía precios: solo qué servicio quiere y el valor declarado de cada carta.
+ * El cliente nunca envía precios ni datos de las cartas: solo cuántas envía y con qué servicio.
+ * El laboratorio identifica cada carta al recibirla, y cada una va asegurada hasta el máximo de su servicio.
  */
 import { z } from 'zod';
 import { ShippingMethod } from './domain.js';
@@ -19,7 +20,6 @@ export const QuoteBody = z.object({
       z.object({
         /** Código del servicio: standard, premium, express o event. */
         tier: z.string().trim().min(1).max(32),
-        declaredValueCents: z.number().int().min(0).max(100_000_000),
       }),
     )
     .min(1)
@@ -46,18 +46,14 @@ export const CreateOrderBody = z
       .array(
         z.object({
           tier: z.string().trim().min(1).max(32),
-          cardName: text(200).min(1),
-          game: text(80).min(1),
-          setName: text(200).optional(),
-          year: z.number().int().min(1800).max(2100).optional(),
-          language: text(40).optional(),
-          declaredValueCents: z.number().int().min(0).max(100_000_000),
           notes: text(500).optional(),
         }),
       )
       .min(1)
       .max(MAX_CARDS_PER_ORDER),
     shippingMethod: SubmittableShippingMethod,
+    /** Evento en el que se entregan las cartas en mano. Obligatorio con CARD_SHOW_DROPOFF. */
+    eventId: z.string().uuid().optional(),
     /** Nombre de quien envía. Obligatorio siempre; para la mensajería también es el destinatario. */
     fullName: text(120).min(1),
     /** Obligatoria si la devolución es por mensajería. */
@@ -66,19 +62,20 @@ export const CreateOrderBody = z
     /** Identificador que genera el navegador una vez por pedido: reenviarlo no crea un pedido nuevo. */
     clientToken: z.string().trim().min(8).max(64),
     acceptedTerms: z.literal(true),
-    confirmedDeclaredValues: z.literal(true),
   })
   .refine((o) => o.shippingMethod !== 'COURIER_INSURED' || !!o.shippingAddress, {
     path: ['shippingAddress'],
     message: 'La dirección es obligatoria para la devolución por mensajería.',
+  })
+  .refine((o) => o.shippingMethod !== 'CARD_SHOW_DROPOFF' || !!o.eventId, {
+    path: ['eventId'],
+    message: 'Elige el evento en el que entregarás tus cartas.',
   });
 export type CreateOrderBody = z.infer<typeof CreateOrderBody>;
 
 /** Motivos por los que un pedido no se puede enviar. La web los traduce a mensajes. */
 export type QuoteIssue =
   | { code: 'unknown_tier'; index: number; tier: string }
-  | { code: 'declared_value_required'; index: number }
-  | { code: 'declared_value_exceeds_limit'; index: number; tier: string; maxCents: number; declaredValueCents: number }
   | { code: 'event_tier_requires_dropoff'; index: number; tier: string };
 
 export interface QuoteLine {

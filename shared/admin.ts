@@ -33,6 +33,17 @@ export const TransitionBody = z.object({
 });
 export type TransitionBody = z.infer<typeof TransitionBody>;
 
+/** Qué carta es: lo rellena el laboratorio al recibirla. Es lo que sale en el certificado. */
+export const IdentifyCardBody = z.object({
+  cardName: z.string().trim().min(1).max(200),
+  game: z.string().trim().min(1).max(80),
+  setName: z.string().trim().max(200).optional(),
+  cardNumber: z.string().trim().max(40).optional(),
+  year: z.number().int().min(1800).max(2100).optional(),
+  language: z.string().trim().max(40).optional(),
+});
+export type IdentifyCardBody = z.infer<typeof IdentifyCardBody>;
+
 export const ShipmentBody = z.object({
   direction: z.enum(['inbound', 'outbound']),
   carrier: z.string().trim().min(1).max(80),
@@ -96,9 +107,10 @@ export interface AdminOrderDetail {
   } | null;
   items: {
     position: number;
-    cardName: string;
-    game: string;
+    cardName: string | null;
+    game: string | null;
     setName: string | null;
+    cardNumber: string | null;
     year: number | null;
     language: string | null;
     declaredValueCents: number;

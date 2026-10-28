@@ -8,6 +8,7 @@ import type { StaffRole } from './admin.js';
 export const TODAY_SECTIONS = [
   'late',
   'toReceive',
+  'toIdentify',
   'photosMissing',
   'returnedByQa',
   'toGrade',
@@ -21,10 +22,10 @@ export type TodaySectionKey = (typeof TODAY_SECTIONS)[number];
 
 /** Qué ve cada rol, en el orden en que lo ve. */
 export const SECTIONS_BY_ROLE: Record<StaffRole, readonly TodaySectionKey[]> = {
-  staff: ['toReceive', 'photosMissing', 'toDeliver', 'onHold'],
-  grader: ['returnedByQa', 'toGrade', 'myDrafts', 'photosMissing'],
+  staff: ['toReceive', 'toIdentify', 'photosMissing', 'toDeliver', 'onHold'],
+  grader: ['returnedByQa', 'toIdentify', 'toGrade', 'myDrafts', 'photosMissing'],
   qa: ['toReview', 'readyToShip'],
-  admin: ['late', 'toReceive', 'photosMissing', 'returnedByQa', 'toGrade', 'myDrafts', 'toReview', 'readyToShip', 'toDeliver', 'onHold'],
+  admin: ['late', 'toReceive', 'toIdentify', 'photosMissing', 'returnedByQa', 'toGrade', 'myDrafts', 'toReview', 'readyToShip', 'toDeliver', 'onHold'],
 };
 
 /** Secciones de pedidos enteros que se pueden abrir filtradas en la lista de pedidos. */

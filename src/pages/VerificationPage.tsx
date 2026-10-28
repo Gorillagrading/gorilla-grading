@@ -48,7 +48,7 @@ export const VerificationPage: React.FC<VerificationPageProps> = ({ onNavigate }
       const found = await fetchCertificate(query, via);
       setActiveCard(found);
       setSearchInput(found.certNumber);
-      window.history.replaceState({}, '', `/verify?cert=${found.certNumber}`);
+      window.history.replaceState(window.history.state, '', `/verify?cert=${found.certNumber}`);
     } catch (err) {
       setActiveCard(null);
       setError({

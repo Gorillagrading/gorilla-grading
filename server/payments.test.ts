@@ -3,7 +3,7 @@ import Stripe from 'stripe';
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { custodyEvents, orders, payments, webhookEvents } from '../db/schema.js';
 import { createStripeGateway } from './payments/gateway.js';
-import { createFakePayments, createTestApp, createTestDb, insertAllTiers, insertUser, type TestDb } from './testing.js';
+import { createFakePayments, createTestApp, createTestDb, insertAllTiers, insertUser, type TestDb, insertEvent } from './testing.js';
 
 const read = (res: Response) => res.json() as Promise<any>;
 
@@ -52,14 +52,13 @@ async function placeOrder(email = 'cliente@example.com') {
   if (!cookies.has(email)) await loginAs(email);
   const res = await api('/orders', email, {
     body: {
-      items: Array.from({ length: 12 }, (_, i) => ({ tier: 'standard', cardName: `Carta ${i + 1}`, game: 'Pokemon', declaredValueCents: 10_000 })),
+      items: Array.from({ length: 12 }, () => ({ tier: 'standard' })),
       shippingMethod: 'COURIER_INSURED',
       fullName: 'Carla Cliente',
       shippingAddress: { line1: 'Calle Secreta 7', city: 'Madrid', postalCode: '28001', countryCode: 'ES' },
       locale: 'es',
       clientToken: `token-${Math.random().toString(36).slice(2)}-0000`,
       acceptedTerms: true,
-      confirmedDeclaredValues: true,
     },
   });
   return { res, body: await read(res) };
@@ -121,10 +120,11 @@ describe('enviar un pedido con el cobro activado', () => {
 
   it('enviar dos veces el mismo pedido no crea dos pedidos', async () => {
     await loginAs('cliente@example.com');
+    const event = await insertEvent(db);
     const body = {
-      items: [{ tier: 'standard', cardName: 'Charizard', game: 'Pokemon', declaredValueCents: 10_000 }],
-      shippingMethod: 'CARD_SHOW_DROPOFF', fullName: 'Carla', locale: 'es', clientToken: 'token-repetido-0000',
-      acceptedTerms: true, confirmedDeclaredValues: true,
+      items: [{ tier: 'standard' }],
+      shippingMethod: 'CARD_SHOW_DROPOFF', eventId: event.id, fullName: 'Carla', locale: 'es', clientToken: 'token-repetido-0000',
+      acceptedTerms: true,
     };
     const first = await read(await api('/orders', 'cliente@example.com', { body }));
     const second = await api('/orders', 'cliente@example.com', { body });

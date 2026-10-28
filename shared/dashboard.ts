@@ -84,8 +84,8 @@ export interface CertificateHistoryRow {
   certNumber: string;
   status: string;
   issuedAt: string;
-  cardName: string;
-  game: string;
+  cardName: string | null;
+  game: string | null;
   setName: string | null;
   grade: number | null;
   gradeLabel: string | null;

@@ -5,8 +5,10 @@ import { useTheme } from '../context/ThemeContext';
 import { SlabTimelineIcon } from '../components/common/SlabTimelineIcon';
 import { OrderResults } from '../components/common/OrderResults';
 import { PaymentPanel } from '../components/common/PaymentPanel';
+import { HandoverPanel } from '../components/common/HandoverPanel';
 import { api, ApiError } from '../api/client';
 import type { TrackingDto } from '../../shared/tracking';
+import { cardTitle } from '../../shared/cards';
 import { STATUS_LABEL, STEP_COPY } from '../utils/orderStatus';
 
 interface TrackingPageProps {
@@ -57,7 +59,7 @@ export const TrackingPage: React.FC<TrackingPageProps> = ({ onNavigate }) => {
       const { tracking } = await api<{ tracking: TrackingDto }>(`/tracking/${encodeURIComponent(query)}`);
       setTracking(tracking);
       // La dirección queda con el código para poder recargar o compartir el enlace.
-      window.history.replaceState({}, '', `/track?code=${encodeURIComponent(tracking.code)}`);
+      window.history.replaceState(window.history.state, '', `/track?code=${encodeURIComponent(tracking.code)}`);
     } catch (err) {
       setTracking(null);
       const kind: LookupError =
@@ -102,7 +104,7 @@ export const TrackingPage: React.FC<TrackingPageProps> = ({ onNavigate }) => {
     setTracking(null);
     setSearchTracking('');
     setError(null);
-    window.history.replaceState({}, '', '/track');
+    window.history.replaceState(window.history.state, '', '/track');
   };
 
   const locale = es ? 'es-ES' : 'en-GB';
@@ -203,6 +205,11 @@ export const TrackingPage: React.FC<TrackingPageProps> = ({ onNavigate }) => {
             onNavigate={onNavigate}
           />
 
+          {/* Tras pagar: adónde enviar las cartas o en qué evento entregarlas */}
+          {tracking.handover && (tracking.status === 'SUBMITTED' || paymentReturn === 'success') && (
+            <HandoverPanel code={tracking.code} handover={tracking.handover} lang={lang} isLight={isLight} />
+          )}
+
           {/* Results: Order data + Custody Timeline */}
           <section className={`w-full flex-1 py-6 sm:py-8 px-6 lg:px-12 transition-colors duration-300 ${
             isLight ? 'bg-[#ECE5D8]' : 'bg-[#383838]'
@@ -272,12 +279,12 @@ export const TrackingPage: React.FC<TrackingPageProps> = ({ onNavigate }) => {
                             <span className={`font-mono text-xs uppercase tracking-widest truncate max-w-[220px] font-semibold ${
                               isLight ? 'text-[#1C201D]' : 'text-white'
                             }`}>
-                              {item.cardName}
+                              {cardTitle(item.cardName, item.position, lang)}
                             </span>
                             <span className={`font-mono text-[9px] uppercase tracking-widest ${
                               isLight ? 'text-[#4A5048]' : 'text-[#A4ACA1]'
                             }`}>
-                              {item.game}{item.set ? ` • ${item.set}` : ''}
+                              {item.game ? `${item.game}${item.set ? ` • ${item.set}` : ''}` : es ? 'La identifica el laboratorio al recibirla' : 'Identified by the lab on arrival'}
                             </span>
                           </div>
                         </div>

@@ -239,6 +239,10 @@ export const events = pgTable(
     city: text('city').notNull(),
     countryCode: text('country_code').notNull(),
     venue: text('venue'),
+    /** Calle y número del recinto, para que el cliente sepa adónde ir. */
+    address: text('address'),
+    /** Indicaciones para el cliente: horario de entregas, número de stand, cómo llegar… */
+    details: text('details'),
     startsAt: tstz('starts_at').notNull(),
     endsAt: tstz('ends_at').notNull(),
     acceptsSubmissions: boolean('accepts_submissions').notNull().default(true),
@@ -316,9 +320,10 @@ export const orderItems = pgTable(
       .references(() => orders.id, { onDelete: 'cascade' }),
     position: smallint('position').notNull(),
     cardIdentityId: uuid('card_identity_id').references(() => cardIdentities.id),
-    // Datos declarados por el cliente; la identidad canónica se asigna en pre-inspección.
-    cardName: text('card_name').notNull(),
-    game: text('game').notNull(),
+    // Los rellena el laboratorio al recibir la carta; null hasta entonces. La identidad canónica
+    // (card_identities) se fija al emitir el certificado.
+    cardName: text('card_name'),
+    game: text('game'),
     setName: text('set_name'),
     cardNumber: text('card_number'),
     year: smallint('year'),

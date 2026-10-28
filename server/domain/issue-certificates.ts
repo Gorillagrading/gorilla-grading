@@ -12,8 +12,8 @@ const MAX_NUMBER_ATTEMPTS = 25;
 
 /** Lo que se emitió para cada carta, para el email de salida del pedido. */
 export type IssuedCard =
-  | { position: number; cardName: string; authentic: true; number: string; grade: number; label: string }
-  | { position: number; cardName: string; authentic: false };
+  | { position: number; cardName: string | null; authentic: true; number: string; grade: number; label: string }
+  | { position: number; cardName: string | null; authentic: false };
 
 /** Registro que se firma. Cualquiera puede verificarlo con la clave pública, sin acceder a nada privado. */
 export interface SignedRecord {
@@ -73,6 +73,11 @@ export async function issueCertificates(
       result.edgesScore === null || result.surfaceScore === null
     ) {
       throw new ProblemError(409, 'Conflict', 'El resultado de una carta está incompleto.', { code: 'grading_incomplete' });
+    }
+
+    // Sin saber qué carta es no hay certificado: el laboratorio la identifica al recibirla.
+    if (!item.cardName || !item.game) {
+      throw new ProblemError(409, 'Conflict', 'Hay una carta sin identificar.', { code: 'card_unidentified' });
     }
 
     // La carta canónica: se reutiliza si esa misma carta ya se graduó antes.

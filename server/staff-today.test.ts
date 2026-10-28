@@ -47,8 +47,8 @@ async function placeOrder() {
   const res = await api('/orders', 'cliente@example.com', {
     body: {
       items: [
-        { tier: 'standard', cardName: 'Charizard Holo', game: 'Pokemon', setName: 'Base Set', declaredValueCents: 45_000 },
-        { tier: 'standard', cardName: 'Blastoise Holo', game: 'Pokemon', setName: 'Base Set', declaredValueCents: 20_000 },
+        { tier: 'standard' },
+        { tier: 'standard' },
       ],
       shippingMethod: 'COURIER_INSURED',
       fullName: 'Carla Cliente',
@@ -56,17 +56,24 @@ async function placeOrder() {
       locale: 'es',
       clientToken: `token-${Math.random().toString(36).slice(2)}-0000`,
       acceptedTerms: true,
-      confirmedDeclaredValues: true,
     },
   });
   expect(res.status).toBe(201);
   return (await read(res)).order.code as string;
 }
 
-const received = async () => {
+const identify = (code: string, position: number, cardName: string) =>
+  api(`/admin/orders/${code}/items/${position}/card`, 'staff@lab.test', { method: 'PUT', body: { cardName, game: 'Pokemon', setName: 'Base Set' } });
+
+/** Recibe el paquete y, como hace recepción al abrirlo, identifica las dos cartas. */
+const received = async (identified = true) => {
   const code = await placeOrder();
   const res = await api(`/admin/orders/${code}/transitions`, 'staff@lab.test', { body: { to: 'PACKAGE_RECEIVED', expectedStatus: 'SUBMITTED' } });
   expect(res.status).toBe(200);
+  if (identified) {
+    expect((await identify(code, 1, 'Charizard Holo')).status).toBe(200);
+    expect((await identify(code, 2, 'Blastoise Holo')).status).toBe(200);
+  }
   return code;
 };
 
@@ -90,21 +97,29 @@ const today = async (email: string) => {
 
 describe('pantalla "Hoy" del laboratorio', () => {
   it('cada rol ve sus propias secciones', async () => {
-    expect(Object.keys(await today('staff@lab.test'))).toEqual(['toReceive', 'photosMissing', 'toDeliver', 'onHold']);
-    expect(Object.keys(await today('grader@lab.test'))).toEqual(['returnedByQa', 'toGrade', 'myDrafts', 'photosMissing']);
+    expect(Object.keys(await today('staff@lab.test'))).toEqual(['toReceive', 'toIdentify', 'photosMissing', 'toDeliver', 'onHold']);
+    expect(Object.keys(await today('grader@lab.test'))).toEqual(['returnedByQa', 'toIdentify', 'toGrade', 'myDrafts', 'photosMissing']);
     expect(Object.keys(await today('qa@lab.test'))).toEqual(['toReview', 'readyToShip']);
-    expect(Object.keys(await today('admin@lab.test'))).toHaveLength(10);
+    expect(Object.keys(await today('admin@lab.test'))).toHaveLength(11);
   });
 
-  it('recepción ve los paquetes por recibir y, al recibirlos, las fotos que faltan', async () => {
+  it('recepción ve los paquetes por recibir y, al recibirlos, las cartas por identificar y las fotos que faltan', async () => {
     const code = await placeOrder();
     let s = await today('staff@lab.test');
     expect(s.toReceive).toMatchObject({ count: 1, tasks: [{ orderCode: code, customerEmail: 'cliente@example.com' }] });
     expect(s.photosMissing.count).toBe(0);
+    expect(s.toIdentify.count).toBe(0);
 
     await api(`/admin/orders/${code}/transitions`, 'staff@lab.test', { body: { to: 'PACKAGE_RECEIVED', expectedStatus: 'SUBMITTED' } });
     s = await today('staff@lab.test');
     expect(s.toReceive.count).toBe(0);
+    expect(s.toIdentify).toMatchObject({ count: 2, tasks: [{ orderCode: code, position: 1 }, { position: 2 }] });
+    expect(s.toIdentify.tasks[0].cardName).toBeUndefined();
+
+    await identify(code, 1, 'Charizard Holo');
+    await identify(code, 2, 'Blastoise Holo');
+    s = await today('staff@lab.test');
+    expect(s.toIdentify.count).toBe(0);
     expect(s.photosMissing).toMatchObject({
       count: 2,
       tasks: [{ orderCode: code, position: 1, cardName: 'Charizard Holo', note: 'Falta la foto del anverso y reverso' }, { position: 2 }],
@@ -161,5 +176,38 @@ describe('pantalla "Hoy" del laboratorio', () => {
     await loginAs('cliente@example.com');
     expect((await api('/admin/today', 'cliente@example.com')).status).toBe(403);
     expect((await t.app.request('/api/v1/admin/today')).status).toBe(401);
+  });
+});
+
+describe('identificar las cartas al recibirlas', () => {
+  it('recepción y calificadores la identifican; control de calidad y clientes no', async () => {
+    const code = await received(false);
+    expect((await identify(code, 1, 'Charizard Holo')).status).toBe(200);
+    const asGrader = await api(`/admin/orders/${code}/items/2/card`, 'grader@lab.test', { method: 'PUT', body: { cardName: 'Blastoise', game: 'Pokemon', year: 1999, language: 'English' } });
+    expect(asGrader.status).toBe(200);
+    expect((await read(asGrader)).order.items[1]).toMatchObject({ cardName: 'Blastoise', game: 'Pokemon', year: 1999, language: 'English' });
+    expect((await api(`/admin/orders/${code}/items/2/card`, 'qa@lab.test', { method: 'PUT', body: { cardName: 'X', game: 'Y' } })).status).toBe(403);
+    // El cliente ya inició sesión al hacer el pedido.
+    expect((await api(`/admin/orders/${code}/items/2/card`, 'cliente@example.com', { method: 'PUT', body: { cardName: 'X', game: 'Y' } })).status).toBe(403);
+  });
+
+  it('pide nombre y juego, y solo mientras la carta está en el laboratorio', async () => {
+    const code = await placeOrder();
+    // Antes de recibir el paquete no hay carta que identificar.
+    expect((await identify(code, 1, 'Charizard Holo')).status).toBe(409);
+    await api(`/admin/orders/${code}/transitions`, 'staff@lab.test', { body: { to: 'PACKAGE_RECEIVED', expectedStatus: 'SUBMITTED' } });
+    expect((await api(`/admin/orders/${code}/items/1/card`, 'staff@lab.test', { method: 'PUT', body: { cardName: ' ', game: 'Pokemon' } })).status).toBe(422);
+    expect((await api(`/admin/orders/${code}/items/9/card`, 'staff@lab.test', { method: 'PUT', body: { cardName: 'A', game: 'B' } })).status).toBe(404);
+  });
+
+  it('una carta sin identificar no se puede enviar a control de calidad', async () => {
+    const code = await received(false);
+    const res = await grade(code, 'grader@lab.test', 1, true);
+    expect(res.status).toBe(409);
+    expect(await read(res)).toMatchObject({ code: 'card_unidentified' });
+    // Como borrador sí se puede guardar mientras tanto.
+    expect((await grade(code, 'grader@lab.test', 1)).status).toBe(200);
+    await identify(code, 1, 'Charizard Holo');
+    expect((await grade(code, 'grader@lab.test', 1, true)).status).toBe(200);
   });
 });

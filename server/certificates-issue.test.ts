@@ -5,7 +5,7 @@ import { advanceDueOrders } from './domain/automation.js';
 import { signUnsignedCertificates } from './domain/issue-certificates.js';
 import { ProblemError } from './problem.js';
 import { canonicalJson, createSigner, generateSigningKey, verifySignature } from './signing.js';
-import { createTestApp, createTestDb, insertAllTiers, insertUser, testSigner, type TestDb } from './testing.js';
+import { createTestApp, createTestDb, insertAllTiers, insertUser, testSigner, type TestDb, identifyCards } from './testing.js';
 
 const read = (res: Response) => res.json() as Promise<any>;
 
@@ -52,8 +52,8 @@ async function placeOrder() {
   const res = await api('/orders', 'cliente@example.com', {
     body: {
       items: [
-        { tier: 'standard', cardName: 'Charizard Holo', game: 'Pokemon', setName: 'Base Set', declaredValueCents: 45_000 },
-        { tier: 'standard', cardName: 'Falsa Pikachu', game: 'Pokemon', setName: 'Base Set', declaredValueCents: 2_000 },
+        { tier: 'standard' },
+        { tier: 'standard' },
       ],
       shippingMethod: 'COURIER_INSURED',
       fullName: 'Carla Cliente',
@@ -61,11 +61,13 @@ async function placeOrder() {
       locale: 'es',
       clientToken: `token-${Math.random().toString(36).slice(2)}-0000`,
       acceptedTerms: true,
-      confirmedDeclaredValues: true,
     },
   });
   expect(res.status).toBe(201);
-  return (await read(res)).order.code as string;
+  const code = (await read(res)).order.code as string;
+  // El cliente solo dice cuántas cartas envía; el laboratorio las identifica al recibirlas.
+  await identifyCards(db, code, [{ cardName: 'Charizard Holo', game: 'Pokemon', setName: 'Base Set' }, { cardName: 'Falsa Pikachu', game: 'Pokemon', setName: 'Base Set' }]);
+  return code;
 }
 
 const move = (code: string, email: string, to: string, expectedStatus: string) =>
@@ -231,7 +233,7 @@ describe('verificación pública de un certificado firmado', () => {
     await move(code, 'qa@lab.test', 'SHIPPED', 'QUALITY_ASSURANCE');
     const mine = await read(await api('/me/cards', 'cliente@example.com'));
     expect(mine.cards).toHaveLength(1);
-    expect(mine.cards[0]).toMatchObject({ name: 'Charizard Holo', grade: 9.5, declaredValueEur: 450 });
+    expect(mine.cards[0]).toMatchObject({ name: 'Charizard Holo', grade: 9.5, declaredValueEur: 500 });
     await loginAs('otro@example.com');
     expect((await read(await api('/me/cards', 'otro@example.com'))).cards).toEqual([]);
   });

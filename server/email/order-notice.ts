@@ -1,13 +1,16 @@
 import { publicBaseUrl } from '../env.js';
 import type { Mail } from './transport.js';
+import { cardTitle } from '../../shared/cards.js';
+import { formatEventWhen, type PublicEventDto } from '../../shared/events.js';
+import { LAB_RECEIVING_ADDRESS, addressLines } from '../../shared/handover.js';
 
 type Locale = 'es' | 'en';
 type Data = Record<string, unknown>;
 
 /** Carta del pedido tal como la guarda la emisión de certificados (server/domain/issue-certificates.ts). */
 type IssuedCard =
-  | { position: number; cardName: string; authentic: true; number: string; grade: number; label: string }
-  | { position: number; cardName: string; authentic: false };
+  | { position: number; cardName: string | null; authentic: true; number: string; grade: number; label: string }
+  | { position: number; cardName: string | null; authentic: false };
 
 const euros = (cents: unknown, locale: Locale) =>
   typeof cents === 'number'
@@ -21,7 +24,7 @@ export const esc = (value: string) =>
   value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
 const isIssuedCard = (v: unknown): v is IssuedCard =>
-  !!v && typeof v === 'object' && typeof (v as IssuedCard).cardName === 'string' && typeof (v as IssuedCard).authentic === 'boolean';
+  !!v && typeof v === 'object' && typeof (v as IssuedCard).position === 'number' && typeof (v as IssuedCard).authentic === 'boolean';
 
 const COPY = {
   es: {
@@ -38,7 +41,13 @@ const COPY = {
     submittedSubject: (code: string) => `Hemos registrado tu pedido ${code}`,
     submittedBody: (code: string, count: number, total: string) =>
       `Hemos registrado tu pedido ${code}${count ? ` (${count} cartas)` : ''}${total ? `, total ${total}` : ''}.`,
-    submittedNext: 'En cuanto recibamos tu paquete te avisaremos.',
+    submittedNext: 'En cuanto recibamos tus cartas te avisaremos.',
+    shipTitle: 'Siguiente paso: envía tus cartas al laboratorio',
+    shipPending: 'Te enviaremos por correo la dirección exacta del laboratorio antes de que prepares el paquete.',
+    shipCode: (code: string) => `Escribe el número de pedido ${code} en una nota dentro del paquete.`,
+    dropTitle: 'Siguiente paso: entrega tus cartas en el evento',
+    dropCode: (code: string) => `Al llegar, dile al equipo tu número de pedido ${code}.`,
+    dropPending: 'Te escribiremos con el lugar y la fecha de entrega.',
     update: 'Actualización de tu pedido',
   },
   en: {
@@ -55,7 +64,13 @@ const COPY = {
     submittedSubject: (code: string) => `We registered your order ${code}`,
     submittedBody: (code: string, count: number, total: string) =>
       `We registered your order ${code}${count ? ` (${count} cards)` : ''}${total ? `, total ${total}` : ''}.`,
-    submittedNext: 'We will let you know as soon as we receive your package.',
+    submittedNext: 'We will let you know as soon as we receive your cards.',
+    shipTitle: 'Next step: send your cards to the laboratory',
+    shipPending: 'We will email you the exact laboratory address before you prepare your package.',
+    shipCode: (code: string) => `Write the order number ${code} on a note inside the package.`,
+    dropTitle: 'Next step: hand over your cards at the event',
+    dropCode: (code: string) => `When you arrive, tell the team your order number ${code}.`,
+    dropPending: 'We will email you the drop-off place and date.',
     update: 'Update on your order',
   },
 } as const;
@@ -112,7 +127,7 @@ function certificatesBlock(cards: IssuedCard[], lang: Locale, base: string) {
         const url = `${base}/certificates/${encodeURIComponent(x.number)}`;
         return `<tr>
 <td style="padding:12px 0;border-top:1px solid #E5E7EB;vertical-align:top;">
-<div style="font-weight:700;font-size:14px;">${esc(x.cardName)}</div>
+<div style="font-weight:700;font-size:14px;">${esc(cardTitle(x.cardName, x.position, lang))}</div>
 <div style="font-family:Consolas,Menlo,monospace;font-size:12px;color:#6B7280;margin-top:2px;">${esc(x.number)}</div>
 </td>
 <td style="padding:12px 0 12px 12px;border-top:1px solid #E5E7EB;text-align:right;vertical-align:top;white-space:nowrap;">
@@ -126,19 +141,46 @@ function certificatesBlock(cards: IssuedCard[], lang: Locale, base: string) {
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${rows}</table>
 <p style="font-size:12px;color:#6B7280;margin:8px 0 0;">${c.certNote}</p>`;
     plain += `\n${c.certificates}:\n${certified
-      .map((x) => `- ${x.cardName}: ${gradeText(x.grade, lang)} ${x.label} · ${x.number}\n  ${base}/certificates/${x.number}`)
+      .map((x) => `- ${cardTitle(x.cardName, x.position, lang)}: ${gradeText(x.grade, lang)} ${x.label} · ${x.number}\n  ${base}/certificates/${x.number}`)
       .join('\n')}\n${c.certNote}\n`;
   }
 
   if (rejected.length > 0) {
     html += `<p style="font-size:13px;color:#991B1B;margin:18px 0 4px;">${c.notAuthentic}</p>
-<ul style="margin:0 0 0 18px;padding:0;font-size:13px;color:#374151;">${rejected.map((x) => `<li>${esc(x.cardName)}</li>`).join('')}</ul>`;
-    plain += `\n${c.notAuthentic}\n${rejected.map((x) => `- ${x.cardName}`).join('\n')}\n`;
+<ul style="margin:0 0 0 18px;padding:0;font-size:13px;color:#374151;">${rejected.map((x) => `<li>${esc(cardTitle(x.cardName, x.position, lang))}</li>`).join('')}</ul>`;
+    plain += `\n${c.notAuthentic}\n${rejected.map((x) => `- ${cardTitle(x.cardName, x.position, lang)}`).join('\n')}\n`;
   }
   return { html, plain };
 }
 
 /** Convierte una fila de la cola (plantilla + datos) en el email que se envía al cliente. */
+const isEvent = (v: unknown): v is PublicEventDto =>
+  !!v && typeof v === 'object' && typeof (v as PublicEventDto).name === 'string' && typeof (v as PublicEventDto).startsAt === 'string';
+
+/** Qué hacer con las cartas tras pagar: adónde enviarlas o en qué evento entregarlas. */
+function handoverBlock(data: Data, code: string, lang: Locale) {
+  const c = COPY[lang];
+  const box = (title: string, lines: string[], note: string) => ({
+    html: `<div style="margin:18px 0 6px;padding:16px 18px;background:#F0FDF4;border:2px solid #15803D;">
+<div style="font-size:12px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#15803D;">${esc(title)}</div>
+<div style="font-size:15px;line-height:1.5;margin-top:8px;color:#111827;">${lines.map((l, i) => (i === 0 ? `<strong>${esc(l)}</strong>` : esc(l))).join('<br>')}</div>
+<div style="font-size:13px;color:#374151;margin-top:10px;">${esc(note)}</div>
+</div>`,
+    plain: `\n${title}\n${lines.join('\n')}\n${note}\n`,
+  });
+  if (data.shippingMethod === 'CARD_SHOW_DROPOFF') {
+    const e = isEvent(data.event) ? data.event : null;
+    if (!e) return box(c.dropTitle, [c.dropPending], c.dropCode(code));
+    const place = [e.venue, e.address, e.city].filter((v): v is string => !!v);
+    return box(c.dropTitle, [e.name, ...place, formatEventWhen(e.startsAt, e.endsAt, lang), ...(e.details ? [e.details] : [])], c.dropCode(code));
+  }
+  if (data.shippingMethod === 'COURIER_INSURED') {
+    const a = LAB_RECEIVING_ADDRESS;
+    return a ? box(c.shipTitle, addressLines(a), c.shipCode(code)) : box(c.shipTitle, [c.shipPending], c.shipCode(code));
+  }
+  return { html: '', plain: '' };
+}
+
 export function renderOrderEmail(template: string, locale: string, to: string, data: Data): Mail {
   const lang: Locale = locale === 'en' ? 'en' : 'es';
   const c = COPY[lang];
@@ -150,11 +192,12 @@ export function renderOrderEmail(template: string, locale: string, to: string, d
     const total = euros(data.totalCents, lang);
     const count = typeof data.itemCount === 'number' ? data.itemCount : 0;
     const title = c.submittedSubject(code);
-    const body = paragraph(c.submittedBody(code, count, total)) + paragraph(c.submittedNext);
+    const next = handoverBlock(data, code, lang);
+    const body = paragraph(c.submittedBody(code, count, total)) + next.html + paragraph(c.submittedNext);
     return {
       to,
       subject: title,
-      text: `${c.submittedBody(code, count, total)}\n\n${c.submittedNext}\n\n${c.viewOrder}: ${orderUrl}\n\n${c.footer}\n\nGorilla Grading`,
+      text: `${c.submittedBody(code, count, total)}\n${next.plain}\n${c.submittedNext}\n\n${c.viewOrder}: ${orderUrl}\n\n${c.footer}\n\nGorilla Grading`,
       html: layout({ lang, title, code, body, base }),
     };
   }

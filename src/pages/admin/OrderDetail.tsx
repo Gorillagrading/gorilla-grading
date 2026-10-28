@@ -153,7 +153,7 @@ export const OrderDetail: React.FC<{ code: string; onBack: () => void }> = ({ co
                   <tr key={item.position} className={`border-b last:border-b-0 ${t.rule}`}>
                     <td className={`px-5 py-3 font-mono text-xs ${t.muted}`}>{String(item.position).padStart(2, '0')}</td>
                     <td className="px-3 py-3">
-                      <div className={`font-bold ${t.text}`}>{item.cardName}</div>
+                      <div className={`font-bold ${t.text}`}>{item.cardName ?? 'Sin identificar'}</div>
                       <div className={`text-[11px] ${t.muted}`}>
                         {[item.game, item.setName, item.year, item.language].filter(Boolean).join(' · ')}
                       </div>

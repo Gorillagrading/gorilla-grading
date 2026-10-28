@@ -3,7 +3,7 @@
  * con las mismas migraciones que Supabase.
  */
 import { PGlite } from '@electric-sql/pglite';
-import { sql } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/pglite';
 import { migrate } from 'drizzle-orm/pglite/migrator';
 import * as schema from '../db/schema.js';
@@ -263,4 +263,42 @@ export function createFakePayments() {
     getReceiptUrl: async (paymentIntentId) => (state.fail ? null : `https://pay.stripe.test/receipts/${paymentIntentId}`),
   };
   return { gateway, sessions, state };
+}
+
+/** Lo que hace el laboratorio al abrir el paquete: apunta qué carta es cada una, por posición. */
+export async function identifyCards(
+  db: TestDb,
+  code: string,
+  cards: { cardName: string; game: string; setName?: string }[],
+) {
+  const [order] = await db.select({ id: schema.orders.id }).from(schema.orders).where(eq(schema.orders.code, code));
+  for (const [i, card] of cards.entries()) {
+    await db
+      .update(schema.orderItems)
+      .set({ cardName: card.cardName, game: card.game, setName: card.setName ?? null })
+      .where(and(eq(schema.orderItems.orderId, order.id), eq(schema.orderItems.position, i + 1)));
+  }
+}
+
+/** Un evento publicado, que acepta entregas, dentro de una semana. */
+export async function insertEvent(db: TestDb, over: Partial<typeof schema.events.$inferInsert> = {}) {
+  const start = new Date(Date.now() + 7 * 86_400_000);
+  const [event] = await db
+    .insert(schema.events)
+    .values({
+      kind: 'fair',
+      name: 'Salón del Cómic de Madrid',
+      city: 'Madrid',
+      countryCode: 'ES',
+      venue: 'IFEMA, pabellón 3',
+      address: 'Av. del Partenón 5',
+      details: 'Stand 14 · entregas de 10:00 a 19:00',
+      startsAt: start,
+      endsAt: new Date(start.getTime() + 9 * 3_600_000),
+      published: true,
+      acceptsSubmissions: true,
+      ...over,
+    })
+    .returning();
+  return event;
 }

@@ -1,7 +1,9 @@
 import { and, asc, desc, eq, ne, sql } from 'drizzle-orm';
 import { normalizeCode } from '../../shared/codes.js';
 import type { Db } from '../../db/client.js';
-import { custodyEvents, orderItems, orders, shipments } from '../../db/schema.js';
+import { custodyEvents, events as eventsTable, orderItems, orders, shipments } from '../../db/schema.js';
+import { LAB_RECEIVING_ADDRESS, type Handover } from '../../shared/handover.js';
+import { toPublicEvent } from './events.js';
 import type { OrderStatus } from '../../shared/domain.js';
 import type { TrackingDto } from '../../shared/tracking.js';
 
@@ -66,6 +68,18 @@ export async function findTracking(db: Db, rawQuery: string, viewerId: string | 
         : order.status;
   const at = PIPELINE.indexOf(effective);
 
+  // Hasta que el laboratorio recibe las cartas, el dueño ve adónde enviarlas o en qué evento entregarlas.
+  const owner = !!viewerId && viewerId === order.userId;
+  let handover: Handover | null = null;
+  if (owner && (order.status === 'PAYMENT_PENDING' || order.status === 'SUBMITTED')) {
+    if (order.shippingMethod === 'CARD_SHOW_DROPOFF') {
+      const [event] = order.eventId ? await db.select().from(eventsTable).where(eq(eventsTable.id, order.eventId)).limit(1) : [];
+      handover = { kind: 'dropoff', event: event ? toPublicEvent(event) : null };
+    } else if (order.shippingMethod === 'COURIER_INSURED') {
+      handover = { kind: 'ship', address: LAB_RECEIVING_ADDRESS };
+    }
+  }
+
   return {
     code: order.code,
     status: order.status,
@@ -87,5 +101,6 @@ export async function findTracking(db: Db, rawQuery: string, viewerId: string | 
       state: !finished && i === events.length - 1 ? 'current' : 'completed',
     })),
     pending: finished || at < 0 ? [] : PIPELINE.slice(at + 1),
+    handover,
   };
 }

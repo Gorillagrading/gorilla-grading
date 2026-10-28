@@ -2,7 +2,7 @@ import { eq, sql } from 'drizzle-orm';
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { auditLogs, custodyEvents, emailOutbox, orders, shipments, users } from '../db/schema.js';
 import { advanceDueOrders } from './domain/automation.js';
-import { createTestApp, createTestDb, insertAllTiers, insertUser, type TestDb, approveAllGrading } from './testing.js';
+import { createTestApp, createTestDb, insertAllTiers, insertUser, type TestDb, approveAllGrading, identifyCards, insertEvent } from './testing.js';
 
 const read = (res: Response) => res.json() as Promise<any>;
 
@@ -58,19 +58,21 @@ async function placeOrder(email = 'cliente@example.com', over: Record<string, un
   if (!cookies.has(email)) await loginAs(email);
   const res = await api('/orders', email, {
     body: {
-      items: [{ tier: 'standard', cardName: 'Charizard Holo', game: 'Pokemon', setName: 'Base Set', declaredValueCents: 45_000 }],
+      items: [{ tier: 'standard' }],
       shippingMethod: 'COURIER_INSURED',
       fullName: 'Carla Cliente',
       shippingAddress: { line1: 'Calle Secreta 7', city: 'Madrid', postalCode: '28001', countryCode: 'ES' },
       locale: 'es',
       clientToken: `token-${Math.random().toString(36).slice(2)}-0000`,
       acceptedTerms: true,
-      confirmedDeclaredValues: true,
       ...over,
     },
   });
   expect(res.status).toBe(201);
-  return (await read(res)).order.code as string;
+  const code = (await read(res)).order.code as string;
+  // El cliente solo dice cuántas cartas envía; el laboratorio las identifica al recibirlas.
+  await identifyCards(db, code, [{ cardName: 'Charizard Holo', game: 'Pokemon', setName: 'Base Set' }]);
+  return code;
 }
 
 const move = (code: string, email: string, to: string, expectedStatus: string, extra: Record<string, unknown> = {}) =>
@@ -208,7 +210,7 @@ describe('detalle', () => {
     const { order } = await read(await api(`/admin/orders/${code}`, 'staff@lab.test'));
     expect(order.customer).toMatchObject({ email: 'cliente@example.com', fullName: 'Carla Cliente', locale: 'es' });
     expect(order.shippingAddress).toMatchObject({ line1: 'Calle Secreta 7', city: 'Madrid' });
-    expect(order.items[0]).toMatchObject({ position: 1, cardName: 'Charizard Holo', tier: 'standard', declaredValueCents: 45_000 });
+    expect(order.items[0]).toMatchObject({ position: 1, cardName: 'Charizard Holo', tier: 'standard', declaredValueCents: 50_000 });
     expect(order.order).toMatchObject({ status: 'SUBMITTED', totalCents: 3350, shippingCents: 1450 });
     expect(order.timeline).toHaveLength(1);
   });
@@ -512,7 +514,7 @@ describe('cambios de estado', () => {
 
     it('la entrega en mano no necesita seguimiento y usa su propio texto', async () => {
       await staffSetup();
-      const code = await placeOrder('evento@example.com', { shippingMethod: 'CARD_SHOW_DROPOFF', shippingAddress: undefined });
+      const code = await placeOrder('evento@example.com', { shippingMethod: 'CARD_SHOW_DROPOFF', shippingAddress: undefined, eventId: (await insertEvent(db)).id });
     await approveAllGrading(db, code);
       await untilQuality(code, { tracking: false });
       expect((await move(code, 'qa@lab.test', 'SHIPPED', 'QUALITY_ASSURANCE')).status).toBe(200);

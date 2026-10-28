@@ -121,8 +121,10 @@ export async function getStaffToday(db: Db, viewer: UserDto, now = new Date()): 
 
   for (const item of items) {
     const o = orderOf.get(item.orderId)!;
-    const card = { ...base(o), position: item.position, cardName: item.cardName };
+    const card = { ...base(o), position: item.position, cardName: item.cardName ?? undefined };
     const received = (o.order.autoAnchorAt ?? o.order.submittedAt ?? o.order.createdAt).toISOString();
+    if (!item.cardName) push('toIdentify', { ...card, since: received });
+
     const kinds = new Set(photos.filter((p) => p.itemId === item.id).map((p) => p.kind));
     if (!kinds.has('front') || !kinds.has('back')) {
       const missing = [!kinds.has('front') && 'anverso', !kinds.has('back') && 'reverso'].filter(Boolean).join(' y ');

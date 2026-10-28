@@ -6,6 +6,7 @@ import { BusinessDashboard } from './admin/BusinessDashboard';
 import { OrderDetail } from './admin/OrderDetail';
 import { OrderQueue } from './admin/OrderQueue';
 import { TodayPanel } from './admin/TodayPanel';
+import { EventsCalendar } from './admin/EventsCalendar';
 
 const ROLE_LABEL: Record<string, string> = {
   staff: 'Recepción y logística',
@@ -16,6 +17,7 @@ const ROLE_LABEL: Record<string, string> = {
 
 export const DASHBOARD_PATH = '/admin/dashboard';
 export const QUEUE_PATH = '/admin/orders';
+export const EVENTS_PATH = '/admin/events';
 
 /** Última pantalla de lista visitada, para que "Volver" desde un pedido regrese a ella. */
 let lastListPath = '/admin';
@@ -58,7 +60,13 @@ export const AdminPage: React.FC<AdminPageProps> = ({ path, onNavigate }) => {
   const code = path.startsWith(detailPrefix) ? decodeURIComponent(path.slice(detailPrefix.length)) : null;
   const isAdmin = user.role === 'admin';
   // El panel de negocio es solo para la dirección; el servidor también lo comprueba.
-  const section = code ? 'detail' : isAdmin && path === DASHBOARD_PATH ? 'dashboard' : path === QUEUE_PATH ? 'queue' : 'today';
+  const section = code
+    ? 'detail'
+    : isAdmin && path === DASHBOARD_PATH
+      ? 'dashboard'
+      : isAdmin && path === EVENTS_PATH
+        ? 'events'
+        : path === QUEUE_PATH ? 'queue' : 'today';
   const openOrder = (c: string) => onNavigate(`${detailPrefix}${encodeURIComponent(c)}`);
   if (section !== 'detail') lastListPath = path + window.location.search;
   const initialStatus = section === 'queue' ? new URLSearchParams(window.location.search).get('status') ?? 'active' : 'active';
@@ -85,10 +93,10 @@ export const AdminPage: React.FC<AdminPageProps> = ({ path, onNavigate }) => {
         <header className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#15803D] dark:text-[#61B663] font-bold">
-              {section === 'dashboard' ? 'Dirección' : 'Laboratorio'}
+              {section === 'dashboard' || section === 'events' ? 'Dirección' : 'Laboratorio'}
             </div>
             <h1 className={`font-['Nunito',sans-serif] text-2xl sm:text-3xl font-[900] uppercase ${text}`}>
-              {{ dashboard: 'Negocio', detail: 'Pedido', queue: 'Pedidos', today: 'Hoy' }[section]}
+              {{ dashboard: 'Negocio', events: 'Eventos', detail: 'Pedido', queue: 'Pedidos', today: 'Hoy' }[section]}
             </h1>
           </div>
           <div className={`text-xs text-right ${muted}`}>
@@ -108,12 +116,15 @@ export const AdminPage: React.FC<AdminPageProps> = ({ path, onNavigate }) => {
           <nav className="flex flex-wrap gap-2" role="tablist" aria-label="Secciones del panel">
             {tab('/admin', 'Hoy', section === 'today')}
             {tab(QUEUE_PATH, 'Pedidos', section === 'queue')}
+            {isAdmin && tab(EVENTS_PATH, 'Eventos', section === 'events')}
             {isAdmin && tab(DASHBOARD_PATH, 'Negocio', section === 'dashboard')}
           </nav>
         )}
 
         {section === 'dashboard' ? (
           <BusinessDashboard onOpenOrder={openOrder} />
+        ) : section === 'events' ? (
+          <EventsCalendar />
         ) : code ? (
           <OrderDetail code={code} onBack={() => onNavigate(lastListPath)} />
         ) : section === 'queue' ? (

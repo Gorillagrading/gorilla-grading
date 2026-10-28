@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { AdminOrdersQuery, STAFF_ROLES, ShipmentBody, TransitionBody } from '../../shared/admin.js';
+import { AdminOrdersQuery, IdentifyCardBody, STAFF_ROLES, ShipmentBody, TransitionBody } from '../../shared/admin.js';
 import { ImageBody } from '../../shared/photos.js';
 import { GradingBody, RejectGradingBody } from '../../shared/grading-admin.js';
 import { requireRole, requireUser } from '../auth/middleware.js';
@@ -11,6 +11,9 @@ import { confirmImage, createImageUpload, deleteImage, listOrderImages } from '.
 import { approveGrading, rejectGrading, saveGrading } from '../domain/grading-results.js';
 import { addShipment, getAdminOrder, listAdminOrders, transitionOrder } from '../domain/admin-orders.js';
 import { getStaffToday } from '../domain/staff-today.js';
+import { identifyCard } from '../domain/card-identification.js';
+import { createEvent, deleteEvent, listAdminEvents, updateEvent } from '../domain/events.js';
+import { EventBody } from '../../shared/events.js';
 import { clientIp, parseJson } from '../http.js';
 import { ProblemError } from '../problem.js';
 
@@ -81,6 +84,27 @@ export function adminRoutes(deps: Deps) {
     return c.json({ grading });
   });
 
+  // Calendario de eventos con entrega en mano. Solo la dirección los crea y cambia.
+  const admin = [requireUser(deps), requireRole('admin')] as const;
+  routes.get('/admin/events', ...admin, async (c) => c.json({ events: await listAdminEvents(deps.getDb()) }));
+
+  routes.post('/admin/events', ...admin, async (c) => {
+    const body = await parseJson(c, EventBody);
+    const id = await createEvent(deps.getDb(), c.get('user'), body, clientIp(c));
+    return c.json({ id }, 201);
+  });
+
+  routes.put('/admin/events/:id', ...admin, async (c) => {
+    const body = await parseJson(c, EventBody);
+    await updateEvent(deps.getDb(), c.get('user'), c.req.param('id'), body, clientIp(c));
+    return c.body(null, 204);
+  });
+
+  routes.delete('/admin/events/:id', ...admin, async (c) => {
+    await deleteEvent(deps.getDb(), c.get('user'), c.req.param('id'), clientIp(c));
+    return c.body(null, 204);
+  });
+
   // Panel de negocio: ingresos, clientes y cartas. Solo para la dirección (rol admin).
   routes.get('/admin/dashboard', requireUser(deps), requireRole('admin'), async (c) => {
     const parsed = DashboardQuery.safeParse(c.req.query());
@@ -135,6 +159,13 @@ export function adminRoutes(deps: Deps) {
 
   // Fotos de las cartas. Las suben quienes reciben o gradúan; control de calidad solo las mira.
   const photographer = [requireUser(deps), requireRole('staff', 'grader', 'admin')] as const;
+
+  // Qué carta es cada una: la apuntan quienes reciben o gradúan al abrir el paquete.
+  routes.put('/admin/orders/:code/items/:position/card', ...photographer, async (c) => {
+    const body = await parseJson(c, IdentifyCardBody);
+    await identifyCard(deps.getDb(), c.get('user'), c.req.param('code'), position(c), body, { ip: clientIp(c) });
+    return c.json({ order: await getAdminOrder(deps.getDb(), c.get('user'), c.req.param('code')) });
+  });
 
   routes.get('/admin/orders/:code/images', ...staff, async (c) =>
     c.json(await listOrderImages(deps.getDb(), deps.storage, c.req.param('code'))),
