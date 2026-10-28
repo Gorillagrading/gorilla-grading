@@ -150,7 +150,7 @@ export const OrderQueue: React.FC<{ onOpen: (code: string) => void }> = ({ onOpe
                 <td className="px-4 py-3.5">
                   <StatusPill status={order.status} />
                   {order.status === 'QUALITY_ASSURANCE' && (
-                    <div className="mt-1 text-[10px] font-bold text-emerald-700 dark:text-emerald-300">Pendiente de aprobar</div>
+                    <div className={`mt-1 text-[10px] font-bold ${t.positive}`}>Pendiente de aprobar</div>
                   )}
                 </td>
                 <td className={`px-4 py-3.5 text-xs ${t.muted}`}>{order.shippingMethod ? SHIPPING_LABEL[order.shippingMethod] : '—'}</td>

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Lock } from 'lucide-react';
 import type { AdminOrderDetail, AdminTransitionOption } from '../../../shared/admin';
 import type { OrderStatus } from '../../../shared/domain';
 import type { ImageDto } from '../../../shared/photos';
@@ -130,7 +130,7 @@ export const OrderDetail: React.FC<{ code: string; onBack: () => void }> = ({ co
         </dl>
       </div>
 
-      {notice && <p role="status" className="text-sm text-emerald-600 dark:text-emerald-400">{notice}</p>}
+      {notice && <p role="status" className={`text-sm ${t.positive}`}>{notice}</p>}
       {error && <p role="alert" className="text-sm text-red-500">{error}</p>}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
@@ -209,9 +209,12 @@ export const OrderDetail: React.FC<{ code: string; onBack: () => void }> = ({ co
                     </p>
                   )}
                   {event.internalNote && (
-                    <p className="text-xs mt-2 px-3 py-2 rounded border border-amber-500/40 bg-amber-500/10 text-amber-800 dark:text-amber-200">
-                      <span className="font-mono text-[10px] uppercase tracking-wider mr-1">Nota interna:</span>
-                      {event.internalNote}
+                    <p className={`flex gap-1.5 text-xs mt-1.5 ${t.text}`}>
+                      <Lock className={`w-3 h-3 shrink-0 mt-0.5 ${t.muted}`} aria-hidden="true" />
+                      <span>
+                        <span className={`font-mono text-[10px] uppercase tracking-wider mr-1 ${t.muted}`}>Nota interna:</span>
+                        {event.internalNote}
+                      </span>
                     </p>
                   )}
                 </li>
@@ -245,7 +248,7 @@ export const OrderDetail: React.FC<{ code: string; onBack: () => void }> = ({ co
                       {actionLabel(option, order)}
                     </button>
                     {option.blockedReason && (
-                      <p className="text-[11px] mt-1.5 text-amber-700 dark:text-amber-300">{BLOCKED_TEXT[option.blockedReason]}</p>
+                      <p className={`text-[11px] mt-1.5 ${t.isLight ? 'text-amber-700' : 'text-amber-300'}`}>{BLOCKED_TEXT[option.blockedReason]}</p>
                     )}
                   </li>
                 ))}
@@ -258,8 +261,12 @@ export const OrderDetail: React.FC<{ code: string; onBack: () => void }> = ({ co
             <section className={`border rounded-xl p-5 ${t.card}`} aria-label="Avance automático">
               <h3 className={`font-['Nunito',sans-serif] text-sm font-[900] uppercase mb-3 ${t.text}`}>Avance automático</h3>
               {order.automation.awaitingFinalApproval ? (
-                <p className="text-xs px-3 py-2.5 rounded border border-emerald-500/40 bg-emerald-500/10 text-emerald-800 dark:text-emerald-200">
-                  El pedido ha pasado todas las fases y está <strong>listo para aprobar su salida</strong>. El sistema no lo envía por su cuenta.
+                <p className={`flex gap-2.5 text-xs leading-relaxed ${t.text}`}>
+                  <CheckCircle2 className={`w-4 h-4 shrink-0 mt-px ${t.positive}`} aria-hidden="true" />
+                  <span>
+                    El pedido ha pasado todas las fases y está <strong>listo para aprobar su salida</strong>.{' '}
+                    <span className={t.muted}>El sistema no lo envía por su cuenta.</span>
+                  </span>
                 </p>
               ) : order.automation.nextSteps.length > 0 ? (
                 <>

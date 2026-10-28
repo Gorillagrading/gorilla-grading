@@ -78,7 +78,7 @@ export const GradingPanel: React.FC<{
         <span className={`font-bold text-sm ${t.text}`}>{item.cardName}</span>
         <span className="flex-1" />
         {grading ? (
-          <span className={`text-xs font-bold ${grading.status === 'approved' ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-700 dark:text-amber-300'}`}>
+          <span className={`text-xs font-bold ${grading.status === 'approved' ? t.positive : t.isLight ? 'text-amber-700' : 'text-amber-300'}`}>
             {STATUS_TEXT[grading.status]}
             {grading.finalGrade !== null && ` · ${fmt(grading.finalGrade)} ${grading.gradeLabel ?? ''}`}
             {!grading.isAuthentic && ' · No auténtica'}
@@ -91,7 +91,7 @@ export const GradingPanel: React.FC<{
 
       <div className={`border-t px-4 py-4 space-y-5 ${t.rule}`}>
         {local && (
-          <p role={local.kind === 'error' ? 'alert' : 'status'} className={`text-xs font-bold ${local.kind === 'error' ? 'text-red-500' : 'text-emerald-600 dark:text-emerald-400'}`}>
+          <p role={local.kind === 'error' ? 'alert' : 'status'} className={`text-xs font-bold ${local.kind === 'error' ? 'text-red-500' : t.positive}`}>
             {local.text}
           </p>
         )}
@@ -108,7 +108,7 @@ export const GradingPanel: React.FC<{
           />
         )}
         {canReview && ownWork && (
-          <p className="text-xs text-amber-700 dark:text-amber-300">
+          <p className={`text-xs ${t.isLight ? 'text-amber-700' : 'text-amber-300'}`}>
             Graduaste esta carta tú: la aprobación tiene que hacerla otra persona.
           </p>
         )}
@@ -243,7 +243,7 @@ const ResultView: React.FC<{ grading: AdminGradingResult }> = ({ grading }) => {
         {grading.qaApprovedBy && ` · aprobó ${grading.qaApprovedBy}`}
       </h4>
       {!grading.isAuthentic ? (
-        <p className="text-sm font-bold text-red-600 dark:text-red-400">No se ha podido autenticar la carta.</p>
+        <p className={`text-sm font-bold ${t.negative}`}>No se ha podido autenticar la carta.</p>
       ) : (
         <>
           <p className={`text-lg font-[900] ${t.text}`}>
