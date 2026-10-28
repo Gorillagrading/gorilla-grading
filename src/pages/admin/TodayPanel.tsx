@@ -86,7 +86,9 @@ export const TodayPanel: React.FC<{
   const urgent = sections.filter((s) => URGENT.includes(s.key)).reduce((sum, s) => sum + s.count, 0);
   const shown = sections.filter((s) => s.count > 0 && (!filter || s.key === filter));
   const firstName = user.fullName?.trim().split(/\s+/)[0];
-  const cols = sections.length > 4 ? 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-5' : sections.length === 4 ? 'grid-cols-2 lg:grid-cols-4' : 'grid-cols-2';
+  // Lo urgente primero; dentro de cada grupo, el orden del rol.
+  const active = sections.filter((s) => s.count > 0).sort((a, b) => Number(URGENT.includes(b.key)) - Number(URGENT.includes(a.key)));
+  const idle = sections.filter((s) => s.count === 0);
 
   return (
     <div className="space-y-6" aria-busy={loading}>
@@ -160,44 +162,62 @@ export const TodayPanel: React.FC<{
 
       {data && (
         <>
-          {/* Resumen por tipo: pulsar uno filtra la lista */}
-          <div className={`grid ${cols} gap-3`} role="group" aria-label="Resumen de tareas">
-            {sections.map((s) => {
+          {/* Resumen compacto: cada tipo con trabajo es una píldora con un anillo que marca su parte del total */}
+          <div className="flex flex-wrap items-center gap-2.5" role="group" aria-label="Tareas pendientes por tipo">
+            {active.map((s) => {
               const kind = KIND[s.key];
               const Icon = kind.icon;
               const selected = filter === s.key;
-              const empty = s.count === 0;
+              const days = daysSince(s.tasks[0].since);
+              const ageColor = s.key === 'late' || days >= 5 ? '#DC2626' : days >= 2 ? '#D97706' : '#16A34A';
+              const share = pending > 0 ? s.count / pending : 0;
+              const r = 17;
+              const circumference = 2 * Math.PI * r;
               return (
                 <button
                   key={s.key}
                   type="button"
                   aria-pressed={selected}
-                  disabled={empty}
                   onClick={() => setFilter(selected ? null : s.key)}
+                  title={`${title(s.key)}: ${s.count} · la más antigua, ${waiting(s.tasks[0].since)}`}
                   style={selected ? { borderColor: kind.color, boxShadow: `0 0 0 1px ${kind.color}` } : undefined}
-                  className={`group relative text-left border rounded-xl p-4 overflow-hidden transition-all cursor-pointer disabled:cursor-default ${t.card} ${
-                    empty ? '' : 'hover:-translate-y-0.5 hover:shadow-md'
-                  }`}
+                  className={`group inline-flex items-center gap-3 pl-1.5 pr-4 py-1.5 rounded-full border transition-all cursor-pointer hover:-translate-y-0.5 hover:shadow-md ${t.card}`}
                 >
-                  <span className="absolute inset-x-0 top-0 h-[3px]" style={{ background: empty ? 'transparent' : kind.color }} aria-hidden="true" />
-                  <div className="flex items-center justify-between gap-2">
-                    <span
-                      className="w-8 h-8 rounded-lg flex items-center justify-center text-white"
-                      style={{ background: empty ? (t.isLight ? '#D6D3D1' : '#57534E') : kind.color }}
-                    >
+                  <span className="relative w-10 h-10 shrink-0">
+                    <svg viewBox="0 0 40 40" className="w-10 h-10 -rotate-90" aria-hidden="true">
+                      <circle cx="20" cy="20" r={r} fill="none" strokeWidth="3.5" className={t.isLight ? 'stroke-[#EFEBE3]' : 'stroke-[#2A2A2A]'} />
+                      <circle
+                        cx="20" cy="20" r={r} fill="none" strokeWidth="3.5" strokeLinecap="round" stroke={kind.color}
+                        strokeDasharray={`${Math.max(share * circumference, 4)} ${circumference}`}
+                      />
+                    </svg>
+                    <span className="absolute inset-0 flex items-center justify-center" style={{ color: kind.color }}>
                       <Icon className="w-4 h-4" aria-hidden="true" />
                     </span>
-                    <span className={`font-['Nunito',sans-serif] text-3xl font-[900] leading-none tabular-nums ${empty ? t.muted : t.text}`}>
-                      {s.count}
+                  </span>
+                  <span className={`font-['Nunito',sans-serif] text-2xl font-[900] leading-none tabular-nums ${t.text}`}>{s.count}</span>
+                  <span className="flex flex-col items-start leading-tight">
+                    <span className={`text-xs font-bold whitespace-nowrap ${t.text}`}>{title(s.key)}</span>
+                    <span className={`inline-flex items-center gap-1 text-[10px] whitespace-nowrap ${t.muted}`}>
+                      <span className="w-1.5 h-1.5 rounded-full" style={{ background: ageColor }} aria-hidden="true" />
+                      {waiting(s.tasks[0].since)}
                     </span>
-                  </div>
-                  <div className={`mt-3 text-xs font-bold ${t.text}`}>{title(s.key)}</div>
-                  <div className={`text-[11px] mt-0.5 truncate ${t.muted}`}>
-                    {empty ? 'Al día' : `La más antigua, ${waiting(s.tasks[0].since)}`}
-                  </div>
+                  </span>
                 </button>
               );
             })}
+
+            {idle.length > 0 && (
+              <span className={`inline-flex items-center gap-2 pl-1.5 pr-4 py-1.5 rounded-full border border-dashed ${t.rule}`} title={idle.map((s) => title(s.key)).join(' · ')}>
+                <span className="w-10 h-10 rounded-full bg-[#16A34A] text-white flex items-center justify-center shrink-0">
+                  <Check className="w-4 h-4" strokeWidth={3} aria-hidden="true" />
+                </span>
+                <span className="flex flex-col leading-tight">
+                  <span className={`text-xs font-bold ${t.text}`}>{idle.length} {idle.length === 1 ? 'tipo al día' : 'tipos al día'}</span>
+                  <span className={`text-[10px] max-w-[260px] truncate ${t.muted}`}>{idle.map((s) => title(s.key)).join(' · ')}</span>
+                </span>
+              </span>
+            )}
           </div>
 
           {/* Lista de trabajo */}
