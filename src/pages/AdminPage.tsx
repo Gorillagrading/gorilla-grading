@@ -7,6 +7,7 @@ import { OrderDetail } from './admin/OrderDetail';
 import { OrderQueue } from './admin/OrderQueue';
 import { TodayPanel } from './admin/TodayPanel';
 import { EventsCalendar } from './admin/EventsCalendar';
+import { TeamPanel } from './admin/TeamPanel';
 
 const ROLE_LABEL: Record<string, string> = {
   staff: 'Recepción y logística',
@@ -18,6 +19,7 @@ const ROLE_LABEL: Record<string, string> = {
 export const DASHBOARD_PATH = '/admin/dashboard';
 export const QUEUE_PATH = '/admin/orders';
 export const EVENTS_PATH = '/admin/events';
+export const TEAM_PATH = '/admin/team';
 
 /** Última pantalla de lista visitada, para que "Volver" desde un pedido regrese a ella. */
 let lastListPath = '/admin';
@@ -66,6 +68,8 @@ export const AdminPage: React.FC<AdminPageProps> = ({ path, onNavigate }) => {
       ? 'dashboard'
       : isAdmin && path === EVENTS_PATH
         ? 'events'
+        : isAdmin && path === TEAM_PATH
+          ? 'team'
         : path === QUEUE_PATH ? 'queue' : 'today';
   const openOrder = (c: string) => onNavigate(`${detailPrefix}${encodeURIComponent(c)}`);
   if (section !== 'detail') lastListPath = path + window.location.search;
@@ -93,10 +97,10 @@ export const AdminPage: React.FC<AdminPageProps> = ({ path, onNavigate }) => {
         <header className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#15803D] dark:text-[#61B663] font-bold">
-              {section === 'dashboard' || section === 'events' ? 'Dirección' : 'Laboratorio'}
+              {section === 'dashboard' || section === 'events' || section === 'team' ? 'Dirección' : 'Laboratorio'}
             </div>
             <h1 className={`font-['Nunito',sans-serif] text-2xl sm:text-3xl font-[900] uppercase ${text}`}>
-              {{ dashboard: 'Negocio', events: 'Eventos', detail: 'Pedido', queue: 'Pedidos', today: 'Hoy' }[section]}
+              {{ dashboard: 'Negocio', events: 'Eventos', team: 'Equipo', detail: 'Pedido', queue: 'Pedidos', today: 'Hoy' }[section]}
             </h1>
           </div>
           <div className={`text-xs text-right ${muted}`}>
@@ -117,6 +121,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ path, onNavigate }) => {
             {tab('/admin', 'Hoy', section === 'today')}
             {tab(QUEUE_PATH, 'Pedidos', section === 'queue')}
             {isAdmin && tab(EVENTS_PATH, 'Eventos', section === 'events')}
+            {isAdmin && tab(TEAM_PATH, 'Equipo', section === 'team')}
             {isAdmin && tab(DASHBOARD_PATH, 'Negocio', section === 'dashboard')}
           </nav>
         )}
@@ -125,6 +130,8 @@ export const AdminPage: React.FC<AdminPageProps> = ({ path, onNavigate }) => {
           <BusinessDashboard onOpenOrder={openOrder} />
         ) : section === 'events' ? (
           <EventsCalendar />
+        ) : section === 'team' ? (
+          <TeamPanel user={user} />
         ) : code ? (
           <OrderDetail code={code} onBack={() => onNavigate(lastListPath)} />
         ) : section === 'queue' ? (

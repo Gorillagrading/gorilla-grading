@@ -163,6 +163,7 @@ export const AppContent: React.FC = () => {
       case '/admin/dashboard':
       case '/admin/orders':
       case '/admin/events':
+      case '/admin/team':
         return <AdminPage path={currentPath} onNavigate={handleNavigate} />;
       default:
         if (currentPath.startsWith('/admin/orders/')) {

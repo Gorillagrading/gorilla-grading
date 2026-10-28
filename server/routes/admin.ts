@@ -14,6 +14,8 @@ import { getStaffToday } from '../domain/staff-today.js';
 import { identifyCard } from '../domain/card-identification.js';
 import { createEvent, deleteEvent, listAdminEvents, updateEvent } from '../domain/events.js';
 import { EventBody } from '../../shared/events.js';
+import { AddMemberBody, ChangeRoleBody } from '../../shared/team.js';
+import { addMember, changeRole, listTeam, removeMember } from '../domain/team.js';
 import { clientIp, parseJson } from '../http.js';
 import { ProblemError } from '../problem.js';
 
@@ -102,6 +104,27 @@ export function adminRoutes(deps: Deps) {
 
   routes.delete('/admin/events/:id', ...admin, async (c) => {
     await deleteEvent(deps.getDb(), c.get('user'), c.req.param('id'), clientIp(c));
+    return c.body(null, 204);
+  });
+
+  // Equipo: la dirección da de alta a las personas del laboratorio y les cambia el rol.
+  routes.get('/admin/team', ...admin, async (c) => c.json({ members: await listTeam(deps.getDb()) }));
+
+  routes.post('/admin/team', ...admin, async (c) => {
+    const body = await parseJson(c, AddMemberBody);
+    const id = await addMember(deps.getDb(), c.get('user'), body, clientIp(c));
+    await flushOutbox(deps);
+    return c.json({ id }, 201);
+  });
+
+  routes.put('/admin/team/:id', ...admin, async (c) => {
+    const body = await parseJson(c, ChangeRoleBody);
+    await changeRole(deps.getDb(), c.get('user'), c.req.param('id'), body.role, clientIp(c));
+    return c.body(null, 204);
+  });
+
+  routes.delete('/admin/team/:id', ...admin, async (c) => {
+    await removeMember(deps.getDb(), c.get('user'), c.req.param('id'), clientIp(c));
     return c.body(null, 204);
   });
 

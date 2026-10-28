@@ -19,7 +19,7 @@ const SUBJECT_EN: Record<ContactSubject, string> = {
 };
 
 /** Marco HTML sobrio, con estilos en línea como los demás correos. */
-function frame(lang: 'es' | 'en', title: string, body: string) {
+export function frame(lang: 'es' | 'en', title: string, body: string) {
   const base = publicBaseUrl();
   return `<!doctype html>
 <html lang="${lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title></head>

@@ -1,3 +1,5 @@
+import type { AddMemberBody, TeamMemberDto } from '../../shared/team';
+import type { StaffRole } from '../../shared/admin';
 import type { AdminEventDto, EventBody } from '../../shared/events';
 import type { CertificateHistory, DashboardData, DashboardRange } from '../../shared/dashboard';
 import type {
@@ -116,6 +118,18 @@ export function adminErrorMessage(err: unknown): string {
       return 'Tu sesión ha caducado. Vuelve a iniciar sesión.';
     case 'network':
       return 'No se pudo conectar con el servidor.';
+    // El servidor ya explica estos en español, pensando en el equipo.
+    case 'already_member':
+    case 'own_role':
+    case 'last_admin':
+    case 'account_deleted':
+    case 'member_not_found':
+    case 'event_has_orders':
+    case 'event_not_found':
+    case 'card_unidentified':
+    case 'identify_not_allowed':
+    case 'card_certified':
+      return err.message;
     default:
       return `Algo salió mal (${err.status}${err.code ? `, ${err.code}` : ''}). Inténtalo de nuevo.`;
   }
@@ -123,7 +137,7 @@ export function adminErrorMessage(err: unknown): string {
 
 export const fetchStaffToday = () => api<StaffToday>('/admin/today');
 
-export const fetchDashboard =(range: DashboardRange) => api<DashboardData>(`/admin/dashboard?range=${range}`);
+export const fetchDashboard = (range: DashboardRange) => api<DashboardData>(`/admin/dashboard?range=${range}`);
 
 export const fetchCertificateHistory = (q: string, page: number) => {
   const params = new URLSearchParams({ page: String(page) });
@@ -135,3 +149,8 @@ export const fetchAdminEvents = () => api<{ events: AdminEventDto[] }>('/admin/e
 export const createAdminEvent = (body: EventBody) => api<{ id: string }>('/admin/events', { body });
 export const updateAdminEvent = (id: string, body: EventBody) => api<void>(`/admin/events/${id}`, { method: 'PUT', body });
 export const deleteAdminEvent = (id: string) => api<void>(`/admin/events/${id}`, { method: 'DELETE' });
+
+export const fetchTeam = () => api<{ members: TeamMemberDto[] }>('/admin/team').then((r) => r.members);
+export const addTeamMember = (body: AddMemberBody) => api<{ id: string }>('/admin/team', { body });
+export const changeTeamRole = (id: string, role: StaffRole) => api<void>(`/admin/team/${id}`, { method: 'PUT', body: { role } });
+export const removeTeamMember = (id: string) => api<void>(`/admin/team/${id}`, { method: 'DELETE' });
