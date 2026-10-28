@@ -36,7 +36,7 @@ export const SECTION_STATUS: Partial<Record<TodaySectionKey, OrderStatus>> = {
 };
 
 /** Cuántas tareas de cada sección se muestran; el número total va aparte. */
-export const TODAY_ITEMS_LIMIT = 6;
+export const TODAY_ITEMS_LIMIT = 20;
 
 export interface TodayTask {
   orderCode: string;
