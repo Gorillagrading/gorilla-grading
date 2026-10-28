@@ -83,25 +83,16 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onNavigate }) => {
   return (
     <div 
       className={`flex-1 min-h-[calc(100vh-5rem)] min-h-[calc(100dvh-5rem)] flex items-center justify-center p-4 sm:p-6 relative overflow-hidden transition-colors duration-500 ${
-        isLight ? 'bg-[#F4F1EA] text-[#1A1D1A]' : 'bg-[#14170F] text-white'
+        isLight ? 'bg-[#F4F1EA] text-[#1A1D1A]' : 'bg-[#454545] text-white'
       }`}
     >
-      {/* Background Precision Grid */}
-      <div 
-        className="absolute inset-0 pointer-events-none opacity-[0.035]"
-        style={{
-          backgroundImage: isLight 
-            ? 'radial-gradient(#1A1D1A 1px, transparent 1px)' 
-            : 'radial-gradient(#48C765 1px, transparent 1px)',
-          backgroundSize: '24px 24px'
-        }}
-      />
-
-      {/* Atmospheric Emerald Bloom */}
-      <div 
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[650px] h-[650px] rounded-full blur-[140px] pointer-events-none opacity-25"
-        style={{ backgroundColor: isLight ? 'rgba(22, 163, 74, 0.14)' : 'rgba(72, 199, 101, 0.12)' }}
-      />
+      {/* Fondo de puntos suave, solo en el tema claro */}
+      {isLight && (
+        <div
+          className="absolute inset-0 pointer-events-none opacity-[0.035]"
+          style={{ backgroundImage: 'radial-gradient(#1A1D1A 1px, transparent 1px)', backgroundSize: '24px 24px' }}
+        />
+      )}
 
       <div className="w-full max-w-[440px] relative z-10">
         
@@ -109,15 +100,9 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onNavigate }) => {
         <div 
           className="relative p-1.5 sm:p-2 rounded-[28px] border transition-colors duration-300"
           style={{
-            borderColor: isLight ? 'rgba(0, 0, 0, 0.06)' : 'rgba(72, 199, 101, 0.18)'
+            borderColor: isLight ? 'rgba(0, 0, 0, 0.06)' : 'rgba(255, 255, 255, 0.10)'
           }}
         >
-          {/* Subtle Corner Reticle Crosshairs */}
-          <span className="absolute -top-1 -left-1 font-mono text-[9px] text-[#48C765] opacity-60 select-none">+</span>
-          <span className="absolute -top-1 -right-1 font-mono text-[9px] text-[#48C765] opacity-60 select-none">+</span>
-          <span className="absolute -bottom-1 -left-1 font-mono text-[9px] text-[#48C765] opacity-60 select-none">+</span>
-          <span className="absolute -bottom-1 -right-1 font-mono text-[9px] text-[#48C765] opacity-60 select-none">+</span>
-
           {/* Core Luxury Card */}
           <div 
             className={`p-7 sm:p-10 relative overflow-hidden rounded-[22px] transition-all duration-300 border ${

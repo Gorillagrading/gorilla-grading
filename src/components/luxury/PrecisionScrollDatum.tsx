@@ -7,44 +7,18 @@ export const PrecisionScrollDatum: React.FC = () => {
   const isLight = theme === 'light';
   const { language = 'es' } = useLanguage();
 
-  // Smooth scroll tracking across the entire page (0 to 1)
-  const [scrollY, setScrollY] = useState(0);
-  const [scrollFraction, setScrollFraction] = useState(0);
-
   // Interactive mouse position tracking for dynamic optical spotlight
   const [mousePos, setMousePos] = useState({ x: -1000, y: -1000 });
   const [scanTelemetryIndex, setScanTelemetryIndex] = useState(0);
 
   useEffect(() => {
-    let ticking = false;
-    const handleScroll = () => {
-      if (!ticking) {
-        window.requestAnimationFrame(() => {
-          const y = window.scrollY || document.documentElement.scrollTop || 0;
-          const max = Math.max(
-            document.documentElement.scrollHeight - window.innerHeight,
-            1
-          );
-          setScrollY(y);
-          setScrollFraction(Math.min(Math.max(y / max, 0), 1));
-          ticking = false;
-        });
-        ticking = true;
-      }
-    };
-
     const handleMouseMove = (e: MouseEvent) => {
       setMousePos({ x: e.clientX, y: e.clientY });
     };
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    window.addEventListener('resize', handleScroll);
     window.addEventListener('mousemove', handleMouseMove, { passive: true });
-    handleScroll();
 
     return () => {
-      window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('resize', handleScroll);
       window.removeEventListener('mousemove', handleMouseMove);
     };
   }, []);
@@ -121,65 +95,6 @@ export const PrecisionScrollDatum: React.FC = () => {
           background: isLight
             ? 'radial-gradient(ellipse at 50% 30%, #FFFFFF 0%, #FAF8F5 50%, #F3EFE9 100%)'
             : 'radial-gradient(ellipse at 50% 35%, #0B0E0B 0%, #060806 60%, #030403 100%)'
-        }}
-      />
-
-      {/* ═════════════════════════════════════════════════════════════════════
-          2. SOMBRA VERDE POSTERIOR QUE BAJA CON EL SCROLL POR TODO EL PROYECTO
-             - Modo Claro: Se nota un poco más (más visible y viva)
-             - Modo Oscuro: Menos visual / disminuye un poco lo verde, pero elegante
-          ═════════════════════════════════════════════════════════════════════ */}
-      
-      {/* Desktop Spotlight 1: Sombra verde ambiental que desciende con el scroll */}
-      <div 
-        className="hidden lg:block absolute rounded-full pointer-events-none will-change-transform"
-        style={{
-          width: '920px',
-          height: '920px',
-          left: '68%',
-          top: `${30 + scrollFraction * 48}%`,
-          background: isLight
-            ? 'radial-gradient(circle at center, rgba(34, 197, 94, 0.28) 0%, rgba(22, 163, 74, 0.15) 35%, rgba(16, 185, 129, 0.05) 60%, transparent 78%)'
-            : 'radial-gradient(circle at center, rgba(34, 197, 94, 0.38) 0%, rgba(22, 163, 74, 0.20) 32%, rgba(16, 185, 129, 0.06) 58%, transparent 80%)',
-          transform: `translate(-50%, calc(-50% + ${(scrollY % 600) * 0.12}px))`,
-          filter: 'blur(95px)',
-          opacity: isLight ? 0.76 : 0.58
-        }}
-      />
-
-      {/* Desktop Spotlight 2: Continuidad de sombra verde en profundidad del proyecto */}
-      <div 
-        className="hidden lg:block absolute rounded-full pointer-events-none will-change-transform"
-        style={{
-          width: '850px',
-          height: '850px',
-          left: '46%',
-          top: `${55 + scrollFraction * 35}%`,
-          background: isLight
-            ? 'radial-gradient(circle at center, rgba(34, 197, 94, 0.22) 0%, rgba(22, 163, 74, 0.10) 42%, transparent 75%)'
-            : 'radial-gradient(circle at center, rgba(34, 197, 94, 0.28) 0%, rgba(22, 163, 74, 0.15) 38%, transparent 80%)',
-          transform: 'translate(-50%, -50%)',
-          filter: 'blur(100px)',
-          opacity: isLight ? 0.68 : 0.52
-        }}
-      />
-
-      {/* ═════════════════════════════════════════════════════════════════════
-          3. SOMBRA VERDE MÓVIL
-          ═════════════════════════════════════════════════════════════════════ */}
-      <div 
-        className="lg:hidden absolute rounded-full pointer-events-none will-change-transform"
-        style={{
-          width: '600px',
-          height: '600px',
-          left: '50%',
-          top: `${24 + scrollFraction * 52}%`,
-          background: isLight
-            ? 'radial-gradient(circle at center, rgba(34, 197, 94, 0.26) 0%, rgba(22, 163, 74, 0.12) 40%, transparent 75%)'
-            : 'radial-gradient(circle at center, rgba(34, 197, 94, 0.35) 0%, rgba(22, 163, 74, 0.18) 36%, transparent 80%)',
-          transform: `translate(-50%, calc(-50% + ${(scrollY % 500) * 0.12}px))`,
-          filter: 'blur(75px)',
-          opacity: isLight ? 0.72 : 0.55
         }}
       />
 

@@ -103,7 +103,7 @@ export const LuxuryNavbar: React.FC<LuxuryNavbarProps> = ({ onNavigate }) => {
   // Executive nav link: Nunito, normal letter spacing
   const navLinkClass = (active: boolean) =>
     `nav-scan relative py-2 font-['Nunito',sans-serif] text-[13px] lg:text-[14px] font-bold tracking-normal transition-colors cursor-pointer shrink-0
-     ${isLight ? '[--scan-line:#111827] [--scan-glow:#22C55E]' : '[--scan-line:#48C765] [--scan-glow:#86EFAC]'}
+     ${isLight ? '[--scan-line:#111827]' : '[--scan-line:#48C765]'}
      ${active ? 'is-active' : ''}
      ${active
        ? (isLight ? 'text-[#111827]' : 'text-white font-black')

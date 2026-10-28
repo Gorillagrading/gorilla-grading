@@ -36,7 +36,6 @@ export const translations = {
     'ref.hero.plinthText': 'COLECCIONA · PRESERVA · VALORA',
 
     // Ecosystem Ribbon
-    'ref.ribbon.title': 'CONFIADO POR COLECCIONISTAS, TIENDAS Y COMUNIDADES',
     'ref.ribbon.andMore': 'Y MÁS',
 
     // Section 02 Technology
@@ -311,7 +310,6 @@ export const translations = {
     'ref.hero.plinthText': 'COLLECT · PRESERVE · VALUE',
 
     // Ecosystem Ribbon
-    'ref.ribbon.title': 'TRUSTED BY COLLECTORS, STORES AND COMMUNITIES',
     'ref.ribbon.andMore': 'AND MORE',
 
     // Section 02 Technology

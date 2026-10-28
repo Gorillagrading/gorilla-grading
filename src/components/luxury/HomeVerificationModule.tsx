@@ -87,17 +87,9 @@ export const HomeVerificationModule: React.FC<HomeVerificationModuleProps> = ({ 
         {/* Module Header: Technical Lab Console Aesthetic */}
         <div className="flex flex-col items-center text-center max-w-3xl mx-auto mb-8 sm:mb-10">
           {/* Main Dedicated Gorilla Verify Sub-Brand Logo (Forensic Floating Badge) */}
-          <div className="mb-4 sm:mb-5">
+          <div className="mb-6 sm:mb-8">
             <VerifyLogo size="w-full max-w-[210px] sm:max-w-[255px] lg:max-w-[285px] h-[58px] sm:h-[70px] lg:h-[82px]" />
           </div>
-
-          <h2 className="flex items-center gap-2 font-mono text-[11px] sm:text-xs tracking-[0.28em] uppercase text-gray-500 mb-6 sm:mb-7">
-            <span>
-              {language === 'es' 
-                ? '[ EXPEDIENTE PÚBLICO DE VERIFICACIÓN · SERIE AUDITORÍA 2026 ]' 
-                : '[ PUBLIC VERIFICATION REGISTRY · 2026 AUDIT SERIES ]'}
-            </span>
-          </h2>
 
           {/* Verification Features with Green Check Icon in 2-Column Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 sm:gap-x-12 gap-y-3 sm:gap-y-3.5 max-w-2xl mx-auto text-left w-full px-2 sm:px-0">
@@ -175,12 +167,6 @@ export const HomeVerificationModule: React.FC<HomeVerificationModuleProps> = ({ 
               )}
             </button>
           </form>
-
-          <p className={`mt-4 px-1 font-mono text-[10px] uppercase tracking-wider ${isLight ? 'text-gray-500' : 'text-white/50'}`}>
-            {language === 'es'
-              ? 'También puedes verificar escaneando el QR del slab.'
-              : 'You can also verify by scanning the QR on the slab.'}
-          </p>
 
           {errorMsg && (
             <div className="mt-3 p-3 border border-red-500/30 bg-red-500/10 text-red-400 font-mono text-xs flex items-center gap-2">

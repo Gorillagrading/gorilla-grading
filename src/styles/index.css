@@ -1499,7 +1499,7 @@ html.light-theme .about-page .title-3d-green,
 
 }
 
-/* Navbar links: on hover a scanner sweeps left to right and leaves the underline behind */
+/* Navbar links: on hover the underline grows from the left; the active link keeps it */
 .nav-scan::after {
   content: '';
   position: absolute;
@@ -1510,34 +1510,12 @@ html.light-theme .about-page .title-3d-green,
   background: var(--scan-line);
   transform: scaleX(0);
   transform-origin: left;
-  transition: transform 0.55s linear;
-}
-.nav-scan::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: -2px;
-  bottom: -3px;
-  width: 1px;
-  background: var(--scan-glow);
-  box-shadow: 0 0 4px 0 var(--scan-glow);
-  opacity: 0;
-  pointer-events: none;
+  transition: transform 0.25s ease-out;
 }
 .nav-scan:hover::after,
 .nav-scan.is-active::after {
   transform: scaleX(1);
 }
-.nav-scan:hover::before {
-  animation: nav-scan-sweep 0.55s linear forwards;
-}
-@keyframes nav-scan-sweep {
-  0% { left: -2px; opacity: 0; }
-  10% { opacity: 0.85; }
-  88% { opacity: 0.85; }
-  100% { left: calc(100% - 1px); opacity: 0; }
-}
 @media (prefers-reduced-motion: reduce) {
-  .nav-scan::before { display: none; }
   .nav-scan::after { transition: none; }
 }

@@ -145,17 +145,6 @@ export const BrandEcosystemRibbon: React.FC<BrandEcosystemRibbonProps> = ({ isHe
     >
       <div className="flex flex-col gap-2 sm:gap-2.5">
         
-        {/* Top Kicker Label - Centered & Bold Clean Typography */}
-        <div className="px-6 max-w-[1400px] mx-auto w-full flex items-center justify-center">
-          <span 
-            className={`font-['Nunito',sans-serif] text-[10.5px] sm:text-[12px] font-[900] tracking-[0.22em] uppercase text-center select-none ${
-              isLight ? 'text-[#0F172A]' : 'text-white'
-            }`}
-          >
-            {t('ref.ribbon.title')}
-          </span>
-        </div>
-
         {/* Infinite Scrolling Marquee with Smooth Edge Fade */}
         <div 
           className="relative flex overflow-x-hidden pt-1 sm:pt-1.5 pointer-events-none select-none"

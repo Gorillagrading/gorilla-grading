@@ -49,6 +49,11 @@ export const LuxuryPricingSection: React.FC<LuxuryPricingSectionProps> = ({ onNa
   const [selectedTierId, setSelectedTierId] = useState<string | null>(null);
   const [cardCount, setCardCount] = useState<number>(10);
 
+  // Lo que incluye cada carta: igual en todos los servicios.
+  const bullets = language === 'es'
+    ? ['4 Subgrados ópticos (Centrado, Esquinas, Bordes, Superficie)', 'Escaneo micro-fotométrico 4K UHD', 'Certificado público firmado digitalmente']
+    : ['4 Optical Subgrades (Centering, Corners, Edges, Surface)', '4K UHD micro-photometric scan', 'Digitally signed public certificate'];
+
   // Industrial Service Levels (Tariff Matrix Data)
   const serviceLevels = [
     {
@@ -62,9 +67,7 @@ export const LuxuryPricingSection: React.FC<LuxuryPricingSectionProps> = ({ onNa
       turnaround: language === 'es' ? '10 días hábiles' : '10 business days',
       maxInsurance: '500 €',
       maxInsuranceNum: 500,
-      bullets: language === 'es'
-        ? ['Encapsulado ultrasónico 35 kHz', 'Código QR único enlazado al certificado público', 'Escaneo digital forense 1200 DPI']
-        : ['35 kHz ultrasonic encapsulation', 'Unique QR code linked to the public certificate', '1200 DPI master digital scan'],
+      bullets,
       price: 19,
       accentColor: '#3B82F6'
     },
@@ -79,9 +82,7 @@ export const LuxuryPricingSection: React.FC<LuxuryPricingSectionProps> = ({ onNa
       turnaround: language === 'es' ? '5 días hábiles' : '5 business days',
       maxInsurance: '1.500 €',
       maxInsuranceNum: 1500,
-      bullets: language === 'es'
-        ? ['4 Subgrados ópticos (Centrado, Esquinas, Bordes, Superficie)', 'Escaneo micro-fotométrico 4K UHD', 'Certificado público firmado digitalmente']
-        : ['4 Optical Subgrades (Centering, Corners, Edges, Surface)', '4K UHD micro-photometric scan', 'Digitally signed public certificate'],
+      bullets,
       price: 25,
       accentColor: '#16A34A'
     },
@@ -96,9 +97,7 @@ export const LuxuryPricingSection: React.FC<LuxuryPricingSectionProps> = ({ onNa
       turnaround: language === 'es' ? '2 días hábiles' : '2 business days',
       maxInsurance: '3.000 €',
       maxInsuranceNum: 3000,
-      bullets: language === 'es'
-        ? ['Cola preferente acelerada (2 días)', 'Auditoría óptica doble por 2 inspectores', 'Canal directo de soporte prioritario']
-        : ['Accelerated priority queue (2 days)', 'Dual optical audit by 2 senior graders', 'Direct laboratory priority support'],
+      bullets,
       price: 50,
       accentColor: '#EA580C'
     },
@@ -113,9 +112,7 @@ export const LuxuryPricingSection: React.FC<LuxuryPricingSectionProps> = ({ onNa
       turnaround: '48 h',
       maxInsurance: '1.000 €',
       maxInsuranceNum: 1000,
-      bullets: language === 'es'
-        ? ['Solo entrega presencial en pop ups', 'Graduación exprés presencial en 48 horas', 'Encapsulado sónico y código QR de verificación']
-        : ['In-person drop-off only at pop ups', 'Express in-person 48h turnaround', 'Sonic encapsulation & verification QR code'],
+      bullets,
       price: 15,
       accentColor: '#CA8A04'
     }
@@ -399,33 +396,6 @@ export const LuxuryPricingSection: React.FC<LuxuryPricingSectionProps> = ({ onNa
             }}
           />
 
-          {/* 2. Trama Litográfica de Puntos Principales (Idéntica al fondo del proyecto) */}
-          <div 
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              backgroundImage: isLight 
-                ? 'radial-gradient(circle, rgba(0, 0, 0, 0.10) 1.15px, transparent 1.25px)' 
-                : 'radial-gradient(circle, rgba(255, 255, 255, 0.14) 1.15px, transparent 1.25px)',
-              backgroundSize: '9px 9px',
-              mixBlendMode: isLight ? 'multiply' : 'screen',
-              opacity: isLight ? 0.62 : 0.65
-            }}
-          />
-
-          {/* 3. Puntos Rosette Escalonados (Efecto laboratorio auténtico idéntico al fondo del proyecto) */}
-          <div 
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              backgroundImage: isLight 
-                ? 'radial-gradient(circle, rgba(22, 101, 52, 0.05) 0.85px, transparent 0.95px)' 
-                : 'radial-gradient(circle, rgba(74, 222, 128, 0.10) 0.85px, transparent 0.95px)',
-              backgroundSize: '9px 9px',
-              backgroundPosition: '4.5px 4.5px',
-              mixBlendMode: isLight ? 'multiply' : 'screen',
-              opacity: 0.50
-            }}
-          />
-
           {/* 4. Haz Láser de Escaneo Óptico Dinámico */}
           <div className="absolute inset-0 w-full h-full pointer-events-none overflow-hidden">
             <div 
@@ -469,13 +439,6 @@ export const LuxuryPricingSection: React.FC<LuxuryPricingSectionProps> = ({ onNa
                   ? 'TARIFAS Y ESPECIFICACIONES DE SERVICIO' 
                   : 'LABORATORY RATES & SERVICE SPECIFICATIONS'}
               </h2>
-              <p className={`mt-2.5 font-sans text-xs sm:text-sm leading-relaxed font-normal ${
-                isLight ? 'text-[#4B5563]' : 'text-neutral-300'
-              }`}>
-                {language === 'es'
-                  ? 'Sin suscripciones recurrentes, sin compromisos mensuales.'
-                  : 'No recurring subscriptions, no monthly commitments.'}
-              </p>
             </div>
 
             {/* Right Column: Official Tariff Schedule with Down Arrow (seamless, without box container) */}
