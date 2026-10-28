@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Check, ClipboardList, Crown, Mail, PackageOpen, ShieldCheck, UserMinus, UserPlus, X, type LucideIcon } from 'lucide-react';
+import { Check, ClipboardList, Crown, Mail, PackageOpen, Plus, ShieldCheck, UserMinus, UserPlus, X, type LucideIcon } from 'lucide-react';
 import { STAFF_ROLES, type StaffRole } from '../../../shared/admin';
 import type { UserDto } from '../../../shared/auth';
 import { ROLE_INFO, type TeamMemberDto } from '../../../shared/team';
@@ -103,7 +103,8 @@ export const TeamPanel: React.FC<{ user: UserDto }> = ({ user }) => {
                   <div className={`text-[11px] ${t.muted}`}>{count(role)} {count(role) === 1 ? 'persona' : 'personas'}</div>
                 </div>
               </div>
-              <ul className="mt-3 space-y-1">
+              <p className={`mt-3 text-xs font-semibold leading-snug ${t.text}`}>{info.summary}</p>
+              <ul className="mt-2 space-y-1">
                 {info.can.map((c) => (
                   <li key={c} className={`flex items-start gap-1.5 text-[11px] leading-snug ${t.muted}`}>
                     <Check className="w-3 h-3 mt-0.5 shrink-0" style={{ color }} aria-hidden="true" />
@@ -111,6 +112,19 @@ export const TeamPanel: React.FC<{ user: UserDto }> = ({ user }) => {
                   </li>
                 ))}
               </ul>
+              {info.also && (
+                <div className={`mt-2.5 pt-2.5 border-t ${t.rule}`}>
+                  <div className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${t.muted}`}>También puede</div>
+                  <ul className="space-y-1">
+                    {info.also.map((c) => (
+                      <li key={c} className={`flex items-start gap-1.5 text-[11px] leading-snug ${t.muted}`}>
+                        <Plus className="w-3 h-3 mt-0.5 shrink-0" aria-hidden="true" />
+                        {c}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </section>
           );
         })}

@@ -5,27 +5,34 @@
 import { z } from 'zod';
 import { STAFF_ROLES, type StaffRole } from './admin.js';
 
-/** Qué puede hacer cada rol. Es lo que comprueba el servidor (server/domain/order-flow.ts y las rutas). */
-export const ROLE_INFO: Record<StaffRole, { name: string; summary: string; can: string[] }> = {
+/**
+ * Qué hace cada rol. `can` es lo propio del rol y `also` lo que comparte con otro (por ejemplo, quien
+ * recibe y quien califica pueden identificar y fotografiar la carta). Los permisos reales los
+ * comprueba el servidor (server/domain/order-flow.ts y las rutas).
+ */
+export const ROLE_INFO: Record<StaffRole, { name: string; summary: string; can: string[]; also?: string[] }> = {
   staff: {
     name: 'Recepción y logística',
-    summary: 'Recibe los paquetes, identifica las cartas y gestiona los envíos.',
-    can: ['Confirmar la llegada de los paquetes', 'Identificar las cartas y hacer las fotos', 'Registrar envíos y confirmar entregas', 'Pausar y reanudar pedidos'],
+    summary: 'Mueve los paquetes: los recibe, prepara las cartas y las devuelve al cliente.',
+    can: ['Confirmar la llegada de los paquetes', 'Registrar los envíos de vuelta y confirmar las entregas', 'Pausar y reanudar pedidos'],
+    also: ['Identificar las cartas y hacer las fotos'],
   },
   grader: {
     name: 'Calificación',
-    summary: 'Califica las cartas: subnotas, defectos y nota final.',
-    can: ['Introducir el resultado de cada carta', 'Identificar las cartas y hacer las fotos', 'Enviar resultados a control de calidad'],
+    summary: 'Pone la nota: subnotas, defectos y nota final de cada carta.',
+    can: ['Calificar cada carta: subnotas, defectos y nota final', 'Enviar los resultados a control de calidad', 'Corregir lo que devuelve control de calidad'],
+    also: ['Identificar las cartas y hacer las fotos'],
   },
   qa: {
     name: 'Control de calidad',
-    summary: 'Revisa el trabajo de calificación y aprueba la salida de los pedidos.',
-    can: ['Aprobar o devolver resultados', 'Aprobar la salida de los pedidos'],
+    summary: 'Revisa la nota que pone otra persona y aprueba la salida de los pedidos.',
+    can: ['Aprobar o devolver los resultados de calificación', 'Aprobar la salida de los pedidos'],
   },
   admin: {
     name: 'Dirección',
     summary: 'Acceso completo: negocio, eventos, equipo y todo el laboratorio.',
-    can: ['Todo lo de los demás roles', 'Ver el panel de negocio', 'Gestionar el calendario de eventos', 'Dar de alta y cambiar el rol del equipo'],
+    can: ['Ver el panel de negocio', 'Gestionar el calendario de eventos', 'Dar de alta al equipo y cambiar sus roles'],
+    also: ['Todo lo que hacen los demás roles'],
   },
 };
 
