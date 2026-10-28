@@ -12,9 +12,9 @@ const TAB_STATUSES: OrderStatus[] = [
   'QUALITY_ASSURANCE', 'SHIPPED', 'ON_HOLD', 'DELIVERED', 'CANCELLED',
 ];
 
-export const OrderQueue: React.FC<{ onOpen: (code: string) => void }> = ({ onOpen }) => {
+export const OrderQueue: React.FC<{ initialStatus?: string; onOpen: (code: string) => void }> = ({ initialStatus = 'active', onOpen }) => {
   const t = usePanelTheme();
-  const [status, setStatus] = useState<string>('active');
+  const [status, setStatus] = useState<string>(initialStatus);
   const [search, setSearch] = useState('');
   const [q, setQ] = useState('');
   const [sort, setSort] = useState<'oldest' | 'newest'>('oldest');

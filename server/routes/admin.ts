@@ -10,6 +10,7 @@ import { flushOutbox } from '../domain/outbox.js';
 import { confirmImage, createImageUpload, deleteImage, listOrderImages } from '../domain/item-images.js';
 import { approveGrading, rejectGrading, saveGrading } from '../domain/grading-results.js';
 import { addShipment, getAdminOrder, listAdminOrders, transitionOrder } from '../domain/admin-orders.js';
+import { getStaffToday } from '../domain/staff-today.js';
 import { clientIp, parseJson } from '../http.js';
 import { ProblemError } from '../problem.js';
 
@@ -25,6 +26,9 @@ export function adminRoutes(deps: Deps) {
     c.header('Cache-Control', 'private, no-store');
     await next();
   });
+
+  // Pantalla "Hoy": lo que tiene pendiente quien consulta, según su rol.
+  routes.get('/admin/today', ...staff, async (c) => c.json(await getStaffToday(deps.getDb(), c.get('user'))));
 
   routes.get('/admin/orders', ...staff, async (c) => {
     const parsed = AdminOrdersQuery.safeParse(c.req.query());

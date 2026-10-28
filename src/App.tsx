@@ -144,6 +144,7 @@ export const AppContent: React.FC = () => {
         return <GradingScalePage onNavigate={handleNavigate} />;
       case '/admin':
       case '/admin/dashboard':
+      case '/admin/orders':
         return <AdminPage path={currentPath} onNavigate={handleNavigate} />;
       default:
         if (currentPath.startsWith('/admin/orders/')) {

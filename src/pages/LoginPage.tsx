@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
+import { homePathFor } from '../../shared/admin';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { authErrorMessage } from '../utils/authErrors';
@@ -11,7 +12,7 @@ interface LoginPageProps {
 
 export const LoginPage: React.FC<LoginPageProps> = ({ onNavigate }) => {
   const { language } = useLanguage();
-  const { requestCode, verifyCode, isLoggedIn } = useAuth();
+  const { requestCode, verifyCode, isLoggedIn, user } = useAuth();
   const { theme } = useTheme();
   const isLight = theme === 'light';
   const es = language === 'es';
@@ -23,10 +24,10 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onNavigate }) => {
   const [info, setInfo] = useState('');
   const [verifying, setVerifying] = useState(false);
 
-  // Quien ya ha iniciado sesión no necesita ver el formulario.
+  // Quien ya ha iniciado sesión no necesita ver el formulario: el equipo va a su panel y el cliente a su cuenta.
   useEffect(() => {
-    if (isLoggedIn) onNavigate('/account');
-  }, [isLoggedIn]);
+    if (isLoggedIn && user) onNavigate(homePathFor(user));
+  }, [isLoggedIn, user]);
 
   const messageFor = (err: unknown): string => authErrorMessage(err, es);
 
@@ -69,8 +70,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onNavigate }) => {
     setInfo('');
     setVerifying(true);
     try {
+      // Al entrar, el efecto de arriba lleva a cada uno a su sitio.
       await verifyCode(email.trim(), otp);
-      onNavigate('/account');
     } catch (err) {
       setError(messageFor(err));
       setOtp('');

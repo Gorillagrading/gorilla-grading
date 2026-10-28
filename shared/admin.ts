@@ -8,6 +8,10 @@ import type { AdminGradingResult } from './grading-admin.js';
 
 export const STAFF_ROLES = ['staff', 'grader', 'qa', 'admin'] as const satisfies readonly UserRole[];
 export type StaffRole = (typeof STAFF_ROLES)[number];
+export const isStaffRole = (role: string): role is StaffRole => (STAFF_ROLES as readonly string[]).includes(role);
+
+/** Adónde va cada cuenta al iniciar sesión: el equipo a su panel, el cliente a su cuenta. */
+export const homePathFor = (user: { role: string }) => (isStaffRole(user.role) ? '/admin' : '/account');
 
 export const AdminOrdersQuery = z.object({
   /** Un estado, o "active" para todos los pedidos que siguen en curso. */

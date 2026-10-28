@@ -3,6 +3,7 @@ import type {
   AdminOrderDetail, AdminOrderList, ShipmentBody, TransitionBody,
 } from '../../shared/admin';
 import type { AdminGradingResult, GradingBody } from '../../shared/grading-admin';
+import type { StaffToday } from '../../shared/staff-today';
 import type { AdminOrderImages, ImageBody, ImageDto, UploadTarget } from '../../shared/photos';
 import { ApiError, api } from './client';
 
@@ -116,7 +117,9 @@ export function adminErrorMessage(err: unknown): string {
   }
 }
 
-export const fetchDashboard = (range: DashboardRange) => api<DashboardData>(`/admin/dashboard?range=${range}`);
+export const fetchStaffToday = () => api<StaffToday>('/admin/today');
+
+export const fetchDashboard =(range: DashboardRange) => api<DashboardData>(`/admin/dashboard?range=${range}`);
 
 export const fetchCertificateHistory = (q: string, page: number) => {
   const params = new URLSearchParams({ page: String(page) });

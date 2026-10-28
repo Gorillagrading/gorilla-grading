@@ -291,7 +291,7 @@ export const LuxuryNavbar: React.FC<LuxuryNavbarProps> = ({ onNavigate }) => {
 
           {/* Account / Collector Vault — neutral icon */}
           <button
-            onClick={() => go('/account')}
+            onClick={() => go(isStaff ? '/admin' : '/account')}
             className={`hidden sm:flex items-center justify-center ${iconBtnClass}`}
             title={language === 'es' ? 'Bóveda del Coleccionista' : 'Collector Vault'}
             aria-label="Account"

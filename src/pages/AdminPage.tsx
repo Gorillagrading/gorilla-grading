@@ -5,6 +5,7 @@ import { useTheme } from '../context/ThemeContext';
 import { BusinessDashboard } from './admin/BusinessDashboard';
 import { OrderDetail } from './admin/OrderDetail';
 import { OrderQueue } from './admin/OrderQueue';
+import { TodayPanel } from './admin/TodayPanel';
 
 const ROLE_LABEL: Record<string, string> = {
   staff: 'Recepción y logística',
@@ -14,16 +15,20 @@ const ROLE_LABEL: Record<string, string> = {
 };
 
 export const DASHBOARD_PATH = '/admin/dashboard';
+export const QUEUE_PATH = '/admin/orders';
+
+/** Última pantalla de lista visitada, para que "Volver" desde un pedido regrese a ella. */
+let lastListPath = '/admin';
 
 interface AdminPageProps {
-  /** Ruta actual: /admin (cola) o /admin/orders/284719365 (detalle). */
+  /** Ruta actual: /admin (hoy), /admin/orders (lista), /admin/dashboard (negocio) o /admin/orders/284719365 (detalle). */
   path: string;
   onNavigate: (path: string) => void;
 }
 
 /** Panel del laboratorio. Solo para cuentas con un rol del personal; el servidor lo vuelve a comprobar en cada llamada. */
 export const AdminPage: React.FC<AdminPageProps> = ({ path, onNavigate }) => {
-  const { status, user } = useAuth();
+  const { status, user, logout } = useAuth();
   const isLight = useTheme().theme === 'light';
   const muted = isLight ? 'text-neutral-500' : 'text-[#A4ACA1]';
   const text = isLight ? 'text-[#14170F]' : 'text-white';
@@ -53,7 +58,10 @@ export const AdminPage: React.FC<AdminPageProps> = ({ path, onNavigate }) => {
   const code = path.startsWith(detailPrefix) ? decodeURIComponent(path.slice(detailPrefix.length)) : null;
   const isAdmin = user.role === 'admin';
   // El panel de negocio es solo para la dirección; el servidor también lo comprueba.
-  const showDashboard = isAdmin && path === DASHBOARD_PATH;
+  const section = code ? 'detail' : isAdmin && path === DASHBOARD_PATH ? 'dashboard' : path === QUEUE_PATH ? 'queue' : 'today';
+  const openOrder = (c: string) => onNavigate(`${detailPrefix}${encodeURIComponent(c)}`);
+  if (section !== 'detail') lastListPath = path + window.location.search;
+  const initialStatus = section === 'queue' ? new URLSearchParams(window.location.search).get('status') ?? 'active' : 'active';
   const tab = (to: string, label: string, selected: boolean) => (
     <button
       key={to}
@@ -77,31 +85,41 @@ export const AdminPage: React.FC<AdminPageProps> = ({ path, onNavigate }) => {
         <header className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#15803D] dark:text-[#61B663] font-bold">
-              {showDashboard ? 'Dirección' : 'Laboratorio'}
+              {section === 'dashboard' ? 'Dirección' : 'Laboratorio'}
             </div>
             <h1 className={`font-['Nunito',sans-serif] text-2xl sm:text-3xl font-[900] uppercase ${text}`}>
-              {showDashboard ? 'Negocio' : code ? 'Pedido' : 'Pedidos'}
+              {{ dashboard: 'Negocio', detail: 'Pedido', queue: 'Pedidos', today: 'Hoy' }[section]}
             </h1>
           </div>
           <div className={`text-xs text-right ${muted}`}>
             <div className="font-bold">{user.fullName ?? user.email}</div>
             <div className="font-mono">{ROLE_LABEL[user.role] ?? user.role}</div>
+            <button
+              type="button"
+              onClick={() => void logout().finally(() => onNavigate('/login'))}
+              className="mt-1 font-bold underline-offset-4 hover:underline cursor-pointer"
+            >
+              Cerrar sesión
+            </button>
           </div>
         </header>
 
-        {isAdmin && !code && (
-          <nav className="flex gap-2" role="tablist" aria-label="Secciones del panel">
-            {tab(DASHBOARD_PATH, 'Negocio', showDashboard)}
-            {tab('/admin', 'Pedidos', !showDashboard)}
+        {!code && (
+          <nav className="flex flex-wrap gap-2" role="tablist" aria-label="Secciones del panel">
+            {tab('/admin', 'Hoy', section === 'today')}
+            {tab(QUEUE_PATH, 'Pedidos', section === 'queue')}
+            {isAdmin && tab(DASHBOARD_PATH, 'Negocio', section === 'dashboard')}
           </nav>
         )}
 
-        {showDashboard ? (
-          <BusinessDashboard onOpenOrder={(c) => onNavigate(`${detailPrefix}${encodeURIComponent(c)}`)} />
+        {section === 'dashboard' ? (
+          <BusinessDashboard onOpenOrder={openOrder} />
         ) : code ? (
-          <OrderDetail code={code} onBack={() => onNavigate('/admin')} />
+          <OrderDetail code={code} onBack={() => onNavigate(lastListPath)} />
+        ) : section === 'queue' ? (
+          <OrderQueue key={initialStatus} initialStatus={initialStatus} onOpen={openOrder} />
         ) : (
-          <OrderQueue onOpen={(c) => onNavigate(`${detailPrefix}${encodeURIComponent(c)}`)} />
+          <TodayPanel user={user} onOpenOrder={openOrder} onOpenQueue={(status) => onNavigate(`${QUEUE_PATH}?status=${status}`)} />
         )}
       </div>
     </div>
