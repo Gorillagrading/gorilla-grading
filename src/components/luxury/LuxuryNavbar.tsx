@@ -285,7 +285,7 @@ export const LuxuryNavbar: React.FC<LuxuryNavbarProps> = ({ onNavigate }) => {
                 isLight ? 'border-black/20 text-gray-800 hover:border-[#16A34A] hover:text-[#16A34A]' : 'border-white/20 text-gray-200 hover:border-[#4ADE80] hover:text-[#4ADE80]'
               }`}
             >
-              {language === 'es' ? 'Panel' : 'Lab panel'}
+              {language === 'es' ? 'Business' : 'Business'}
             </button>
           )}
 
@@ -378,7 +378,7 @@ export const LuxuryNavbar: React.FC<LuxuryNavbarProps> = ({ onNavigate }) => {
                   isLight ? 'text-gray-700 hover:text-black font-bold' : 'text-gray-300 hover:text-white font-bold'
                 }`}
               >
-                {language === 'es' ? 'Panel del laboratorio' : 'Lab panel'}
+                {language === 'es' ? 'Business' : 'Business'}
               </button>
             )}
 
