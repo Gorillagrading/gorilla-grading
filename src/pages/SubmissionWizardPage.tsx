@@ -62,10 +62,30 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
     return SERVICE_TIERS[0];
   }); 
   
+  // Etiqueta del slab: solo se ofrece con Standard y Premium. La personalizada va a todas las cartas
+  // o a una selección, y cada carta elegida se anota con el nombre que escribe el cliente.
+  const [labelType, setLabelType] = useState<'standard' | 'custom'>('standard');
+  const [labelScope, setLabelScope] = useState<'all' | 'selection'>('all');
+  const [labelCount, setLabelCount] = useState(0);
+  const [labelNames, setLabelNames] = useState<string[]>([]);
+  const [labelError, setLabelError] = useState('');
+
   // Lo que se envía: tantas cartas como se eligieron en el paso 1, todas del mismo servicio. El laboratorio
   // identifica cada carta al recibirla, y cada una va asegurada hasta el máximo de su servicio.
   const cardTier = selectedTier ?? SERVICE_TIERS[0];
   const items = Array.from({ length: Math.max(1, wizardCardCount) }, () => ({ tier: cardTier.id }));
+
+  const labelsEligible = cardTier.id === 'standard' || cardTier.id === 'premium';
+  const customLabel = labelsEligible && labelType === 'custom';
+  const maxLabelCards = Math.min(items.length, 50);
+  const labelCards = labelScope === 'selection' ? Math.min(labelCount, maxLabelCards) : 0;
+  // Las notas viajan con cada carta y el laboratorio las ve en el pedido.
+  const orderItems = items.map((item, i): { tier: string; notes?: string } => {
+    if (!customLabel) return item;
+    if (labelScope === 'all') return { ...item, notes: 'Etiqueta personalizada' };
+    const name = labelNames[i]?.trim();
+    return i < labelCards && name ? { ...item, notes: `Etiqueta personalizada: ${name}`.slice(0, 500) } : item;
+  });
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -194,6 +214,16 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
     }
   };
 
+  const validateLabels = (): string => {
+    if (customLabel && labelScope === 'selection') {
+      if (labelCards < 1) return es ? 'Elige cuántas cartas llevarán etiqueta personalizada.' : 'Choose how many cards get a custom label.';
+      if (Array.from({ length: labelCards }, (_, i) => labelNames[i]?.trim()).some((n) => !n)) {
+        return es ? 'Escribe el nombre o ID de cada carta con etiqueta personalizada.' : 'Enter the name or ID of each card with a custom label.';
+      }
+    }
+    return '';
+  };
+
   const validateStep3 = (): string => {
     if (!contact.fullName.trim()) return es ? 'Escribe tu nombre completo.' : 'Enter your full name.';
     if (!/^\S+@\S+\.\S+$/.test(contact.email.trim())) return es ? 'Introduce un correo válido.' : 'Enter a valid email.';
@@ -212,7 +242,7 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
     setSubmitError('');
     try {
       const order = await submitOrder({
-        items,
+        items: orderItems,
         shippingMethod,
         eventId: shippingMethod === 'CARD_SHOW_DROPOFF' ? chosenEvent?.id : undefined,
         fullName: contact.fullName.trim(),
@@ -474,6 +504,13 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
           };
 
           const handleProceedToStep2 = () => {
+            const labelProblem = validateLabels();
+            if (labelProblem) {
+              setLabelError(labelProblem);
+              document.getElementById('slab-labels')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              return;
+            }
+            setLabelError('');
             setIsFromConfigureShipment(true);
             setCurrentStep(3);
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -870,6 +907,143 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
           </div>
               </div>
 
+              {/* Etiqueta del slab: solo Standard y Premium */}
+              {(() => {
+                const muted = isLight ? 'text-[#656E63]' : 'text-[#A4ACA1]';
+                const strong = isLight ? 'text-[#1C201D]' : 'text-white';
+                const panel = isLight ? 'bg-white border-[#E5DEC9] shadow-[0_1px_2px_rgba(0,0,0,0.04)]' : 'bg-[#151A15] border-white/10';
+                const inputClass = `w-full px-4 py-3 text-sm rounded-lg focus:outline-none transition-colors border ${
+                  isLight
+                    ? 'bg-[#FBFAF6] border-[#DCD5C3] text-[#1C201D] placeholder:text-[#A3A79F] focus:border-[#2D9A46] focus:bg-white'
+                    : 'bg-[#0F130F] border-white/10 text-white placeholder:text-[#6B7268] focus:border-[#48C765]'
+                }`;
+                const labelClass = `block text-xs font-bold mb-1.5 ${strong}`;
+                return (
+                  <>
+            {/* Etiqueta del slab: solo Standard y Premium */}
+            {labelsEligible && (
+              <section id="slab-labels" className={`scroll-mt-28 border rounded-2xl p-5 sm:p-6 mb-6 ${panel}`}>
+                <div className="mb-5">
+                  <h3 className={`font-['Nunito',sans-serif] text-base font-[900] ${strong}`}>{es ? 'Etiquetas del slab' : 'Slab labels'}</h3>
+                  <p className={`text-xs ${muted}`}>{es ? 'Elige el diseño de etiqueta para tus cartas graduadas.' : 'Choose the label design for your graded cards.'}</p>
+                </div>
+                <div className={labelClass}>{es ? 'Tipo de etiqueta' : 'Label type'}</div>
+                <div className="space-y-3" role="radiogroup" aria-label={es ? 'Tipo de etiqueta' : 'Label type'}>
+                  {([
+                    { id: 'standard' as const, title: es ? 'Estándar' : 'Standard' },
+                    { id: 'custom' as const, title: es ? 'Personalizada' : 'Custom' },
+                  ]).map((opt) => {
+                    const selected = labelType === opt.id;
+                    return (
+                      <label
+                        key={opt.id}
+                        className={`flex items-center justify-between gap-3 px-4 py-4 rounded-xl border-2 transition-colors cursor-pointer ${
+                          selected
+                            ? (isLight ? 'border-[#16A34A] bg-white shadow-[0_2px_10px_rgba(22,163,74,0.12)]' : 'border-[#48C765] bg-[#1B211B]')
+                            : (isLight ? 'border-[#E5DEC9] bg-[#FBFAF6] hover:border-[#16A34A]/50' : 'border-white/10 bg-[#0F130F] hover:border-white/30')
+                        }`}
+                      >
+                        <input type="radio" name="label-type" className="sr-only" checked={selected} onChange={() => setLabelType(opt.id)} />
+                        <span className="flex items-center gap-4">
+                          <span aria-hidden="true" className={`w-6 h-6 rounded-md border-2 flex items-center justify-center shrink-0 ${
+                            selected ? '' : (isLight ? 'border-[#B9B49F]' : 'border-white/30')
+                          }`} style={selected ? (isLight ? { background: '#16A34A', borderColor: '#16A34A', color: '#FFFFFF' } : { background: '#48C765', borderColor: '#48C765', color: '#0F130F' }) : undefined}>
+                            {selected && <Check className="w-4 h-4" strokeWidth={3} />}
+                          </span>
+                          <span className={`font-['Nunito',sans-serif] text-base font-[900] ${strong}`}>{opt.title}</span>
+                        </span>
+                        {opt.id === 'standard' ? (
+                          <span className={`text-[11px] font-bold uppercase tracking-wide px-3 py-1.5 rounded-md ${isLight ? 'text-[#14170F] bg-[#ECE5D8]' : 'text-white bg-white/10'}`}>
+                            {es ? 'Incluida en el servicio' : 'Included with service'}
+                          </span>
+                        ) : (
+                          <span className="flex items-center gap-3">
+                            <span className={`text-xs font-bold px-2.5 py-1.5 rounded-md border line-through decoration-red-500 ${isLight ? 'border-[#E5DEC9] text-[#656E63]' : 'border-white/10 text-[#A4ACA1]'}`}>€10</span>
+                            <span className="text-[11px] font-bold uppercase tracking-wide px-3.5 py-1.5 rounded-md bg-[#16A34A] text-white">{es ? 'Mejora gratis' : 'Upgrade for free'}</span>
+                          </span>
+                        )}
+                      </label>
+                    );
+                  })}
+                </div>
+
+                {labelType === 'custom' && (
+                  <div className={`mt-6 pt-6 border-t ${isLight ? 'border-[#E5DEC9]' : 'border-white/10'}`}>
+                    <div className={labelClass}>{es ? 'Aplicar etiqueta personalizada a' : 'Apply custom label to'}</div>
+                    <div className="flex flex-wrap gap-3" role="radiogroup">
+                      {([
+                        { id: 'all' as const, text: es ? 'Todas las cartas' : 'All the cards' },
+                        { id: 'selection' as const, text: es ? 'Una selección' : 'Selection' },
+                      ]).map((opt) => (
+                        <button
+                          key={opt.id}
+                          type="button"
+                          role="radio"
+                          aria-checked={labelScope === opt.id}
+                          onClick={() => setLabelScope(opt.id)}
+                          className={`px-6 py-3 text-sm font-bold rounded-xl border-2 transition-colors cursor-pointer ${
+                            labelScope === opt.id
+                              ? (isLight ? 'border-[#16A34A] text-[#14170F] bg-white' : 'border-[#48C765] text-white bg-[#1B211B]')
+                              : (isLight ? 'border-[#E5DEC9] text-[#656E63] bg-[#FBFAF6]' : 'border-white/10 text-[#A4ACA1] bg-[#0F130F]')
+                          }`}
+                        >
+                          {opt.text}
+                        </button>
+                      ))}
+                    </div>
+
+                    {labelScope === 'selection' && (
+                      <div className="mt-6 grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] gap-6">
+                        <div>
+                          <label htmlFor="label-count" className={labelClass}>{es ? 'Número de cartas' : 'Number of cards'}</label>
+                          <select
+                            id="label-count"
+                            value={labelCount}
+                            onChange={(e) => setLabelCount(Number(e.target.value))}
+                            className={inputClass}
+                          >
+                            <option value={0}>{es ? 'Elige un número' : 'Select a number'}</option>
+                            {Array.from({ length: maxLabelCards }, (_, i) => (
+                              <option key={i + 1} value={i + 1}>{i + 1}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <div className={labelClass}>{es ? 'Cartas a personalizar' : 'Cards to customize'}</div>
+                          {labelCards === 0 ? (
+                            <p className={`text-sm ${muted}`}>{es ? 'Elige un número para añadir una fila por carta.' : 'Pick a number to add one row per card.'}</p>
+                          ) : (
+                            <div className="space-y-3">
+                              {Array.from({ length: labelCards }, (_, i) => (
+                                <div key={i} className="flex items-center gap-4">
+                                  <label htmlFor={`label-card-${i}`} className={`w-16 shrink-0 text-xs font-bold ${muted}`}>{es ? 'Carta' : 'Card'} {i + 1}</label>
+                                  <input
+                                    id={`label-card-${i}`}
+                                    type="text"
+                                    maxLength={120}
+                                    placeholder={es ? 'Nombre o ID de la carta' : 'Card name or ID'}
+                                    value={labelNames[i] ?? ''}
+                                    onChange={(e) => setLabelNames((prev) => { const next = [...prev]; next[i] = e.target.value; return next; })}
+                                    className={inputClass}
+                                  />
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+                {labelError && (
+                  <p role="alert" className="mt-4 text-red-500 text-sm font-bold">{labelError}</p>
+                )}
+              </section>
+            )}
+                  </>
+                );
+              })()}
+
               {/* Action bar to continue to Step 2 */}
               <div className={`p-4 sm:p-5 border flex flex-col sm:flex-row items-center justify-between gap-4 mb-6 ${
                 isLight ? 'bg-white border-[#E5E7EB]' : 'bg-[#181B18] border-white/10'
@@ -1205,6 +1379,16 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
                       <span className={muted}>{es ? 'Devolución' : 'Return'}</span>
                       <span className={`font-bold ${strong}`}>{courier ? formatEur(1450, language) : (es ? 'Gratis' : 'Free')}</span>
                     </div>
+                    {labelsEligible && (
+                      <div className="flex justify-between gap-3">
+                        <span className={muted}>{es ? 'Etiqueta' : 'Label'}</span>
+                        <span className={`font-bold ${strong}`}>
+                          {customLabel
+                            ? (labelScope === 'all' ? (es ? 'Personalizada · todas' : 'Custom · all cards') : (es ? `Personalizada · ${labelCards}` : `Custom · ${labelCards}`))
+                            : (es ? 'Estándar' : 'Standard')}
+                        </span>
+                      </div>
+                    )}
                     {!courier && chosenEvent && (
                       <div className="flex justify-between gap-3">
                         <span className={muted}>{es ? 'Evento' : 'Event'}</span>

@@ -5,6 +5,7 @@ import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { LuxuryNavbar } from './components/luxury/LuxuryNavbar';
 import { LuxuryFooter } from './components/luxury/LuxuryFooter';
 import { PrecisionScrollDatum } from './components/luxury/PrecisionScrollDatum';
+import { EventStickerPopup } from './components/common/EventSticker';
 
 // Pages
 import { HomePage } from './pages/HomePage';
@@ -191,6 +192,8 @@ export const AppContent: React.FC = () => {
       </main>
 
       <LuxuryFooter onNavigate={handleNavigate} />
+
+      <EventStickerPopup path={currentPath} onNavigate={handleNavigate} />
     </div>
   );
 };

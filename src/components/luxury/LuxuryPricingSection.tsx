@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
+import { EventSticker, useNextEvent } from '../common/EventSticker';
 import { 
   FileText, 
   Clock, 
@@ -44,6 +45,10 @@ export const LuxuryPricingSection: React.FC<LuxuryPricingSectionProps> = ({ onNa
   const { language } = useLanguage();
   const { theme } = useTheme();
   const isLight = theme === 'light';
+
+  // Próximo evento real con entrega en mano: sale como sticker en la tarjeta Event. Si no hay ninguno
+  // (o falla la carga), la tarjeta conserva su etiqueta de siempre.
+  const nextEvent = useNextEvent(isHome);
 
   // Selected tier for the shipment manifest generator (none selected by default)
   const [selectedTierId, setSelectedTierId] = useState<string | null>(null);
@@ -249,7 +254,7 @@ export const LuxuryPricingSection: React.FC<LuxuryPricingSectionProps> = ({ onNa
   // Card-style tiers, used only on the home page. Dark navy cards in dark mode, white cards in light mode.
   const homeCards = (
     <div className="w-full mb-2">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 lg:gap-6 items-stretch pt-3">
+      <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-5 lg:gap-6 items-stretch ${nextEvent !== undefined ? 'pt-6' : 'pt-3'}`}>
         {serviceLevels.map((lvl) => {
           const isPopular = lvl.id === 'premium';
           const badge =
@@ -291,9 +296,12 @@ export const LuxuryPricingSection: React.FC<LuxuryPricingSectionProps> = ({ onNa
           return (
             <div
               key={lvl.id}
-              className={`relative flex flex-col rounded-xl border p-5 sm:p-6 transition-all duration-200 hover:-translate-y-1 ${t.card}`}
+              className={`relative flex flex-col rounded-xl border p-4 sm:p-6 transition-all duration-200 hover:-translate-y-1 ${t.card} ${lvl.id === 'event' && nextEvent !== undefined ? 'mt-5 lg:mt-0' : ''}`}
             >
-              {badge && (
+              {lvl.id === 'event' && nextEvent !== undefined && (
+                <EventSticker event={nextEvent} className="absolute -top-5 left-4 z-10 max-w-[calc(100%-2rem)]" />
+              )}
+              {badge && !(lvl.id === 'event' && nextEvent !== undefined) && (
                 <span
                   className={`absolute -top-3 left-5 px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-wider ${
                     isPopular ? t.badgeMain : t.badgeAlt
@@ -303,17 +311,24 @@ export const LuxuryPricingSection: React.FC<LuxuryPricingSectionProps> = ({ onNa
                 </span>
               )}
 
-              <h3 className="mt-1 font-['Nunito',sans-serif] text-2xl font-[900] uppercase tracking-normal">{lvl.name}</h3>
-              <p className={`mt-2 min-h-[3.6rem] font-sans text-[12.5px] leading-relaxed ${t.purpose}`}>{lvl.purpose}</p>
+              {/* En móvil el nombre y el precio comparten fila para que la tarjeta sea más baja */}
+              <div className={`${lvl.id === 'event' && nextEvent !== undefined ? 'mt-4' : 'mt-1'} flex items-end justify-between gap-3 sm:block`}>
+                <h3 className="font-['Nunito',sans-serif] text-xl sm:text-2xl font-[900] uppercase tracking-normal">{lvl.name}</h3>
+                <div className="flex items-baseline gap-1.5 sm:hidden">
+                  <span className="font-['Nunito',sans-serif] text-2xl font-[900] leading-none">{lvl.price} €</span>
+                  <span className={`font-mono text-[10px] ${t.perCard}`}>/ {language === 'es' ? 'carta' : 'card'}</span>
+                </div>
+              </div>
+              <p className={`mt-1.5 sm:mt-2 sm:min-h-[3.6rem] font-sans text-[12px] sm:text-[12.5px] leading-snug sm:leading-relaxed ${t.purpose}`}>{lvl.purpose}</p>
 
-              <div className="mt-4 flex items-baseline gap-1.5">
+              <div className="mt-4 hidden sm:flex items-baseline gap-1.5">
                 <span className="font-['Nunito',sans-serif] text-4xl font-[900] leading-none">{lvl.price} €</span>
                 <span className={`font-mono text-[11px] ${t.perCard}`}>/ {language === 'es' ? 'carta' : 'card'}</span>
               </div>
 
-              <div className={`my-4 border-t ${t.rule}`} />
+              <div className={`my-3 sm:my-4 border-t ${t.rule}`} />
 
-              <dl className="space-y-2 font-mono text-[10.5px] uppercase tracking-wider">
+              <dl className="space-y-1.5 sm:space-y-2 font-mono text-[10px] sm:text-[10.5px] uppercase tracking-wider">
                 <div className="flex items-baseline justify-between gap-3">
                   <dt className={t.label}>{language === 'es' ? 'Plazo' : 'Turnaround'}:</dt>
                   <dd className={`text-right font-bold ${t.value}`}>{lvl.turnaround}</dd>
@@ -324,9 +339,9 @@ export const LuxuryPricingSection: React.FC<LuxuryPricingSectionProps> = ({ onNa
                 </div>
               </dl>
 
-              <ul className="mt-4 mb-6 flex-1 space-y-2">
+              <ul className="mt-3 sm:mt-4 mb-4 sm:mb-6 flex-1 space-y-1.5 sm:space-y-2">
                 {lvl.bullets.map((bullet, idx) => (
-                  <li key={idx} className={`flex items-start gap-2 font-sans text-[12.5px] leading-snug ${t.bullet}`}>
+                  <li key={idx} className={`flex items-start gap-2 font-sans text-[11.5px] sm:text-[12.5px] leading-snug ${t.bullet}`}>
                     <Check className={`mt-0.5 h-3.5 w-3.5 shrink-0 ${t.accent}`} strokeWidth={3} />
                     <span>{bullet}</span>
                   </li>
@@ -336,7 +351,7 @@ export const LuxuryPricingSection: React.FC<LuxuryPricingSectionProps> = ({ onNa
               <button
                 type="button"
                 onClick={() => onNavigate && onNavigate(`/submit?tier=${lvl.id}`)}
-                className={`w-full cursor-pointer py-3 font-mono text-[11px] font-bold uppercase tracking-wider transition-colors ${
+                className={`w-full cursor-pointer py-2.5 sm:py-3 font-mono text-[11px] font-bold uppercase tracking-wider transition-colors ${
                   isPopular ? t.btnMain : t.btnAlt
                 }`}
               >

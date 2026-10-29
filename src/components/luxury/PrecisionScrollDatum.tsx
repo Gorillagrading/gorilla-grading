@@ -129,13 +129,13 @@ export const PrecisionScrollDatum: React.FC = () => {
         }}
       />
 
-      {/* Layer 4C: Iluminación interactiva suave con el cursor */}
-      {mousePos.x !== -1000 && (
+      {/* Layer 4C: Iluminación interactiva suave con el cursor (solo en modo claro) */}
+      {isLight && mousePos.x !== -1000 && (
         <div 
           className="absolute inset-0 w-full h-full pointer-events-none transition-opacity duration-500"
           style={{
             background: `radial-gradient(460px circle at ${mousePos.x}px ${mousePos.y}px, ${
-              isLight ? 'rgba(34, 197, 94, 0.07)' : 'rgba(74, 222, 128, 0.08)'
+              'rgba(34, 197, 94, 0.07)'
             } 0%, transparent 80%)`,
           }}
         />
