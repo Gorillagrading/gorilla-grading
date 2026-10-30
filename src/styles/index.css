@@ -1547,3 +1547,24 @@ html.light-theme .about-page .title-3d-green,
   90% { opacity: 1; }
   100% { opacity: 0; }
 }
+
+/* ═══════════════════════════════════════════════════════
+   ESCALA GENERAL DE LA WEB EN ESCRITORIO: se ve al 90 %
+   (como si el navegador tuviera el zoom al 90 %). En móvil y tablet no se toca.
+   --page-zoom lo usan las alturas basadas en el alto de la ventana, que con el zoom
+   se encogerían, para que sigan ocupando la pantalla entera.
+   ═══════════════════════════════════════════════════════ */
+:root {
+  --page-zoom: 1;
+}
+@media (min-width: 1024px) {
+  :root {
+    --page-zoom: 0.9;
+  }
+  html {
+    zoom: var(--page-zoom);
+  }
+}
+html .min-h-screen {
+  min-height: calc(100vh / var(--page-zoom));
+}

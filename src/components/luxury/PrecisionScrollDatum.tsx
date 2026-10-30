@@ -13,7 +13,9 @@ export const PrecisionScrollDatum: React.FC = () => {
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      setMousePos({ x: e.clientX, y: e.clientY });
+      // Con la web escalada (zoom del escritorio) el cursor llega en píxeles de pantalla y el dibujo va en los escalados.
+      const zoom = parseFloat(getComputedStyle(document.documentElement).zoom) || 1;
+      setMousePos({ x: e.clientX / zoom, y: e.clientY / zoom });
     };
 
     window.addEventListener('mousemove', handleMouseMove, { passive: true });

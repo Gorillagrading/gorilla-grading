@@ -82,7 +82,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onNavigate }) => {
 
   return (
     <div 
-      className={`flex-1 min-h-[calc(100vh-5rem)] min-h-[calc(100dvh-5rem)] flex items-center justify-center p-4 sm:p-6 relative overflow-hidden transition-colors duration-500 ${
+      className={`flex-1 min-h-[calc(100vh_/_var(--page-zoom)_-_5rem)] min-h-[calc(100dvh_/_var(--page-zoom)_-_5rem)] flex items-center justify-center p-4 sm:p-6 relative overflow-hidden transition-colors duration-500 ${
         isLight ? 'bg-[#F4F1EA] text-[#1A1D1A]' : 'bg-[#454545] text-white'
       }`}
     >

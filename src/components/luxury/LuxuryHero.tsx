@@ -74,7 +74,7 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
   return (
     <section 
       id="hero"
-      className="relative w-full min-h-[calc(100vh-5rem-38px)] flex flex-col justify-between overflow-hidden bg-transparent text-white pt-2 sm:pt-4 pb-0 select-none touch-pan-y"
+      className="relative w-full min-h-[calc(100vh_/_var(--page-zoom)_-_5rem_-_38px)] flex flex-col justify-between overflow-hidden bg-transparent text-white pt-2 sm:pt-4 pb-0 select-none touch-pan-y"
     >
       
       {/* ═════════════════════════════════════════════════════════════════════

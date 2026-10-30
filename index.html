@@ -6,7 +6,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Gorilla Grading — Estándar Internacional de Autenticación & Graduación Óptica</title>
     <meta name="description" content="Plataforma internacional de grading de cartas coleccionables. Precisión óptica submilimétrica, encapsulado sónico hermético y certificación digital criptográfica." />
-    
+    <script>
+      // Pone el tema (claro u oscuro) antes de pintar nada, para que no haya un parpadeo de colores al cargar.
+      // Misma regla que ThemeContext: la elección manual de la sesión, o la hora (oscuro de 20:00 a 06:59).
+      (function () {
+        try {
+          var manual = sessionStorage.getItem('gorilla_theme_manual_override');
+          var hour = new Date().getHours();
+          var theme = manual === 'light' || manual === 'dark' ? manual : hour >= 20 || hour < 7 ? 'dark' : 'light';
+          document.documentElement.classList.add(theme + '-theme');
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body class="bg-[#111311] text-[#F5F6F2] font-sans antialiased selection:bg-[#61B663] selection:text-[#111311] overflow-x-hidden">
     <div id="root"></div>
