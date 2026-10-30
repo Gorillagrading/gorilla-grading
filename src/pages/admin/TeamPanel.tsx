@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Check, ClipboardList, Crown, Mail, PackageOpen, Plus, ShieldCheck, UserMinus, UserPlus, X, type LucideIcon } from 'lucide-react';
+import { Check, ChevronRight, ClipboardList, Crown, Mail, PackageOpen, Plus, ShieldCheck, UserMinus, UserPlus, X, type LucideIcon } from 'lucide-react';
 import { STAFF_ROLES, type StaffRole } from '../../../shared/admin';
 import type { UserDto } from '../../../shared/auth';
 import { ROLE_INFO, type TeamMemberDto } from '../../../shared/team';
@@ -39,7 +39,8 @@ export const TeamPanel: React.FC<{ user: UserDto }> = ({ user }) => {
   const [members, setMembers] = useState<TeamMemberDto[] | null>(null);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
-  const [adding, setAdding] = useState(false);
+  // false = cerrado; si se abre desde un puesto, ese puesto llega ya elegido.
+  const [adding, setAdding] = useState<boolean | StaffRole>(false);
   const [busyId, setBusyId] = useState<string | null>(null);
 
   const load = useCallback(() => {
@@ -67,134 +68,181 @@ export const TeamPanel: React.FC<{ user: UserDto }> = ({ user }) => {
     }
   };
 
-  const count = (role: StaffRole) => members?.filter((m) => m.role === role).length ?? 0;
+  const byRole = (role: StaffRole) => members?.filter((m) => m.role === role) ?? [];
+  const activeToday = members?.filter((m) => m.activated && m.lastSeenAt && Date.now() - new Date(m.lastSeenAt).getTime() < 86_400_000).length ?? 0;
+  const pending = members?.filter((m) => !m.activated).length ?? 0;
+
+  const changeRole = (m: TeamMemberDto, role: StaffRole) => {
+    if (window.confirm(`¿Cambiar a ${m.email} a «${ROLE_INFO[role].name}»? Tendrá que volver a entrar.`)) {
+      void act(m.id, () => changeTeamRole(m.id, role), `Rol cambiado a «${ROLE_INFO[role].name}».`);
+    }
+  };
+  const remove = (m: TeamMemberDto) => {
+    if (window.confirm(`¿Quitar a ${m.email} del equipo? Perderá el acceso al panel, pero su historial se conserva.`)) {
+      void act(m.id, () => removeTeamMember(m.id), `${m.email} ya no tiene acceso al panel.`);
+    }
+  };
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h2 className={`font-['Nunito',sans-serif] text-lg font-[900] ${t.text}`}>
-            Equipo {members && <span className={`font-mono text-sm ${t.muted}`}>· {members.length} {members.length === 1 ? 'persona' : 'personas'}</span>}
-          </h2>
-          <p className={`text-xs ${t.muted}`}>Cada persona entra con su correo y el código que le llega. Su rol decide qué puede hacer en el panel.</p>
-        </div>
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <p className={`text-xs max-w-xl ${t.muted}`}>Cada persona entra con su correo y el código que le llega. Su puesto decide qué puede hacer en el panel.</p>
         <button type="button" onClick={() => setAdding(true)} className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-extrabold cursor-pointer ${t.primary}`}>
           <UserPlus className="w-4 h-4" aria-hidden="true" />
           Añadir persona
         </button>
       </div>
 
+      {/* Lectura rápida del equipo */}
+      {members && (
+        <dl className={`grid grid-cols-3 border rounded-xl overflow-hidden divide-x ${t.card} ${t.rule}`}>
+          {[
+            { label: 'Personas', value: members.length },
+            { label: 'Activas en 24 h', value: activeToday },
+            { label: 'Sin primer acceso', value: pending },
+          ].map((stat) => (
+            <div key={stat.label} className={`px-4 py-3 ${t.rule}`}>
+              <dd className={`font-['Nunito',sans-serif] text-2xl font-[900] leading-none ${t.text}`}>{stat.value}</dd>
+              <dt className={`mt-1.5 font-mono text-[10px] uppercase tracking-wider ${t.muted}`}>{stat.label}</dt>
+            </div>
+          ))}
+        </dl>
+      )}
+
       {error && <p role="alert" className={`text-sm ${t.negative}`}>{error}</p>}
       {notice && <p role="status" className={`text-sm ${t.positive}`}>{notice}</p>}
+      {members === null && !error && <p className={`text-sm ${t.muted}`}>Cargando…</p>}
 
-      {/* Los roles y qué puede hacer cada uno */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
-        {STAFF_ROLES.map((role) => {
-          const { color, icon: Icon } = ROLE_STYLE[role];
-          const info = ROLE_INFO[role];
-          return (
-            <section key={role} className={`border rounded-2xl p-4 ${t.card}`} aria-label={info.name}>
-              <div className="flex items-center gap-3">
-                <span className="w-9 h-9 rounded-xl flex items-center justify-center text-white shrink-0" style={{ background: color }}>
-                  <Icon className="w-[18px] h-[18px]" aria-hidden="true" />
-                </span>
-                <div className="flex-1 min-w-0">
-                  <div className={`text-sm font-bold ${t.text}`}>{info.name}</div>
-                  <div className={`text-[11px] ${t.muted}`}>{count(role)} {count(role) === 1 ? 'persona' : 'personas'}</div>
-                </div>
-              </div>
-              <p className={`mt-3 text-xs font-semibold leading-snug ${t.text}`}>{info.summary}</p>
-              <ul className="mt-2 space-y-1">
-                {info.can.map((c) => (
-                  <li key={c} className={`flex items-start gap-1.5 text-[11px] leading-snug ${t.muted}`}>
-                    <Check className="w-3 h-3 mt-0.5 shrink-0" style={{ color }} aria-hidden="true" />
-                    {c}
-                  </li>
-                ))}
-              </ul>
-              {info.also && (
-                <div className={`mt-2.5 pt-2.5 border-t ${t.rule}`}>
-                  <div className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${t.muted}`}>También puede</div>
-                  <ul className="space-y-1">
-                    {info.also.map((c) => (
-                      <li key={c} className={`flex items-start gap-1.5 text-[11px] leading-snug ${t.muted}`}>
-                        <Plus className="w-3 h-3 mt-0.5 shrink-0" aria-hidden="true" />
-                        {c}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </section>
-          );
-        })}
-      </div>
-
-      {/* Personas */}
-      <section className={`border rounded-2xl overflow-hidden ${t.card}`} aria-label="Personas del equipo">
-        {members === null && !error && <p className={`px-5 py-8 text-sm ${t.muted}`}>Cargando…</p>}
-        <ul>
-          {members?.map((m) => {
-            const { color } = ROLE_STYLE[m.role];
-            const me = m.id === user.id;
-            const busy = busyId === m.id;
+      {/* El recorrido de un pedido por el laboratorio: cada puesto con sus personas y lo que puede hacer */}
+      {members && (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+          {STAFF_ROLES.map((role, index) => {
+            const { color, icon: Icon } = ROLE_STYLE[role];
+            const info = ROLE_INFO[role];
+            const people = byRole(role);
             return (
-              <li key={m.id} className={`flex flex-wrap items-center gap-4 px-5 py-4 border-b last:border-b-0 ${t.rule}`}>
-                <span className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0" style={{ background: color }} aria-hidden="true">
-                  {initials(m)}
-                </span>
-                <div className="flex-1 min-w-[200px]">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className={`text-sm font-bold ${t.text}`}>{m.fullName ?? m.email}</span>
-                    {me && <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${t.rule} ${t.muted}`}>Tú</span>}
+              <section key={role} className={`relative flex flex-col border rounded-2xl ${t.card}`} aria-label={info.name}>
+                <div className="h-1 rounded-t-2xl" style={{ background: color }} aria-hidden="true" />
+                {index < STAFF_ROLES.length - 1 && (
+                  <span
+                    aria-hidden="true"
+                    className={`hidden xl:flex absolute -right-[13px] top-9 z-10 w-[22px] h-[22px] rounded-full border items-center justify-center ${t.card}`}
+                  >
+                    <ChevronRight className={`w-3.5 h-3.5 ${t.muted}`} />
+                  </span>
+                )}
+
+                <div className="p-5 pb-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="font-mono text-[10px] font-bold tracking-[0.2em]" style={{ color }}>PUESTO {String(index + 1).padStart(2, '0')}</div>
+                      <h3 className={`mt-1 font-['Nunito',sans-serif] text-lg font-[900] leading-tight ${t.text}`}>{info.name}</h3>
+                    </div>
+                    <span className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: `${color}1F`, color }}>
+                      <Icon className="w-5 h-5" aria-hidden="true" />
+                    </span>
                   </div>
-                  <div className={`text-xs ${t.muted}`}>{m.fullName ? m.email : ''}</div>
+                  <p className={`mt-2.5 text-xs leading-relaxed ${t.muted}`}>{info.summary}</p>
+
+                  <details className="group mt-3">
+                    <summary className={`inline-flex items-center gap-1 cursor-pointer select-none list-none text-[11px] font-bold ${t.text} [&::-webkit-details-marker]:hidden`}>
+                      <ChevronRight className="w-3.5 h-3.5 transition-transform group-open:rotate-90" aria-hidden="true" />
+                      Ver permisos
+                    </summary>
+                    <ul className="mt-2 space-y-1.5">
+                      {info.can.map((c) => (
+                        <li key={c} className={`flex items-start gap-1.5 text-[11px] leading-snug ${t.muted}`}>
+                          <Check className="w-3 h-3 mt-0.5 shrink-0" style={{ color }} aria-hidden="true" />
+                          {c}
+                        </li>
+                      ))}
+                      {info.also?.map((c) => (
+                        <li key={c} className={`flex items-start gap-1.5 text-[11px] leading-snug italic ${t.muted}`}>
+                          <Plus className="w-3 h-3 mt-0.5 shrink-0" aria-hidden="true" />
+                          También: {c.charAt(0).toLowerCase() + c.slice(1)}
+                        </li>
+                      ))}
+                    </ul>
+                  </details>
                 </div>
-                <div className={`flex items-center gap-1.5 text-xs w-[170px] ${t.muted}`}>
-                  <span className={`w-2 h-2 rounded-full shrink-0 ${m.activated ? 'bg-[#16A34A]' : 'bg-[#D97706]'}`} aria-hidden="true" />
-                  {m.activated ? lastSeen(m.lastSeenAt) : 'Pendiente de su primer acceso'}
-                </div>
-                <label className="sr-only" htmlFor={`role-${m.id}`}>Rol de {m.email}</label>
-                <select
-                  id={`role-${m.id}`}
-                  value={m.role}
-                  disabled={me || busy}
-                  title={me ? 'No puedes cambiar tu propio rol' : undefined}
-                  onChange={(e) => {
-                    const role = e.target.value as StaffRole;
-                    if (window.confirm(`¿Cambiar a ${m.email} a «${ROLE_INFO[role].name}»? Tendrá que volver a entrar.`)) {
-                      void act(m.id, () => changeTeamRole(m.id, role), `Rol cambiado a «${ROLE_INFO[role].name}».`);
-                    }
-                  }}
-                  className={`px-3 py-2 text-xs font-bold border rounded-lg focus:outline-none disabled:opacity-60 ${t.input}`}
-                  style={{ borderLeft: `4px solid ${color}` }}
-                >
-                  {STAFF_ROLES.map((r) => <option key={r} value={r}>{ROLE_INFO[r].name}</option>)}
-                </select>
-                {!me && (
+
+                {/* Las personas de este puesto */}
+                <div className={`flex-1 flex flex-col border-t rounded-b-2xl ${t.rule} ${t.isLight ? 'bg-[#FAF8F5]' : 'bg-[#2F2F2F]'}`}>
+                  <div className={`flex items-center justify-between px-5 pt-3 pb-1 font-mono text-[10px] uppercase tracking-wider ${t.muted}`}>
+                    <span>{people.length} {people.length === 1 ? 'persona' : 'personas'}</span>
+                  </div>
+                  <ul className="px-3 pb-3 space-y-1.5 flex-1">
+                    {people.map((m) => {
+                      const me = m.id === user.id;
+                      const busy = busyId === m.id;
+                      return (
+                        <li key={m.id} className={`rounded-xl border px-3 py-2.5 ${t.card}`}>
+                          <div className="flex items-center gap-2.5">
+                            <span className="w-8 h-8 rounded-full flex items-center justify-center text-white text-[11px] font-bold shrink-0" style={{ background: color }} aria-hidden="true">
+                              {initials(m)}
+                            </span>
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-1.5">
+                                <span className={`truncate text-[13px] font-bold ${t.text}`}>{m.fullName ?? m.email}</span>
+                                {me && <span className={`text-[9px] font-bold px-1.5 py-px rounded border ${t.rule} ${t.muted}`}>TÚ</span>}
+                              </div>
+                              {m.fullName && <div className={`truncate text-[11px] ${t.muted}`}>{m.email}</div>}
+                            </div>
+                          </div>
+                          <div className={`mt-2 flex items-center gap-1.5 text-[11px] ${t.muted}`}>
+                            <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${m.activated ? 'bg-[#16A34A]' : 'bg-[#D97706]'}`} aria-hidden="true" />
+                            {m.activated ? lastSeen(m.lastSeenAt) : 'Pendiente de su primer acceso'}
+                          </div>
+                          {!me && (
+                            <div className="mt-2 flex items-center gap-1.5">
+                              <label className="sr-only" htmlFor={`role-${m.id}`}>Puesto de {m.email}</label>
+                              <select
+                                id={`role-${m.id}`}
+                                value={m.role}
+                                disabled={busy}
+                                onChange={(e) => changeRole(m, e.target.value as StaffRole)}
+                                className={`flex-1 min-w-0 px-2 py-1.5 text-[11px] font-bold border rounded-md focus:outline-none disabled:opacity-60 cursor-pointer ${t.input}`}
+                                title="Cambiar de puesto"
+                              >
+                                {STAFF_ROLES.map((r) => <option key={r} value={r}>{ROLE_INFO[r].name}</option>)}
+                              </select>
+                              <button
+                                type="button"
+                                disabled={busy}
+                                onClick={() => remove(m)}
+                                aria-label={`Quitar a ${m.email} del equipo`}
+                                title="Quitar del equipo"
+                                className={`p-1.5 border rounded-md cursor-pointer disabled:opacity-50 ${t.secondary}`}
+                              >
+                                <UserMinus className={`w-3.5 h-3.5 ${t.negative}`} aria-hidden="true" />
+                              </button>
+                            </div>
+                          )}
+                        </li>
+                      );
+                    })}
+                    {people.length === 0 && (
+                      <li className={`rounded-xl border border-dashed px-3 py-4 text-center text-[11px] ${t.rule} ${t.muted}`}>Nadie tiene este puesto todavía.</li>
+                    )}
+                  </ul>
                   <button
                     type="button"
-                    disabled={busy}
-                    onClick={() => {
-                      if (window.confirm(`¿Quitar a ${m.email} del equipo? Perderá el acceso al panel, pero su historial se conserva.`)) {
-                        void act(m.id, () => removeTeamMember(m.id), `${m.email} ya no tiene acceso al panel.`);
-                      }
-                    }}
-                    aria-label={`Quitar a ${m.email} del equipo`}
-                    title="Quitar del equipo"
-                    className={`p-2 border rounded-lg cursor-pointer disabled:opacity-50 ${t.secondary}`}
+                    onClick={() => setAdding(role)}
+                    className={`mx-3 mb-3 inline-flex items-center justify-center gap-1.5 py-2 rounded-lg border border-dashed text-[11px] font-bold cursor-pointer ${t.rule} ${t.muted} ${t.ghostHover}`}
                   >
-                    <UserMinus className={`w-4 h-4 ${t.negative}`} aria-hidden="true" />
+                    <Plus className="w-3.5 h-3.5" aria-hidden="true" />
+                    Añadir a este puesto
                   </button>
-                )}
-              </li>
+                </div>
+              </section>
             );
           })}
-        </ul>
-      </section>
+        </div>
+      )}
 
       {adding && (
         <AddMemberForm
+          initialRole={typeof adding === 'string' ? adding : 'staff'}
           onCancel={() => setAdding(false)}
           onAdded={(email) => {
             setAdding(false);
@@ -207,11 +255,11 @@ export const TeamPanel: React.FC<{ user: UserDto }> = ({ user }) => {
   );
 };
 
-const AddMemberForm: React.FC<{ onCancel: () => void; onAdded: (email: string) => void }> = ({ onCancel, onAdded }) => {
+const AddMemberForm: React.FC<{ initialRole: StaffRole; onCancel: () => void; onAdded: (email: string) => void }> = ({ initialRole, onCancel, onAdded }) => {
   const t = usePanelTheme();
   const [email, setEmail] = useState('');
   const [fullName, setFullName] = useState('');
-  const [role, setRole] = useState<StaffRole>('staff');
+  const [role, setRole] = useState<StaffRole>(initialRole);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const field = `w-full px-3 py-2.5 text-sm border rounded-lg focus:outline-none ${t.input}`;
