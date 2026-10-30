@@ -187,11 +187,6 @@ export const LuxuryFooter: React.FC<LuxuryFooterProps> = ({ onNavigate }) => {
             }`}>
               {language === 'es' ? 'Política de Cookies' : 'Cookie Policy'}
             </button>
-            <button onClick={() => onNavigate && onNavigate('/cookie-consent')} className={`text-center lg:text-left text-xs transition-all duration-300 w-fit mx-auto lg:mx-0 ${
-              isLight ? 'text-[#4B524A] hover:text-[#16A34A] hover:translate-x-0 lg:hover:translate-x-1' : 'text-[#A4ACA1] hover:text-[#48C765] hover:translate-x-0 lg:hover:translate-x-1'
-            }`}>
-              {language === 'es' ? 'Consentimiento de Cookies' : 'Cookie Consent'}
-            </button>
             {/* Obligatorio en Portugal: enlace al libro de reclamaciones electrónico oficial */}
             <a
               href="https://www.livroreclamacoes.pt/Inicio/"

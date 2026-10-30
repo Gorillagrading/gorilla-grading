@@ -156,7 +156,8 @@ export const AppContent: React.FC = () => {
       case '/cookies':
         return <LegalPage type="cookies" onNavigate={handleNavigate} />;
       case '/cookie-consent':
-        return <LegalPage type="cookie-consent" onNavigate={handleNavigate} />;
+        // Página retirada: solo hay cookies técnicas, no hace falta gestor de consentimiento.
+        return <LegalPage type="cookies" onNavigate={handleNavigate} />;
       case '/legal-notice':
         return <LegalPage type="legal-notice" onNavigate={handleNavigate} />;
       case '/newsletter':

@@ -4,7 +4,7 @@ import { useTheme } from '../context/ThemeContext';
 import { Shield, FileText, Lock, RotateCcw, Cookie, CheckCircle2, Check } from 'lucide-react';
 
 interface LegalPageProps {
-  type: 'terms' | 'privacy' | 'refund' | 'cookies' | 'cookie-consent' | 'legal-notice';
+  type: 'terms' | 'privacy' | 'refund' | 'cookies' | 'legal-notice';
   onNavigate?: (path: string) => void;
 }
 
@@ -21,12 +21,6 @@ export const LegalPage: React.FC<LegalPageProps> = ({ type: initialType, onNavig
   }, [initialType]);
 
   // Cookie Preferences State
-  const [cookieState, setCookieState] = useState({
-    essential: true,
-    analytics: true,
-    dropoff: false,
-    saved: false,
-  });
 
   const tabs = [
     { 
@@ -58,12 +52,6 @@ export const LegalPage: React.FC<LegalPageProps> = ({ type: initialType, onNavig
       num: '05', 
       label: isEs ? 'POLÍTICA DE COOKIES' : 'COOKIE POLICY', 
       icon: Cookie 
-    },
-    { 
-      id: 'cookie-consent' as const, 
-      num: '06', 
-      label: isEs ? 'GESTIÓN DE PRIVACIDAD' : 'CONSENT MANAGER', 
-      icon: CheckCircle2 
     },
   ];
 
@@ -281,28 +269,13 @@ export const LegalPage: React.FC<LegalPageProps> = ({ type: initialType, onNavig
         },
         {
           num: '04',
-          title: isEs ? 'Configuración y Revocación del Consentimiento' : 'Configuration & Revocation of Consent',
+          title: isEs ? 'Cómo gestionarlas' : 'How to manage them',
           text: isEs
-            ? 'Puede modificar en cualquier instante sus preferencias de almacenamiento desde la pestaña de Gestión de Privacidad o mediante los ajustes de su navegador web.'
-            : 'You may adjust or revoke your cookie preferences at any time via the Consent Manager tab or directly within your browser settings.'
+            ? 'Solo usamos cookies técnicas, imprescindibles para iniciar sesión, por lo que no necesitan su consentimiento. Puede borrarlas o bloquearlas en cualquier momento desde los ajustes de su navegador; si lo hace, no podrá iniciar sesión.'
+            : 'We only use technical cookies, required to sign in, so they do not need your consent. You can delete or block them at any time in your browser settings; if you do, you will not be able to sign in.'
         }
       ]
     },
-    'cookie-consent': {
-      category: isEs ? 'PANEL DE PREFERENCIAS' : 'PREFERENCE PANEL',
-      code: 'DOC. GGI-CONSENT-CONFIG-2026',
-      title: isEs ? 'Gestión de Preferencias de Privacidad' : 'Privacy & Consent Preferences',
-      desc: isEs
-        ? 'Controle de manera granular los identificadores locales activos en su navegador durante el uso de la plataforma de certificación Gorilla Grading.'
-        : 'Granularly manage local storage preferences and session telemetry active in your browser while using the Gorilla Grading certification platform.',
-      metrics: [
-        { label: isEs ? 'Estado Actual' : 'Current Status', val: isEs ? 'Configuración Personalizada' : 'Custom Preferences' },
-        { label: isEs ? 'Almacenamiento Local' : 'Local Storage', val: isEs ? 'Aislado en Navegador' : 'Browser Sandboxed' },
-        { label: isEs ? 'Vigencia de Elección' : 'Preference Duration', val: '365 Días' },
-        { label: isEs ? 'Protección de Identidad' : 'Identity Protection', val: isEs ? 'Anónima y Segura' : 'Anonymous & Secure' },
-      ],
-      articles: []
-    }
   };
 
   const currentData = legalContent[activeType] || legalContent['legal-notice'];
@@ -464,123 +437,6 @@ export const LegalPage: React.FC<LegalPageProps> = ({ type: initialType, onNavig
               </div>
             )}
 
-            {/* Cookie Consent Manager Tab (Interactive Panel) */}
-            {activeType === 'cookie-consent' && (
-              <div className="space-y-6 pt-4">
-                <div className="flex items-center justify-between pb-3 border-b border-current/15">
-                  <div>
-                    <h3 className="font-['Nunito',sans-serif] text-lg sm:text-xl font-[900] uppercase tracking-normal">
-                      {isEs ? 'Panel de Configuración de Consentimiento' : 'Privacy Preference Manager'}
-                    </h3>
-                    <p className="font-mono text-[9px] opacity-60 uppercase tracking-wider mt-0.5">
-                      {isEs 
-                        ? 'GESTIÓN LOCAL DE IDENTIFICADORES Y SESIÓN SIN RASTREO COMERCIAL' 
-                        : 'LOCAL STORAGE & SESSION GOVERNANCE WITHOUT THIRD-PARTY AD TRACKING'}
-                    </p>
-                  </div>
-                  <Lock className="w-4 h-4 opacity-60" />
-                </div>
-
-                <div className="divide-y divide-current/10 border border-current/15">
-                  {/* Option 1: Essential */}
-                  <div className="p-4 sm:p-5 flex items-start justify-between gap-4">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono text-[10px] font-bold uppercase text-[#15803D] dark:text-[#48C765]">
-                          01. {isEs ? 'OBLIGATORIAS' : 'ESSENTIAL'}
-                        </span>
-                      </div>
-                      <h4 className="font-['Nunito',sans-serif] text-sm sm:text-base uppercase font-[900] tracking-normal">
-                        {isEs ? 'Cookies Técnicas de Sesión' : 'Essential Session Tokens'}
-                      </h4>
-                      <p className="text-xs opacity-70 leading-relaxed max-w-xl">
-                        {isEs 
-                          ? 'Imprescindibles para inicio de sesión seguro, cifrado CSRF y tramitación en la pasarela de pedidos.' 
-                          : 'Required for cryptographic authentication, CSRF tokens, and secure checkout sessions.'}
-                      </p>
-                    </div>
-                    <span className="text-[10px] font-mono text-[#15803D] dark:text-[#48C765] font-bold border border-current/20 px-2 py-1 shrink-0">
-                      {isEs ? 'ACTIVA' : 'ACTIVE'}
-                    </span>
-                  </div>
-
-                  {/* Option 2: Analytics */}
-                  <div 
-                    onClick={() => setCookieState(prev => ({ ...prev, analytics: !prev.analytics, saved: false }))}
-                    className="p-4 sm:p-5 flex items-start justify-between gap-4 cursor-pointer hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors"
-                  >
-                    <div className="space-y-1">
-                      <span className="font-mono text-[10px] font-bold uppercase text-[#15803D] dark:text-[#48C765]">
-                        02. {isEs ? 'RENDIMIENTO' : 'PERFORMANCE'}
-                      </span>
-                      <h4 className="font-['Nunito',sans-serif] text-sm sm:text-base uppercase font-[900] tracking-normal">
-                        {isEs ? 'Diagnóstico de Bóveda y Visor 3D' : 'Vault Diagnostics & 3D Speed'}
-                      </h4>
-                      <p className="text-xs opacity-70 leading-relaxed max-w-xl">
-                        {isEs 
-                          ? 'Telemetría estrictamente anónima sobre latencia del visor 3D y estabilidad de la base de datos.' 
-                          : 'Strictly anonymous latency measurements evaluating 3D slab render speed.'}
-                      </p>
-                    </div>
-                    <input 
-                      type="checkbox" 
-                      checked={cookieState.analytics} 
-                      onChange={() => {}} 
-                      className="accent-[#15803D] dark:accent-[#48C765] w-4 h-4 pointer-events-none mt-1 shrink-0" 
-                    />
-                  </div>
-
-                  {/* Option 3: Dropoff Notifications */}
-                  <div 
-                    onClick={() => setCookieState(prev => ({ ...prev, dropoff: !prev.dropoff, saved: false }))}
-                    className="p-4 sm:p-5 flex items-start justify-between gap-4 cursor-pointer hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors"
-                  >
-                    <div className="space-y-1">
-                      <span className="font-mono text-[10px] font-bold uppercase text-[#15803D] dark:text-[#48C765]">
-                        03. {isEs ? 'LOCALIZACIÓN' : 'LOCATION'}
-                      </span>
-                      <h4 className="font-['Nunito',sans-serif] text-sm sm:text-base uppercase font-[900] tracking-normal">
-                        {isEs ? 'Eventos y Puntos Drop-Off' : 'Drop-off & Card Show Notices'}
-                      </h4>
-                      <p className="text-xs opacity-70 leading-relaxed max-w-xl">
-                        {isEs 
-                          ? 'Recuerda su área geográfica para alertar sobre ferias numismáticas y puntos de consignación cercanos.' 
-                          : 'Remembers geographic preference to notify regarding nearby card show consignments.'}
-                      </p>
-                    </div>
-                    <input 
-                      type="checkbox" 
-                      checked={cookieState.dropoff} 
-                      onChange={() => {}} 
-                      className="accent-[#15803D] dark:accent-[#48C765] w-4 h-4 pointer-events-none mt-1 shrink-0" 
-                    />
-                  </div>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-3 pt-2">
-                  <button
-                    type="button"
-                    onClick={() => setCookieState(prev => ({ ...prev, saved: true }))}
-                    className="btn-gorilla-square px-6 py-2.5 text-xs font-extrabold tracking-wider cursor-pointer"
-                  >
-                    {isEs ? 'Guardar Preferencias' : 'Save Preferences'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setCookieState({ essential: true, analytics: true, dropoff: true, saved: true })}
-                    className="btn-gorilla-square-secondary px-6 py-2.5 text-xs font-bold tracking-wider cursor-pointer"
-                  >
-                    {isEs ? 'Aceptar Todo' : 'Accept All'}
-                  </button>
-                  {cookieState.saved && (
-                    <span className="font-mono text-xs text-[#15803D] dark:text-[#48C765] font-bold flex items-center gap-1.5 animate-fadeIn">
-                      <Check className="w-4 h-4" />
-                      {isEs ? 'Preferencias guardadas correctamente en su navegador' : 'Preferences saved successfully in your browser'}
-                    </span>
-                  )}
-                </div>
-              </div>
-            )}
           </div>
 
         </div>
