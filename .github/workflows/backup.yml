@@ -1,0 +1,90 @@
+# Copia de seguridad semanal: base de datos + fotos, cifrada con contraseña.
+# Las copias diarias de Supabase duran 7 días y no incluyen las fotos; esta cubre las dos cosas.
+# Cómo descargarla y restaurarla: docs/engineering/COPIAS_DE_SEGURIDAD.md
+#
+# Secretos necesarios (GitHub → Settings → Secrets and variables → Actions):
+#   BACKUP_DATABASE_URL        cadena "Session pooler" de Supabase (puerto 5432)
+#   SUPABASE_URL               la misma que en Vercel
+#   SUPABASE_SERVICE_ROLE_KEY  la misma que en Vercel
+#   BACKUP_PASSWORD            contraseña para abrir el archivo; guardarla fuera de GitHub
+name: Copia de seguridad semanal
+
+on:
+  schedule:
+    - cron: '0 3 * * 0' # domingos a las 03:00 UTC, después de la copia diaria de Supabase
+  workflow_dispatch: # botón "Run workflow" para hacerla a mano
+
+permissions:
+  contents: read
+
+concurrency: backup
+
+jobs:
+  backup:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      BACKUP_DATABASE_URL: ${{ secrets.BACKUP_DATABASE_URL }}
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      BACKUP_PASSWORD: ${{ secrets.BACKUP_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Comprobar secretos
+        run: |
+          for name in BACKUP_DATABASE_URL SUPABASE_URL SUPABASE_SERVICE_ROLE_KEY BACKUP_PASSWORD; do
+            if [ -z "${!name}" ]; then echo "::error::Falta el secreto $name"; exit 1; fi
+          done
+
+      - name: Instalar pg_dump 17
+        run: |
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl -fsSo /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" \
+            | sudo tee /etc/apt/sources.list.d/pgdg.list > /dev/null
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client-17
+
+      - name: Copiar la base de datos
+        run: |
+          mkdir -p copia
+          # Solo nuestros datos (public) y el registro de migraciones (drizzle); el resto lo gestiona Supabase.
+          /usr/lib/postgresql/17/bin/pg_dump "$BACKUP_DATABASE_URL" \
+            --format=custom --no-owner --no-privileges \
+            --schema=public --schema=drizzle \
+            --file=copia/base-de-datos.dump
+          tables=$(/usr/lib/postgresql/17/bin/pg_restore --list copia/base-de-datos.dump | grep -c 'TABLE DATA' || true)
+          echo "Tablas copiadas: $tables"
+          if [ "$tables" -lt 5 ]; then echo "::error::La copia de la base de datos parece incompleta ($tables tablas)"; exit 1; fi
+
+      - name: Copiar las fotos
+        run: node scripts/backup-storage.mjs copia/fotos
+
+      - name: Empaquetar y cifrar
+        run: |
+          stamp=$(date -u +%Y-%m-%d)
+          echo "STAMP=$stamp" >> "$GITHUB_ENV"
+          cat > copia/LEEME.txt <<EOF
+          Copia de seguridad de Gorilla Grading del $stamp (UTC).
+          base-de-datos.dump: base de datos completa (formato pg_dump custom).
+          fotos/: todas las fotos del almacenamiento privado.
+          Cómo restaurarla: docs/engineering/COPIAS_DE_SEGURIDAD.md en el repositorio.
+          EOF
+          # AES-256 con nombres de archivo cifrados (-mhe=on): sin la contraseña no se ve ni la lista de archivos.
+          7z a -t7z -mhe=on -mx=5 -p"$BACKUP_PASSWORD" "gorilla-grading-copia-$stamp.7z" ./copia/* > /dev/null
+          7z t -p"$BACKUP_PASSWORD" "gorilla-grading-copia-$stamp.7z" > /dev/null
+          ls -lh "gorilla-grading-copia-$stamp.7z"
+          rm -rf copia
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gorilla-grading-copia-${{ env.STAMP }}
+          path: gorilla-grading-copia-${{ env.STAMP }}.7z
+          compression-level: 0 # ya está comprimido
+          retention-days: 35 # las últimas 5 semanas; las mensuales se guardan en el disco externo
+          if-no-files-found: error
