@@ -192,6 +192,17 @@ export const LuxuryFooter: React.FC<LuxuryFooterProps> = ({ onNavigate }) => {
             }`}>
               {language === 'es' ? 'Consentimiento de Cookies' : 'Cookie Consent'}
             </button>
+            {/* Obligatorio en Portugal: enlace al libro de reclamaciones electrónico oficial */}
+            <a
+              href="https://www.livroreclamacoes.pt/Inicio/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`text-center lg:text-left text-xs font-bold transition-all duration-300 w-fit mx-auto lg:mx-0 ${
+                isLight ? 'text-[#4B524A] hover:text-[#16A34A] hover:translate-x-0 lg:hover:translate-x-1' : 'text-[#A4ACA1] hover:text-[#48C765] hover:translate-x-0 lg:hover:translate-x-1'
+              }`}
+            >
+              Livro de Reclamações
+            </a>
           </div>
 
           {/* Standards & Certifications */}
@@ -342,6 +353,8 @@ export const LuxuryFooter: React.FC<LuxuryFooterProps> = ({ onNavigate }) => {
               <button onClick={() => onNavigate && onNavigate('/terms')} className={`transition-colors cursor-pointer whitespace-nowrap ${isLight ? 'hover:text-[#111827]' : 'hover:text-white'}`}>{language === 'es' ? 'TÉRMINOS' : 'TERMS'}</button>
               <span className="opacity-40 select-none">•</span>
               <button onClick={() => onNavigate && onNavigate('/legal-notice')} className={`transition-colors cursor-pointer whitespace-nowrap ${isLight ? 'hover:text-[#111827]' : 'hover:text-white'}`}>{language === 'es' ? 'AVISO LEGAL' : 'LEGAL NOTICE'}</button>
+              <span className="opacity-40 select-none">•</span>
+              <a href="https://www.livroreclamacoes.pt/Inicio/" target="_blank" rel="noopener noreferrer" className={`transition-colors whitespace-nowrap ${isLight ? 'hover:text-[#111827]' : 'hover:text-white'}`}>LIVRO DE RECLAMAÇÕES</a>
             </div>
           </div>
         </div>

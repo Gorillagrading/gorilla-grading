@@ -18,6 +18,7 @@ import { authRoutes } from './routes/auth.js';
 import { certificateRoutes } from './routes/certificates.js';
 import { contactRoutes } from './routes/contact.js';
 import { eventRoutes } from './routes/events.js';
+import { newsletterRoutes } from './routes/newsletter.js';
 import { jobRoutes } from './routes/jobs.js';
 import { orderRoutes } from './routes/orders.js';
 import { paymentRoutes } from './routes/payments.js';
@@ -49,6 +50,7 @@ export function createApp(deps: Deps) {
   app.route('/', paymentRoutes(deps));
   app.route('/', contactRoutes(deps));
   app.route('/', eventRoutes(deps));
+  app.route('/', newsletterRoutes(deps));
 
   app.notFound((c) =>
     problemResponse(c, { type: 'about:blank', title: 'Not Found', status: 404, instance: c.req.path }),

@@ -36,6 +36,7 @@ import { EventsCalendarPage } from './pages/EventsCalendarPage';
 import { LoginPage } from './pages/LoginPage';
 import { AdminPage } from './pages/AdminPage';
 import { GradingScalePage } from './pages/GradingScalePage';
+import { NewsletterPage } from './pages/NewsletterPage';
 import { forgetPendingScroll, rememberScroll, restoreScroll, storedScroll, trackScroll } from './utils/scrollMemory';
 
 export const AppContent: React.FC = () => {
@@ -158,6 +159,8 @@ export const AppContent: React.FC = () => {
         return <LegalPage type="cookie-consent" onNavigate={handleNavigate} />;
       case '/legal-notice':
         return <LegalPage type="legal-notice" onNavigate={handleNavigate} />;
+      case '/newsletter':
+        return <NewsletterPage onNavigate={handleNavigate} />;
       case '/grading-scale':
         return <GradingScalePage onNavigate={handleNavigate} />;
       case '/admin':

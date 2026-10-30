@@ -4,6 +4,7 @@ import { emailOutbox } from '../../db/schema.js';
 import { renderContactEmail } from '../email/contact-notice.js';
 import { renderOrderEmail } from '../email/order-notice.js';
 import { renderTeamEmail } from '../email/team-notice.js';
+import { renderNewsletterEmail } from '../email/newsletter-notice.js';
 import { mailAvailable, type SendMail } from '../email/transport.js';
 
 const MAX_ATTEMPTS = 5;
@@ -50,7 +51,9 @@ export async function deliverPendingEmails(
         ? renderContactEmail
         : row.template.startsWith('team_')
           ? renderTeamEmail
-          : renderOrderEmail;
+          : row.template.startsWith('newsletter_')
+            ? renderNewsletterEmail
+            : renderOrderEmail;
       await send(render(row.template, row.locale, row.toEmail, row.data as Record<string, unknown>));
       await db.update(emailOutbox).set({ status: 'sent', sentAt: new Date(), lastError: null }).where(eq(emailOutbox.id, row.id));
       result.sent += 1;

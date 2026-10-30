@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
+import { ApiError, api } from '../../api/client';
 
 export const NewsletterSection: React.FC = () => {
   const { language } = useLanguage();
@@ -8,12 +9,31 @@ export const NewsletterSection: React.FC = () => {
   const isLight = theme === 'light';
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState('');
+  // Campo trampa para robots: las personas no lo ven.
+  const [website, setWebsite] = useState('');
+  const es = language === 'es';
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email.trim()) {
+    if (!email.trim() || sending) return;
+    setSending(true);
+    setError('');
+    try {
+      await api('/newsletter', { body: { email: email.trim(), locale: es ? 'es' : 'en', website: website || undefined } });
       setSubscribed(true);
       setEmail('');
+    } catch (err) {
+      setError(
+        err instanceof ApiError && err.status === 422
+          ? (es ? 'Revisa el correo: no parece válido.' : 'Check the email address: it does not look valid.')
+          : err instanceof ApiError && err.status === 429
+            ? (es ? 'Demasiados intentos. Espera un rato.' : 'Too many attempts. Please wait a while.')
+            : (es ? 'No se pudo completar. Inténtalo de nuevo.' : 'Could not complete it. Please try again.'),
+      );
+    } finally {
+      setSending(false);
     }
   };
 
@@ -49,8 +69,13 @@ export const NewsletterSection: React.FC = () => {
           </p>
 
           {subscribed ? (
-            <div className="w-full max-w-[400px] py-3.5 px-4 bg-[#16A34A]/10 border border-[#16A34A]/40 text-[#16A34A] font-mono text-xs uppercase tracking-widest font-bold">
-              {language === 'es' ? '¡Suscripción exitosa!' : 'Successfully subscribed!'}
+            <div role="status" className={`w-full max-w-[420px] py-4 px-5 border-2 border-[#16A34A] text-left ${isLight ? 'bg-white' : 'bg-[#121612]'}`}>
+              <div className="text-[#16A34A] text-xs font-bold uppercase tracking-wider">{es ? 'Revisa tu correo' : 'Check your email'}</div>
+              <p className={`text-sm mt-1 ${isLight ? 'text-[#111827]' : 'text-white'}`}>
+                {es
+                  ? 'Te hemos enviado un enlace para confirmar la suscripción. Hasta que lo pulses no te enviaremos nada.'
+                  : 'We have sent you a link to confirm your subscription. We will not send you anything until you click it.'}
+              </p>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="w-full max-w-[420px] flex flex-col sm:flex-row gap-3">
@@ -68,11 +93,23 @@ export const NewsletterSection: React.FC = () => {
               />
               <button 
                 type="submit"
-                className="btn-gorilla-pill px-8 py-3.5 text-xs font-bold tracking-normal shrink-0 shadow-md"
+                disabled={sending}
+                className="btn-gorilla-pill px-8 py-3.5 text-xs font-bold tracking-normal shrink-0 shadow-md disabled:opacity-60"
               >
-                {language === 'es' ? 'Suscribir' : 'Subscribe'}
+                {sending ? (es ? 'Enviando…' : 'Sending…') : es ? 'Suscribir' : 'Subscribe'}
               </button>
+              <input
+                type="text" tabIndex={-1} autoComplete="off" aria-hidden="true" value={website}
+                onChange={(e) => setWebsite(e.target.value)} className="hidden" name="website"
+              />
             </form>
+          )}
+          {error && <p role="alert" className="text-red-500 text-xs mt-3">{error}</p>}
+          {!subscribed && (
+            <p className={`text-[11px] mt-4 max-w-[420px] ${isLight ? 'text-[#6B7268]' : 'text-[#7A8377]'}`}>
+              {es ? 'Al suscribirte aceptas recibir nuestras comunicaciones comerciales por correo, según la ' : 'By subscribing you agree to receive our marketing emails, as described in the '}
+              <a href="/privacy" className="underline underline-offset-2">{es ? 'Política de privacidad' : 'Privacy policy'}</a>.
+            </p>
           )}
           <span className={`font-mono text-[9px] mt-4 uppercase tracking-normal ${
             isLight ? 'text-[#6B7268]' : 'text-[#7A8377]'

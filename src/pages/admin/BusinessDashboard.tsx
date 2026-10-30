@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { ArrowDownRight, ArrowUpRight, Minus, RefreshCw, Search } from 'lucide-react';
+import { ArrowDownRight, ArrowUpRight, Download, Mail, Minus, RefreshCw, Search } from 'lucide-react';
 import type { CertificateHistory, DashboardBucket, DashboardData, DashboardMetric, DashboardRange } from '../../../shared/dashboard';
 import type { OrderStatus } from '../../../shared/domain';
 import { GRADE_LABELS } from '../../../shared/grading';
-import { adminErrorMessage, fetchCertificateHistory, fetchDashboard } from '../../api/admin';
+import { adminErrorMessage, fetchCertificateHistory, fetchDashboard, fetchNewsletterStats } from '../../api/admin';
+import type { NewsletterStatsDto } from '../../../shared/newsletter';
 import { STATUS_LABEL } from '../../utils/orderStatus';
 import { BarList, ColumnChart, Sparkline, type Point } from './charts';
 import { formatDate, formatDateTime, money, usePanelTheme } from './ui';
@@ -280,6 +281,8 @@ export const BusinessDashboard: React.FC<{ onOpenOrder: (code: string) => void }
             </div>
           </section>
 
+          <NewsletterCard />
+
           <CertificateHistorySection onOpenOrder={onOpenOrder} />
 
           <p className={`text-xs ${t.muted}`}>
@@ -493,6 +496,52 @@ const CertificateHistorySection: React.FC<{ onOpenOrder: (code: string) => void 
           </div>
         </div>
       )}
+    </section>
+  );
+};
+
+/** Suscriptores de la newsletter: cuántos hay y la lista de confirmados, para la herramienta de envíos. */
+const NewsletterCard: React.FC = () => {
+  const t = usePanelTheme();
+  const [stats, setStats] = useState<NewsletterStatsDto | null>(null);
+  const [error, setError] = useState('');
+  useEffect(() => {
+    fetchNewsletterStats().then(setStats).catch((err) => setError(adminErrorMessage(err)));
+  }, []);
+
+  const download = () => {
+    if (!stats) return;
+    const csv = ['email,idioma,confirmado', ...stats.subscribers.map((s) => `${s.email},${s.locale},${s.confirmedAt.slice(0, 10)}`)].join('\n');
+    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `newsletter-suscriptores-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  return (
+    <section className={`border rounded-xl p-5 flex flex-wrap items-center gap-5 ${t.card}`} aria-label="Newsletter">
+      <span className="w-10 h-10 rounded-xl bg-[#15803D] text-white flex items-center justify-center shrink-0">
+        <Mail className="w-5 h-5" aria-hidden="true" />
+      </span>
+      <div className="flex-1 min-w-[200px]">
+        <h2 className={`text-sm font-bold ${t.text}`}>Newsletter · Inner Circle</h2>
+        <p className={`text-xs ${t.muted}`}>
+          {error || (stats
+            ? `${stats.confirmed} ${stats.confirmed === 1 ? 'suscriptor confirmado' : 'suscriptores confirmados'} · ${stats.pending} sin confirmar · ${stats.unsubscribed} ${stats.unsubscribed === 1 ? 'baja' : 'bajas'}`
+            : 'Cargando…')}
+        </p>
+      </div>
+      <button
+        type="button"
+        onClick={download}
+        disabled={!stats || stats.confirmed === 0}
+        className={`inline-flex items-center gap-2 px-3.5 py-2 border rounded-lg text-xs font-bold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${t.secondary}`}
+      >
+        <Download className="w-3.5 h-3.5" aria-hidden="true" />
+        Descargar confirmados (CSV)
+      </button>
     </section>
   );
 };
