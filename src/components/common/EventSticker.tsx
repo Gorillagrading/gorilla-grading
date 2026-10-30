@@ -67,18 +67,18 @@ export const EventSticker: React.FC<{ event: PublicEventDto | null; className?: 
       >
         {event && (
           <>
-            <span className={`font-mono font-bold tracking-wider ${compact ? 'text-[7px]' : 'text-[9px]'}`}>{month}</span>
-            <span className={`font-['Nunito',sans-serif] font-[900] mt-0.5 ${compact ? 'text-[15px]' : 'text-xl'}`}>{day}</span>
+            <span className={`font-mono font-bold tracking-wider ${compact ? 'text-[8px]' : 'text-[9px]'}`}>{month}</span>
+            <span className={`font-['Nunito',sans-serif] font-[900] mt-0.5 ${compact ? 'text-[17px]' : 'text-xl'}`}>{day}</span>
           </>
         )}
       </div>
       <div className={`min-w-0 flex flex-col justify-center ${compact ? 'px-2 py-0.5' : 'px-2.5 py-1'}`}>
         {event ? (
           <>
-            <span className={`font-mono font-bold uppercase tracking-wider ${compact ? 'text-[7px]' : 'text-[8px]'}`} style={{ color: isLight ? '#15803D' : '#4ADE80' }}>
+            <span className={`font-mono font-bold uppercase tracking-wider ${compact ? 'text-[8px]' : 'text-[8px]'}`} style={{ color: isLight ? '#15803D' : '#4ADE80' }}>
               {language === 'es' ? 'Próximo evento · entrega en mano' : 'Next event · in-person delivery'}
             </span>
-            <span className={`mt-0.5 truncate font-sans font-bold ${compact ? 'text-[9.5px]' : 'text-[11px]'}`}>
+            <span className={`mt-0.5 truncate font-sans font-bold ${compact ? 'text-[11px]' : 'text-[11px]'}`}>
               {event.city}, {event.name}
             </span>
           </>
@@ -133,7 +133,7 @@ export const EventStickerPopup: React.FC<{ path: string; onNavigate: (path: stri
       onClick={() => onNavigate('/submit?tier=event')}
       className={`event-popup fixed z-40 ${POPUP_SPOTS[spot]} max-w-[calc(100vw-2rem)] text-left cursor-pointer`}
     >
-      <EventSticker event={event} compact className="max-w-[230px]" />
+      <EventSticker event={event} compact className="max-w-[260px]" />
     </button>
   );
 };

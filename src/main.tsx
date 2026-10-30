@@ -12,6 +12,9 @@ import '@fontsource/nunito/latin-800.css'
 import '@fontsource/nunito/latin-900.css'
 import '@fontsource/montserrat/latin-800.css'
 import './styles/index.css'
+import { keepVideosMuted } from './utils/muteVideos'
+
+keepVideosMuted()
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

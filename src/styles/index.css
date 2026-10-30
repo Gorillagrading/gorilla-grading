@@ -1520,21 +1520,17 @@ html.light-theme .about-page .title-3d-green,
   .nav-scan::after { transition: none; }
 }
 
-/* Sticker del próximo evento en la tarjeta Event: aparece con un pequeño rebote y flota suavemente */
+/* Sticker del próximo evento: entra con un pequeño rebote y queda quieto y sin transformar,
+   para que el texto se vea nítido en todos los navegadores (un giro o movimiento continuo lo difumina). */
 .event-sticker {
-  transform-origin: left bottom;
-  animation: event-sticker-pop 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s both, event-sticker-float 4s ease-in-out 1.2s infinite;
+  animation: event-sticker-pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s backwards;
 }
 @keyframes event-sticker-pop {
-  from { opacity: 0; transform: translateY(8px) scale(0.7) rotate(-6deg); }
-  to { opacity: 1; transform: translateY(0) scale(1) rotate(-2deg); }
-}
-@keyframes event-sticker-float {
-  0%, 100% { transform: translateY(0) rotate(-2deg); }
-  50% { transform: translateY(-3px) rotate(-1deg); }
+  from { opacity: 0; transform: translateY(8px) scale(0.85); }
+  to { opacity: 1; transform: none; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .event-sticker { animation: none; transform: rotate(-2deg); }
+  .event-sticker { animation: none; }
 }
 
 /* Aviso flotante del próximo evento: dura 4 s y se desvanece al final */
