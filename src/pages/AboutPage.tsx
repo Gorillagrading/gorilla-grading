@@ -3,7 +3,7 @@ import { CompanyStorySection } from '../components/luxury/CompanyStorySection';
 import { MissionBanner } from '../components/luxury/MissionBanner';
 import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
-import { ArrowLeft, ShieldCheck, Microscope, Award, Users } from 'lucide-react';
+import { ShieldCheck, Microscope, Award, Users } from 'lucide-react';
 
 interface AboutPageProps {
   onNavigate?: (path: string) => void;
@@ -19,19 +19,6 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onNavigate }) => {
       isLight ? 'bg-[#ECE5D8] text-[#14170F]' : 'bg-[#454545] text-white'
     }`}>
       
-      {/* Top Breadcrumb bar */}
-      <div className="max-w-[1200px] w-full mx-auto px-6 lg:px-12 pt-10">
-        <button 
-          onClick={() => onNavigate && onNavigate('/#faq')}
-          className={`flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest transition-colors w-fit ${
-            isLight ? 'text-[#4A5048] hover:text-[#14170F]' : 'text-[#A4ACA1] hover:text-white'
-          }`}
-        >
-          <ArrowLeft size={14} />
-          {language === 'es' ? 'Volver al Inicio' : 'Back to Home'}
-        </button>
-      </div>
-
       {/* 1. Main Story Section */}
       <CompanyStorySection />
 

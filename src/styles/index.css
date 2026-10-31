@@ -1564,3 +1564,67 @@ html.light-theme .about-page .title-3d-green,
 html .min-h-screen {
   min-height: calc(100vh / var(--page-zoom));
 }
+
+/* Mapa de rutas globales (sección de la empresa): las rutas se dibujan al entrar en pantalla */
+.route-arc,
+.route-arc-glow {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+.route-map-live .route-arc,
+.route-map-live .route-arc-glow {
+  animation: route-draw 1.8s ease-out forwards;
+}
+@keyframes route-draw {
+  to { stroke-dashoffset: 0; }
+}
+.route-dest {
+  opacity: 0;
+}
+.route-map-live .route-dest {
+  animation: route-fade 0.6s ease-out forwards;
+}
+@keyframes route-fade {
+  to { opacity: 1; }
+}
+.route-ring {
+  opacity: 0;
+}
+.route-map-live .route-ring {
+  animation: route-ring 2.6s ease-out 2s infinite;
+}
+@keyframes route-ring {
+  0% { opacity: 0.9; transform: translate(-50%, -50%) scale(0.6); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(2.4); }
+}
+.route-traveler {
+  filter: drop-shadow(0 0 4px rgba(134, 239, 172, 0.95));
+}
+.route-sweep {
+  left: 0;
+  opacity: 0;
+  background: linear-gradient(to bottom, transparent, rgba(134, 239, 172, 0.9) 20%, rgba(134, 239, 172, 0.9) 80%, transparent);
+  box-shadow: 0 0 14px 2px rgba(74, 222, 128, 0.55);
+}
+.route-map-live .route-sweep {
+  animation: route-sweep 9s linear 1.5s infinite;
+}
+@keyframes route-sweep {
+  0% { left: 0; opacity: 0; }
+  6% { opacity: 0.8; }
+  94% { opacity: 0.8; }
+  100% { left: 100%; opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .route-arc, .route-arc-glow { stroke-dashoffset: 0; animation: none !important; }
+  .route-dest { opacity: 1; animation: none !important; }
+  .route-ring, .route-sweep { display: none; }
+}
+
+/* Con el mapa pequeño (pantallas bajas) se quitan los rótulos de las esquinas para que no tapen las etiquetas */
+.route-map {
+  container-type: inline-size;
+}
+@container (max-width: 680px) {
+  .route-hud-foot { display: none; }
+}
