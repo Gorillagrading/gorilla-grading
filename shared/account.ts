@@ -2,6 +2,7 @@
  * Contratos del dashboard de la cuenta. Solo tipos: el frontend los importa con `import type`.
  */
 import type { OrderStatus } from './domain.js';
+import type { ScanReportDto } from './scan-report.js';
 
 export interface OrderSummaryDto {
   /** Código visible del pedido, por ejemplo GGI-ORD-7K4M9Q. */
@@ -61,6 +62,8 @@ export interface GradedCardDto {
   /** Valor declarado por el dueño. Solo se envía a su propietario, nunca en la verificación pública. */
   declaredValueEur: number;
   isAuthentic: boolean;
+  /** Medidas y recortes del escáner, cuando existen. */
+  scan?: ScanReportDto | null;
 }
 
 /**
