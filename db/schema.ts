@@ -758,3 +758,18 @@ export const rateLimitEvents = pgTable(
   },
   (t) => [index('rate_limit_events_lookup_idx').on(t.bucket, t.keyHash, t.createdAt)],
 ).enableRLS();
+
+/**
+ * Claves de acceso de servicios externos (hoy, Instagram). Guardarlas aquí permite renovarlas solas cuando
+ * caducan: una variable de entorno no se puede modificar desde la propia función. Solo las lee el servidor
+ * (la tabla tiene RLS sin políticas, así que nadie accede con la clave pública).
+ */
+export const integrationTokens = pgTable('integration_tokens', {
+  provider: text('provider').primaryKey(),
+  accessToken: text('access_token').notNull(),
+  /** Huella de la clave pegada en el entorno: si cambia, se sustituye la guardada. */
+  seedHash: text('seed_hash'),
+  /** Cuándo caduca, si el servicio lo indica. */
+  expiresAt: timestamp('expires_at', { withTimezone: true }),
+  refreshedAt: timestamp('refreshed_at', { withTimezone: true }).notNull().defaultNow(),
+}).enableRLS();

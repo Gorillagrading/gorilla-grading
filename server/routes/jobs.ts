@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { safeEqual } from '../auth/crypto.js';
 import type { AppEnv, Deps } from '../context.js';
 import { advanceDueOrders } from '../domain/automation.js';
+import { renewInstagramToken } from '../domain/instagram.js';
 import { signUnsignedCertificates } from '../domain/issue-certificates.js';
 import { deliverPendingEmails } from '../domain/outbox.js';
 import { purgeExpiredRecords } from '../domain/retention.js';
@@ -29,8 +30,10 @@ export function jobRoutes(deps: Deps) {
     const signed = await signUnsignedCertificates(deps.getDb(), deps.getSigner());
     // Borra los registros técnicos que pasaron su plazo de conservación (server/domain/retention.ts).
     const purged = await purgeExpiredRecords(deps.getDb());
+    // Renueva la clave de Instagram antes de que caduque (cada 60 días).
+    const instagram = await renewInstagramToken(deps.getDb());
     c.header('Cache-Control', 'no-store');
-    return c.json({ advanced: advanced.length, orders: advanced, emails, signed, purged });
+    return c.json({ advanced: advanced.length, orders: advanced, emails, signed, purged, instagram });
   });
 
   return routes;

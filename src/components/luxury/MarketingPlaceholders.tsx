@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
-import { ShieldCheck, CheckCircle2, Star, Radio, Activity, ExternalLink } from 'lucide-react';
+import { Images, Play } from 'lucide-react';
+import { fetchInstagramPosts } from '../../api/instagram';
+import type { InstagramPostDto } from '../../../shared/instagram';
 
 export const VerifiedAuditsSection: React.FC = () => {
   const { language } = useLanguage();
@@ -125,138 +127,178 @@ export const VerifiedAuditsSection: React.FC = () => {
   );
 };
 
+const InstagramGlyph: React.FC<{ className?: string }> = ({ className }) => (
+  <svg className={className} fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.668.014-4.948.072-4.354.2-6.782 2.618-6.979 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+  </svg>
+);
+
+const INSTAGRAM_URL = 'https://instagram.com/gorillagradinginternational';
+const TIKTOK_URL = 'https://tiktok.com/@gorillagrading';
+
 export const LiveLabActivitySection: React.FC = () => {
   const { language } = useLanguage();
   const { theme } = useTheme();
   const isLight = theme === 'light';
+  const es = language === 'es';
 
-  // Espacios reservados para publicaciones oficiales reales
-  const reelSlots = [
-    { id: 1, platform: 'INSTAGRAM REEL', handle: '@gorillagradinginternational' },
-    { id: 2, platform: 'TIKTOK', handle: '@gorillagrading' },
-    { id: 3, platform: 'INSTAGRAM REEL', handle: '@gorillagradinginternational' },
-    { id: 4, platform: 'TIKTOK', handle: '@gorillagrading' }
-  ];
+  const ref = useRef<HTMLElement>(null);
+  const [state, setState] = useState<'idle' | 'loading' | 'ready' | 'unavailable'>('idle');
+  const [posts, setPosts] = useState<InstagramPostDto[]>([]);
+
+  // Las publicaciones se piden cuando la sección está a punto de verse: así no gastan tiempo al abrir la web.
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    let cancelled = false;
+    const load = () => {
+      setState('loading');
+      fetchInstagramPosts()
+        .then((r) => {
+          if (cancelled) return;
+          setPosts(r.posts.slice(0, 4));
+          setState(r.configured && r.posts.length > 0 ? 'ready' : 'unavailable');
+        })
+        .catch(() => {
+          if (!cancelled) setState('unavailable');
+        });
+    };
+    if (typeof IntersectionObserver === 'undefined') {
+      load();
+      return () => {
+        cancelled = true;
+      };
+    }
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          obs.disconnect();
+          load();
+        }
+      },
+      { rootMargin: '500px' },
+    );
+    obs.observe(el);
+    return () => {
+      cancelled = true;
+      obs.disconnect();
+    };
+  }, []);
+
+  const formatDate = (iso: string) =>
+    new Date(iso).toLocaleDateString(es ? 'es-ES' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+
+  const channelLink = `px-3 py-1.5 border font-mono text-[11px] flex items-center gap-2 transition-all cursor-pointer ${
+    isLight ? 'bg-white border-gray-300 text-gray-900 hover:border-black shadow-xs' : 'bg-white/[0.04] border-white/15 text-white hover:border-white'
+  }`;
 
   return (
-    <section 
+    <section
+      ref={ref}
       id="community-reels"
       className={`w-full py-8 sm:py-10 px-6 lg:px-12 border-b select-none transition-colors duration-300 ${
         isLight ? 'bg-white/60 backdrop-blur-md border-[#E5E7EB]' : 'bg-[#141714]/60 backdrop-blur-md border-white/[0.08]'
       }`}
     >
       <div className="max-w-[1100px] mx-auto">
-        
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6 sm:mb-8">
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <span className={`font-mono text-[9px] tracking-[0.25em] uppercase font-bold ${
-                isLight ? 'text-gray-900' : 'text-white'
-              }`}>
+              <span className={`font-mono text-[9px] tracking-[0.25em] uppercase font-bold ${isLight ? 'text-gray-900' : 'text-white'}`}>
                 [ CANALES OFICIALES · INSTAGRAM & TIKTOK ]
               </span>
             </div>
 
-            <h2 className={`font-['Nunito',sans-serif] text-2xl sm:text-3xl font-[900] tracking-normal uppercase leading-tight ${
-              isLight ? 'text-gray-950' : 'text-white'
-            }`}>
-              {language === 'es' ? 'COMUNIDAD EN ACCIÓN' : 'COMMUNITY IN ACTION'}
+            <h2 className={`font-['Nunito',sans-serif] text-2xl sm:text-3xl font-[900] tracking-normal uppercase leading-tight ${isLight ? 'text-gray-950' : 'text-white'}`}>
+              {es ? 'COMUNIDAD EN ACCIÓN' : 'COMMUNITY IN ACTION'}
             </h2>
 
-            <p className={`mt-1 font-sans text-xs sm:text-sm max-w-lg ${
-              isLight ? 'text-gray-600' : 'text-[#A4ACA1]'
-            }`}>
-              {language === 'es'
+            <p className={`mt-1 font-sans text-xs sm:text-sm max-w-lg ${isLight ? 'text-gray-600' : 'text-[#A4ACA1]'}`}>
+              {es
                 ? 'Únete a la comunidad, síguenos para consejos de graduación, cultura coleccionista y eventos en vivo.'
                 : 'Join the crew, follow us for grading tips, collector culture and live events.'}
             </p>
           </div>
 
-          {/* Social Channels Direct Badges */}
           <div className="flex items-center gap-2.5 shrink-0">
-            <a 
-              href="https://instagram.com/gorillagradinginternational" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className={`px-3 py-1.5 border font-mono text-[11px] flex items-center gap-2 transition-all cursor-pointer ${
-                isLight 
-                  ? 'bg-white border-gray-300 text-gray-900 hover:border-black shadow-xs' 
-                  : 'bg-white/[0.04] border-white/15 text-white hover:border-white'
-              }`}
-            >
-              <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
-                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.668.014-4.948.072-4.354.2-6.782 2.618-6.979 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-              </svg>
-              <span>Instagram Reels</span>
+            <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" className={channelLink}>
+              <InstagramGlyph className="w-3.5 h-3.5" />
+              <span>Instagram</span>
             </a>
-
-            <a 
-              href="https://tiktok.com/@gorillagrading" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className={`px-3 py-1.5 border font-mono text-[11px] flex items-center gap-2 transition-all cursor-pointer ${
-                isLight 
-                  ? 'bg-white border-gray-300 text-gray-900 hover:border-black shadow-xs' 
-                  : 'bg-white/[0.04] border-white/15 text-white hover:border-white'
-              }`}
-            >
-              <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
-                <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-5.2 1.34 2.88 2.88 0 012.31-4.66 2.94 2.94 0 011.66.52V9.38a6.32 6.32 0 00-1.66-.22 6.35 6.35 0 00-6.35 6.35 6.35 6.35 0 0012.7 0v-8.62a8.3 8.3 0 005.76 2.33v-3.45a4.84 4.84 0 01-2-1.08z"/>
+            <a href={TIKTOK_URL} target="_blank" rel="noopener noreferrer" className={channelLink}>
+              <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-5.2 1.34 2.88 2.88 0 012.31-4.66 2.94 2.94 0 011.66.52V9.38a6.32 6.32 0 00-1.66-.22 6.35 6.35 0 00-6.35 6.35 6.35 6.35 0 0012.7 0v-8.62a8.3 8.3 0 005.76 2.33v-3.45a4.84 4.84 0 01-2-1.08z" />
               </svg>
               <span>TikTok</span>
             </a>
           </div>
         </div>
 
-        {/* 4-Item Compact Video Placeholder Slots */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {reelSlots.map((slot) => (
-            <div 
-              key={slot.id}
-              className={`relative h-[250px] sm:h-[270px] border border-dashed overflow-hidden flex flex-col justify-between p-4 transition-all duration-300 ${
-                isLight 
-                  ? 'bg-white/60 border-gray-300 shadow-sm' 
-                  : 'bg-[#101410]/70 border-white/10'
-              }`}
-            >
-              {/* Top Meta Header */}
-              <div className="flex items-center justify-between">
-                <span className="font-mono text-[9px] font-bold tracking-widest uppercase px-1.5 py-0.5 border border-current opacity-60">
-                  {slot.platform}
-                </span>
-                <span className="font-mono text-[9px] opacity-40">
-                  SLOT 0{slot.id}
-                </span>
-              </div>
+        {/* Publicaciones de Instagram */}
+        {state === 'ready' && (
+          <ul className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            {posts.map((post) => (
+              <li key={post.id}>
+                <a
+                  href={post.permalink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`group relative block aspect-[4/5] overflow-hidden border ${isLight ? 'border-gray-200 bg-gray-100' : 'border-white/10 bg-[#101410]'}`}
+                  aria-label={`${es ? 'Ver en Instagram' : 'View on Instagram'}: ${post.caption?.slice(0, 80) ?? formatDate(post.postedAt)}`}
+                >
+                  <img
+                    src={post.imageUrl}
+                    alt={post.caption?.slice(0, 120) ?? ''}
+                    loading="lazy"
+                    decoding="async"
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+                  />
+                  {post.type !== 'image' && (
+                    <span className="absolute top-2.5 right-2.5 w-7 h-7 rounded-full bg-black/60 text-white flex items-center justify-center" aria-hidden="true">
+                      {post.type === 'video' ? <Play className="w-3.5 h-3.5 fill-current" /> : <Images className="w-3.5 h-3.5" />}
+                    </span>
+                  )}
+                  <div className="absolute inset-x-0 bottom-0 p-3 pt-10 bg-gradient-to-t from-black/85 via-black/45 to-transparent text-white translate-y-1 group-hover:translate-y-0 transition-transform duration-300">
+                    {post.caption && <p className="font-sans text-[11.5px] leading-snug line-clamp-2">{post.caption}</p>}
+                    <p className="mt-1 font-mono text-[9px] uppercase tracking-wider opacity-75">
+                      {post.isReel ? 'Reel · ' : ''}
+                      {formatDate(post.postedAt)}
+                    </p>
+                  </div>
+                </a>
+              </li>
+            ))}
+          </ul>
+        )}
 
-              {/* Central Clean Icon */}
-              <div className="self-center flex flex-col items-center gap-2 opacity-50">
-                <div className={`w-9 h-9 rounded-full border border-dashed flex items-center justify-center ${
-                  isLight ? 'border-gray-400 text-gray-400' : 'border-white/30 text-white/40'
-                }`}>
-                  <svg className="w-4 h-4 ml-0.5 fill-current" viewBox="0 0 24 24">
-                    <path d="M8 5v14l11-7z" />
-                  </svg>
-                </div>
-                <span className="font-mono text-[9px] uppercase tracking-wider text-center max-w-[130px]">
-                  {language === 'es' ? 'Vídeo oficial en preparación' : 'Official media in production'}
-                </span>
-              </div>
+        {(state === 'idle' || state === 'loading') && (
+          <ul className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4" aria-busy="true" aria-label={es ? 'Cargando publicaciones' : 'Loading posts'}>
+            {[0, 1, 2, 3].map((i) => (
+              <li key={i} className={`aspect-[4/5] animate-pulse ${isLight ? 'bg-gray-200/70' : 'bg-white/[0.06]'}`} />
+            ))}
+          </ul>
+        )}
 
-              {/* Bottom Channel Link */}
-              <div className="pt-2.5 border-t border-dashed border-gray-200 dark:border-white/10 flex items-center justify-between">
-                <span className={`font-mono text-[9px] font-semibold truncate max-w-[140px] ${isLight ? 'text-gray-900' : 'text-white'}`}>
-                  {slot.handle}
-                </span>
-                <span className="font-mono text-[9px] opacity-40 shrink-0">
-                  HD
-                </span>
+        {/* Sin la cuenta conectada o sin respuesta: un enlace claro, sin contenido de relleno */}
+        {state === 'unavailable' && (
+          <div className={`flex flex-col sm:flex-row items-center justify-between gap-4 p-6 sm:p-8 border ${isLight ? 'border-gray-200 bg-white/70' : 'border-white/10 bg-[#101410]/70'}`}>
+            <div className="flex items-center gap-4">
+              <span className={`w-11 h-11 rounded-full border flex items-center justify-center shrink-0 ${isLight ? 'border-gray-300 text-gray-900' : 'border-white/20 text-white'}`}>
+                <InstagramGlyph className="w-5 h-5" />
+              </span>
+              <div>
+                <p className={`font-['Nunito',sans-serif] text-lg font-[900] ${isLight ? 'text-gray-950' : 'text-white'}`}>@gorillagradinginternational</p>
+                <p className={`text-xs sm:text-sm ${isLight ? 'text-gray-600' : 'text-[#A4ACA1]'}`}>
+                  {es ? 'Mira nuestras últimas publicaciones y reels en Instagram.' : 'See our latest posts and reels on Instagram.'}
+                </p>
               </div>
             </div>
-          ))}
-        </div>
-
+            <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" className="btn-gorilla-square shrink-0 px-6 py-3 text-xs font-extrabold tracking-normal cursor-pointer">
+              {es ? 'Seguir en Instagram' : 'Follow on Instagram'}
+            </a>
+          </div>
+        )}
       </div>
     </section>
   );

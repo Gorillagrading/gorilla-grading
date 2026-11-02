@@ -93,8 +93,8 @@ export const LuxuryNavbar: React.FC<LuxuryNavbarProps> = ({ onNavigate }) => {
 
   // Navigation map (single source for desktop + mobile)
   const navLinks = [
-    { path: '/technology', label: language === 'es' ? 'Tecnología' : 'Technology' },
-    { path: '/about', label: language === 'es' ? 'El Laboratorio' : 'The Laboratory' },
+    { path: '/technology', label: language === 'es' ? 'Cómo funciona' : 'How It Works' },
+    { path: '/about', label: language === 'es' ? 'Quiénes somos' : 'About Us' },
     { path: '/verify', label: language === 'es' ? 'Verificar Certificado' : 'Verify Certificate' },
     { path: '/pricing', label: language === 'es' ? 'Tarifas' : 'Pricing & Tiers' },
     { path: '/track', label: language === 'es' ? 'Estado del Pedido' : 'Order Status' },
