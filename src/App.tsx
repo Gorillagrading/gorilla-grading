@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { LanguageProvider } from './context/LanguageContext';
+import { LanguageProvider, useLanguage } from './context/LanguageContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { LuxuryNavbar } from './components/luxury/LuxuryNavbar';
@@ -40,8 +40,9 @@ import { NewsletterPage } from './pages/NewsletterPage';
 import { forgetPendingScroll, rememberScroll, restoreScroll, storedScroll, trackScroll } from './utils/scrollMemory';
 
 export const AppContent: React.FC = () => {
-  const { isLoggedIn, status: authStatus } = useAuth();
+  const { isLoggedIn, status: authStatus, retrySession } = useAuth();
   const { theme } = useTheme();
+  const { language } = useLanguage();
   const [currentPath, setCurrentPath] = useState<string>(() => {
     return window.location.pathname || '/';
   });
@@ -146,6 +147,23 @@ export const AppContent: React.FC = () => {
       case '/account':
         // Mientras se comprueba la sesión no se muestra el formulario de acceso, para que no parpadee.
         if (authStatus === 'loading') return <div className="flex-1 min-h-[60vh]" aria-busy="true" />;
+        if (authStatus === 'error') {
+          return (
+            <div className="flex-1 min-h-[60vh] flex flex-col items-center justify-center gap-4 px-6 text-center">
+              <h1 className="font-['Nunito',sans-serif] text-2xl font-[900]">
+                {language === 'es' ? 'No hemos podido abrir tu cuenta' : 'We could not open your account'}
+              </h1>
+              <p className="text-sm max-w-md opacity-75">
+                {language === 'es'
+                  ? 'El servidor no ha respondido a tiempo. Tus cartas y pedidos están a salvo; vuelve a intentarlo en unos segundos.'
+                  : 'The server did not answer in time. Your cards and orders are safe; please try again in a few seconds.'}
+              </p>
+              <button type="button" onClick={retrySession} className="btn-gorilla-square px-6 py-3 text-xs font-extrabold tracking-normal cursor-pointer">
+                {language === 'es' ? 'Reintentar' : 'Try again'}
+              </button>
+            </div>
+          );
+        }
         return isLoggedIn ? <CollectorVaultPage onNavigate={handleNavigate} /> : <LoginPage onNavigate={handleNavigate} />;
       case '/terms':
         return <LegalPage type="terms" onNavigate={handleNavigate} />;

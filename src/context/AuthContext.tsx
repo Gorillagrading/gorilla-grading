@@ -2,7 +2,8 @@ import React, { createContext, useCallback, useContext, useEffect, useState } fr
 import { api, ApiError } from '../api/client';
 import type { UserDto } from '../../shared/auth';
 
-type AuthStatus = 'loading' | 'authenticated' | 'anonymous';
+/** `error`: no se pudo comprobar la sesión (servidor sin respuesta). No es lo mismo que no haber iniciado sesión. */
+type AuthStatus = 'loading' | 'authenticated' | 'anonymous' | 'error';
 
 interface AuthContextType {
   status: AuthStatus;
@@ -14,6 +15,8 @@ interface AuthContextType {
   /** Comprueba el código; si es correcto la sesión queda iniciada. */
   verifyCode: (email: string, code: string) => Promise<void>;
   logout: () => Promise<void>;
+  /** Vuelve a comprobar la sesión tras un error. */
+  retrySession: () => void;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -24,11 +27,14 @@ const AuthContext = createContext<AuthContextType>({
   requestCode: async () => {},
   verifyCode: async () => {},
   logout: async () => {},
+  retrySession: () => {},
 });
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [status, setStatus] = useState<AuthStatus>('loading');
   const [user, setUser] = useState<UserDto | null>(null);
+
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     // La sesión antigua se guardaba en localStorage y no tenía ninguna validez real.
@@ -39,24 +45,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     let cancelled = false;
-    api<{ user: UserDto }>('/me')
-      .then(({ user }) => {
-        if (cancelled) return;
-        setUser(user);
-        setStatus('authenticated');
-      })
-      .catch((err) => {
-        if (cancelled) return;
-        // Un 401 es lo normal para quien no ha iniciado sesión; otros errores (servidor
-        // caído) también se tratan como anónimo para no bloquear las páginas públicas.
-        if (!(err instanceof ApiError) || err.status !== 401) console.warn('No se pudo comprobar la sesión', err);
+    // Hasta dos intentos de 8 s: un servidor que tarda en despertar no deja la página en blanco para siempre.
+    const check = async () => {
+      for (let i = 0; i < 2; i++) {
+        try {
+          const { user } = await api<{ user: UserDto }>('/me', { timeoutMs: 8000 });
+          if (cancelled) return;
+          setUser(user);
+          setStatus('authenticated');
+          return;
+        } catch (err) {
+          if (cancelled) return;
+          // Un 401 es lo normal para quien no ha iniciado sesión.
+          if (err instanceof ApiError && err.status === 401) {
+            setUser(null);
+            setStatus('anonymous');
+            return;
+          }
+          console.warn('No se pudo comprobar la sesión', err);
+        }
+      }
+      if (!cancelled) {
         setUser(null);
-        setStatus('anonymous');
-      });
+        setStatus('error');
+      }
+    };
+    setStatus('loading');
+    void check();
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [attempt]);
+
+  const retrySession = useCallback(() => setAttempt((n) => n + 1), []);
 
   const requestCode = useCallback(async (email: string, locale: 'es' | 'en') => {
     await api('/auth/otp', { body: { email, locale } });
@@ -87,6 +108,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         requestCode,
         verifyCode,
         logout,
+        retrySession,
       }}
     >
       {children}

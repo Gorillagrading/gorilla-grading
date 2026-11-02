@@ -13,7 +13,15 @@ export type Db = PgDatabase<any, typeof schema>;
  * transacción (puerto 6543), que es el que se usa desde Vercel Functions.
  */
 export function createDb(url: string, options: { max?: number } = {}) {
-  const client = postgres(url, { prepare: false, max: options.max ?? 1 });
+  const client = postgres(url, {
+    prepare: false,
+    max: options.max ?? 1,
+    // En funciones serverless el pooler cierra las conexiones que llevan rato quietas: se cierran antes por nuestro lado
+    // y no se reutilizan viejas, para que una consulta no se quede esperando en una conexión muerta.
+    connect_timeout: 10,
+    idle_timeout: 15,
+    max_lifetime: 60 * 5,
+  });
   return drizzle(client, { schema });
 }
 
