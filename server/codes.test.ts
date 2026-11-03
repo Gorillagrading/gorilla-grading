@@ -17,11 +17,14 @@ describe('generadores de códigos', () => {
     expect(newCertificateNumber()).toHaveLength(8);
   });
 
-  it('un pedido nunca tiene el formato de un certificado, ni al revés', () => {
-    for (let i = 0; i < 200; i++) {
-      expect(newOrderCode()).not.toMatch(CERTIFICATE_NUMBER);
-      expect(newCertificateNumber()).not.toMatch(ORDER_CODE);
-    }
+  it('un certificado generado nunca tiene el formato de un pedido', () => {
+    for (let i = 0; i < 200; i++) expect(newCertificateNumber()).not.toMatch(ORDER_CODE);
+  });
+
+  it('un certificado puede tener 8 cifras (generado) o 9 (el número del informe del escáner)', () => {
+    expect('48271936').toMatch(CERTIFICATE_NUMBER);
+    expect('199157603').toMatch(CERTIFICATE_NUMBER);
+    for (const bad of ['4827193', '1991576030', '19915760A']) expect(bad).not.toMatch(CERTIFICATE_NUMBER);
   });
 
   it('los códigos de pedido no se repiten en una muestra grande', () => {
@@ -81,11 +84,11 @@ describe('la base de datos rechaza códigos con otro formato', () => {
     const tier = await insertTier(db);
     const common = { ownerId: ana.id, tierId: tier.id, graderId: grader.id, qaId: qa.id, grade: 10 };
 
-    // Formato antiguo con prefijo, letras o una longitud distinta de 8: rechazado.
+    // Formato antiguo con prefijo, letras o una longitud distinta de 8 o 9: rechazado.
     await expect(insertGradedOrder(db, { ...common, orderCode: '100000002', certNumber: 'GGI-12345600', cardName: 'Carta A' })).rejects.toThrow();
     await expect(insertGradedOrder(db, { ...common, orderCode: '100000003', certNumber: '12AB5600', cardName: 'Carta B' })).rejects.toThrow();
     await expect(insertGradedOrder(db, { ...common, orderCode: '100000005', certNumber: '123456', cardName: 'Carta D' })).rejects.toThrow();
-    await expect(insertGradedOrder(db, { ...common, orderCode: '100000006', certNumber: '123456789', cardName: 'Carta E' })).rejects.toThrow();
+    await expect(insertGradedOrder(db, { ...common, orderCode: '100000006', certNumber: '1234567890', cardName: 'Carta E' })).rejects.toThrow();
     await expect(insertGradedOrder(db, { ...common, orderCode: '100000004', certNumber: '12345600', cardName: 'Carta C' })).resolves.toBeDefined();
 
     const [slab] = await db.select().from(slabs);

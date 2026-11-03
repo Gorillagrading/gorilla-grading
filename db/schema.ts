@@ -487,6 +487,15 @@ export const gradingResults = pgTable(
     surfaceBackScore: grade('surface_back_score'),
     surfaceNotes: text('surface_notes'),
     station: text('station'),
+    /**
+     * De dónde sale la nota: `manual` (subnotas introducidas a mano, regla de shared/grading.ts) o
+     * `scanner` (informe del escáner, con sus propios criterios: notas enteras, shared/scan-report.ts).
+     */
+    rule: text('rule').notNull().default('manual'),
+    /** Número de certificado que trae el informe del escáner: el certificado se emite con él. */
+    certificateNumber: text('certificate_number'),
+    /** El informe del escáner tal como se leyó del PDF (ScanReport), con las claves privadas de sus imágenes. */
+    scanReport: jsonb('scan_report'),
     gradedBy: uuid('graded_by')
       .notNull()
       .references(() => users.id),
@@ -502,16 +511,28 @@ export const gradingResults = pgTable(
     uniqueIndex('grading_results_item_current_uq')
       .on(t.orderItemId)
       .where(sql`${t.status} <> 'superseded'`),
+    // Un número de certificado del escáner solo puede estar en una carta.
+    uniqueIndex('grading_results_certificate_number_uq')
+      .on(t.certificateNumber)
+      .where(sql`${t.status} <> 'superseded' and ${t.certificateNumber} is not null`),
+    check('grading_results_rule_kind', sql`${t.rule} in ('manual', 'scanner')`),
+    check('grading_results_certificate_number_format', sql`${t.certificateNumber} is null or ${matches(t.certificateNumber, CERTIFICATE_NUMBER)}`),
     // Regla de la nota (shared/grading.ts): la base de datos no deja guardar una nota que la incumpla.
     check(
       'grading_results_scale',
       sql`${onGradeScale(t.centeringScore)} and ${onGradeScale(t.cornersScore)} and ${onGradeScale(t.edgesScore)} and ${onGradeScale(t.surfaceScore)} and ${onGradeScale(t.finalGrade)}`,
     ),
+    // Escáner: notas enteras; la final, como mucho la media redondeada y 2 puntos por encima de la peor subnota.
     check(
       'grading_results_grade_rule',
       sql`(
         ${t.finalGrade} is null or ${t.centeringScore} is null or ${t.cornersScore} is null or ${t.edgesScore} is null or ${t.surfaceScore} is null
-        or (
+        or (${t.rule} = 'scanner'
+          and ${t.finalGrade} = floor(${t.finalGrade}) and ${t.centeringScore} = floor(${t.centeringScore}) and ${t.cornersScore} = floor(${t.cornersScore})
+          and ${t.edgesScore} = floor(${t.edgesScore}) and ${t.surfaceScore} = floor(${t.surfaceScore})
+          and ${t.finalGrade} <= least(${t.centeringScore}, ${t.cornersScore}, ${t.edgesScore}, ${t.surfaceScore}) + 2
+          and ${t.finalGrade} <= floor((${t.centeringScore} + ${t.cornersScore} + ${t.edgesScore} + ${t.surfaceScore}) / 4 + 0.5))
+        or (${t.rule} = 'manual' and
           ${t.finalGrade} <= least(${t.centeringScore}, ${t.cornersScore}, ${t.edgesScore}, ${t.surfaceScore}) + 0.5
           and ${t.finalGrade} <= ceil((${t.centeringScore} + ${t.cornersScore} + ${t.edgesScore} + ${t.surfaceScore} - 1) / 2) / 2
           and (${t.finalGrade} < 10 or (

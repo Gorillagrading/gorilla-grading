@@ -1,14 +1,15 @@
 import React, { useRef, useState } from 'react';
-import { Camera, Trash2, X } from 'lucide-react';
+import { Camera, FileUp, Trash2, X } from 'lucide-react';
 import type { AdminOrderDetail } from '../../../shared/admin';
 import type { AdminGradingResult, GradingBody } from '../../../shared/grading-admin';
-import { GRADE_LABELS, deriveGradeLabel, traceGrade } from '../../../shared/grading';
+import { GRADE_LABELS, traceGrade } from '../../../shared/grading';
 import type { ImageDto } from '../../../shared/photos';
 import type { IdentifyCardBody } from '../../../shared/admin';
 import { cardTitle } from '../../../shared/cards';
 import {
-  adminErrorMessage, approveGrading, deleteItemImage, identifyCard, rejectGrading, saveGrading, uploadItemImage,
+  adminErrorMessage, approveGrading, deleteItemImage, identifyCard, importScanReport, rejectGrading, saveGrading, uploadItemImage,
 } from '../../api/admin';
+import { MAX_SCAN_PDF_BYTES } from '../../../shared/grading-admin';
 import { useAuth } from '../../context/AuthContext';
 import { usePanelTheme } from './ui';
 
@@ -87,7 +88,8 @@ export const GradingPanel: React.FC<{
         {grading ? (
           <span className={`text-xs font-bold ${grading.status === 'approved' ? t.positive : t.isLight ? 'text-amber-700' : 'text-amber-300'}`}>
             {STATUS_TEXT[grading.status]}
-            {grading.finalGrade !== null && ` · ${fmt(grading.finalGrade)} ${grading.gradeLabel ?? ''}`}
+            {grading.finalGrade !== null && ` · ${fmt(grading.finalGrade)}`}
+            {grading.rule === 'scanner' && ' · escáner'}
             {!grading.isAuthentic && ' · No auténtica'}
           </span>
         ) : (
@@ -128,13 +130,20 @@ export const GradingPanel: React.FC<{
         )}
 
         {canGrade && !editing && (
-          <button
-            type="button"
-            onClick={() => setEditing(true)}
-            className={`px-4 py-2.5 border rounded-lg text-xs font-bold cursor-pointer ${t.secondary}`}
-          >
-            {grading ? (grading.status === 'approved' ? 'Corregir resultado (nueva versión)' : 'Editar resultado') : 'Introducir resultado'}
-          </button>
+          <div className="space-y-3">
+            <ScannerImport
+              busy={busy}
+              replaces={!!grading}
+              onFile={(file) => run(() => importScanReport(code, item.position, file), 'Informe del escáner importado. Queda pendiente de control de calidad.')}
+            />
+            <button
+              type="button"
+              onClick={() => setEditing(true)}
+              className={`px-4 py-2.5 border rounded-lg text-xs font-bold cursor-pointer ${t.secondary}`}
+            >
+              {grading ? (grading.status === 'approved' ? 'Corregir a mano (nueva versión)' : 'Editar a mano') : 'Introducir a mano'}
+            </button>
+          </div>
         )}
 
         {canGrade && editing && (
@@ -378,8 +387,10 @@ const ResultView: React.FC<{ grading: AdminGradingResult }> = ({ grading }) => {
       ) : (
         <>
           <p className={`text-lg font-[900] ${t.text}`}>
-            {grading.finalGrade !== null && fmt(grading.finalGrade)} <span className="text-sm font-bold">{grading.gradeLabel}</span>
+            {grading.finalGrade !== null && fmt(grading.finalGrade)}
+            {grading.certificateNumber && <span className={`ml-3 font-mono text-xs font-bold ${t.muted}`}>Certificado {grading.certificateNumber}</span>}
           </p>
+          {grading.scan && <ScanSummary scan={grading.scan} />}
           <dl className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
             {rows.map(([label, value]) => (
               <div key={label}>
@@ -400,6 +411,96 @@ const ResultView: React.FC<{ grading: AdminGradingResult }> = ({ grading }) => {
           ))}
         </ul>
       )}
+    </div>
+  );
+};
+
+// ---------------------------------------------------------------------------
+// Informe del escáner
+// ---------------------------------------------------------------------------
+
+/** Sube el PDF que genera el programa del escáner: el servidor lee todo lo que dice y lo deja para control de calidad. */
+const ScannerImport: React.FC<{ busy: boolean; replaces: boolean; onFile: (file: File) => Promise<boolean> }> = ({ busy, replaces, onFile }) => {
+  const t = usePanelTheme();
+  const input = useRef<HTMLInputElement>(null);
+  const [tooBig, setTooBig] = useState(false);
+
+  return (
+    <div className={`border rounded-lg p-3 space-y-2 ${t.rule}`}>
+      <p className={`text-xs ${t.muted}`}>
+        Sube el informe en PDF del escáner. Se leen las notas, las medidas, las esquinas, los daños y el número de certificado,
+        y el resultado pasa a control de calidad.{replaces && ' Sustituye al resultado actual.'}
+      </p>
+      <input
+        ref={input}
+        type="file"
+        accept="application/pdf,.pdf"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          e.target.value = '';
+          if (!file) return;
+          setTooBig(file.size > MAX_SCAN_PDF_BYTES);
+          if (file.size <= MAX_SCAN_PDF_BYTES) void onFile(file);
+        }}
+      />
+      <button
+        type="button"
+        disabled={busy}
+        onClick={() => input.current?.click()}
+        className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-extrabold cursor-pointer disabled:opacity-50 ${t.primary}`}
+      >
+        <FileUp className="w-4 h-4" /> {busy ? 'Leyendo el informe…' : 'Importar informe del escáner (PDF)'}
+      </button>
+      {tooBig && <p role="alert" className="text-xs font-bold text-red-500">El PDF pesa más de 4 MB.</p>}
+    </div>
+  );
+};
+
+/** Lo que se leyó del informe, para que control de calidad lo compare con el PDF. */
+const ScanSummary: React.FC<{ scan: NonNullable<AdminGradingResult['scan']> }> = ({ scan }) => {
+  const t = usePanelTheme();
+  const corner = { topLeft: 'Sup. izq.', topRight: 'Sup. dcha.', bottomLeft: 'Inf. izq.', bottomRight: 'Inf. dcha.' } as const;
+  const sub = scan.subgrades;
+  return (
+    <div className={`border rounded-lg p-3 space-y-3 text-xs ${t.rule} ${t.text}`}>
+      <p className={t.muted}>
+        Informe del escáner · criterios {scan.criteria} · notas emitidas el {scan.gradedAt} · {scan.ppi ?? '—'} ppp ·{' '}
+        {scan.sides === 'front' ? 'solo anverso' : 'anverso y reverso'}
+        {scan.card.name && ` · ${scan.card.name}`}
+      </p>
+      <dl className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+        {([
+          ['Final', scan.final, `media ${scan.average.toLocaleString('es-ES')}`],
+          ['Centrado', sub.centering.score, sub.centering.note],
+          ['Esquinas', sub.corners.score, sub.corners.note],
+          ['Bordes', sub.edges.score, sub.edges.note],
+          ['Superficie', sub.surface.score, sub.surface.note],
+        ] as const).map(([label, score, note]) => (
+          <div key={label}>
+            <dt className={`font-mono text-[10px] uppercase tracking-wider ${t.muted}`}>{label}</dt>
+            <dd className="text-base font-[900]">{score}</dd>
+            {note && <dd className={`text-[11px] ${t.muted}`}>{note}</dd>}
+          </div>
+        ))}
+      </dl>
+      {scan.faces.map((face) => (
+        <div key={face.side} className="space-y-1">
+          <p className="font-bold">{face.side === 'front' ? 'Anverso' : 'Reverso'}</p>
+          {face.centering && (
+            <p>
+              Centrado: izq. {face.centering.leftMm} · dcha. {face.centering.rightMm} · arriba {face.centering.topMm} · abajo {face.centering.bottomMm} mm ·{' '}
+              {face.centering.horizontal} / {face.centering.vertical} · nota {face.centering.score}
+            </p>
+          )}
+          <p>
+            Esquinas: {face.corners.map((c) => `${corner[c.position]} ${c.score}`).join(' · ')}
+            {face.cornersScore !== null && ` · cara ${face.cornersScore}`}
+          </p>
+          <p>Daños: {face.damages.length === 0 ? 'ninguno' : face.damages.map((d) => `${d.n} ${d.kind}${d.size ? ` (${{ small: 'pequeño', medium: 'mediano', large: 'grande' }[d.size]})` : ''}`).join(' · ')}</p>
+        </div>
+      ))}
+      <p className={`font-mono text-[10px] break-all ${t.muted}`}>PDF SHA-256 {scan.pdfSha256}</p>
     </div>
   );
 };
@@ -566,7 +667,7 @@ const GradingForm: React.FC<{
             {trace && finalScores && final !== null ? (
               <div className="space-y-2">
                 <p className={`text-sm ${t.text}`}>
-                  Nota que dan las subnotas: <strong>{fmt(trace.final)}</strong> · {deriveGradeLabel(trace.final, finalScores)}
+                  Nota que dan las subnotas: <strong>{fmt(trace.final)}</strong>
                   <span className={`block text-[11px] ${t.muted}`}>
                     Media {trace.average.toLocaleString('es-ES', { maximumFractionDigits: 2 })} → {fmt(trace.rounded)}
                     {trace.reasons.includes('weakest_caps') && ' · la peor subnota la limita'}
@@ -577,7 +678,7 @@ const GradingForm: React.FC<{
                   <span className={label}>Nota final (solo puedes bajarla)</span>
                   <select value={String(final)} onChange={(e) => setOverride(e.target.value)} className={field}>
                     {SCALE.filter((n) => n <= trace.final && GRADE_LABELS[n]).map((n) => (
-                      <option key={n} value={n}>{fmt(n)} · {deriveGradeLabel(n, finalScores)}</option>
+                      <option key={n} value={n}>{fmt(n)}</option>
                     ))}
                   </select>
                 </label>

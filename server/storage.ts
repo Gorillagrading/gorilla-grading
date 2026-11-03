@@ -5,6 +5,8 @@ import type { UploadTarget } from '../shared/photos.js';
 export interface ObjectStorage {
   /** Prepara la subida de un archivo nuevo directamente desde el navegador. */
   createUpload(key: string, contentType: string): Promise<UploadTarget>;
+  /** Guarda un archivo desde el propio servidor (por ejemplo, las imágenes que se sacan del informe del escáner). */
+  upload(key: string, body: Uint8Array, contentType: string): Promise<void>;
   /** Comprueba que el archivo ya está subido. */
   exists(key: string): Promise<boolean>;
   createDownloadUrl(key: string, ttlSeconds: number): Promise<string>;
@@ -71,6 +73,16 @@ export function createSupabaseStorage(): ObjectStorage {
         headers: { ...(anon ? { apikey: anon, Authorization: `Bearer ${anon}` } : {}), 'x-upsert': 'false' },
         body: 'multipart',
       } satisfies UploadTarget;
+    },
+
+    async upload(objectKey, body, contentType) {
+      const { api, key, bucket } = config();
+      const res = await call(`${api}/object/${path(bucket, objectKey)}`, {
+        method: 'POST',
+        headers: { ...auth(key), 'content-type': contentType, 'x-upsert': 'true' },
+        body,
+      });
+      if (!res.ok) throw await failure('guardar el archivo', res);
     },
 
     async exists(objectKey) {

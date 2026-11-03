@@ -1,4 +1,8 @@
+import type { PublicScanReport } from '../../shared/scan-report';
+
 export interface CardDefect {
+  /** Número del daño en el informe del escáner (el mismo que en su dibujo). */
+  n?: number;
   id: string;
   category: 'Centering' | 'Corners' | 'Edges' | 'Surface';
   title: string;
@@ -49,7 +53,7 @@ export interface GradedCard {
   game: 'Pokemon' | 'Magic: The Gathering' | 'Yu-Gi-Oh!' | 'One Piece' | 'Lorcana' | 'Sports';
   language: string;
   grade: number;
-  /** Etiqueta de la nota (shared/grading.ts), por ejemplo "Mint+ 9.5". */
+  /** Etiqueta de los certificados antiguos ("Mint+ 9.5"). Ya no se muestra. */
   gradeLabel: string;
   subgrades: Subgrades;
   frontImage: string;
@@ -66,6 +70,8 @@ export interface GradedCard {
   securityHash: string;
   declaredValueEur: number;
   isAuthentic: boolean;
+  /** Informe del escáner, si la nota sale de él. */
+  scan?: PublicScanReport | null;
 }
 
 /** Carta certificada tal como la ve el público: sin el valor declarado, que es del dueño. */

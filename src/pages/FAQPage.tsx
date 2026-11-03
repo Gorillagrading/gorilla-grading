@@ -133,8 +133,8 @@ export const FAQPage: React.FC<FAQPageProps> = ({ onNavigate }) => {
       category: 'tech',
       qEs: '¿Cuáles son las subnotas y la escala de graduación utilizada?',
       qEn: 'What are the sub-grades and overall grading scale used?',
-      aEs: 'Evaluamos cuatro subcategorías cardinales: Centrado (Centering), Esquinas (Corners), Bordes (Edges) y Superficie (Surface). La escala general va del 1 al 10, con distinciones de honor para notas perfectas: Grado 10 Gem Mint y la codiciada etiqueta especial Gorilla Pristine 10 (cuando las cuatro subnotas alcanzan la perfección absoluta).',
-      aEn: 'We evaluate four cardinal sub-grades: Centering, Corners, Edges, and Surface. The overarching scale ranges from 1 to 10, featuring elite distinctions for flawless specimens: Gem Mint 10 and our premier Gorilla Pristine 10 label when all four sub-scores attain absolute perfection.'
+      aEs: 'Evaluamos cuatro subnotas: Centrado, Esquinas, Bordes y Superficie, cada una del 1 al 10. La nota final sale de ellas y nunca puede quedar muy por encima de la peor. El certificado de cada carta muestra las cuatro subnotas, las medidas del escáner y cómo se llegó a la nota final.',
+      aEn: 'We evaluate four sub-grades: Centering, Corners, Edges and Surface, each from 1 to 10. The final grade comes from them and can never sit far above the weakest one. Each card’s certificate shows the four sub-grades, the scanner measurements and how the final grade was reached.'
     },
     {
       id: 'tech-3',

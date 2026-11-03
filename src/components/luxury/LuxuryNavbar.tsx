@@ -175,7 +175,7 @@ export const LuxuryNavbar: React.FC<LuxuryNavbarProps> = ({ onNavigate }) => {
             <form onSubmit={handleSearchSubmit} className="flex md:hidden items-center">
               <input
                 type="text"
-                placeholder={language === 'es' ? 'Nº de certificado (8 cifras)' : 'Certificate no. (8 digits)'}
+                placeholder={language === 'es' ? 'Nº de certificado' : 'Certificate no.'}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 autoFocus
@@ -222,7 +222,7 @@ export const LuxuryNavbar: React.FC<LuxuryNavbarProps> = ({ onNavigate }) => {
                 <form onSubmit={handleSearchSubmit} className="relative flex items-center">
                   <input
                     type="text"
-                    placeholder={language === 'es' ? 'Nº de certificado (8 cifras)' : 'Certificate no. (8 digits)'}
+                    placeholder={language === 'es' ? 'Nº de certificado' : 'Certificate no.'}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     autoFocus

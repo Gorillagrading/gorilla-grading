@@ -6,7 +6,8 @@ import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
 import { ApiError } from '../api/client';
 import { channelFromUrl, fetchCertificate, type PublicCertificate } from '../api/certificates';
-import { cardYear } from '../utils/cardDisplay';
+import { cardYear, formatGrade } from '../utils/cardDisplay';
+import { ScanReportPanel } from '../components/common/ScanReportPanel';
 import { 
   ShieldCheck, 
   Printer, 
@@ -228,12 +229,7 @@ export const CertificateDetailPage: React.FC<CertificateDetailPageProps> = ({
                 {language === 'es' ? 'CALIFICACIÓN' : 'FINAL GRADE'}
               </div>
               <div className="text-4xl sm:text-5xl font-display font-black text-emerald-600 dark:text-emerald-400 leading-none my-2 drop-shadow-sm">
-                {card.grade.toFixed(1)}
-              </div>
-              <div className={`text-xs font-black uppercase tracking-wider ${
-                isLight ? 'text-gray-950' : 'text-white'
-              }`}>
-                {card.gradeLabel}
+                {formatGrade(card.grade)}
               </div>
               <button
                 type="button"
@@ -247,10 +243,10 @@ export const CertificateDetailPage: React.FC<CertificateDetailPageProps> = ({
             <div className={`border-l pl-4 sm:pl-5 text-right font-mono text-[11px] sm:text-xs space-y-1.5 ${
               isLight ? 'border-gray-300 text-gray-700' : 'border-white/15 text-gray-300'
             }`}>
-              <div>{es ? 'Centrado' : 'Centering'}: <strong className="text-emerald-600 dark:text-emerald-400 font-black ml-1">{card.subgrades.centering.score.toFixed(1)}</strong></div>
-              <div>{es ? 'Esquinas' : 'Corners'}: <strong className="text-emerald-600 dark:text-emerald-400 font-black ml-1">{card.subgrades.corners.score.toFixed(1)}</strong></div>
-              <div>{es ? 'Bordes' : 'Edges'}: <strong className="text-emerald-600 dark:text-emerald-400 font-black ml-1">{card.subgrades.edges.score.toFixed(1)}</strong></div>
-              <div>{es ? 'Superficie' : 'Surface'}: <strong className="text-emerald-600 dark:text-emerald-400 font-black ml-1">{card.subgrades.surface.score.toFixed(1)}</strong></div>
+              <div>{es ? 'Centrado' : 'Centering'}: <strong className="text-emerald-600 dark:text-emerald-400 font-black ml-1">{formatGrade(card.subgrades.centering.score)}</strong></div>
+              <div>{es ? 'Esquinas' : 'Corners'}: <strong className="text-emerald-600 dark:text-emerald-400 font-black ml-1">{formatGrade(card.subgrades.corners.score)}</strong></div>
+              <div>{es ? 'Bordes' : 'Edges'}: <strong className="text-emerald-600 dark:text-emerald-400 font-black ml-1">{formatGrade(card.subgrades.edges.score)}</strong></div>
+              <div>{es ? 'Superficie' : 'Surface'}: <strong className="text-emerald-600 dark:text-emerald-400 font-black ml-1">{formatGrade(card.subgrades.surface.score)}</strong></div>
             </div>
           </div>
 
@@ -261,6 +257,8 @@ export const CertificateDetailPage: React.FC<CertificateDetailPageProps> = ({
       <div className="grid grid-cols-1 gap-8 items-start">
         <div className="space-y-8 relative z-0">
           <DefectInspector card={card} large />
+
+          {card.scan && <ScanReportPanel scan={card.scan} />}
 
           {/* Firma del registro */}
           <div 

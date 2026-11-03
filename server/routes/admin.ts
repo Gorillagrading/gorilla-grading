@@ -1,7 +1,8 @@
 import { Hono } from 'hono';
 import { AdminOrdersQuery, IdentifyCardBody, STAFF_ROLES, ShipmentBody, TransitionBody } from '../../shared/admin.js';
 import { ImageBody } from '../../shared/photos.js';
-import { GradingBody, RejectGradingBody } from '../../shared/grading-admin.js';
+import { GradingBody, MAX_SCAN_PDF_BYTES, RejectGradingBody } from '../../shared/grading-admin.js';
+import { importScanReport } from '../domain/scan-import.js';
 import { requireRole, requireUser } from '../auth/middleware.js';
 import type { AppEnv, Deps } from '../context.js';
 import { CertificateHistoryQuery, DashboardQuery } from '../../shared/dashboard.js';
@@ -73,6 +74,19 @@ export function adminRoutes(deps: Deps) {
   routes.put('/admin/orders/:code/items/:position/grading', ...grader, async (c) => {
     const body = await parseJson(c, GradingBody);
     const grading = await saveGrading(deps.getDb(), c.get('user'), c.req.param('code'), position(c), body, { ip: clientIp(c) });
+    return c.json({ grading });
+  });
+
+  // Informe del escáner: el cuerpo es el PDF tal cual. Lo lee el servidor y deja el resultado pendiente de calidad.
+  routes.post('/admin/orders/:code/items/:position/scan-report', ...grader, async (c) => {
+    const pdf = new Uint8Array(await c.req.arrayBuffer());
+    if (pdf.byteLength === 0 || new TextDecoder().decode(pdf.subarray(0, 5)) !== '%PDF-') {
+      throw new ProblemError(422, 'Validation Error', 'El archivo no es un PDF.', { code: 'scan_report_unreadable' });
+    }
+    if (pdf.byteLength > MAX_SCAN_PDF_BYTES) {
+      throw new ProblemError(413, 'Payload Too Large', 'El PDF pesa más de 4 MB.', { code: 'scan_report_too_large' });
+    }
+    const grading = await importScanReport(deps.getDb(), deps.storage, c.get('user'), c.req.param('code'), position(c), pdf, { ip: clientIp(c) });
     return c.json({ grading });
   });
 

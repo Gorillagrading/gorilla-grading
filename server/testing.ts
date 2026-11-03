@@ -234,6 +234,7 @@ export function createFakeStorage(): ObjectStorage & { put: (key: string) => voi
     removed,
     put: (key) => void files.add(key),
     createUpload: async (key) => ({ method: 'PUT', url: `memory://upload/${key}`, headers: {}, body: 'multipart' }),
+    upload: async (key) => void files.add(key),
     exists: async (key) => files.has(key),
     createDownloadUrl: async (key, ttl) => `memory://download/${key}?ttl=${ttl}`,
     remove: async (key) => {

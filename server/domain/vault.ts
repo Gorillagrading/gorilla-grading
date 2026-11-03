@@ -9,6 +9,7 @@ import {
   orders,
 } from '../../db/schema.js';
 import type { CardDefectDto, GradedCardDto } from '../../shared/account.js';
+import type { CornerPosition, PublicScanReport, ScanReport, ScanSide } from '../../shared/scan-report.js';
 import type { ObjectStorage } from '../storage.js';
 
 const CATEGORY_LABEL = {
@@ -92,6 +93,14 @@ export async function loadCards(
       return { front: await signedUrl(images.frontKey), back: await signedUrl(images.backKey) };
     }),
   );
+  // El informe del escáner, sin rutas privadas. Los recortes de las esquinas solo al consultar un certificado
+  // concreto: en una lista serían muchos enlaces firmados que nadie mira.
+  const scans = await Promise.all(
+    rows.map(async ({ result }, index) => {
+      const report = result.scanReport as ScanReport | null;
+      return report ? publicScan(report, signed[index], filter.number ? signedUrl : null) : null;
+    }),
+  );
 
   return rows.map(({ certificate: cert, result: r, identity, declaredValueCents }, index) => {
     const grade = r.finalGrade ?? 0;
@@ -139,19 +148,36 @@ export async function loadCards(
       frontImage: images.front ?? signed[index].front,
       backImage: images.back ?? signed[index].back,
       slabMockupImage: images.slabMockup ?? undefined,
-      defects: defects
-        .filter((d) => d.gradingResultId === r.id)
-        .map<CardDefectDto>((d) => ({
-          id: d.id,
-          category: CATEGORY_LABEL[d.category],
-          title: d.title,
-          description: d.description ?? '',
-          severity: d.severity,
-          side: d.side,
-          x: d.x,
-          y: d.y,
-          deduction: d.deduction,
-        })),
+      // Con informe del escáner, los daños salen de él: así llevan el mismo número que en el informe.
+      defects: scans[index]
+        ? scans[index].faces.flatMap((face) =>
+            face.damages.map<CardDefectDto>((d) => ({
+              id: `${cert.id}-${face.side}-${d.n}`,
+              category: CATEGORY_LABEL[d.area],
+              title: d.kind,
+              description: [d.location, d.lengthMm !== null ? `${String(d.lengthMm).replace('.', ',')} mm` : null].filter(Boolean).join(' · '),
+              severity: d.size ? SEVERITY[d.size] : 'moderate',
+              side: face.side,
+              x: d.x,
+              y: d.y,
+              deduction: 0,
+              n: d.n,
+            })),
+          )
+        : defects
+            .filter((d) => d.gradingResultId === r.id)
+            .map<CardDefectDto>((d) => ({
+              id: d.id,
+              category: CATEGORY_LABEL[d.category],
+              title: d.title,
+              description: d.description ?? '',
+              severity: d.severity,
+              side: d.side,
+              x: d.x,
+              y: d.y,
+              deduction: d.deduction,
+            })),
+      scan: scans[index],
       population: {
         totalGraded: samePrint.length,
         higherCount: samePrint.filter((p) => (p.grade ?? 0) > grade).length,
@@ -170,6 +196,28 @@ export async function loadCards(
       supersededByNumber: replacements.find((s) => s.id === cert.supersededById)?.number ?? null,
     };
   });
+}
+
+const SEVERITY = { small: 'minor', medium: 'moderate', large: 'critical' } as const;
+
+/** El informe del escáner para el cliente: las imágenes, como enlaces firmados; sin el PDF ni rutas privadas. */
+async function publicScan(
+  report: ScanReport,
+  scanUrls: { front: string; back: string },
+  sign: ((key: string | null | undefined) => Promise<string>) | null,
+): Promise<PublicScanReport> {
+  const { images, pdf: _pdf, ...rest } = report;
+  const corners: PublicScanReport['images']['corners'] = {};
+  if (sign) {
+    for (const [side, byPosition] of Object.entries(images.corners) as [ScanSide, Partial<Record<CornerPosition, string>>][]) {
+      const urls = await Promise.all(Object.entries(byPosition).map(async ([position, key]) => [position, await sign(key)] as const));
+      corners[side] = Object.fromEntries(urls.filter(([, url]) => url));
+    }
+  }
+  const scan: PublicScanReport['images']['scan'] = {};
+  if (images.scan.front && scanUrls.front) scan.front = scanUrls.front;
+  if (images.scan.back && scanUrls.back) scan.back = scanUrls.back;
+  return { ...rest, images: { scan, corners } };
 }
 
 /** Cartas certificadas (certificados activos) de un usuario, para su bóveda. */

@@ -4,6 +4,7 @@
  */
 import { z } from 'zod';
 import { isGradeValue } from './grading.js';
+import type { ScanReport } from './scan-report.js';
 
 const gradeValue = z.number().refine(isGradeValue, 'La nota va de 1 a 10 en pasos de 0,5.');
 const note = z.string().trim().max(500).optional();
@@ -70,10 +71,19 @@ export type RejectGradingBody = z.infer<typeof RejectGradingBody>;
 export const GRADING_STATUSES = ['draft', 'pending_qa', 'approved'] as const;
 export type GradingStatus = (typeof GRADING_STATUSES)[number];
 
+/** Tamaño máximo del PDF del escáner que se puede importar (el límite de una petición en Vercel es 4,5 MB). */
+export const MAX_SCAN_PDF_BYTES = 4 * 1024 * 1024;
+
 /** Resultado de una carta tal como lo ve el personal. */
 export interface AdminGradingResult {
   version: number;
   status: GradingStatus;
+  /** `scanner`: importado del PDF del escáner; `manual`: subnotas introducidas a mano. */
+  rule: 'manual' | 'scanner';
+  /** Número de certificado que trae el informe del escáner. */
+  certificateNumber: string | null;
+  /** Lo que se leyó del informe del escáner, sin las rutas de sus archivos. */
+  scan: (Omit<ScanReport, 'images' | 'pdf'> & { pdfSha256: string }) | null;
   isAuthentic: boolean;
   finalGrade: number | null;
   gradeLabel: string | null;

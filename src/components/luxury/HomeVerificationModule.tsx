@@ -433,9 +433,6 @@ export const HomeVerificationModule: React.FC<HomeVerificationModuleProps> = ({ 
                       <div className="font-mono text-[10px] uppercase tracking-widest text-[#48C765] font-bold">
                         {language === 'es' ? 'GRADO OFICIAL GORILLA' : 'OFFICIAL GORILLA GRADE'}
                       </div>
-                      <div className="font-['Nunito',sans-serif] text-xl sm:text-2xl font-[900] uppercase tracking-normal">
-                        {selectedCard.gradeLabel}
-                      </div>
                       <div className="font-sans text-xs text-gray-500 dark:text-gray-400">
                         {language === 'es' ? 'Escala forense de 10 puntos con subgrados métricos' : '10-point forensic scale with metric subgrades'}
                       </div>

@@ -48,6 +48,24 @@ export const approveGrading = (code: string, position: number) =>
 export const rejectGrading = (code: string, position: number, reason: string) =>
   api<{ grading: AdminGradingResult }>(`${itemPath(code, position)}/grading/reject`, { body: { reason } }).then((r) => r.grading);
 
+/** Envía el PDF del escáner tal cual; el servidor lo lee y deja el resultado pendiente de control de calidad. */
+export async function importScanReport(code: string, position: number, file: File): Promise<AdminGradingResult> {
+  let res: Response;
+  try {
+    res = await fetch(`/api/v1${itemPath(code, position)}/scan-report`, {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/pdf' },
+      body: file,
+    });
+  } catch {
+    throw new ApiError(0, 'network', 'No se pudo conectar con el servidor.');
+  }
+  const data = await res.json().catch(() => null);
+  if (!res.ok) throw new ApiError(res.status, data?.code, data?.detail ?? data?.title ?? res.statusText, data ?? {});
+  return data.grading as AdminGradingResult;
+}
+
 export const fetchOrderImages = (code: string) => api<AdminOrderImages>(`/admin/orders/${encodeURIComponent(code)}/images`);
 
 export const deleteItemImage = (code: string, position: number, imageId: string) =>
@@ -115,6 +133,14 @@ export function adminErrorMessage(err: unknown): string {
       return 'El pedido ya está cerrado.';
     case 'validation_error':
       return 'Revisa los datos: hay algún campo vacío o con un formato no válido.';
+    case 'scan_report_invalid': {
+      const problems = Array.isArray(err.extra.problems) ? (err.extra.problems as string[]) : [];
+      return `No se ha importado el informe del escáner: ${problems.join(' ') || err.message}`;
+    }
+    case 'scan_report_unreadable':
+      return 'Ese archivo no es un PDF del escáner que se pueda leer.';
+    case 'scan_report_too_large':
+      return 'El PDF pesa más de 4 MB.';
     case 'unauthenticated':
       return 'Tu sesión ha caducado. Vuelve a iniciar sesión.';
     case 'network':
@@ -130,6 +156,7 @@ export function adminErrorMessage(err: unknown): string {
     case 'card_unidentified':
     case 'identify_not_allowed':
     case 'card_certified':
+    case 'certificate_number_taken':
       return err.message;
     default:
       return `Algo salió mal (${err.status}${err.code ? `, ${err.code}` : ''}). Inténtalo de nuevo.`;

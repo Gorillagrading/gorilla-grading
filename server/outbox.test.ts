@@ -143,7 +143,7 @@ describe('email de salida con certificados', () => {
       carrier: 'GLS',
       trackingNumber: 'ES-GLS-1',
       cards: [
-        { position: 1, cardName: 'Charizard <Holo>', authentic: true, number: '43713700', grade: 9.5, label: 'Mint+ 9.5' },
+        { position: 1, cardName: 'Charizard <Holo>', authentic: true, number: '43713700', grade: 9.5 },
         { position: 2, cardName: 'Pikachu falso', authentic: false },
       ],
       ...over,
@@ -156,7 +156,7 @@ describe('email de salida con certificados', () => {
       expect(body).toContain('43713700');
       expect(body).toContain('https://gorilla-grading.vercel.app/certificates/43713700');
       expect(body).toContain('9,5');
-      expect(body).toContain('Mint+ 9.5');
+      expect(body).not.toContain('Mint');
       expect(body).toContain('ES-GLS-1');
       expect(body).toContain('Pikachu falso');
       expect(body).toContain('https://gorilla-grading.vercel.app/track?code=284732534');

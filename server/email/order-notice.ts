@@ -132,7 +132,6 @@ function certificatesBlock(cards: IssuedCard[], lang: Locale, base: string) {
 </td>
 <td style="padding:12px 0 12px 12px;border-top:1px solid #E5E7EB;text-align:right;vertical-align:top;white-space:nowrap;">
 <div style="font-size:20px;font-weight:900;color:#15803D;line-height:1;">${gradeText(x.grade, lang)}</div>
-<div style="font-size:11px;font-weight:700;text-transform:uppercase;color:#374151;margin-top:3px;">${esc(x.label)}</div>
 <a href="${url}" style="display:inline-block;margin-top:6px;font-size:12px;font-weight:700;color:#15803D;">${c.viewCert} &rarr;</a>
 </td></tr>`;
       })
@@ -141,7 +140,7 @@ function certificatesBlock(cards: IssuedCard[], lang: Locale, base: string) {
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${rows}</table>
 <p style="font-size:12px;color:#6B7280;margin:8px 0 0;">${c.certNote}</p>`;
     plain += `\n${c.certificates}:\n${certified
-      .map((x) => `- ${cardTitle(x.cardName, x.position, lang)}: ${gradeText(x.grade, lang)} ${x.label} · ${x.number}\n  ${base}/certificates/${x.number}`)
+      .map((x) => `- ${cardTitle(x.cardName, x.position, lang)}: ${gradeText(x.grade, lang)} · ${x.number}\n  ${base}/certificates/${x.number}`)
       .join('\n')}\n${c.certNote}\n`;
   }
 

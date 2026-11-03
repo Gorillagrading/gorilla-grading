@@ -55,7 +55,12 @@ describe('parseCertificateQuery', () => {
     expect(parseCertificateQuery(input)).toBe('89240100');
   });
 
-  it.each(['', 'hola', 'GG-89240100', '8924010', '892401000', 'GGI-892401', '892401', 'GGI-ABCDEFGH', "89240100'; --", '284728482'])(
+  it('entiende el número de 9 cifras del informe del escáner, también con espacios', () => {
+    expect(parseCertificateQuery('199 157 603')).toBe('199157603');
+    expect(parseCertificateQuery('199157603')).toBe('199157603');
+  });
+
+  it.each(['', 'hola', 'GG-89240100', '8924010', '8924010000', 'GGI-892401', '892401', 'GGI-ABCDEFGH', "89240100'; --"])(
     'descarta "%s"',
     (input) => {
       expect(parseCertificateQuery(input)).toBeNull();

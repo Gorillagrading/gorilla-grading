@@ -5,15 +5,23 @@ import type { UserDto } from '../../shared/auth.js';
 import type { AdminGradingResult, GradingBody } from '../../shared/grading-admin.js';
 import { deriveFinalGrade, deriveGradeLabel } from '../../shared/grading.js';
 import type { OrderStatus } from '../../shared/domain.js';
+import type { ScanReport } from '../../shared/scan-report.js';
 import { hashIp } from '../auth/crypto.js';
 import { ProblemError } from '../problem.js';
 
 /** Mientras el pedido está en el laboratorio y no en pausa se puede introducir o cambiar el resultado. */
-const GRADABLE: OrderStatus[] = ['PACKAGE_RECEIVED', 'PRE_INSPECTION', 'OPTICAL_GRADING', 'ENCAPSULATION', 'QUALITY_ASSURANCE'];
+export const GRADABLE: OrderStatus[] = ['PACKAGE_RECEIVED', 'PRE_INSPECTION', 'OPTICAL_GRADING', 'ENCAPSULATION', 'QUALITY_ASSURANCE'];
 
-const conflict = (detail: string, code: string) => new ProblemError(409, 'Conflict', detail, { code });
+export const conflict = (detail: string, code: string) => new ProblemError(409, 'Conflict', detail, { code });
 
 type ResultRow = typeof gradingResults.$inferSelect;
+
+/** Lo que el personal ve del informe del escáner: todo menos las rutas privadas de sus archivos. */
+const scanSummary = (report: unknown): AdminGradingResult['scan'] => {
+  if (!report) return null;
+  const { images: _images, pdf, ...rest } = report as ScanReport;
+  return { ...rest, pdfSha256: pdf.sha256 };
+};
 
 /** Resultados vigentes (no sustituidos) de unas cartas, ya con sus defectos y los nombres del personal. */
 export async function loadGradingResults(db: Db, itemIds: string[]): Promise<Map<string, AdminGradingResult>> {
@@ -39,6 +47,9 @@ export async function loadGradingResults(db: Db, itemIds: string[]): Promise<Map
     out.set(r.orderItemId, {
       version: r.version,
       status: r.status as AdminGradingResult['status'],
+      rule: r.rule as AdminGradingResult['rule'],
+      certificateNumber: r.certificateNumber,
+      scan: scanSummary(r.scanReport),
       isAuthentic: r.isAuthentic,
       finalGrade: r.finalGrade,
       gradeLabel: r.gradeLabel,
@@ -74,7 +85,7 @@ export async function loadGradingResults(db: Db, itemIds: string[]): Promise<Map
 const sub = (score: number | null, front: number | null, back: number | null, notes: string | null) =>
   score === null ? null : { score, frontScore: front, backScore: back, notes };
 
-async function loadItem(db: Db, code: string, position: number) {
+export async function loadItem(db: Db, code: string, position: number) {
   const [row] = await db
     .select({ order: orders, item: orderItems })
     .from(orders)
@@ -85,7 +96,7 @@ async function loadItem(db: Db, code: string, position: number) {
   return row;
 }
 
-async function currentResult(db: Db, itemId: string): Promise<ResultRow | undefined> {
+export async function currentResult(db: Db, itemId: string): Promise<ResultRow | undefined> {
   const [row] = await db
     .select()
     .from(gradingResults)
@@ -94,7 +105,7 @@ async function currentResult(db: Db, itemId: string): Promise<ResultRow | undefi
   return row;
 }
 
-function audit(db: Pick<Db, 'insert'>, actor: UserDto, action: string, orderCode: string, position: number, extra: object, ip: string | null) {
+export function audit(db: Pick<Db, 'insert'>, actor: UserDto, action: string, orderCode: string, position: number, extra: object, ip: string | null) {
   return db.insert(auditLogs).values({
     actorId: actor.id,
     action,
@@ -167,6 +178,10 @@ export async function saveGrading(
     surfaceBackScore: scores ? (input.surface!.backScore ?? null) : null,
     surfaceNotes: scores ? (input.surface!.notes ?? null) : null,
     station: input.station ?? null,
+    // Un resultado a mano sustituye por completo a un informe del escáner que hubiera.
+    rule: 'manual',
+    certificateNumber: null,
+    scanReport: null,
     status: input.submit ? ('pending_qa' as const) : ('draft' as const),
     gradedBy: actor.id,
     gradedAt: now,

@@ -3,6 +3,9 @@
  * (año, número, idioma) o que el laboratorio no mide (nota por cara): no se muestran en vez de enseñar "0".
  */
 
+/** Una nota tal como se escribe: entera sin decimales ("5"), con medio punto con uno ("9.5"). */
+export const formatGrade = (n: number) => (Number.isInteger(n) ? String(n) : n.toFixed(1));
+
 /** Año de la carta, o null si no se conoce. */
 export const cardYear = (year: number) => (year > 0 ? String(year) : null);
 

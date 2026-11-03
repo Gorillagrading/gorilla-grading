@@ -127,8 +127,10 @@ describe('emisión de certificados', () => {
     expect(record).toMatchObject({
       v: 1, number: cert.number, slab: slab.serial,
       card: { name: 'Charizard Holo', set: 'Base Set', game: 'Pokemon' },
-      grade: { final: 9.5, label: 'Mint+ 9.5', subgrades: { centering: 9.5, corners: 9, edges: 9.5, surface: 9.5 } },
+      grade: { final: 9.5, subgrades: { centering: 9.5, corners: 9, edges: 9.5, surface: 9.5 } },
     });
+    // La nota ya no lleva etiqueta ("Mint+ 9.5").
+    expect(record.grade.label).toBeUndefined();
     expect(images.frontKey).toMatch(/^items\/.+\/front-/);
     expect(verifySignature(testSigner.publicKey, record, cert.signature!)).toBe(true);
     expect((await db.select().from(auditLogs)).map((a) => a.action)).toContain('certificate.issued');
@@ -282,7 +284,8 @@ describe('email de salida', () => {
     expect(mail, 'correo de salida').toBeDefined();
     expect(mail!.to).toBe('cliente@example.com');
     expect(mail!.text).toContain(`/certificates/${cert.number}`);
-    expect(mail!.text).toContain('Mint+ 9.5');
+    expect(mail!.text).toContain(`Charizard Holo: 9,5 · ${cert.number}`);
+    expect(mail!.text).not.toContain('Mint');
     expect(mail!.text).toContain('ES-1');
     expect(mail!.text).toContain('Falsa Pikachu');
     expect(mail!.html).toContain(cert.number);

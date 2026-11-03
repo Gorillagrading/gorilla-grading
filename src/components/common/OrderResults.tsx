@@ -84,7 +84,6 @@ const Card: React.FC<{ item: Result; lang: 'es' | 'en'; text: string; muted: str
         {g && g.isAuthentic && g.finalGrade !== null && (
           <div className="text-right shrink-0">
             <div className={`text-3xl font-[900] leading-none ${accent}`}>{num(g.finalGrade, lang)}</div>
-            <div className={`font-mono text-[9px] uppercase tracking-widest mt-1 ${text}`}>{g.gradeLabel}</div>
           </div>
         )}
       </div>

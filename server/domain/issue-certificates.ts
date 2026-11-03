@@ -5,6 +5,7 @@ import { newCertificateNumber, slabSerialFor } from '../codes.js';
 import { publicBaseUrl } from '../env.js';
 import { ProblemError } from '../problem.js';
 import type { Signer } from '../signing.js';
+import type { ScanReport } from '../../shared/scan-report.js';
 
 type Tx = Pick<Db, 'select' | 'insert' | 'update'>;
 
@@ -12,7 +13,7 @@ const MAX_NUMBER_ATTEMPTS = 25;
 
 /** Lo que se emitió para cada carta, para el email de salida del pedido. */
 export type IssuedCard =
-  | { position: number; cardName: string | null; authentic: true; number: string; grade: number; label: string }
+  | { position: number; cardName: string | null; authentic: true; number: string; grade: number }
   | { position: number; cardName: string | null; authentic: false };
 
 /** Registro que se firma. Cualquiera puede verificarlo con la clave pública, sin acceder a nada privado. */
@@ -24,11 +25,14 @@ export interface SignedRecord {
   card: { game: string; set: string; number: string; name: string; language: string; year: number | null };
   grade: {
     final: number;
-    label: string;
+    /** Solo en los certificados antiguos ("Mint 9"); ya no se pone etiqueta a la nota. */
+    label?: string;
     subgrades: { centering: number; corners: number; edges: number; surface: number };
   };
   /** Versión del resultado de graduación del que sale. */
   resultVersion: number;
+  /** Si la nota sale del escáner: sus criterios y la huella SHA-256 del PDF del informe. */
+  scanner?: { criteria: string; pdfSha256: string };
 }
 
 /**
@@ -69,7 +73,7 @@ export async function issueCertificates(
       continue;
     }
     if (
-      result.finalGrade === null || !result.gradeLabel || result.centeringScore === null || result.cornersScore === null ||
+      result.finalGrade === null || result.centeringScore === null || result.cornersScore === null ||
       result.edgesScore === null || result.surfaceScore === null
     ) {
       throw new ProblemError(409, 'Conflict', 'El resultado de una carta está incompleto.', { code: 'grading_incomplete' });
@@ -104,11 +108,13 @@ export async function issueCertificates(
       )
       .limit(1);
 
-    // El número del certificado es aleatorio; el slab lleva sus mismos dígitos. Si choca, se prueba otro.
+    // El número es el del informe del escáner; si la carta se graduó a mano, uno al azar (si choca, se prueba otro).
+    // El slab lleva sus mismos dígitos.
+    const fixed = result.certificateNumber;
     let number = '';
     let slab: { id: string; serial: string } | undefined;
-    for (let attempt = 0; attempt < MAX_NUMBER_ATTEMPTS && !slab; attempt++) {
-      number = newCertificateNumber();
+    for (let attempt = 0; attempt < (fixed ? 1 : MAX_NUMBER_ATTEMPTS) && !slab; attempt++) {
+      number = fixed ?? newCertificateNumber();
       const serial = slabSerialFor(number);
       [slab] = await tx
         .insert(slabs)
@@ -122,8 +128,12 @@ export async function issueCertificates(
         .onConflictDoNothing({ target: slabs.serial })
         .returning({ id: slabs.id, serial: slabs.serial });
     }
+    if (!slab && fixed) {
+      throw new ProblemError(409, 'Conflict', `El número de certificado ${fixed} del informe del escáner ya está en uso.`, { code: 'certificate_number_taken' });
+    }
     if (!slab) throw new Error('No se pudo generar un número de certificado libre');
 
+    const scan = result.scanReport as ScanReport | null;
     const record: SignedRecord = {
       v: 1,
       number,
@@ -139,7 +149,6 @@ export async function issueCertificates(
       },
       grade: {
         final: result.finalGrade,
-        label: result.gradeLabel,
         subgrades: {
           centering: result.centeringScore,
           corners: result.cornersScore,
@@ -148,11 +157,13 @@ export async function issueCertificates(
         },
       },
       resultVersion: result.version,
+      ...(scan && { scanner: { criteria: scan.criteria, pdfSha256: scan.pdf.sha256 } }),
     };
 
-    // Las fotos de anverso y reverso más recientes se enlazan por su clave privada; se firman enlaces temporales al mostrarlas.
-    const front = photos.find((p) => p.orderItemId === item.id && p.kind === 'front');
-    const back = photos.find((p) => p.orderItemId === item.id && p.kind === 'back');
+    // La foto de cada cara: el escaneo del informe (los daños están marcados sobre él) o, si no hay, la foto más
+    // reciente del laboratorio. Se enlazan por su clave privada; se firman enlaces temporales al mostrarlas.
+    const front = scan?.images.scan.front ? { storageKey: scan.images.scan.front } : photos.find((p) => p.orderItemId === item.id && p.kind === 'front');
+    const back = scan?.images.scan.back ? { storageKey: scan.images.scan.back } : photos.find((p) => p.orderItemId === item.id && p.kind === 'back');
 
     await tx.insert(certificates).values({
       number,
@@ -174,7 +185,7 @@ export async function issueCertificates(
       entityId: number,
       after: { order: args.orderCode, slab: slab.serial, grade: result.finalGrade },
     });
-    issued.push({ position: item.position, cardName: item.cardName, authentic: true, number, grade: result.finalGrade, label: result.gradeLabel });
+    issued.push({ position: item.position, cardName: item.cardName, authentic: true, number, grade: result.finalGrade });
   }
   return issued.sort((a, b) => a.position - b.position);
 }

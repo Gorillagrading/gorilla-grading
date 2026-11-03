@@ -2,6 +2,7 @@
  * Contratos del dashboard de la cuenta. Solo tipos: el frontend los importa con `import type`.
  */
 import type { OrderStatus } from './domain.js';
+import type { PublicScanReport } from './scan-report.js';
 
 export interface OrderSummaryDto {
   /** Código visible del pedido, por ejemplo GGI-ORD-7K4M9Q. */
@@ -28,6 +29,8 @@ export interface CardDefectDto {
   x: number;
   y: number;
   deduction: number;
+  /** Número del daño en el informe del escáner, el mismo que en su dibujo. */
+  n?: number;
 }
 
 /** Carta certificada de la bóveda del usuario. Tiene la misma forma que `GradedCard` del frontend. */
@@ -61,6 +64,8 @@ export interface GradedCardDto {
   /** Valor declarado por el dueño. Solo se envía a su propietario, nunca en la verificación pública. */
   declaredValueEur: number;
   isAuthentic: boolean;
+  /** Informe del escáner, si la nota sale de él. Las imágenes de las esquinas solo vienen al consultar un certificado. */
+  scan?: PublicScanReport | null;
 }
 
 /**

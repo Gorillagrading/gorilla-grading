@@ -3,6 +3,7 @@ import { Check } from 'lucide-react';
 import { PublicGradedCard, CardDefect } from '../../types';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
+import { formatGrade } from '../../utils/cardDisplay';
 
 interface DefectInspectorProps {
   card: PublicGradedCard;
@@ -81,8 +82,8 @@ export const DefectInspector: React.FC<DefectInspectorProps> = ({ card, large = 
       notes = c.description;
     } else {
       const s = card.subgrades[activeTab.toLowerCase() as 'corners' | 'edges' | 'surface'];
-      if (s.frontScore > 0) rows.push([es ? 'Anverso' : 'Front', s.frontScore.toFixed(1)]);
-      if (s.backScore > 0) rows.push([es ? 'Reverso' : 'Back', s.backScore.toFixed(1)]);
+      if (s.frontScore > 0) rows.push([es ? 'Anverso' : 'Front', formatGrade(s.frontScore)]);
+      if (s.backScore > 0) rows.push([es ? 'Reverso' : 'Back', formatGrade(s.backScore)]);
       notes = s.description;
     }
     if (rows.length === 0 && !notes) return null;
@@ -135,7 +136,7 @@ export const DefectInspector: React.FC<DefectInspectorProps> = ({ card, large = 
                   : (isLight ? 'border-transparent text-gray-500 hover:text-gray-900 font-semibold' : 'border-transparent text-gray-400 hover:text-white')
               }`}
             >
-              {TAB_LABEL[id][lang]} ({score.toFixed(1)})
+              {TAB_LABEL[id][lang]} ({formatGrade(score)})
             </button>
           );
         })}
@@ -186,15 +187,24 @@ export const DefectInspector: React.FC<DefectInspectorProps> = ({ card, large = 
                       key={defect.id}
                       type="button"
                       onClick={() => setSelectedDefect(defect)}
-                      aria-label={defect.title}
+                      aria-label={defect.n !== undefined ? `${defect.n}. ${defect.title}` : defect.title}
                       className="absolute -translate-x-1/2 -translate-y-1/2 z-20 cursor-pointer"
                       style={{ left: `${defect.x}%`, top: `${defect.y}%` }}
                     >
+                      {defect.n !== undefined ? (
+                        // Daño del informe del escáner: el mismo número que en su lista.
+                        <span className={`flex items-center justify-center w-5 h-5 rounded-full font-mono text-[10px] font-bold text-white shadow ring-2 transition-transform ${
+                          isSelected ? 'scale-125 bg-red-600 ring-white' : 'bg-red-600/90 ring-white/70'
+                        }`}>
+                          {defect.n}
+                        </span>
+                      ) : (
                       <div className={`relative flex items-center justify-center w-6 h-6 transition-transform ${isSelected ? 'scale-125' : ''}`}>
                         <div className={`absolute w-full h-[1px] ${isSelected ? 'bg-[#EF4444]' : 'bg-[#22C55E]'}`} />
                         <div className={`absolute h-full w-[1px] ${isSelected ? 'bg-[#EF4444]' : 'bg-[#22C55E]'}`} />
                         <div className={`w-1.5 h-1.5 z-10 ${isSelected ? 'bg-[#EF4444]' : 'bg-[#22C55E]'}`} />
                       </div>
+                      )}
                     </button>
                   );
                 })}
@@ -223,7 +233,9 @@ export const DefectInspector: React.FC<DefectInspectorProps> = ({ card, large = 
                   X:{selectedDefect.x}% Y:{selectedDefect.y}%
                 </span>
               </div>
-              <h4 className={`font-['Space_Grotesk',sans-serif] text-lg font-bold uppercase leading-tight ${strong}`}>{selectedDefect.title}</h4>
+              <h4 className={`font-['Space_Grotesk',sans-serif] text-lg font-bold uppercase leading-tight ${strong}`}>
+                {selectedDefect.n !== undefined && `${selectedDefect.n}. `}{selectedDefect.title}
+              </h4>
               {selectedDefect.description && (
                 <p className={`text-sm leading-relaxed ${isLight ? 'text-gray-700' : 'text-gray-300'}`}>{selectedDefect.description}</p>
               )}
@@ -242,7 +254,9 @@ export const DefectInspector: React.FC<DefectInspectorProps> = ({ card, large = 
             }`}>
               {visibleDefects.length > 0 ? (
                 <p className={`font-mono text-[11px] uppercase tracking-[0.16em] max-w-[280px] leading-relaxed font-medium ${muted}`}>
-                  {es ? 'Selecciona una cruz en la foto para ver el defecto.' : 'Select a crosshair on the photo to view the defect.'}
+                  {visibleDefects.some((d) => d.n !== undefined)
+                    ? (es ? 'Selecciona un número en la foto para ver el daño.' : 'Select a number on the photo to view the damage.')
+                    : (es ? 'Selecciona una cruz en la foto para ver el defecto.' : 'Select a crosshair on the photo to view the defect.')}
                 </p>
               ) : (
                 // Sin defectos: se dice qué se revisó, para que quede claro que la carta sí se estudió.
@@ -254,7 +268,7 @@ export const DefectInspector: React.FC<DefectInspectorProps> = ({ card, large = 
                           <Check className={`w-4 h-4 ${isLight ? 'text-emerald-600' : 'text-emerald-400'}`} aria-hidden="true" />
                           {TAB_LABEL[tab.id][lang]}
                         </span>
-                        <span className="font-bold tabular-nums">{tab.score.toFixed(1)}</span>
+                        <span className="font-bold tabular-nums">{formatGrade(tab.score)}</span>
                       </li>
                     ))}
                   </ul>

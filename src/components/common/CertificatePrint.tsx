@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import QRCode from 'qrcode';
 import type { PublicCertificate } from '../../api/certificates';
 import type { CardDefect } from '../../types';
-import { cardYear } from '../../utils/cardDisplay';
+import { cardYear, formatGrade } from '../../utils/cardDisplay';
 
 /**
  * Dossier de impresión del certificado: una hoja A4 sobria, solo visible al imprimir
@@ -97,7 +97,7 @@ const T = {
 
 const CATEGORY_KEY = { Centering: 'centering', Corners: 'corners', Edges: 'edges', Surface: 'surface' } as const;
 
-const fmt = (n: number) => n.toFixed(1);
+const fmt = formatGrade;
 
 const formatDate = (iso: string, lang: Lang) =>
   new Date(iso).toLocaleDateString(lang === 'es' ? 'es-ES' : 'en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
@@ -207,7 +207,6 @@ export const CertificatePrint: React.FC<{ card: PublicCertificate; lang: Lang }>
               {card.isAuthentic ? (
                 <>
                   <div className="cp-grade-value">{fmt(card.grade)}</div>
-                  <div className="cp-grade-label">{card.gradeLabel}</div>
                 </>
               ) : (
                 <div className="cp-grade-label">{t.notAuthentic}</div>

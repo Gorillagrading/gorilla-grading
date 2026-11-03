@@ -1,4 +1,4 @@
-import { cardYear, orDash, sideScores as formatSideScores } from '../utils/cardDisplay';
+import { cardYear, formatGrade, orDash, sideScores as formatSideScores } from '../utils/cardDisplay';
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
@@ -256,13 +256,10 @@ export const VerificationPage: React.FC<VerificationPageProps> = ({ onNavigate }
                 <div className={`font-['Nunito',sans-serif] text-5xl md:text-6xl lg:text-7xl leading-none font-[900] tracking-tight ${
                   isLight ? 'text-gray-950' : 'text-white'
                 }`}>
-                  {activeCard.grade.toFixed(1)}
+                  {formatGrade(activeCard.grade)}
                 </div>
               </div>
               <div className="flex flex-col items-start md:items-end gap-1 pb-1">
-                <span className="font-mono text-xs sm:text-sm tracking-[0.2em] uppercase text-[#16A34A] dark:text-[#48C765] font-bold">
-                  {activeCard.gradeLabel}
-                </span>
                 <span className={`font-mono text-[10px] tracking-[0.1em] max-w-xs md:text-right ${
                   isLight ? 'text-gray-500' : 'text-[#A4ACA1]'
                 }`}>
@@ -313,7 +310,7 @@ export const VerificationPage: React.FC<VerificationPageProps> = ({ onNavigate }
                       <span className={`font-['Nunito',sans-serif] text-base font-[900] w-10 text-right ${
                         isLight ? 'text-gray-950' : 'text-white'
                       }`}>
-                        {sub.score.toFixed(1)}
+                        {formatGrade(sub.score)}
                       </span>
                     </div>
                   </div>

@@ -1,0 +1,14 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "overused-font",
+        "value": "helvetica",
+        "createdAt": "2026-11-03T15:38:26.883Z",
+        "reason": "agent triage: server/email/order-notice.ts is an HTML email; mail clients only render system font stacks, and this line predates the scanner change"
+      }
+    ]
+  }
+}
