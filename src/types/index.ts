@@ -1,5 +1,3 @@
-import type { ScanReportDto } from '../../shared/scan-report';
-
 export interface CardDefect {
   id: string;
   category: 'Centering' | 'Corners' | 'Edges' | 'Surface';
@@ -68,8 +66,6 @@ export interface GradedCard {
   securityHash: string;
   declaredValueEur: number;
   isAuthentic: boolean;
-  /** Medidas y recortes del escáner, cuando existen. */
-  scan?: ScanReportDto | null;
 }
 
 /** Carta certificada tal como la ve el público: sin el valor declarado, que es del dueño. */
