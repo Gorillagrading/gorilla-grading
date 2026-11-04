@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
-import { Images, Play } from 'lucide-react';
+import { Heart, Images, MessageCircle, Play, Send } from 'lucide-react';
 import { fetchInstagramPosts } from '../../api/instagram';
 import type { InstagramPostDto } from '../../../shared/instagram';
 
@@ -235,7 +235,7 @@ export const LiveLabActivitySection: React.FC = () => {
           </div>
         </div>
 
-        {/* Publicaciones de Instagram */}
+        {/* Publicaciones de Instagram: cada una con la forma de una publicación de Instagram, con los colores de Gorilla */}
         {state === 'ready' && (
           <ul className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             {posts.map((post) => (
@@ -244,27 +244,67 @@ export const LiveLabActivitySection: React.FC = () => {
                   href={post.permalink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`group relative block aspect-[4/5] overflow-hidden border ${isLight ? 'border-gray-200 bg-gray-100' : 'border-white/10 bg-[#101410]'}`}
+                  className={`group flex flex-col h-full border transition-colors duration-300 ${
+                    isLight
+                      ? 'bg-white border-gray-200 hover:border-[#15803D]/60 shadow-sm'
+                      : 'bg-[#141714] border-white/10 hover:border-[#48C765]/60'
+                  }`}
                   aria-label={`${es ? 'Ver en Instagram' : 'View on Instagram'}: ${post.caption?.slice(0, 80) ?? formatDate(post.postedAt)}`}
                 >
-                  <img
-                    src={post.imageUrl}
-                    alt={post.caption?.slice(0, 120) ?? ''}
-                    loading="lazy"
-                    decoding="async"
-                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
-                  />
-                  {post.type !== 'image' && (
-                    <span className="absolute top-2.5 right-2.5 w-7 h-7 rounded-full bg-black/60 text-white flex items-center justify-center" aria-hidden="true">
-                      {post.type === 'video' ? <Play className="w-3.5 h-3.5 fill-current" /> : <Images className="w-3.5 h-3.5" />}
+                  {/* Cabecera: avatar y nombre de la cuenta */}
+                  <div className="flex items-center gap-2.5 px-3 py-2.5">
+                    <span
+                      className="w-8 h-8 shrink-0 rounded-full flex items-center justify-center"
+                      style={{ background: '#0B0E0B', boxShadow: `0 0 0 2px ${isLight ? '#15803D' : '#48C765'}` }}
+                    >
+                      <img src="/brand/logo-green.png" alt="" aria-hidden="true" className="w-4 h-auto" />
                     </span>
-                  )}
-                  <div className="absolute inset-x-0 bottom-0 p-3 pt-10 bg-gradient-to-t from-black/85 via-black/45 to-transparent text-white translate-y-1 group-hover:translate-y-0 transition-transform duration-300">
-                    {post.caption && <p className="font-sans text-[11.5px] leading-snug line-clamp-2">{post.caption}</p>}
-                    <p className="mt-1 font-mono text-[9px] uppercase tracking-wider opacity-75">
-                      {post.isReel ? 'Reel · ' : ''}
+                    <span className="min-w-0 flex-1">
+                      <span className={`block truncate text-[12px] font-bold leading-tight ${isLight ? 'text-gray-950' : 'text-white'}`}>
+                        gorillagradinginternational
+                      </span>
+                      <span className={`block text-[10px] leading-tight ${isLight ? 'text-gray-500' : 'text-[#8C9185]'}`}>
+                        {post.isReel ? 'Reel' : post.type === 'carousel' ? (es ? 'Álbum' : 'Album') : (es ? 'Publicación' : 'Post')}
+                      </span>
+                    </span>
+                    <InstagramGlyph className={`w-4 h-4 shrink-0 ${isLight ? 'text-gray-400' : 'text-white/35'}`} />
+                  </div>
+
+                  {/* Imagen */}
+                  <div className={`relative aspect-[4/5] overflow-hidden ${isLight ? 'bg-gray-100' : 'bg-[#0B0E0B]'}`}>
+                    <img
+                      src={post.imageUrl}
+                      alt={post.caption?.slice(0, 120) ?? ''}
+                      loading="lazy"
+                      decoding="async"
+                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                    />
+                    {post.type !== 'image' && (
+                      <span className="absolute top-2.5 right-2.5 w-7 h-7 rounded-full bg-black/60 text-white flex items-center justify-center" aria-hidden="true">
+                        {post.type === 'video' ? <Play className="w-3.5 h-3.5 fill-current" /> : <Images className="w-3.5 h-3.5" />}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Pie: iconos de Instagram, texto y fecha */}
+                  <div className="flex flex-col flex-1 px-3 pt-2.5 pb-3">
+                    <div className={`flex items-center gap-3 ${isLight ? 'text-gray-900' : 'text-white'}`} aria-hidden="true">
+                      <Heart className="w-[18px] h-[18px] transition-colors group-hover:text-[#16A34A]" strokeWidth={1.8} />
+                      <MessageCircle className="w-[18px] h-[18px]" strokeWidth={1.8} />
+                      <Send className="w-[18px] h-[18px]" strokeWidth={1.8} />
+                    </div>
+                    {post.caption && (
+                      <p className={`mt-2 text-[12px] leading-snug line-clamp-3 ${isLight ? 'text-gray-800' : 'text-[#D7DCD4]'}`}>
+                        <span className="font-bold hidden sm:inline">gorillagradinginternational </span>{post.caption}
+                      </p>
+                    )}
+                    <p className={`mt-auto pt-2 text-[10px] uppercase tracking-wide ${isLight ? 'text-gray-500' : 'text-[#8C9185]'}`}>
                       {formatDate(post.postedAt)}
                     </p>
+                    <span className={`mt-1.5 inline-flex items-center gap-1 font-mono text-[10px] font-bold uppercase tracking-wider ${isLight ? 'text-[#15803D]' : 'text-[#4ADE80]'}`}>
+                      {es ? 'Ver en Instagram' : 'View on Instagram'}
+                      <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>
+                    </span>
                   </div>
                 </a>
               </li>
