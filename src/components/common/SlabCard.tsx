@@ -72,22 +72,17 @@ export const SlabCard: React.FC<SlabCardProps> = ({
   if (variant === 'card-only') {
     return (
       <div className={`relative flex flex-col items-center select-none slab-perspective ${scaleClasses[size]}`}>
-        {/* Standalone 3D Raw Card Container */}
+        {/* La carta tal cual, plana: sin giro ni brillos, para que los números de los daños caigan en su sitio. */}
         <div
           ref={cardRef}
-          onMouseMove={handleMouseMove}
-          onMouseLeave={handleMouseLeave}
           onClick={onInspect}
-          style={{
-            transform: `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`,
-          }}
-          className="relative w-full aspect-[2.5/3.5] rounded-[18px] overflow-hidden cursor-pointer transition-transform duration-150 group shadow-[0_18px_40px_rgba(0,0,0,0.55)] hover:shadow-[0_24px_50px_rgba(34,197,94,0.3)] border border-white/20 hover:border-[#22C55E]/80 bg-[#1A1A1A]"
+          className="relative w-full aspect-[2.5/3.5] rounded-[18px] overflow-hidden cursor-pointer group shadow-[0_12px_28px_rgba(0,0,0,0.25)] border border-black/10 hover:border-[#22C55E]/80 bg-[#1A1A1A] transition-colors"
         >
           {/* Card Artwork Image */}
           <img
             src={isFlipped ? card.backImage : card.frontImage}
             alt={card.name}
-            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
+            className="w-full h-full object-cover"
             loading="lazy"
           />
 
@@ -117,14 +112,7 @@ export const SlabCard: React.FC<SlabCardProps> = ({
               </button>
             ))}
 
-          {/* Dynamic Holographic Specular Glare across card face */}
-          <div
-            className="absolute inset-0 pointer-events-none opacity-20 group-hover:opacity-75 transition-opacity duration-300 hologram-iridescent"
-            style={{
-              backgroundPosition: `${glarePosition.x}% ${glarePosition.y}%`,
-              maskImage: 'radial-gradient(circle at center, black 65%, transparent 100%)'
-            }}
-          />
+          
 
           {/* Luxury Card Edge Specular Highlight */}
           <div className="absolute inset-0 pointer-events-none rounded-[18px] ring-1 ring-inset ring-white/25" />
@@ -182,7 +170,7 @@ export const SlabCard: React.FC<SlabCardProps> = ({
                   className="px-3 py-1.5 rounded bg-[#16A34A] hover:bg-[#22C55E] text-white text-[11px] font-bold flex items-center gap-1.5 transition-colors shadow-md"
                 >
                   <Eye className="w-3.5 h-3.5" />
-                  <span>{language === 'es' ? 'Ver Dossier (Slab 3D)' : 'View Dossier (3D Slab)'}</span>
+                  <span>{language === 'es' ? 'Ver dossier' : 'View dossier'}</span>
                 </button>
               )}
             </div>
@@ -197,8 +185,8 @@ export const SlabCard: React.FC<SlabCardProps> = ({
             <Sparkles className="w-3.5 h-3.5 text-[#15803D] dark:text-[#22C55E]" />
             <span>
               {language === 'es' 
-                ? 'Carta 3D Interactiva · Clic para ver en Dossier con Slab' 
-                : 'Interactive 3D Card · Click to inspect Dossier with Slab'}
+                ? 'Pulsa la carta para ver el dossier completo' 
+                : 'Click the card to see the full dossier'}
             </span>
           </div>
         )}

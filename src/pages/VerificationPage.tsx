@@ -205,7 +205,7 @@ export const VerificationPage: React.FC<VerificationPageProps> = ({ onNavigate }
               onClick={() => onNavigate(`/certificates/${activeCard.certNumber}`)}
               className="btn-gorilla-square mx-auto mt-2 px-6 py-2.5 text-xs font-extrabold tracking-normal gap-2 shadow-md cursor-pointer"
             >
-              <span>{language === 'es' ? 'Ver Dossier con Slab 3D' : 'View Dossier with 3D Slab'}</span>
+              <span>{language === 'es' ? 'Ver dossier completo' : 'View full dossier'}</span>
               <span>→</span>
             </button>
 
