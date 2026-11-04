@@ -72,6 +72,8 @@ export async function listAdminOrders(db: Db, query: AdminOrdersQuery): Promise<
       shippingMethod: o.shippingMethod,
       customerEmail: customer.email,
       customerName: customer.fullName,
+      startedAt: o.autoAnchorAt?.toISOString() ?? null,
+      dueDate: o.estimatedCompletionAt ?? null,
     })),
     counts: Object.fromEntries(statusCounts.map((c) => [c.status, c.n])),
     total,

@@ -4,7 +4,7 @@ import type { UserDto } from '../../../shared/auth';
 import type { OrderStatus } from '../../../shared/domain';
 import { SECTION_STATUS, type StaffToday, type TodaySection, type TodaySectionKey, type TodayTask } from '../../../shared/staff-today';
 import { adminErrorMessage, fetchStaffToday } from '../../api/admin';
-import { STAGE_COLOR, statusName, waiting } from './ui';
+import { PlazoRuler, STAGE_COLOR, daysLeft, statusName, waiting } from './ui';
 
 /** Qué hay que hacer en cada tipo de tarea, dicho como una acción. */
 const KIND: Record<TodaySectionKey, { title: string; hint: string }> = {
@@ -22,66 +22,10 @@ const KIND: Record<TodaySectionKey, { title: string; hint: string }> = {
 };
 const stageName = statusName;
 
+const timeLabel = (d: Date) => d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Madrid' });
+
 /** Lo urgente va primero, siempre. */
 const URGENT: TodaySectionKey[] = ['late', 'returnedByQa'];
-
-const DAY = 86_400_000;
-const timeLabel = (d: Date) => d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Madrid' });
-const dayStart = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
-const parseDay = (iso: string) => {
-  const [y, m, d] = iso.split('-').map(Number);
-  return new Date(y, m - 1, d).getTime();
-};
-
-/** Días que quedan hasta la fecha prevista (negativo: días de retraso), o null si no hay fecha. */
-function daysLeft(task: TodayTask, now = new Date()): number | null {
-  return task.dueDate ? Math.round((parseDay(task.dueDate) - dayStart(now)) / DAY) : null;
-}
-
-/**
- * Regla de plazo: el plazo del servicio como una escala con una marca por día, la fecha prevista en rojo
- * y una cruz de registro en hoy. Si el pedido va tarde, la escala se alarga y el tramo de retraso va en rojo.
- */
-const PlazoRuler: React.FC<{ task: TodayTask }> = ({ task }) => {
-  const left = daysLeft(task);
-  if (task.status === 'ON_HOLD') return <span className="text-[12px] font-semibold text-[#8A6A12]">Plazo detenido</span>;
-  if (!task.startedAt || !task.dueDate || left === null) {
-    return <span className="text-[12px] text-[#5A5F5B]">{task.status === 'SUBMITTED' ? 'Plazo sin empezar' : `Esperando ${waiting(task.since)}`}</span>;
-  }
-  const start = dayStart(new Date(task.startedAt));
-  const due = parseDay(task.dueDate);
-  const now = dayStart(new Date());
-  const end = Math.max(due, now);
-  const span = Math.max(end - start, DAY);
-  const pos = (t: number) => `${Math.min(100, Math.max(0, ((t - start) / span) * 100))}%`;
-  const days = Math.round(span / DAY);
-  const step = days > 30 ? Math.ceil(days / 30) : 1;
-  const late = left < 0;
-  const tight = !late && left <= 1;
-  const color = late ? '#B42B22' : tight ? '#C98A12' : '#2F8F3E';
-  const label = late ? `${-left} ${-left === 1 ? 'día' : 'días'} de retraso` : left === 0 ? 'Vence hoy' : `Quedan ${left} ${left === 1 ? 'día' : 'días'}`;
-
-  return (
-    <span className="flex flex-col gap-1 w-full" title={`Fecha prevista: ${new Date(due).toLocaleDateString('es-ES')}`}>
-      <span className="text-[12px] font-semibold" style={{ color }}>{label}</span>
-      <span className="relative block h-3.5" aria-hidden="true">
-        {/* Escala: una marca por día */}
-        <span
-          className="absolute inset-x-0 bottom-0 h-1.5"
-          style={{ backgroundImage: `repeating-linear-gradient(90deg, #A9AEA9 0 1px, transparent 1px ${100 / (days / step)}%)` }}
-        />
-        <span className="absolute inset-x-0 top-[3px] h-[3px] bg-[#E2E4DF]" />
-        <span className="absolute left-0 top-[3px] h-[3px]" style={{ width: pos(Math.min(now, due)), background: '#2F8F3E' }} />
-        {late && <span className="absolute top-[3px] h-[3px] bg-[#B42B22]" style={{ left: pos(due), width: `calc(${pos(now)} - ${pos(due)})` }} />}
-        {/* Fecha prevista */}
-        <span className="absolute top-0 bottom-0 w-[2px] -ml-px bg-[#B42B22]" style={{ left: pos(due) }} />
-        {/* Hoy: cruz de registro */}
-        <span className="absolute top-[-2px] w-[1px] h-[18px] bg-[#121413]" style={{ left: pos(now) }} />
-        <span className="absolute top-[4px] w-[9px] h-[1px] -ml-[4px] bg-[#121413]" style={{ left: pos(now) }} />
-      </span>
-    </span>
-  );
-};
 
 /**
  * Pantalla de inicio del laboratorio: el estado de todas las fases, la cola de trabajo de quien entra (cada tarea con

@@ -62,6 +62,9 @@ export interface AdminOrderRow {
   shippingMethod: ShippingMethod | null;
   customerEmail: string;
   customerName: string | null;
+  /** Inicio del plazo del servicio (recepción del paquete) y fecha prevista de finalización (AAAA-MM-DD). */
+  startedAt: string | null;
+  dueDate: string | null;
 }
 
 export interface AdminOrderList {
