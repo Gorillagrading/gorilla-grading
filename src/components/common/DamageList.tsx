@@ -12,13 +12,21 @@ export const DamageList: React.FC<{
   scan: PublicScanReport;
   highlighted: number | null;
   onHover: (n: number | null) => void;
-}> = ({ scan, highlighted, onHover }) => {
+  /** Solo estas zonas y esta cara (pestañas del mapa de defectos). Sin indicar, todas. */
+  areas?: readonly ('edges' | 'surface' | 'corners')[];
+  side?: ScanSide;
+  /** En dos columnas y a todo el ancho, al lado de la carta. */
+  wide?: boolean;
+}> = ({ scan, highlighted, onHover, areas = ['edges', 'surface', 'corners'], side, wide = false }) => {
   const { language } = useLanguage();
   const { theme } = useTheme();
   const isLight = theme === 'light';
   const lang = language === 'es' ? 'es' : 'en';
   const es = lang === 'es';
-  const faces = scan.faces.filter((f) => f.damages.length > 0);
+  const faces = scan.faces
+    .filter((f) => !side || f.side === side)
+    .map((f) => ({ ...f, damages: f.damages.filter((d) => areas.includes(d.area)) }))
+    .filter((f) => f.damages.length > 0);
   if (faces.length === 0) return null;
 
   const muted = isLight ? 'text-gray-500' : 'text-gray-400';
@@ -26,13 +34,13 @@ export const DamageList: React.FC<{
   const sideName = (s: ScanSide) => (s === 'front' ? (es ? 'Anverso' : 'Front') : (es ? 'Reverso' : 'Back'));
 
   return (
-    <div className="w-full max-w-[340px] mx-auto text-left">
+    <div className={`w-full text-left ${wide ? '' : 'max-w-[340px] mx-auto'}`}>
       <span className={`block font-mono text-[9px] tracking-[0.2em] uppercase font-bold mb-3 ${muted}`}>
         {es ? `Daños encontrados por el escáner (${faces.reduce((n, f) => n + f.damages.length, 0)})` : `Damage found by the scanner (${faces.reduce((n, f) => n + f.damages.length, 0)})`}
       </span>
       {faces.map((face) => (
-        <div key={face.side} className="space-y-3">
-          {faces.length > 1 && <p className={`font-mono text-[10px] uppercase tracking-[0.14em] font-bold ${strong}`}>{sideName(face.side)}</p>}
+        <div key={face.side} className={wide ? 'grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 items-start' : 'space-y-3'}>
+          {faces.length > 1 && <p className={`${wide ? 'sm:col-span-2 ' : ''}font-mono text-[10px] uppercase tracking-[0.14em] font-bold ${strong}`}>{sideName(face.side)}</p>}
           {(['edges', 'surface', 'corners'] as const)
             .map((area) => ({ area, items: face.damages.filter((d) => d.area === area) }))
             .filter((g) => g.items.length > 0)
@@ -47,15 +55,15 @@ export const DamageList: React.FC<{
                         key={d.n}
                         onMouseEnter={() => onHover(d.n)}
                         onMouseLeave={() => onHover(null)}
-                        className={`flex items-start gap-2.5 px-2 py-1 -mx-2 rounded origin-left transition-all duration-150 ${
-                          active ? `scale-[1.06] ${isLight ? 'bg-red-50' : 'bg-red-500/10'}` : ''
+                        className={`flex items-start gap-2.5 px-2 py-1 -mx-2 rounded transition-colors duration-150 ${
+                          active ? (isLight ? 'bg-red-50' : 'bg-red-500/10') : ''
                         }`}
                       >
-                        <span className={`shrink-0 mt-0.5 inline-flex items-center justify-center w-5 h-5 rounded-full bg-red-600 text-white font-mono text-[10px] font-bold transition-transform ${active ? 'scale-125' : ''}`}>
+                        <span className={`shrink-0 mt-0.5 inline-flex items-center justify-center w-5 h-5 rounded-full bg-red-600 text-white font-mono text-[10px] font-bold transition-transform ${active ? 'scale-[1.35]' : ''}`}>
                           {d.n}
                         </span>
                         <span className="min-w-0">
-                          <span className={`block text-sm ${strong} ${active ? 'font-bold' : ''}`}>
+                          <span className={`block ${strong} transition-all duration-150 ${active ? 'text-base font-bold' : 'text-sm'}`}>
                             {translate(d.kind, KIND_EN, lang)}
                             {d.size && `, ${SIZE_LABEL[d.size][lang]}`}
                           </span>

@@ -4,6 +4,7 @@ import { PublicGradedCard, CardDefect } from '../../types';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
 import { formatGrade } from '../../utils/cardDisplay';
+import { DamageList } from './DamageList';
 
 interface DefectInspectorProps {
   card: PublicGradedCard;
@@ -37,6 +38,15 @@ const AREA_ES: Record<TabType, string> = {
   Surface: 'la superficie',
 };
 
+/** Zonas del informe del escáner que muestra cada pestaña (el centrado no tiene daños). */
+const TAB_AREAS: Record<TabType, readonly ('edges' | 'surface' | 'corners')[]> = {
+  Global: ['edges', 'surface', 'corners'],
+  Centering: [],
+  Corners: ['corners'],
+  Edges: ['edges'],
+  Surface: ['surface'],
+};
+
 /** Los datos antiguos no indican la cara: se toma el anverso. */
 const sideOf = (d: CardDefect): Side => d.side ?? 'front';
 
@@ -49,6 +59,8 @@ export const DefectInspector: React.FC<DefectInspectorProps> = ({ card, large = 
   const [activeTab, setActiveTab] = useState<TabType>('Global');
   const [side, setSide] = useState<Side>('front');
   const [selectedDefect, setSelectedDefect] = useState<CardDefect | null>(null);
+  /** Daño del escáner señalado con el ratón (su número): se amplía en la carta y en la lista de al lado. */
+  const [hovered, setHovered] = useState<number | null>(null);
 
   const hasBack = !!card.backImage;
   const image = side === 'back' && hasBack ? card.backImage : card.frontImage;
@@ -61,9 +73,11 @@ export const DefectInspector: React.FC<DefectInspectorProps> = ({ card, large = 
     { id: 'Surface', score: card.subgrades.surface.score },
   ];
 
+  const highlighted = hovered ?? selectedDefect?.n ?? null;
   const inTab = (d: CardDefect) => activeTab === 'Global' || d.category === activeTab;
   // Las cruces se pintan solo sobre la cara que se está viendo: sus coordenadas son de esa foto.
   const visibleDefects = card.defects.filter((d) => inTab(d) && sideOf(d) === side);
+  const scanList = !!card.scan && visibleDefects.some((d) => d.n !== undefined);
   const otherSideCount = card.defects.filter((d) => inTab(d) && sideOf(d) !== side).length;
 
   const muted = isLight ? 'text-gray-600' : 'text-gray-400';
@@ -181,20 +195,22 @@ export const DefectInspector: React.FC<DefectInspectorProps> = ({ card, large = 
               <div className="relative">
                 <img src={image} alt={card.name} className="block w-full h-auto select-none" draggable={false} />
                 {visibleDefects.map((defect) => {
-                  const isSelected = selectedDefect?.id === defect.id;
+                  const isSelected = defect.n !== undefined ? highlighted === defect.n : selectedDefect?.id === defect.id;
                   return (
                     <button
                       key={defect.id}
                       type="button"
-                      onClick={() => setSelectedDefect(defect)}
+                      onClick={() => setSelectedDefect(selectedDefect?.id === defect.id && defect.n !== undefined ? null : defect)}
+                      onMouseEnter={() => defect.n !== undefined && setHovered(defect.n)}
+                      onMouseLeave={() => setHovered(null)}
                       aria-label={defect.n !== undefined ? `${defect.n}. ${defect.title}` : defect.title}
-                      className="absolute -translate-x-1/2 -translate-y-1/2 z-20 cursor-pointer"
+                      className={`absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer ${isSelected ? 'z-30' : 'z-20'}`}
                       style={{ left: `${defect.x}%`, top: `${defect.y}%` }}
                     >
                       {defect.n !== undefined ? (
                         // Daño del informe del escáner: el mismo número que en su lista.
                         <span className={`flex items-center justify-center w-5 h-5 rounded-full font-mono text-[10px] font-bold text-white shadow ring-2 transition-transform ${
-                          isSelected ? 'scale-125 bg-red-600 ring-white' : 'bg-red-600/90 ring-white/70'
+                          isSelected ? 'scale-150 bg-red-600 ring-white' : 'bg-red-600/90 ring-white/70 hover:scale-125'
                         }`}>
                           {defect.n}
                         </span>
@@ -223,7 +239,17 @@ export const DefectInspector: React.FC<DefectInspectorProps> = ({ card, large = 
         <div className="flex flex-col min-w-0">
           {subgradeDetail()}
 
-          {selectedDefect ? (
+          {scanList ? (
+            // Informe del escáner: la lista numerada al lado de la carta; el número señalado se amplía en las dos.
+            <DamageList
+              scan={card.scan!}
+              highlighted={highlighted}
+              onHover={setHovered}
+              areas={TAB_AREAS[activeTab]}
+              side={side}
+              wide
+            />
+          ) : selectedDefect ? (
             <div className="flex flex-col gap-4">
               <div className={`pb-3 border-b flex items-center justify-between gap-3 ${rule}`}>
                 <span className="font-mono text-[10px] tracking-[0.2em] uppercase font-bold text-red-600 dark:text-red-400">

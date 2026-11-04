@@ -121,7 +121,6 @@ export const ScanReportPanel: React.FC<{ scan: PublicScanReport }> = ({ scan }) 
         <>
           <Centering face={face} widthMm={scan.widthMm ?? 63} heightMm={scan.heightMm ?? 88} lang={lang} isLight={isLight} kicker={kicker} />
           <Corners face={face} images={scan.images.corners[face.side] ?? {}} lang={lang} isLight={isLight} kicker={kicker} />
-          <Damages face={face} lang={lang} isLight={isLight} kicker={kicker} />
         </>
       )}
 
@@ -286,63 +285,6 @@ const Corners: React.FC<BlockProps & { face: ScanFace; images: Partial<Record<Co
           ? 'Radio: el del arco que mejor encaja con el contorno. Mordisco: lo más hondo que se mete el contorno. Medida: la forma frente a una esquina perfecta. Estado: 10 sin daños. Cada esquina es la media de su medida y su estado.'
           : 'Radius: the arc that best fits the outline. Bite: the deepest point where the outline cuts in. Shape: compared with a perfect corner. Condition: 10 with no damage. Each corner is the average of its shape and its condition.'}
       </p>
-    </div>
-  );
-};
-
-// ---------------------------------------------------------------------------
-// Daños
-// ---------------------------------------------------------------------------
-
-const Damages: React.FC<BlockProps & { face: ScanFace }> = ({ face, lang, isLight, kicker }) => {
-  const es = lang === 'es';
-  const muted = isLight ? 'text-gray-600' : 'text-gray-400';
-  const strong = isLight ? 'text-gray-950' : 'text-white';
-  const groups = (['edges', 'surface', 'corners'] as const)
-    .map((area) => ({ area, items: face.damages.filter((d) => d.area === area) }))
-    .filter((g) => g.items.length > 0);
-
-  return (
-    <div>
-      <BlockTitle title={es ? `Daños (${face.damages.length})` : `Damage (${face.damages.length})`} kicker={kicker} isLight={isLight} lang={lang} />
-      {groups.length === 0 ? (
-        <p className={`text-sm ${muted}`}>{es ? 'El escáner no encontró daños en esta cara.' : 'The scanner found no damage on this side.'}</p>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5">
-          {groups.map(({ area, items }) => (
-            <div key={area}>
-              <h4 className={`font-mono text-[10px] uppercase tracking-[0.16em] font-bold mb-2 ${strong}`}>{AREA_LABEL[area][lang]}</h4>
-              <ol className="space-y-2">
-                {items.map((d) => (
-                  <li key={d.n} className="flex items-start gap-2.5">
-                    <span className="shrink-0 mt-0.5 inline-flex items-center justify-center w-5 h-5 rounded-full bg-red-600 text-white font-mono text-[10px] font-bold">
-                      {d.n}
-                    </span>
-                    <span className="min-w-0">
-                      <span className={`block text-sm ${strong}`}>
-                        {translate(d.kind, KIND_EN, lang)}
-                        {d.size && <span className={muted}>, {SIZE_LABEL[d.size][lang]}</span>}
-                      </span>
-                      {(d.location || d.lengthMm !== null) && (
-                        <span className={`block text-xs ${muted}`}>
-                          {[d.location ? translate(d.location, LOCATION_EN, lang) : null, d.lengthMm !== null ? `${mm(d.lengthMm, lang, 1)} mm` : null].filter(Boolean).join(' · ')}
-                        </span>
-                      )}
-                    </span>
-                  </li>
-                ))}
-              </ol>
-            </div>
-          ))}
-        </div>
-      )}
-      {groups.length > 0 && (
-        <p className={`mt-4 text-xs leading-relaxed ${muted}`}>
-          {es
-            ? 'Cada número es el mismo que en el mapa de defectos de arriba. En esquinas solo se listan los daños que bajan su estado; en bordes y superficie, los que cuentan en su nota.'
-            : 'Each number matches the defect map above. Corners list only the damage that lowers their condition; edges and surface, what counts towards their grade.'}
-        </p>
-      )}
     </div>
   );
 };

@@ -88,13 +88,14 @@ export const VerificationPage: React.FC<VerificationPageProps> = ({ onNavigate }
   return (
     <div className={`w-full min-h-screen ${
       isLight ? 'bg-[#FAF9F6] text-gray-950' : 'bg-[#0E120E] text-white'
-    } flex flex-col pt-24 sm:pt-32 pb-20 sm:pb-32 px-4 sm:px-6 lg:px-12 font-sans selection:bg-[#48C765] selection:text-[#14170F]`}>
+    } flex flex-col ${activeCard ? 'pt-24' : 'pt-24 sm:pt-32'} pb-20 sm:pb-32 px-4 sm:px-6 lg:px-12 font-sans selection:bg-[#48C765] selection:text-[#14170F]`}>
       
       {/* Central Forensic Search Console */}
-      <div className={`w-full max-w-[1000px] mx-auto text-center flex flex-col items-center mb-12 sm:mb-16 ${
-        activeCard ? 'border-b pb-10 sm:pb-14 ' + (isLight ? 'border-gray-200' : 'border-white/10') : ''
-      }`}>
-        
+      {/* Con un certificado en pantalla solo queda el buscador, pequeño y en una esquina: el protagonista es el resultado. */}
+      <div className={activeCard
+        ? 'w-full max-w-[1300px] mx-auto flex justify-end mb-6 sm:mb-8'
+        : 'w-full max-w-[1000px] mx-auto text-center flex flex-col items-center mb-12 sm:mb-16'}>
+        {!activeCard && (<>
         {/* Gorilla Verify Sub-Brand Badge */}
         <div className="mb-5 sm:mb-6">
           <VerifyLogo size="w-full max-w-[280px] sm:max-w-[340px] lg:max-w-[380px] h-[78px] sm:h-[94px] lg:h-[110px]" />
@@ -125,14 +126,15 @@ export const VerificationPage: React.FC<VerificationPageProps> = ({ onNavigate }
             ? 'Consulte instantáneamente los datos de auditoría óptica a 1200 DPI, historial de sub-grados y certificado oficial firmado digitalmente en el registro público de Gorilla.'
             : 'Instantly query 1200 DPI master optical audit scans, subgrade records, and official digitally signed certificates in the Gorilla public registry.'}
         </p>
+        </>)}
 
         {/* Futuristic Search Form */}
-        <form onSubmit={handleSearch} className="relative w-full max-w-2xl mx-auto mb-5 sm:mb-6">
+        <form onSubmit={handleSearch} className={activeCard ? 'relative w-full sm:w-[380px]' : 'relative w-full max-w-2xl mx-auto mb-5 sm:mb-6'}>
           <div className={`relative flex items-center rounded-2xl border transition-all duration-300 ${
             isLight 
               ? 'bg-white/80 border-gray-200 focus-within:border-[#16A34A] focus-within:ring-4 focus-within:ring-[#16A34A]/10 shadow-[0_8px_30px_rgba(0,0,0,0.04)]' 
               : 'bg-[#141814]/80 border-white/10 focus-within:border-[#4ADE80] focus-within:ring-4 focus-within:ring-[#4ADE80]/15 shadow-[0_8px_30px_rgba(0,0,0,0.5)]'
-          } backdrop-blur-md px-4 py-2 sm:py-2.5`}>
+          } backdrop-blur-md ${activeCard ? 'px-3 py-1' : 'px-4 py-2 sm:py-2.5'}`}>
             
             <Search className={`w-5 h-5 shrink-0 mr-3 transition-colors ${
               isLight ? 'text-gray-400' : 'text-gray-500'
@@ -143,7 +145,7 @@ export const VerificationPage: React.FC<VerificationPageProps> = ({ onNavigate }
               placeholder={language === 'es' ? 'INGRESE ID DE CERTIFICADO (EJ. 48271936)' : 'ENTER CERTIFICATE ID (E.G. 48271936)'}
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              className={`w-full bg-transparent py-2 text-sm sm:text-base font-mono uppercase tracking-widest focus:outline-none placeholder:font-mono placeholder:text-xs sm:placeholder:text-sm ${
+              className={`w-full bg-transparent py-2 ${activeCard ? 'text-sm' : 'text-sm sm:text-base'} font-mono uppercase tracking-widest focus:outline-none placeholder:font-mono placeholder:text-xs sm:placeholder:text-sm ${
                 isLight ? 'text-gray-950 placeholder:text-gray-400' : 'text-white placeholder:text-gray-500'
               }`}
             />
