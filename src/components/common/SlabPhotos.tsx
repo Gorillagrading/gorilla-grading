@@ -1,19 +1,20 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
 
-type Side = 'front' | 'back';
-
-/** Fotos de la carta ya graduada y encapsulada en su slab, tal como la sube el laboratorio. */
+/** Fotos de la carta ya graduada y encapsulada en su slab, por delante y por detrás, tal como las sube el laboratorio. */
 export const SlabPhotos: React.FC<{ images: { front: string; back: string }; name: string }> = ({ images, name }) => {
   const { language } = useLanguage();
   const { theme } = useTheme();
   const isLight = theme === 'light';
   const es = language === 'es';
-  const sides = (['front', 'back'] as const).filter((s) => images[s]);
-  const [side, setSide] = useState<Side>(sides[0] ?? 'front');
   const rule = isLight ? 'border-gray-200' : 'border-white/10';
   const muted = isLight ? 'text-gray-600' : 'text-gray-400';
+
+  const sides = [
+    { key: 'front', label: es ? 'Anverso' : 'Front', url: images.front },
+    { key: 'back', label: es ? 'Reverso' : 'Back', url: images.back },
+  ] as const;
 
   return (
     <div className={`w-full flex flex-col border-t pt-5 ${rule}`}>
@@ -26,34 +27,24 @@ export const SlabPhotos: React.FC<{ images: { front: string; back: string }; nam
         </h3>
       </div>
 
-      {sides.length > 1 && (
-        <div className={`inline-flex self-start border mb-3 ${rule}`} role="group" aria-label={es ? 'Cara del slab' : 'Slab side'}>
-          {sides.map((s) => (
-            <button
-              key={s}
-              type="button"
-              aria-pressed={side === s}
-              onClick={() => setSide(s)}
-              className={`px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.14em] cursor-pointer ${
-                side === s ? (isLight ? 'bg-gray-900 text-white' : 'bg-white text-gray-950') : muted
-              }`}
-            >
-              {s === 'front' ? (es ? 'Anverso' : 'Front') : (es ? 'Reverso' : 'Back')}
-            </button>
-          ))}
-        </div>
-      )}
-
-      <a href={images[side]} target="_blank" rel="noreferrer" className="block self-start">
-        <img
-          src={images[side]}
-          alt={`${name} — ${es ? 'slab' : 'slab'} (${side === 'front' ? (es ? 'anverso' : 'front') : (es ? 'reverso' : 'back')})`}
-          className={`block w-full max-w-[360px] h-auto border ${rule}`}
-          loading="lazy"
-        />
-      </a>
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 max-w-[420px]">
+        {sides.map((side) => (
+          <figure key={side.key} className="min-w-0">
+            {side.url ? (
+              <a href={side.url} target="_blank" rel="noreferrer" className="block" title={es ? 'Ver a tamaño completo' : 'View full size'}>
+                <img src={side.url} alt={`${name} — slab, ${side.label.toLowerCase()}`} className={`block w-full h-auto border ${rule}`} loading="lazy" />
+              </a>
+            ) : (
+              <div className={`w-full aspect-[3/5] flex items-center justify-center p-3 text-center border border-dashed text-[11px] ${rule} ${muted}`}>
+                {es ? 'Sin foto todavía' : 'No photo yet'}
+              </div>
+            )}
+            <figcaption className={`mt-1.5 font-mono text-[10px] uppercase tracking-[0.14em] ${muted}`}>{side.label}</figcaption>
+          </figure>
+        ))}
+      </div>
       <p className={`mt-2 text-xs ${muted}`}>
-        {es ? 'Foto del laboratorio. Pulsa para verla a tamaño completo.' : 'Lab photo. Click to view it full size.'}
+        {es ? 'Fotos del laboratorio. Pulsa una para verla a tamaño completo.' : 'Lab photos. Click one to view it full size.'}
       </p>
     </div>
   );

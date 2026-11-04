@@ -35,9 +35,59 @@ function createClient(url: string, options: { max?: number } = {}) {
  */
 const MAX_IDLE_MS = 10_000;
 
-let shared: { client: ReturnType<typeof postgres>; db: Database; lastUsed: number } | undefined;
+/**
+ * Una consulta que tarda más que esto se da por colgada en una conexión muerta: con una sola conexión, todas las
+ * peticiones que llegan detrás esperarían para siempre en su cola. Se tira la conexión (la consulta colgada falla)
+ * y la siguiente petición abre otra. Las transacciones tienen más margen.
+ */
+const QUERY_STALL_MS = 10_000;
+const TRANSACTION_STALL_MS = 30_000;
 
-/** Conexión compartida del proceso, creada al primer uso y renovada si lleva un rato sin usarse. */
+type Client = ReturnType<typeof postgres>;
+let shared: { client: Client; db: Database; lastUsed: number } | undefined;
+
+function discard(client: Client) {
+  if (shared?.client !== client) return;
+  shared = undefined;
+  // Sin espera: lo que siga en esta conexión falla ya en vez de quedarse colgado.
+  void client.end({ timeout: 0 }).catch(() => {});
+}
+
+/** Si la consulta (o transacción) no termina a tiempo, se tira la conexión. */
+function guard<T>(work: PromiseLike<T>, client: Client, ms: number): PromiseLike<T> {
+  const timer = setTimeout(() => {
+    console.error(`[db] una consulta lleva más de ${ms / 1000} s: se descarta la conexión`);
+    discard(client);
+  }, ms);
+  Promise.resolve(work).then(
+    () => clearTimeout(timer),
+    () => clearTimeout(timer),
+  );
+  return work;
+}
+
+/** El cliente de postgres con el vigilante puesto en cada consulta y en cada transacción. */
+function watched(client: Client): Client {
+  return new Proxy(client, {
+    get(target, prop, receiver) {
+      const value = Reflect.get(target, prop, receiver);
+      if (prop === 'unsafe') {
+        return (...args: Parameters<Client['unsafe']>) => {
+          const query = target.unsafe(...args);
+          // En un microtask: drizzle ya ha elegido el modo (`.values()`) y ya la está esperando.
+          queueMicrotask(() => guard(query, client, QUERY_STALL_MS));
+          return query;
+        };
+      }
+      if (prop === 'begin') {
+        return (...args: unknown[]) => guard((target.begin as (...a: unknown[]) => PromiseLike<unknown>)(...args), client, TRANSACTION_STALL_MS);
+      }
+      return typeof value === 'function' ? value.bind(target) : value;
+    },
+  });
+}
+
+/** Conexión compartida del proceso, creada al primer uso y renovada si lleva un rato sin usarse o se cuelga. */
 export function getDb(): Database {
   const now = Date.now();
   if (shared && now - shared.lastUsed > MAX_IDLE_MS) {
@@ -49,7 +99,7 @@ export function getDb(): Database {
     const url = process.env.DATABASE_URL;
     if (!url) throw new Error('DATABASE_URL no está definida');
     const client = createClient(url);
-    shared = { client, db: drizzle(client, { schema }), lastUsed: now };
+    shared = { client, db: drizzle(watched(client), { schema }), lastUsed: now };
   }
   shared.lastUsed = now;
   return shared.db;
