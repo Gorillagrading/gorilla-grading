@@ -284,9 +284,9 @@ export const AdminPage: React.FC<AdminPageProps> = ({ path, search: query = '', 
                     aria-current={it.on ? 'page' : undefined}
                     className={`flex items-center gap-2.5 rounded-[6px] text-left cursor-pointer transition-colors ${
                       it.sub ? 'h-[30px] ml-[17px] w-[calc(100%-17px)] pl-[17px] pr-2.5 text-[13px] relative before:absolute before:left-0 before:top-0 before:bottom-0 before:w-px before:bg-[#E1E1DC]' : 'w-full h-[34px] px-2.5 text-[13.5px]'
-                    } ${it.on ? 'bg-[#F1F1EE] text-[#0F1110] font-semibold' : 'text-[#3B3F3C] hover:bg-[#F6F6F3] hover:text-[#0F1110]'}`}
+                    } ${it.on ? 'bg-[#EAF4EC] text-[#0F1110] font-semibold' : 'text-[#3B3F3C] hover:bg-[#F6F6F3] hover:text-[#0F1110]'}`}
                   >
-                    {it === n && Icon && <Icon className={`w-4 h-4 shrink-0 ${it.on ? 'text-[#0F1110]' : 'text-[#8A8E8B]'}`} strokeWidth={1.75} aria-hidden="true" />}
+                    {it === n && Icon && <Icon className={`w-4 h-4 shrink-0 ${it.on ? 'text-[#2F8F3E]' : 'text-[#8A8E8B]'}`} strokeWidth={1.75} aria-hidden="true" />}
                     <span className="flex-1 truncate">{it.label}</span>
                     {it.count !== undefined && (it.count > 0 || it.sub) && (
                       <span className={`font-mono text-[11.5px] ${it.on ? 'text-[#0F1110]' : it.count ? 'text-[#8A8E8B]' : 'text-[#C9CBC7]'}`}>{it.count}</span>
@@ -310,7 +310,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ path, search: query = '', 
                           n.on || section === 'queue' ? 'text-[#0F1110] font-semibold' : 'text-[#3B3F3C] hover:bg-[#F6F6F3] hover:text-[#0F1110]'
                         } ${n.on ? 'bg-[#F1F1EE]' : ''}`}
                       >
-                        {Icon && <Icon className={`w-4 h-4 shrink-0 ${n.on || section === 'queue' ? 'text-[#0F1110]' : 'text-[#8A8E8B]'}`} strokeWidth={1.75} aria-hidden="true" />}
+                        {Icon && <Icon className={`w-4 h-4 shrink-0 ${n.on || section === 'queue' ? 'text-[#2F8F3E]' : 'text-[#8A8E8B]'}`} strokeWidth={1.75} aria-hidden="true" />}
                         <span className="flex-1">{n.label}</span>
                         {!open && n.count !== undefined && n.count > 0 && <span className="font-mono text-[11.5px] text-[#8A8E8B]">{n.count}</span>}
                       </button>
@@ -340,7 +340,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ path, search: query = '', 
 
       <div className="mx-3 mb-3 pt-3 border-t border-[#E7E7E2]">
         <div className="flex items-center gap-2.5 px-1.5">
-          <span className="w-7 h-7 shrink-0 inline-flex items-center justify-center rounded-full bg-[#0F1110] text-white text-[11px] font-semibold" aria-hidden="true">
+          <span className="w-7 h-7 shrink-0 inline-flex items-center justify-center rounded-full bg-[#2F8F3E] text-white text-[11px] font-semibold" aria-hidden="true">
             {initials}
           </span>
           <div className="min-w-0 flex-1 leading-tight">

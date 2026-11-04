@@ -10,6 +10,22 @@ import { STATUS_LABEL } from '../../utils/orderStatus';
 export const INK = '#0F1110';
 export const LATE = '#C2362B';
 export const WARN = '#A86A12';
+/** Verde de Gorilla: acción principal, avance y lo que está bien. */
+export const GO = '#2F8F3E';
+
+/**
+ * Colores de las series de datos, siempre en este orden (validados para daltonismo sobre fondo blanco): el verde
+ * de Gorilla y después azul, naranja, violeta, amarillo y rosa. El color sigue a la serie, nunca a su posición.
+ */
+export const SERIES = {
+  green: '#2F8F3E',
+  blue: '#2A78D6',
+  orange: '#EB6834',
+  violet: '#6250D6',
+  yellow: '#EDA100',
+  pink: '#E87BA4',
+} as const;
+export const SERIES_ORDER = [SERIES.green, SERIES.blue, SERIES.orange, SERIES.violet, SERIES.yellow, SERIES.pink];
 
 export function usePanelTheme() {
   return {
@@ -19,13 +35,13 @@ export function usePanelTheme() {
     text: 'text-[#0F1110]',
     rule: 'border-[#E7E7E2]',
     input: 'bg-white border-[#E1E1DC] text-[#0F1110] placeholder:text-[#8A8E8B] focus:border-[#0F1110] focus:ring-2 focus:ring-[#0F1110]/10',
-    primary: 'bg-[#0F1110] hover:bg-[#2A2E2B] text-white',
+    primary: 'bg-[#2F8F3E] hover:bg-[#25762F] text-white',
     secondary: 'bg-white border-[#E1E1DC] text-[#0F1110] hover:border-[#0F1110]',
     ghostHover: 'hover:bg-[#F1F1EE]',
     positive: 'text-[#25762F]',
     negative: 'text-[#C2362B]',
     // Colores de las gráficas (SVG). La superficie es el fondo de `card`.
-    chart: { mark: '#0F1110', grid: 'rgba(15,17,16,0.07)', wash: 'rgba(15,17,16,0.035)', trend: '#C9CBC7', surface: '#FFFFFF' },
+    chart: { mark: '#2F8F3E', grid: 'rgba(15,17,16,0.07)', wash: 'rgba(15,17,16,0.035)', trend: '#C9CBC7', surface: '#FFFFFF' },
   };
 }
 

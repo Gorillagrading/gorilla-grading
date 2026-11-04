@@ -52,7 +52,9 @@ export const ColumnChart: React.FC<{
   formatTick?: (n: number) => string;
   title: string;
   height?: number;
-}> = ({ data, format, formatTick = format, title, height = 200 }) => {
+  /** Color de la serie (por defecto, el verde de Gorilla). */
+  color?: string;
+}> = ({ data, format, formatTick = format, title, height = 200, color }) => {
   const t = usePanelTheme();
   const [ref, width] = useWidth<HTMLDivElement>();
   const [active, setActive] = useState<number | null>(null);
@@ -102,7 +104,7 @@ export const ColumnChart: React.FC<{
                   {/* Zona sensible: toda la columna, no solo la barra pintada. */}
                   <rect x={left + i * slot} y={top} width={slot} height={plotH} fill="transparent" />
                   {active === i && <rect x={left + i * slot} y={top} width={slot} height={plotH} fill={t.chart.wash} />}
-                  {h > 0 && <path d={columnPath(x, top + plotH - h, barW, h)} fill={t.chart.mark} opacity={active == null || active === i ? 1 : 0.55} />}
+                  {h > 0 && <path d={columnPath(x, top + plotH - h, barW, h)} fill={color ?? t.chart.mark} opacity={active == null || active === i ? 1 : 0.55} />}
                   {showLabel(i) && (
                     <text x={left + i * slot + slot / 2} y={height - 6} textAnchor="middle" className={`fill-current text-[10px] ${t.muted}`}>
                       {d.label}
@@ -155,7 +157,7 @@ export const DataTable: React.FC<{ open: boolean; onToggle: () => void; rows: [s
 };
 
 /** Línea pequeña de tendencia: gris, con el último tramo marcado en verde. */
-export const Sparkline: React.FC<{ values: number[]; width?: number; height?: number }> = ({ values, width = 96, height = 28 }) => {
+export const Sparkline: React.FC<{ values: number[]; width?: number; height?: number; color?: string }> = ({ values, width = 96, height = 28, color }) => {
   const t = usePanelTheme();
   if (values.length < 2) return null;
   const max = Math.max(...values, 1);
@@ -165,17 +167,19 @@ export const Sparkline: React.FC<{ values: number[]; width?: number; height?: nu
   const last = values.length - 1;
   return (
     <svg width={width} height={height} aria-hidden="true" className="block overflow-visible">
-      <path d={d} fill="none" stroke={t.chart.trend} strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
-      <circle cx={x(last)} cy={y(values[last])} r={4} strokeWidth={2} fill={t.chart.mark} stroke={t.chart.surface} />
+      <path d={d} fill="none" stroke={color ?? t.chart.trend} strokeOpacity={color ? 0.45 : 1} strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
+      <circle cx={x(last)} cy={y(values[last])} r={4} strokeWidth={2} fill={color ?? t.chart.mark} stroke={t.chart.surface} />
     </svg>
   );
 };
 
 /** Lista de barras horizontales con el valor al final de cada barra. */
 export const BarList: React.FC<{
-  rows: { key: string; label: React.ReactNode; value: number; display?: string }[];
+  rows: { key: string; label: React.ReactNode; value: number; display?: string; color?: string }[];
   empty: string;
-}> = ({ rows, empty }) => {
+  /** Color de todas las barras, si las filas no traen el suyo. */
+  color?: string;
+}> = ({ rows, empty, color }) => {
   const t = usePanelTheme();
   const max = Math.max(...rows.map((r) => r.value), 1);
   if (!rows.length) return <p className={`text-sm ${t.muted}`}>{empty}</p>;
@@ -187,7 +191,7 @@ export const BarList: React.FC<{
           <span className="flex items-center gap-2 min-w-0">
             <span
               className="h-2.5 shrink-0 rounded-r"
-              style={{ width: `calc((100% - 4.5rem) * ${r.value / max})`, minWidth: r.value > 0 ? 3 : 0, background: t.chart.mark }}
+              style={{ width: `calc((100% - 4.5rem) * ${r.value / max})`, minWidth: r.value > 0 ? 3 : 0, background: r.color ?? color ?? t.chart.mark }}
             />
             <span className={`tabular-nums font-bold ${t.text}`}>{r.display ?? r.value.toLocaleString('es-ES')}</span>
           </span>

@@ -6,7 +6,7 @@ import { adminErrorMessage, fetchCertificateHistory, fetchDashboard, fetchNewsle
 import type { NewsletterStatsDto } from '../../../shared/newsletter';
 import { STATUS_LABEL } from '../../utils/orderStatus';
 import { BarList, ColumnChart, Sparkline, type Point } from './charts';
-import { formatDate, formatDateTime, money, usePanelTheme } from './ui';
+import { formatDate, formatDateTime, money, statusName, usePanelTheme, SERIES } from './ui';
 
 const RANGES: { key: DashboardRange; label: string; during: string; previous: string }[] = [
   { key: '30d', label: '30 días', during: 'En los últimos 30 días', previous: 'los 30 días anteriores' },
@@ -22,6 +22,18 @@ const STATUS_ORDER: OrderStatus[] = [
 ];
 
 const STORAGE_KEY = 'gg.dashboard.range';
+
+/** Color de cada estado en «Pedidos por estado»: el laboratorio en verde, calidad en violeta, fuera en azul; avisos aparte. */
+const STATUS_SERIES: Partial<Record<OrderStatus, string>> = {
+  SUBMITTED: SERIES.blue,
+  PAYMENT_PENDING: SERIES.yellow,
+  QUALITY_ASSURANCE: SERIES.violet,
+  SHIPPED: SERIES.blue,
+  DELIVERED: '#0F1110',
+  ON_HOLD: SERIES.orange,
+  CANCELLED: '#9A9E9B',
+  RETURNED: '#9A9E9B',
+};
 
 const whole = (n: number) => n.toLocaleString('es-ES');
 const euros = (cents: number) => (cents / 100).toLocaleString('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
@@ -154,30 +166,30 @@ export const BusinessDashboard: React.FC<{ onOpenOrder: (code: string) => void }
               </dl>
             </div>
             <div className="mt-5">
-              <ColumnChart title="Ingresos cobrados por periodo" data={series(data, 'revenueCents')} format={money} formatTick={compactEuros} height={220} />
+              <ColumnChart title="Ingresos cobrados por periodo" data={series(data, 'revenueCents')} format={money} formatTick={compactEuros} height={220} color={SERIES.green} />
             </div>
           </section>
 
           {/* Cifras clave del periodo. */}
           <section className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-            <Tile label="Clientes nuevos" hint="Personas que crearon su cuenta" metric={data.metrics.newCustomers} previous={current.previous} trend={data.buckets.map((b) => b.newCustomers)} />
-            <Tile label="Pedidos recibidos" hint="Pedidos que enviaron los clientes" metric={data.metrics.orders} previous={current.previous} trend={data.buckets.map((b) => b.orders)} />
-            <Tile label="Cartas calificadas" hint="Con nota aprobada por control de calidad" metric={data.metrics.cardsGraded} previous={current.previous} trend={data.buckets.map((b) => b.cardsGraded)} />
-            <Tile label="Certificados emitidos" hint="Uno por carta auténtica enviada de vuelta" metric={data.metrics.certificates} previous={current.previous} />
-            <Tile label="Verificaciones" hint="Veces que alguien comprobó un certificado (web o QR)" metric={data.metrics.verifications} previous={current.previous} />
+            <Tile color={SERIES.blue} label="Clientes nuevos" hint="Personas que crearon su cuenta" metric={data.metrics.newCustomers} previous={current.previous} trend={data.buckets.map((b) => b.newCustomers)} />
+            <Tile color={SERIES.orange} label="Pedidos recibidos" hint="Pedidos que enviaron los clientes" metric={data.metrics.orders} previous={current.previous} trend={data.buckets.map((b) => b.orders)} />
+            <Tile color={SERIES.violet} label="Cartas calificadas" hint="Con nota aprobada por control de calidad" metric={data.metrics.cardsGraded} previous={current.previous} trend={data.buckets.map((b) => b.cardsGraded)} />
+            <Tile color={SERIES.green} label="Certificados emitidos" hint="Uno por carta auténtica enviada de vuelta" metric={data.metrics.certificates} previous={current.previous} />
+            <Tile color={SERIES.yellow} label="Verificaciones" hint="Veces que alguien comprobó un certificado (web o QR)" metric={data.metrics.verifications} previous={current.previous} />
           </section>
 
           <section className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <div className={card}>
               <h2 className={heading}>Clientes nuevos</h2>
               <div className="mt-4">
-                <ColumnChart title="Clientes nuevos por periodo" data={series(data, 'newCustomers')} format={whole} />
+                <ColumnChart title="Clientes nuevos por periodo" data={series(data, 'newCustomers')} format={whole} color={SERIES.blue} />
               </div>
             </div>
             <div className={card}>
               <h2 className={heading}>Cartas calificadas</h2>
               <div className="mt-4">
-                <ColumnChart title="Cartas calificadas por periodo" data={series(data, 'cardsGraded')} format={whole} />
+                <ColumnChart title="Cartas calificadas por periodo" data={series(data, 'cardsGraded')} format={whole} color={SERIES.violet} />
               </div>
             </div>
           </section>
@@ -189,7 +201,8 @@ export const BusinessDashboard: React.FC<{ onOpenOrder: (code: string) => void }
                 <BarList
                   empty="Todavía no hay pedidos."
                   rows={STATUS_ORDER.filter((s) => data.ordersByStatus[s]).map((s) => ({
-                    key: s, label: STATUS_LABEL[s].es, value: data.ordersByStatus[s]!,
+                    key: s, label: statusName(s), value: data.ordersByStatus[s]!,
+                    color: STATUS_SERIES[s] ?? SERIES.green,
                   }))}
                 />
               </div>
@@ -198,6 +211,7 @@ export const BusinessDashboard: React.FC<{ onOpenOrder: (code: string) => void }
               <h2 className={heading}>Notas · {current.label.toLowerCase()}</h2>
               <div className="mt-4 space-y-3">
                 <BarList
+                  color={SERIES.violet}
                   empty="Ninguna carta calificada en este periodo."
                   rows={data.grades.map((g) => ({
                     key: String(g.grade),
@@ -223,6 +237,7 @@ export const BusinessDashboard: React.FC<{ onOpenOrder: (code: string) => void }
                     value: s.cards,
                     display: `${whole(s.cards)} ${s.cards === 1 ? 'carta' : 'cartas'}`,
                   }))}
+                  color={SERIES.orange}
                 />
               </div>
             </div>
@@ -318,19 +333,23 @@ const Delta: React.FC<{ metric: DashboardMetric; previous: string }> = ({ metric
   );
 };
 
-const Tile: React.FC<{ label: string; hint?: string; metric: DashboardMetric; previous: string; trend?: number[] }> = ({
-  label, hint, metric, previous, trend,
+const Tile: React.FC<{ label: string; hint?: string; metric: DashboardMetric; previous: string; trend?: number[]; color: string }> = ({
+  label, hint, metric, previous, trend, color,
 }) => {
   const t = usePanelTheme();
   return (
-    <div className={`border rounded-[8px] p-4 flex flex-col justify-between gap-2 ${t.card}`}>
+    <div className={`relative overflow-hidden border rounded-[8px] p-4 flex flex-col justify-between gap-2 ${t.card}`}>
+      <span className="absolute inset-x-0 top-0 h-[3px]" style={{ background: color }} aria-hidden="true" />
       <div>
-        <div className={`text-xs font-bold ${t.muted}`}>{label}</div>
+        <div className={`flex items-center gap-1.5 text-xs font-bold ${t.text}`}>
+          <span className="w-2 h-2 rounded-full shrink-0" style={{ background: color }} aria-hidden="true" />
+          {label}
+        </div>
         {hint && <div className={`text-[11px] ${t.muted}`}>{hint}</div>}
       </div>
       <div className="flex items-end justify-between gap-2">
         <div className={`text-3xl font-bold ${t.text}`}>{whole(metric.current)}</div>
-        {trend && <Sparkline values={trend} />}
+        {trend && <Sparkline values={trend} color={color} />}
       </div>
       <Delta metric={metric} previous={previous} />
     </div>
@@ -519,7 +538,7 @@ const NewsletterCard: React.FC = () => {
 
   return (
     <section className={`border rounded-[8px] p-5 flex flex-wrap items-center gap-5 ${t.card}`} aria-label="Newsletter">
-      <span className="w-10 h-10 rounded-[8px] bg-[#0F1110] text-white flex items-center justify-center shrink-0">
+      <span className="w-10 h-10 rounded-[8px] bg-[#2F8F3E] text-white flex items-center justify-center shrink-0">
         <Mail className="w-5 h-5" aria-hidden="true" />
       </span>
       <div className="flex-1 min-w-[200px]">

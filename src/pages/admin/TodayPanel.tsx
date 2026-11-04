@@ -4,7 +4,7 @@ import type { UserDto } from '../../../shared/auth';
 import type { OrderStatus } from '../../../shared/domain';
 import { SECTION_STATUS, type StaffToday, type TodaySection, type TodaySectionKey, type TodayTask } from '../../../shared/staff-today';
 import { adminErrorMessage, fetchStaffToday } from '../../api/admin';
-import { INK, LATE, LINE_STAGES, PlazoRuler, STATION_NAME, daysLeft, groupCode, waiting } from './ui';
+import { GO, LATE, LINE_STAGES, PlazoRuler, STATION_NAME, daysLeft, groupCode, waiting } from './ui';
 
 /** Cada tipo de tarea: su nombre, el nombre corto del filtro y el botón con lo que hay que hacer. */
 const KIND: Record<TodaySectionKey, { title: string; short: string; action: string; primary?: boolean }> = {
@@ -135,12 +135,12 @@ export const TodayPanel: React.FC<{
                       <span className={`text-[22px] leading-[28px] font-semibold tracking-[-0.02em] ${s.count === 0 ? 'text-[#C9CBC7]' : ''}`}>{s.count}</span>
                       <span className="flex items-end gap-[3px] h-[22px] mt-[3px]" aria-hidden="true">
                         {Array.from({ length: ticks }, (_, i) => (
-                          <i key={i} className="block w-[3px] rounded-[1px]" style={{ height: i < lateTicks ? 18 : 14, background: i < lateTicks ? LATE : INK }} />
+                          <i key={i} className="block w-[3px] rounded-[1px]" style={{ height: i < lateTicks ? 18 : 14, background: i < lateTicks ? LATE : GO }} />
                         ))}
                         {s.count > MAX_TICKS && <span className="font-mono text-[10px] text-[#666A67] ml-0.5">+{s.count - MAX_TICKS}</span>}
                       </span>
                       <span
-                        className={`absolute top-[57px] w-[9px] h-[9px] rounded-full border-[1.5px] border-[#0F1110] transition-transform group-hover:scale-125 ${s.count ? 'bg-[#0F1110]' : 'bg-white'}`}
+                        className={`absolute top-[57px] w-[9px] h-[9px] rounded-full border-[1.5px] border-[#0F1110] transition-transform group-hover:scale-125 ${s.count ? 'bg-[#2F8F3E] border-[#2F8F3E]' : 'bg-white'}`}
                         aria-hidden="true"
                       />
                       <span className="absolute top-[74px] text-[12px] text-[#666A67] whitespace-nowrap group-hover:text-[#0F1110]">
@@ -281,7 +281,7 @@ const TaskRow: React.FC<{ task: TodayTask; action: string; primary: boolean; onO
       </span>
       <span
         className={`row-span-2 md:row-span-1 justify-self-end inline-flex items-center h-7 px-3 rounded-[6px] text-[12.5px] font-semibold whitespace-nowrap transition-colors ${
-          primary ? 'bg-[#0F1110] text-white group-hover:bg-[#2A2E2B]' : 'border border-[#E1E1DC] group-hover:border-[#0F1110]'
+          primary ? 'bg-[#2F8F3E] text-white group-hover:bg-[#25762F]' : 'border border-[#E1E1DC] group-hover:border-[#0F1110]'
         }`}
       >
         {action}
