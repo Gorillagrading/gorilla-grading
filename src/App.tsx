@@ -46,6 +46,8 @@ export const AppContent: React.FC = () => {
   const [currentPath, setCurrentPath] = useState<string>(() => {
     return window.location.pathname || '/';
   });
+  // La parte de la dirección tras «?» (filtros del panel, por ejemplo). Si solo cambia esto, la página también se actualiza.
+  const [currentSearch, setCurrentSearch] = useState<string>(() => window.location.search);
 
   const handleNavigate = (path: string) => {
     const [pathAndQuery, hash] = path.split('#');
@@ -54,6 +56,7 @@ export const AppContent: React.FC = () => {
     forgetPendingScroll();
     rememberScroll();
     setCurrentPath(pathname);
+    setCurrentSearch(pathAndQuery.includes('?') ? `?${pathAndQuery.split('?')[1]}` : '');
     window.history.pushState({}, '', path);
 
     if (hash) {
@@ -80,6 +83,7 @@ export const AppContent: React.FC = () => {
     const handlePopState = () => {
       forgetPendingScroll();
       setCurrentPath(window.location.pathname || '/');
+      setCurrentSearch(window.location.search);
       const y = storedScroll();
       if (y !== undefined) {
         restoreScroll(y);
@@ -187,10 +191,10 @@ export const AppContent: React.FC = () => {
       case '/admin/orders':
       case '/admin/events':
       case '/admin/team':
-        return <AdminPage path={currentPath} onNavigate={handleNavigate} />;
+        return <AdminPage path={currentPath} search={currentSearch} onNavigate={handleNavigate} />;
       default:
         if (currentPath.startsWith('/admin/orders/')) {
-          return <AdminPage path={currentPath} onNavigate={handleNavigate} />;
+          return <AdminPage path={currentPath} search={currentSearch} onNavigate={handleNavigate} />;
         }
         if (currentPath.startsWith('/certificates/')) {
           const certId = currentPath.replace('/certificates/', '');
@@ -202,7 +206,7 @@ export const AppContent: React.FC = () => {
 
   // El panel del laboratorio es una herramienta propia: ocupa toda la pantalla, sin el menú ni el pie de la web.
   if (currentPath === '/admin' || currentPath.startsWith('/admin/')) {
-    return <AdminPage path={currentPath} onNavigate={handleNavigate} />;
+    return <AdminPage path={currentPath} search={currentSearch} onNavigate={handleNavigate} />;
   }
 
   return (

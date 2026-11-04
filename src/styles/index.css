@@ -1564,6 +1564,9 @@ html.light-theme .about-page .title-3d-green,
 html .min-h-screen {
   min-height: calc(100vh / var(--page-zoom));
 }
+html .h-screen {
+  height: calc(100vh / var(--page-zoom));
+}
 
 /* Mapa de rutas globales (sección de la empresa): las rutas se dibujan al entrar en pantalla */
 .route-arc,

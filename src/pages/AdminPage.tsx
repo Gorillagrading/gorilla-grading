@@ -33,6 +33,8 @@ let lastListPath = '/admin';
 interface AdminPageProps {
   /** Ruta actual: /admin (hoy), /admin/orders (lista), /admin/dashboard (negocio) o /admin/orders/284719365 (detalle). */
   path: string;
+  /** Lo que va tras «?» en la dirección (los filtros de Pedidos). */
+  search?: string;
   onNavigate: (path: string) => void;
 }
 
@@ -119,7 +121,7 @@ const TITLE: Record<Section, string> = {
  * Panel del laboratorio: una herramienta propia a pantalla completa, con carril lateral y barra de búsqueda.
  * Solo para cuentas con un rol del personal; el servidor lo vuelve a comprobar en cada llamada.
  */
-export const AdminPage: React.FC<AdminPageProps> = ({ path, onNavigate }) => {
+export const AdminPage: React.FC<AdminPageProps> = ({ path, search: query = '', onNavigate }) => {
   const { status, user, logout } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const [search, setSearch] = useState('');
@@ -213,8 +215,8 @@ export const AdminPage: React.FC<AdminPageProps> = ({ path, onNavigate }) => {
           ? 'team'
           : path === QUEUE_PATH ? 'queue' : 'today';
   const openOrder = (c: string) => onNavigate(`${detailPrefix}${encodeURIComponent(c)}`);
-  if (section !== 'detail') lastListPath = path + window.location.search;
-  const params = new URLSearchParams(window.location.search);
+  if (section !== 'detail') lastListPath = path + query;
+  const params = new URLSearchParams(query);
   const initialStatus = section === 'queue' ? params.get('status') ?? 'active' : 'active';
   const go = (to: string) => {
     setMenuOpen(false);
