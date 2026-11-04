@@ -97,7 +97,7 @@ const today = async (email: string) => {
 
 describe('pantalla "Hoy" del laboratorio', () => {
   it('cada rol ve sus propias secciones', async () => {
-    expect(Object.keys(await today('staff@lab.test'))).toEqual(['toReceive', 'toIdentify', 'photosMissing', 'toDeliver', 'onHold']);
+    expect(Object.keys(await today('staff@lab.test'))).toEqual(['toReceive', 'toIdentify', 'toDeliver', 'onHold', 'photosMissing']);
     expect(Object.keys(await today('grader@lab.test'))).toEqual(['returnedByQa', 'toIdentify', 'toGrade', 'myDrafts', 'photosMissing']);
     expect(Object.keys(await today('qa@lab.test'))).toEqual(['toReview', 'readyToShip']);
     expect(Object.keys(await today('admin@lab.test'))).toHaveLength(11);

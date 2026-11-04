@@ -77,7 +77,7 @@ export const GradingPanel: React.FC<{
   };
 
   return (
-    <details className={`border rounded-lg ${t.rule}`}>
+    <details className={`border rounded-[3px] ${t.rule}`}>
       <summary className="flex flex-wrap items-center gap-x-3 gap-y-1 px-4 py-3 cursor-pointer select-none">
         <span className={`font-mono text-xs ${t.muted}`}>{String(item.position).padStart(2, '0')}</span>
         <span className={`font-bold text-sm ${t.text}`}>{cardTitle(item.cardName, item.position)}</span>
@@ -145,7 +145,7 @@ export const GradingPanel: React.FC<{
             <button
               type="button"
               onClick={() => setEditing(true)}
-              className={`px-4 py-2.5 border rounded-lg text-xs font-bold cursor-pointer ${t.secondary}`}
+              className={`px-4 py-2.5 border rounded-[3px] text-xs font-bold cursor-pointer ${t.secondary}`}
             >
               {grading ? (grading.status === 'approved' ? 'Corregir a mano (nueva versión)' : 'Editar a mano') : 'Introducir a mano'}
             </button>
@@ -198,7 +198,7 @@ const Identification: React.FC<{
     year: item.year ? String(item.year) : '',
     language: item.language ?? '',
   });
-  const field = `w-full px-3 py-2.5 text-sm border rounded-lg focus:outline-none ${t.input}`;
+  const field = `w-full px-3 py-2.5 text-sm border rounded-[3px] focus:outline-none ${t.input}`;
   const label = `block font-mono text-[10px] uppercase tracking-wider mb-1 ${t.muted}`;
   const set = (key: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) => setForm({ ...form, [key]: e.target.value });
   const year = Number(form.year);
@@ -215,7 +215,7 @@ const Identification: React.FC<{
           </div>
         </div>
         {canEdit && (
-          <button type="button" onClick={() => setEditing(true)} className={`px-3 py-2 border rounded-lg text-xs font-bold cursor-pointer ${t.secondary}`}>
+          <button type="button" onClick={() => setEditing(true)} className={`px-3 py-2 border rounded-[3px] text-xs font-bold cursor-pointer ${t.secondary}`}>
             Corregir datos
           </button>
         )}
@@ -229,7 +229,7 @@ const Identification: React.FC<{
 
   return (
     <form
-      className={`border rounded-lg p-4 space-y-3 ${t.rule}`}
+      className={`border rounded-[3px] p-4 space-y-3 ${t.rule}`}
       onSubmit={async (e) => {
         e.preventDefault();
         if (!valid) return;
@@ -277,7 +277,7 @@ const Identification: React.FC<{
         </label>
       </div>
       <div className="flex flex-wrap gap-2">
-        <button type="submit" disabled={busy || !valid} className={`px-4 py-2.5 rounded-lg text-xs font-extrabold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${t.primary}`}>
+        <button type="submit" disabled={busy || !valid} className={`px-4 py-2.5 rounded-[3px] text-xs font-semibold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${t.primary}`}>
           Guardar carta
         </button>
         {identified && (
@@ -339,7 +339,7 @@ const Photos: React.FC<{
       )}
       {canPhoto ? (
         <div className="flex flex-wrap items-center gap-2">
-          <select aria-label="Tipo de foto" value={kind} onChange={(e) => setKind(e.target.value as typeof kind)} className={`px-3 py-2 text-xs border rounded-lg ${t.input}`}>
+          <select aria-label="Tipo de foto" value={kind} onChange={(e) => setKind(e.target.value as typeof kind)} className={`px-3 py-2 text-xs border rounded-[3px] ${t.input}`}>
             <option value="front">Anverso</option>
             <option value="back">Reverso</option>
             <option value="extra">Extra (detalle)</option>
@@ -359,7 +359,7 @@ const Photos: React.FC<{
             type="button"
             disabled={busy}
             onClick={() => input.current?.click()}
-            className={`inline-flex items-center gap-2 px-4 py-2 border rounded-lg text-xs font-bold cursor-pointer disabled:opacity-50 ${t.secondary}`}
+            className={`inline-flex items-center gap-2 px-4 py-2 border rounded-[3px] text-xs font-bold cursor-pointer disabled:opacity-50 ${t.secondary}`}
           >
             <Camera className="w-4 h-4" /> {busy ? 'Subiendo…' : 'Subir foto'}
           </button>
@@ -395,7 +395,7 @@ const ResultView: React.FC<{ grading: AdminGradingResult }> = ({ grading }) => {
         <p className={`text-sm font-bold ${t.negative}`}>No se ha podido autenticar la carta.</p>
       ) : (
         <>
-          <p className={`text-lg font-[900] ${t.text}`}>
+          <p className={`text-lg font-bold ${t.text}`}>
             {grading.finalGrade !== null && fmt(grading.finalGrade)}
             {grading.certificateNumber && <span className={`ml-3 font-mono text-xs font-bold ${t.muted}`}>Certificado {grading.certificateNumber}</span>}
           </p>
@@ -435,7 +435,7 @@ const ScannerImport: React.FC<{ busy: boolean; replaces: boolean; onFile: (file:
   const [tooBig, setTooBig] = useState(false);
 
   return (
-    <div className={`border rounded-lg p-3 space-y-2 ${t.rule}`}>
+    <div className={`border rounded-[3px] p-3 space-y-2 ${t.rule}`}>
       <p className={`text-xs ${t.muted}`}>
         Sube el informe en PDF del escáner. Se leen las notas, las medidas, las esquinas, los daños y el número de certificado,
         y el resultado pasa a control de calidad.{replaces && ' Sustituye al resultado actual.'}
@@ -457,7 +457,7 @@ const ScannerImport: React.FC<{ busy: boolean; replaces: boolean; onFile: (file:
         type="button"
         disabled={busy}
         onClick={() => input.current?.click()}
-        className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-extrabold cursor-pointer disabled:opacity-50 ${t.primary}`}
+        className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-[3px] text-xs font-semibold cursor-pointer disabled:opacity-50 ${t.primary}`}
       >
         <FileUp className="w-4 h-4" /> {busy ? 'Leyendo el informe…' : 'Importar informe del escáner (PDF)'}
       </button>
@@ -472,7 +472,7 @@ const ScanSummary: React.FC<{ scan: NonNullable<AdminGradingResult['scan']> }> =
   const corner = { topLeft: 'Sup. izq.', topRight: 'Sup. dcha.', bottomLeft: 'Inf. izq.', bottomRight: 'Inf. dcha.' } as const;
   const sub = scan.subgrades;
   return (
-    <div className={`border rounded-lg p-3 space-y-3 text-xs ${t.rule} ${t.text}`}>
+    <div className={`border rounded-[3px] p-3 space-y-3 text-xs ${t.rule} ${t.text}`}>
       <p className={t.muted}>
         Informe del escáner · criterios {scan.criteria} · notas emitidas el {scan.gradedAt} · {scan.ppi ?? '—'} ppp ·{' '}
         {scan.sides === 'front' ? 'solo anverso' : 'anverso y reverso'}
@@ -488,7 +488,7 @@ const ScanSummary: React.FC<{ scan: NonNullable<AdminGradingResult['scan']> }> =
         ] as const).map(([label, score, note]) => (
           <div key={label}>
             <dt className={`font-mono text-[10px] uppercase tracking-wider ${t.muted}`}>{label}</dt>
-            <dd className="text-base font-[900]">{score}</dd>
+            <dd className="text-base font-bold">{score}</dd>
             {note && <dd className={`text-[11px] ${t.muted}`}>{note}</dd>}
           </div>
         ))}
@@ -524,14 +524,14 @@ const ReviewActions: React.FC<{ busy: boolean; onApprove: () => void; onReject: 
   const [reason, setReason] = useState('');
 
   return (
-    <div className={`border rounded-lg p-3 space-y-3 ${t.rule}`}>
+    <div className={`border rounded-[3px] p-3 space-y-3 ${t.rule}`}>
       <p className={`text-xs font-bold ${t.text}`}>Control de calidad</p>
       {!rejecting ? (
         <div className="flex flex-wrap gap-2">
-          <button type="button" disabled={busy} onClick={onApprove} className={`px-4 py-2.5 rounded-lg text-xs font-extrabold cursor-pointer disabled:opacity-50 ${t.primary}`}>
+          <button type="button" disabled={busy} onClick={onApprove} className={`px-4 py-2.5 rounded-[3px] text-xs font-semibold cursor-pointer disabled:opacity-50 ${t.primary}`}>
             Aprobar resultado
           </button>
-          <button type="button" disabled={busy} onClick={() => setRejecting(true)} className={`px-4 py-2.5 border rounded-lg text-xs font-bold cursor-pointer ${t.secondary}`}>
+          <button type="button" disabled={busy} onClick={() => setRejecting(true)} className={`px-4 py-2.5 border rounded-[3px] text-xs font-bold cursor-pointer ${t.secondary}`}>
             Devolver para revisar
           </button>
         </div>
@@ -544,13 +544,13 @@ const ReviewActions: React.FC<{ busy: boolean; onApprove: () => void; onReject: 
             maxLength={500}
             rows={2}
             placeholder="Motivo (queda registrado)"
-            className={`w-full px-3 py-2 text-sm border rounded-lg focus:outline-none ${t.input}`}
+            className={`w-full px-3 py-2 text-sm border rounded-[3px] focus:outline-none ${t.input}`}
           />
           <div className="flex gap-2">
-            <button type="button" disabled={busy || !reason.trim()} onClick={() => onReject(reason.trim())} className={`px-4 py-2 rounded-lg text-xs font-extrabold cursor-pointer disabled:opacity-50 ${t.primary}`}>
+            <button type="button" disabled={busy || !reason.trim()} onClick={() => onReject(reason.trim())} className={`px-4 py-2 rounded-[3px] text-xs font-semibold cursor-pointer disabled:opacity-50 ${t.primary}`}>
               Devolver
             </button>
-            <button type="button" onClick={() => setRejecting(false)} className={`px-4 py-2 border rounded-lg text-xs font-bold cursor-pointer ${t.secondary}`}>
+            <button type="button" onClick={() => setRejecting(false)} className={`px-4 py-2 border rounded-[3px] text-xs font-bold cursor-pointer ${t.secondary}`}>
               Cancelar
             </button>
           </div>
@@ -572,7 +572,7 @@ const GradingForm: React.FC<{
   onSave: (body: GradingBody) => Promise<void>;
 }> = ({ initial, busy, images, onCancel, onSave }) => {
   const t = usePanelTheme();
-  const field = `w-full px-3 py-2 text-sm border rounded-lg focus:outline-none ${t.input}`;
+  const field = `w-full px-3 py-2 text-sm border rounded-[3px] focus:outline-none ${t.input}`;
   const label = `block font-mono text-[10px] uppercase tracking-wider mb-1 ${t.muted}`;
 
   const [authentic, setAuthentic] = useState(initial?.isAuthentic ?? true);
@@ -672,7 +672,7 @@ const GradingForm: React.FC<{
             ))}
           </div>
 
-          <div className={`border rounded-lg p-3 ${t.rule}`} aria-live="polite">
+          <div className={`border rounded-[3px] p-3 ${t.rule}`} aria-live="polite">
             {trace && finalScores && final !== null ? (
               <div className="space-y-2">
                 <p className={`text-sm ${t.text}`}>
@@ -707,14 +707,14 @@ const GradingForm: React.FC<{
       </label>
 
       <div className="flex flex-wrap gap-2">
-        <button type="submit" disabled={busy || !ready} className={`px-4 py-2.5 border rounded-lg text-xs font-bold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${t.secondary}`}>
+        <button type="submit" disabled={busy || !ready} className={`px-4 py-2.5 border rounded-[3px] text-xs font-bold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${t.secondary}`}>
           Guardar borrador
         </button>
         <button
           type="button"
           disabled={busy || !ready}
           onClick={() => void onSave(build(true))}
-          className={`px-5 py-2.5 rounded-lg text-xs font-extrabold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${t.primary}`}
+          className={`px-5 py-2.5 rounded-[3px] text-xs font-semibold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${t.primary}`}
         >
           Enviar a control de calidad
         </button>
@@ -732,7 +732,7 @@ const GradingForm: React.FC<{
 
 const Defects: React.FC<{ defects: Defect[]; onChange: (d: Defect[]) => void; images: ImageDto[] }> = ({ defects, onChange, images }) => {
   const t = usePanelTheme();
-  const field = `px-3 py-2 text-sm border rounded-lg focus:outline-none ${t.input}`;
+  const field = `px-3 py-2 text-sm border rounded-[3px] focus:outline-none ${t.input}`;
   const [draft, setDraft] = useState<Defect>({ side: 'front', category: 'corners', severity: 'minor', title: '', description: null, x: 50, y: 50, deduction: 0 });
   const photo = images.find((i) => i.kind === draft.side);
 
@@ -754,7 +754,7 @@ const Defects: React.FC<{ defects: Defect[]; onChange: (d: Defect[]) => void; im
         </ul>
       )}
 
-      <div className={`border rounded-lg p-3 space-y-3 ${t.rule}`}>
+      <div className={`border rounded-[3px] p-3 space-y-3 ${t.rule}`}>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           <select aria-label="Cara" value={draft.side} onChange={(e) => setDraft({ ...draft, side: e.target.value as Defect['side'] })} className={field}>
             <option value="front">Anverso</option>
@@ -801,7 +801,7 @@ const Defects: React.FC<{ defects: Defect[]; onChange: (d: Defect[]) => void; im
             onChange([...defects, { ...draft, title: draft.title.trim() }]);
             setDraft({ ...draft, title: '' });
           }}
-          className={`px-4 py-2 border rounded-lg text-xs font-bold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${t.secondary}`}
+          className={`px-4 py-2 border rounded-[3px] text-xs font-bold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${t.secondary}`}
         >
           Añadir defecto
         </button>

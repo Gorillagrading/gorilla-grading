@@ -130,13 +130,13 @@ export const EventsCalendar: React.FC = () => {
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h2 className={`font-['Nunito',sans-serif] text-lg font-[900] ${t.text}`}>Calendario de eventos</h2>
+          <h2 className={`text-lg font-bold ${t.text}`}>Calendario de eventos</h2>
           <p className={`text-xs ${t.muted}`}>Los eventos publicados que aceptan entregas aparecen al cliente al elegir "entrega en mano" antes de pagar.</p>
         </div>
         <button
           type="button"
           onClick={() => setEditing({ id: null, form: emptyForm(localKey(new Date())) })}
-          className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-extrabold cursor-pointer ${t.primary}`}
+          className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-[3px] text-xs font-semibold cursor-pointer ${t.primary}`}
         >
           <Plus className="w-4 h-4" aria-hidden="true" />
           Nuevo evento
@@ -147,13 +147,13 @@ export const EventsCalendar: React.FC = () => {
       {notice && <p role="status" className={`text-sm ${t.positive}`}>{notice}</p>}
 
       {/* Mes */}
-      <section className={`border rounded-2xl overflow-hidden ${t.card}`} aria-label="Calendario">
+      <section className={`border rounded-[3px] overflow-hidden ${t.card}`} aria-label="Calendario">
         <header className={`flex items-center justify-between px-5 py-3 border-b ${t.rule}`}>
-          <button type="button" onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1))} className={`p-2 rounded-lg cursor-pointer ${t.ghostHover} ${t.text}`} aria-label="Mes anterior">
+          <button type="button" onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1))} className={`p-2 rounded-[3px] cursor-pointer ${t.ghostHover} ${t.text}`} aria-label="Mes anterior">
             <ChevronLeft className="w-4 h-4" />
           </button>
           <div className="flex items-center gap-3">
-            <h3 className={`font-['Nunito',sans-serif] text-base font-[900] capitalize ${t.text}`}>
+            <h3 className={`text-base font-bold capitalize ${t.text}`}>
               {month.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}
             </h3>
             <button
@@ -167,7 +167,7 @@ export const EventsCalendar: React.FC = () => {
               Hoy
             </button>
           </div>
-          <button type="button" onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1))} className={`p-2 rounded-lg cursor-pointer ${t.ghostHover} ${t.text}`} aria-label="Mes siguiente">
+          <button type="button" onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1))} className={`p-2 rounded-[3px] cursor-pointer ${t.ghostHover} ${t.text}`} aria-label="Mes siguiente">
             <ChevronRight className="w-4 h-4" />
           </button>
         </header>
@@ -236,8 +236,8 @@ const EventList: React.FC<{
 }> = ({ title, empty, events, onEdit, onDelete }) => {
   const t = usePanelTheme();
   return (
-    <section className={`border rounded-2xl ${t.card}`} aria-label={title}>
-      <h3 className={`px-5 py-3 border-b font-['Nunito',sans-serif] text-sm font-[900] uppercase ${t.rule} ${t.text}`}>
+    <section className={`border rounded-[3px] ${t.card}`} aria-label={title}>
+      <h3 className={`px-5 py-3 border-b text-sm font-bold uppercase ${t.rule} ${t.text}`}>
         {title} {events && <span className={`font-mono text-xs ${t.muted}`}>{events.length}</span>}
       </h3>
       {events === null && <p className={`px-5 py-6 text-sm ${t.muted}`}>Cargando…</p>}
@@ -247,11 +247,11 @@ const EventList: React.FC<{
           const start = new Date(e.startsAt);
           return (
             <li key={e.id} className={`flex flex-wrap items-center gap-4 px-5 py-4 border-b last:border-b-0 ${t.rule}`}>
-              <span className={`w-14 shrink-0 rounded-lg overflow-hidden text-center border ${t.rule}`}>
+              <span className={`w-14 shrink-0 rounded-[3px] overflow-hidden text-center border ${t.rule}`}>
                 <span className={`block text-[10px] font-bold uppercase py-0.5 text-white ${e.published ? 'bg-[#2D9A46]' : 'bg-[#8A9388]'}`}>
                   {start.toLocaleDateString('es-ES', { timeZone: 'Europe/Madrid', month: 'short' }).replace('.', '')}
                 </span>
-                <span className={`block font-['Nunito',sans-serif] text-xl font-[900] py-1 ${t.text}`}>
+                <span className={`block text-xl font-bold py-1 ${t.text}`}>
                   {start.toLocaleDateString('es-ES', { timeZone: 'Europe/Madrid', day: 'numeric' })}
                 </span>
               </span>
@@ -274,15 +274,15 @@ const EventList: React.FC<{
                 </div>
               </div>
               <div className={`text-xs text-right ${t.muted}`}>
-                <div className={`font-['Nunito',sans-serif] text-lg font-[900] ${t.text}`}>{e.orderCount}</div>
+                <div className={`text-lg font-bold ${t.text}`}>{e.orderCount}</div>
                 {e.orderCount === 1 ? 'pedido' : 'pedidos'}
               </div>
               <div className="flex gap-2">
-                <button type="button" onClick={() => onEdit(e)} className={`inline-flex items-center gap-1.5 px-3 py-2 border rounded-lg text-xs font-bold cursor-pointer ${t.secondary}`}>
+                <button type="button" onClick={() => onEdit(e)} className={`inline-flex items-center gap-1.5 px-3 py-2 border rounded-[3px] text-xs font-bold cursor-pointer ${t.secondary}`}>
                   <Pencil className="w-3.5 h-3.5" aria-hidden="true" /> Editar
                 </button>
                 {e.orderCount === 0 && (
-                  <button type="button" onClick={() => onDelete(e)} aria-label={`Borrar ${e.name}`} className={`p-2 border rounded-lg cursor-pointer ${t.secondary}`}>
+                  <button type="button" onClick={() => onDelete(e)} aria-label={`Borrar ${e.name}`} className={`p-2 border rounded-[3px] cursor-pointer ${t.secondary}`}>
                     <Trash2 className={`w-3.5 h-3.5 ${t.negative}`} aria-hidden="true" />
                   </button>
                 )}
@@ -305,7 +305,7 @@ const EventForm: React.FC<{
   const [form, setForm] = useState(initial);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
-  const field = `w-full px-3 py-2.5 text-sm border rounded-lg focus:outline-none ${t.input}`;
+  const field = `w-full px-3 py-2.5 text-sm border rounded-[3px] focus:outline-none ${t.input}`;
   const label = `block text-xs font-bold mb-1 ${t.text}`;
   const set = (key: keyof Form) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
     setForm({ ...form, [key]: e.target.type === 'checkbox' ? (e.target as HTMLInputElement).checked : e.target.value });
@@ -341,10 +341,10 @@ const EventForm: React.FC<{
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60" role="dialog" aria-modal="true" aria-label={isNew ? 'Nuevo evento' : 'Editar evento'}>
-      <form onSubmit={submit} className={`w-full max-w-2xl max-h-[90vh] overflow-y-auto border rounded-2xl ${t.card}`}>
+      <form onSubmit={submit} className={`w-full max-w-2xl max-h-[90vh] overflow-y-auto border rounded-[3px] ${t.card}`}>
         <header className={`flex items-center justify-between px-6 py-4 border-b ${t.rule}`}>
-          <h3 className={`font-['Nunito',sans-serif] text-lg font-[900] ${t.text}`}>{isNew ? 'Nuevo evento' : 'Editar evento'}</h3>
-          <button type="button" onClick={onCancel} aria-label="Cerrar" className={`p-1.5 rounded-lg cursor-pointer ${t.ghostHover} ${t.text}`}>
+          <h3 className={`text-lg font-bold ${t.text}`}>{isNew ? 'Nuevo evento' : 'Editar evento'}</h3>
+          <button type="button" onClick={onCancel} aria-label="Cerrar" className={`p-1.5 rounded-[3px] cursor-pointer ${t.ghostHover} ${t.text}`}>
             <X className="w-5 h-5" />
           </button>
         </header>
@@ -407,7 +407,7 @@ const EventForm: React.FC<{
         {error && <p role="alert" className={`px-6 text-sm ${t.negative}`}>{error}</p>}
         <footer className={`flex justify-end gap-2 px-6 py-4 border-t ${t.rule}`}>
           <button type="button" onClick={onCancel} className={`px-4 py-2.5 text-xs font-bold cursor-pointer ${t.muted} hover:underline`}>Cancelar</button>
-          <button type="submit" disabled={busy} className={`px-5 py-2.5 rounded-lg text-xs font-extrabold cursor-pointer disabled:opacity-50 ${t.primary}`}>
+          <button type="submit" disabled={busy} className={`px-5 py-2.5 rounded-[3px] text-xs font-semibold cursor-pointer disabled:opacity-50 ${t.primary}`}>
             {busy ? 'Guardando…' : isNew ? 'Crear evento' : 'Guardar cambios'}
           </button>
         </footer>

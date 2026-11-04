@@ -39,14 +39,14 @@ export const DamageList: React.FC<{
         {es ? `Daños encontrados por el escáner (${faces.reduce((n, f) => n + f.damages.length, 0)})` : `Damage found by the scanner (${faces.reduce((n, f) => n + f.damages.length, 0)})`}
       </span>
       {faces.map((face) => (
-        <div key={face.side} className={wide ? 'grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 items-start' : 'space-y-3'}>
-          {faces.length > 1 && <p className={`${wide ? 'sm:col-span-2 ' : ''}font-mono text-[10px] uppercase tracking-[0.14em] font-bold ${strong}`}>{sideName(face.side)}</p>}
+        <div key={face.side} className={wide ? 'grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 items-start' : 'grid grid-cols-2 gap-x-4 gap-y-2 items-start'}>
+          {faces.length > 1 && <p className={`${wide ? 'sm:col-span-2 ' : 'col-span-2 '}font-mono text-[10px] uppercase tracking-[0.14em] font-bold ${strong}`}>{sideName(face.side)}</p>}
           {(['edges', 'surface', 'corners'] as const)
             .map((area) => ({ area, items: face.damages.filter((d) => d.area === area) }))
             .filter((g) => g.items.length > 0)
             .map(({ area, items }) => (
               <div key={area}>
-                <h4 className={`text-xs font-bold mb-1 ${muted}`}>{AREA_LABEL[area][lang]}</h4>
+                <h4 className={`${wide ? 'text-xs' : 'text-[11px]'} font-bold mb-1 ${muted}`}>{AREA_LABEL[area][lang]}</h4>
                 <ol className="space-y-0.5">
                   {items.map((d) => {
                     const active = highlighted === d.n;
@@ -55,20 +55,20 @@ export const DamageList: React.FC<{
                         key={d.n}
                         onMouseEnter={() => onHover(d.n)}
                         onMouseLeave={() => onHover(null)}
-                        className={`flex items-start gap-2.5 px-2 py-1 -mx-2 rounded transition-colors duration-150 ${
+                        className={`flex items-start ${wide ? 'gap-2.5 px-2 py-1 -mx-2' : 'gap-1.5 px-1 py-0.5 -mx-1'} rounded transition-colors duration-150 ${
                           active ? (isLight ? 'bg-red-50' : 'bg-red-500/10') : ''
                         }`}
                       >
-                        <span className={`shrink-0 mt-0.5 inline-flex items-center justify-center w-5 h-5 rounded-full bg-red-600 text-white font-mono text-[10px] font-bold transition-transform ${active ? 'scale-[1.35]' : ''}`}>
+                        <span className={`shrink-0 mt-0.5 inline-flex items-center justify-center rounded-full bg-red-600 text-white font-mono font-bold ${wide ? 'w-5 h-5 text-[10px]' : 'w-4 h-4 text-[9px]'} transition-transform ${active ? 'scale-[1.35]' : ''}`}>
                           {d.n}
                         </span>
                         <span className="min-w-0">
-                          <span className={`block ${strong} transition-all duration-150 ${active ? 'text-base font-bold' : 'text-sm'}`}>
+                          <span className={`block ${strong} transition-all duration-150 ${wide ? (active ? 'text-base font-bold' : 'text-sm') : active ? 'text-[13px] font-bold' : 'text-xs'} leading-snug`}>
                             {translate(d.kind, KIND_EN, lang)}
                             {d.size && `, ${SIZE_LABEL[d.size][lang]}`}
                           </span>
                           {(d.location || d.lengthMm !== null) && (
-                            <span className={`block text-xs ${muted}`}>
+                            <span className={`block ${wide ? 'text-xs' : 'text-[10px] leading-snug'} ${muted}`}>
                               {[d.location ? translate(d.location, LOCATION_EN, lang) : null, d.lengthMm !== null ? `${mm(d.lengthMm, lang, 1)} mm` : null]
                                 .filter(Boolean)
                                 .join(' · ')}

@@ -22,10 +22,10 @@ export type TodaySectionKey = (typeof TODAY_SECTIONS)[number];
 
 /** Qué ve cada rol, en el orden en que lo ve. */
 export const SECTIONS_BY_ROLE: Record<StaffRole, readonly TodaySectionKey[]> = {
-  staff: ['toReceive', 'toIdentify', 'photosMissing', 'toDeliver', 'onHold'],
+  staff: ['toReceive', 'toIdentify', 'toDeliver', 'onHold', 'photosMissing'],
   grader: ['returnedByQa', 'toIdentify', 'toGrade', 'myDrafts', 'photosMissing'],
   qa: ['toReview', 'readyToShip'],
-  admin: ['late', 'toReceive', 'toIdentify', 'photosMissing', 'returnedByQa', 'toGrade', 'myDrafts', 'toReview', 'readyToShip', 'toDeliver', 'onHold'],
+  admin: ['late', 'returnedByQa', 'toReceive', 'toIdentify', 'toGrade', 'myDrafts', 'toReview', 'readyToShip', 'toDeliver', 'onHold', 'photosMissing'],
 };
 
 /** Secciones de pedidos enteros que se pueden abrir filtradas en la lista de pedidos. */
@@ -50,6 +50,19 @@ export interface TodayTask {
   since: string;
   /** Detalle útil: motivo del rechazo, de la pausa, fecha prevista… */
   note?: string;
+  /** Estado del pedido. */
+  status: OrderStatus;
+  /** Inicio del plazo del servicio (recepción del paquete), si ya empezó. */
+  startedAt: string | null;
+  /** Fecha prevista de finalización (AAAA-MM-DD), si ya se conoce. */
+  dueDate: string | null;
+}
+
+/** Pedidos en cada fase y cuántos de ellos han pasado su fecha prevista. */
+export interface PipelineStage {
+  status: OrderStatus;
+  count: number;
+  late: number;
 }
 
 export interface TodaySection {
@@ -60,4 +73,11 @@ export interface TodaySection {
 
 export interface StaffToday {
   sections: TodaySection[];
+  /** El laboratorio entero, fase por fase (igual para todos los roles). */
+  pipeline: PipelineStage[];
 }
+
+/** Fases que se cuentan en la tira del laboratorio, en orden. */
+export const PIPELINE_STAGES: OrderStatus[] = [
+  'SUBMITTED', 'PACKAGE_RECEIVED', 'PRE_INSPECTION', 'OPTICAL_GRADING', 'ENCAPSULATION', 'QUALITY_ASSURANCE', 'SHIPPED', 'ON_HOLD',
+];

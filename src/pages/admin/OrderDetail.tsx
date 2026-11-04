@@ -84,10 +84,10 @@ export const OrderDetail: React.FC<{ code: string; onBack: () => void }> = ({ co
 
   if (notFound) {
     return (
-      <div className={`border rounded-xl p-10 text-center ${t.card}`}>
-        <h2 className={`font-['Nunito',sans-serif] text-xl font-[900] uppercase ${t.text}`}>Pedido no encontrado</h2>
+      <div className={`border rounded-[3px] p-10 text-center ${t.card}`}>
+        <h2 className={`text-xl font-bold uppercase ${t.text}`}>Pedido no encontrado</h2>
         <p className={`text-sm mt-2 ${t.muted}`}>No existe ningún pedido con el código {code}.</p>
-        <button type="button" onClick={onBack} className={`mt-5 px-5 py-2.5 rounded-lg text-xs font-bold cursor-pointer ${t.primary}`}>
+        <button type="button" onClick={onBack} className={`mt-5 px-5 py-2.5 rounded-[3px] text-xs font-bold cursor-pointer ${t.primary}`}>
           Volver a la cola
         </button>
       </div>
@@ -107,7 +107,7 @@ export const OrderDetail: React.FC<{ code: string; onBack: () => void }> = ({ co
       </button>
 
       {/* Cabecera */}
-      <div className={`border rounded-xl p-5 sm:p-6 ${t.card}`}>
+      <div className={`border rounded-[3px] p-5 sm:p-6 ${t.card}`}>
         <div className="flex flex-wrap items-center gap-3">
           <h2 className={`font-mono text-xl sm:text-2xl font-bold tracking-tight ${t.text}`}>{o.code}</h2>
           <StatusPill status={o.status} />
@@ -136,8 +136,8 @@ export const OrderDetail: React.FC<{ code: string; onBack: () => void }> = ({ co
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         <div className="lg:col-span-2 space-y-6 order-2 lg:order-1">
           {/* Cartas */}
-          <section className={`border rounded-xl overflow-x-auto ${t.card}`} aria-label="Cartas del pedido">
-            <h3 className={`px-5 pt-5 pb-3 font-['Nunito',sans-serif] text-sm font-[900] uppercase ${t.text}`}>Cartas ({order.items.length})</h3>
+          <section className={`border rounded-[3px] overflow-x-auto ${t.card}`} aria-label="Cartas del pedido">
+            <h3 className={`px-5 pt-5 pb-3 text-sm font-bold uppercase ${t.text}`}>Cartas ({order.items.length})</h3>
             <table className="w-full text-left text-sm min-w-[560px]">
               <thead>
                 <tr className={`border-y font-mono text-[10px] uppercase tracking-wider ${t.rule} ${t.muted}`}>
@@ -169,8 +169,8 @@ export const OrderDetail: React.FC<{ code: string; onBack: () => void }> = ({ co
           </section>
 
           {/* Graduación y fotos */}
-          <section className={`border rounded-xl p-5 space-y-3 ${t.card}`} aria-label="Graduación y fotos">
-            <h3 className={`font-['Nunito',sans-serif] text-sm font-[900] uppercase ${t.text}`}>Graduación y fotos</h3>
+          <section className={`border rounded-[3px] p-5 space-y-3 ${t.card}`} aria-label="Graduación y fotos">
+            <h3 className={`text-sm font-bold uppercase ${t.text}`}>Graduación y fotos</h3>
             {order.items.map((item) => (
               <GradingPanel
                 key={item.position}
@@ -190,8 +190,8 @@ export const OrderDetail: React.FC<{ code: string; onBack: () => void }> = ({ co
           </section>
 
           {/* Historial */}
-          <section className={`border rounded-xl p-5 ${t.card}`} aria-label="Historial del pedido">
-            <h3 className={`font-['Nunito',sans-serif] text-sm font-[900] uppercase mb-4 ${t.text}`}>Historial</h3>
+          <section className={`border rounded-[3px] p-5 ${t.card}`} aria-label="Historial del pedido">
+            <h3 className={`text-sm font-bold uppercase mb-4 ${t.text}`}>Historial</h3>
             <ol className="space-y-5">
               {timeline.map((event) => (
                 <li key={event.id} className={`pl-4 border-l-2 ${t.isLight ? 'border-[#D8D2C5]' : 'border-[#4E4E4E]'}`}>
@@ -225,8 +225,8 @@ export const OrderDetail: React.FC<{ code: string; onBack: () => void }> = ({ co
 
         <div className="space-y-6 order-1 lg:order-2">
           {/* Acciones */}
-          <section className={`border rounded-xl p-5 ${t.card}`} aria-label="Siguiente paso">
-            <h3 className={`font-['Nunito',sans-serif] text-sm font-[900] uppercase mb-3 ${t.text}`}>Siguiente paso</h3>
+          <section className={`border rounded-[3px] p-5 ${t.card}`} aria-label="Siguiente paso">
+            <h3 className={`text-sm font-bold uppercase mb-3 ${t.text}`}>Siguiente paso</h3>
             {order.transitions.length === 0 ? (
               <p className={`text-xs ${t.muted}`}>
                 {['DELIVERED', 'CANCELLED', 'RETURNED'].includes(o.status)
@@ -241,7 +241,7 @@ export const OrderDetail: React.FC<{ code: string; onBack: () => void }> = ({ co
                       type="button"
                       disabled={!option.allowed}
                       onClick={() => { setNotice(''); setError(''); setAction(option); }}
-                      className={`w-full px-4 py-3 rounded-lg text-xs font-extrabold text-left cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                      className={`w-full px-4 py-3 rounded-[3px] text-xs font-semibold text-left cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
                         isRisky(option) ? `border ${t.secondary}` : t.primary
                       }`}
                     >
@@ -258,8 +258,8 @@ export const OrderDetail: React.FC<{ code: string; onBack: () => void }> = ({ co
 
           {/* Avance automático */}
           {order.automation && (
-            <section className={`border rounded-xl p-5 ${t.card}`} aria-label="Avance automático">
-              <h3 className={`font-['Nunito',sans-serif] text-sm font-[900] uppercase mb-3 ${t.text}`}>Avance automático</h3>
+            <section className={`border rounded-[3px] p-5 ${t.card}`} aria-label="Avance automático">
+              <h3 className={`text-sm font-bold uppercase mb-3 ${t.text}`}>Avance automático</h3>
               {order.automation.awaitingFinalApproval ? (
                 <p className={`flex gap-2.5 text-xs leading-relaxed ${t.text}`}>
                   <CheckCircle2 className={`w-4 h-4 shrink-0 mt-px ${t.positive}`} aria-hidden="true" />
@@ -287,8 +287,8 @@ export const OrderDetail: React.FC<{ code: string; onBack: () => void }> = ({ co
           )}
 
           {/* Envíos */}
-          <section className={`border rounded-xl p-5 ${t.card}`} aria-label="Envíos">
-            <h3 className={`font-['Nunito',sans-serif] text-sm font-[900] uppercase mb-3 ${t.text}`}>Envíos y seguimiento</h3>
+          <section className={`border rounded-[3px] p-5 ${t.card}`} aria-label="Envíos">
+            <h3 className={`text-sm font-bold uppercase mb-3 ${t.text}`}>Envíos y seguimiento</h3>
             {order.shipments.length === 0 ? (
               <p className={`text-xs ${t.muted}`}>Todavía no hay ningún envío registrado.</p>
             ) : (
@@ -320,8 +320,8 @@ export const OrderDetail: React.FC<{ code: string; onBack: () => void }> = ({ co
           </section>
 
           {/* Cliente */}
-          <section className={`border rounded-xl p-5 text-sm ${t.card}`} aria-label="Cliente">
-            <h3 className={`font-['Nunito',sans-serif] text-sm font-[900] uppercase mb-3 ${t.text}`}>Cliente</h3>
+          <section className={`border rounded-[3px] p-5 text-sm ${t.card}`} aria-label="Cliente">
+            <h3 className={`text-sm font-bold uppercase mb-3 ${t.text}`}>Cliente</h3>
             <div className={`font-bold ${t.text}`}>{order.customer.fullName ?? 'Sin nombre'}</div>
             <a href={`mailto:${order.customer.email}`} className={`font-mono text-xs underline underline-offset-4 ${t.muted}`}>{order.customer.email}</a>
             <div className={`text-[11px] mt-1 ${t.muted}`}>Idioma: {order.customer.locale === 'en' ? 'inglés' : 'español'}</div>
@@ -378,7 +378,7 @@ const ShipmentForm: React.FC<{ onSubmit: (body: { direction: 'inbound' | 'outbou
   const [carrier, setCarrier] = useState('');
   const [trackingNumber, setTrackingNumber] = useState('');
   const [busy, setBusy] = useState(false);
-  const field = `w-full px-3 py-2 text-sm border rounded-lg focus:outline-none ${t.input}`;
+  const field = `w-full px-3 py-2 text-sm border rounded-[3px] focus:outline-none ${t.input}`;
 
   return (
     <form
@@ -399,7 +399,7 @@ const ShipmentForm: React.FC<{ onSubmit: (body: { direction: 'inbound' | 'outbou
       </select>
       <input id="ship-carrier" aria-label="Transportista" placeholder="Transportista (GLS, CTT…)" value={carrier} onChange={(e) => setCarrier(e.target.value)} maxLength={80} required className={field} />
       <input id="ship-tracking" aria-label="Número de seguimiento" placeholder="Número de seguimiento" value={trackingNumber} onChange={(e) => setTrackingNumber(e.target.value)} maxLength={80} required className={`${field} font-mono`} />
-      <button type="submit" disabled={busy || !carrier.trim() || !trackingNumber.trim()} className={`w-full px-4 py-2.5 border rounded-lg text-xs font-bold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${t.secondary}`}>
+      <button type="submit" disabled={busy || !carrier.trim() || !trackingNumber.trim()} className={`w-full px-4 py-2.5 border rounded-[3px] text-xs font-bold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${t.secondary}`}>
         {busy ? 'Guardando…' : 'Añadir envío'}
       </button>
     </form>
@@ -419,7 +419,7 @@ const ActionDialog: React.FC<{
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const firstField = useRef<HTMLTextAreaElement>(null);
-  const field = `w-full px-3 py-2 text-sm border rounded-lg focus:outline-none ${t.input}`;
+  const field = `w-full px-3 py-2 text-sm border rounded-[3px] focus:outline-none ${t.input}`;
 
   useEffect(() => {
     firstField.current?.focus();
@@ -445,10 +445,10 @@ const ActionDialog: React.FC<{
           setError(await onConfirm(publicDescription.trim(), internalNote.trim()));
           setBusy(false);
         }}
-        className={`w-full max-w-lg p-6 border rounded-xl shadow-2xl space-y-4 ${t.card}`}
+        className={`w-full max-w-lg p-6 border rounded-[3px] shadow-2xl space-y-4 ${t.card}`}
       >
         <div>
-          <h3 id="action-title" className={`font-['Nunito',sans-serif] text-lg font-[900] uppercase ${t.text}`}>{title}</h3>
+          <h3 id="action-title" className={`text-lg font-bold uppercase ${t.text}`}>{title}</h3>
           <p className={`text-xs mt-1 ${t.muted}`}>
             «{STATUS_LABEL[from].es}» → «{STATUS_LABEL[option.to].es}». El cliente verá este cambio en su seguimiento.
           </p>
@@ -486,8 +486,8 @@ const ActionDialog: React.FC<{
         {error && <p role="alert" className="text-sm text-red-500">{error}</p>}
 
         <div className="flex justify-end gap-3">
-          <button type="button" onClick={onClose} className={`px-4 py-2.5 border rounded-lg text-xs font-bold cursor-pointer ${t.secondary}`}>Cancelar</button>
-          <button type="submit" disabled={busy} className={`px-5 py-2.5 rounded-lg text-xs font-extrabold cursor-pointer disabled:opacity-60 ${t.primary}`}>
+          <button type="button" onClick={onClose} className={`px-4 py-2.5 border rounded-[3px] text-xs font-bold cursor-pointer ${t.secondary}`}>Cancelar</button>
+          <button type="submit" disabled={busy} className={`px-5 py-2.5 rounded-[3px] text-xs font-semibold cursor-pointer disabled:opacity-60 ${t.primary}`}>
             {busy ? 'Guardando…' : 'Confirmar'}
           </button>
         </div>

@@ -5,7 +5,7 @@ import type { StaffRole } from '../../shared/admin.js';
 import type { UserDto } from '../../shared/auth.js';
 import type { OrderStatus } from '../../shared/domain.js';
 import {
-  SECTIONS_BY_ROLE, TODAY_ITEMS_LIMIT, type StaffToday, type TodaySectionKey, type TodayTask,
+  PIPELINE_STAGES, SECTIONS_BY_ROLE, TODAY_ITEMS_LIMIT, type StaffToday, type TodaySectionKey, type TodayTask,
 } from '../../shared/staff-today.js';
 
 /** Estados en los que las cartas están en el laboratorio (igual que en el panel de graduación). */
@@ -55,6 +55,9 @@ export async function getStaffToday(db: Db, viewer: UserDto, now = new Date()): 
     orderCode: o.order.code,
     customerName: o.customer.fullName,
     customerEmail: o.customer.email,
+    status: o.order.status,
+    startedAt: o.order.autoAnchorAt?.toISOString() ?? null,
+    dueDate: o.order.estimatedCompletionAt ?? null,
   });
   const sinceChange = (o: (typeof orderRows)[number]) =>
     (changedAt.get(o.order.id) ?? o.order.submittedAt ?? o.order.createdAt).toISOString();
@@ -161,7 +164,15 @@ export async function getStaffToday(db: Db, viewer: UserDto, now = new Date()): 
     }
   }
 
+  const isLate = (o: (typeof orderRows)[number]) =>
+    (LAB.includes(o.order.status) || o.order.status === 'ON_HOLD') && !!o.order.estimatedCompletionAt && o.order.estimatedCompletionAt < today;
+  const pipeline = PIPELINE_STAGES.map((status) => {
+    const inStage = orderRows.filter((o) => o.order.status === status);
+    return { status, count: inStage.length, late: inStage.filter(isLate).length };
+  });
+
   return {
+    pipeline,
     sections: (SECTIONS_BY_ROLE[role] ?? []).map((key) => {
       const tasks = lists.get(key)!;
       // Lo que más tiempo lleva esperando, primero.

@@ -1628,3 +1628,18 @@ html .min-h-screen {
 @container (max-width: 680px) {
   .route-hud-foot { display: none; }
 }
+
+/* Panel del laboratorio ("banco de calibración"): una familia para todo, mono tabular para códigos y medidas. */
+.gg-panel {
+  font-family: 'Archivo Variable', 'Archivo', system-ui, sans-serif;
+  font-feature-settings: 'tnum' 1;
+  color: #121413;
+  background: #EDEEEA;
+}
+html:has(.gg-panel), body:has(.gg-panel) { background: #EDEEEA; }
+.gg-panel .font-sans { font-family: inherit; }
+.gg-panel .font-mono { font-family: 'JetBrains Mono', ui-monospace, monospace; letter-spacing: 0; }
+.gg-panel ::selection { background: #2F8F3E; color: #fff; }
+.gg-panel :focus-visible { outline: 2px solid #2F8F3E; outline-offset: 2px; }
+.gg-panel * { scrollbar-color: #B8BCB6 transparent; scrollbar-width: thin; }
+.gg-panel input, .gg-panel select, .gg-panel textarea { caret-color: #2F8F3E; }

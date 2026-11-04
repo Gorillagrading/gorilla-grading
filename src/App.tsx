@@ -200,6 +200,11 @@ export const AppContent: React.FC = () => {
     }
   };
 
+  // El panel del laboratorio es una herramienta propia: ocupa toda la pantalla, sin el menú ni el pie de la web.
+  if (currentPath === '/admin' || currentPath.startsWith('/admin/')) {
+    return <AdminPage path={currentPath} onNavigate={handleNavigate} />;
+  }
+
   return (
     <div className={`min-h-screen flex flex-col font-sans transition-colors duration-300 relative ${
       theme === 'light' ? 'bg-[#F9F7F2] text-[#111827]' : 'bg-[#0B0E0B] text-[#F4F6F0]'

@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { ArrowDownRight, ArrowUpRight, Download, Mail, Minus, RefreshCw, Search } from 'lucide-react';
 import type { CertificateHistory, DashboardBucket, DashboardData, DashboardMetric, DashboardRange } from '../../../shared/dashboard';
 import type { OrderStatus } from '../../../shared/domain';
-import { GRADE_LABELS } from '../../../shared/grading';
 import { adminErrorMessage, fetchCertificateHistory, fetchDashboard, fetchNewsletterStats } from '../../api/admin';
 import type { NewsletterStatsDto } from '../../../shared/newsletter';
 import { STATUS_LABEL } from '../../utils/orderStatus';
@@ -85,14 +84,14 @@ export const BusinessDashboard: React.FC<{ onOpenOrder: (code: string) => void }
   }, [range, reload]);
 
   const current = RANGES.find((r) => r.key === range)!;
-  const card = `border rounded-2xl p-5 ${t.card}`;
+  const card = `border rounded-[3px] p-5 ${t.card}`;
   const heading = `text-xs font-bold uppercase tracking-wider ${t.muted}`;
 
   return (
     <div className="space-y-5">
       {/* Filtro: una sola fila, encima de todo lo que filtra. */}
       <div className="flex flex-wrap items-center gap-3">
-        <div className={`inline-flex rounded-lg border p-1 ${t.secondary}`} role="radiogroup" aria-label="Periodo">
+        <div className={`inline-flex rounded-[3px] border p-1 ${t.secondary}`} role="radiogroup" aria-label="Periodo">
           {RANGES.map((r) => (
             <button
               key={r.key}
@@ -111,7 +110,7 @@ export const BusinessDashboard: React.FC<{ onOpenOrder: (code: string) => void }
         <button
           type="button"
           onClick={() => setReload((n) => n + 1)}
-          className={`inline-flex items-center gap-1.5 px-3 py-2 border rounded-lg text-xs font-bold cursor-pointer ${t.secondary}`}
+          className={`inline-flex items-center gap-1.5 px-3 py-2 border rounded-[3px] text-xs font-bold cursor-pointer ${t.secondary}`}
         >
           <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} /> Actualizar
         </button>
@@ -137,7 +136,7 @@ export const BusinessDashboard: React.FC<{ onOpenOrder: (code: string) => void }
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
                 <h2 className={heading}>Ingresos cobrados · {current.label.toLowerCase()}</h2>
-                <div className={`mt-1 text-5xl font-[800] tracking-tight ${t.text}`}>{money(data.metrics.revenueCents.current)}</div>
+                <div className={`mt-1 text-5xl font-bold tracking-tight ${t.text}`}>{money(data.metrics.revenueCents.current)}</div>
                 <Delta metric={data.metrics.revenueCents} previous={current.previous} />
               </div>
               <dl className="grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
@@ -202,7 +201,7 @@ export const BusinessDashboard: React.FC<{ onOpenOrder: (code: string) => void }
                   empty="Ninguna carta calificada en este periodo."
                   rows={data.grades.map((g) => ({
                     key: String(g.grade),
-                    label: <>{g.grade.toLocaleString('es-ES')} <span className={`font-normal ${t.muted}`}>{GRADE_LABELS[g.grade]?.[0].replace(/\s[\d.]+$/, '')}</span></>,
+                    label: <>Nota {g.grade.toLocaleString('es-ES')}</>,
                     value: g.count,
                   }))}
                 />
@@ -274,7 +273,7 @@ export const BusinessDashboard: React.FC<{ onOpenOrder: (code: string) => void }
                 ].map(([label, value]) => (
                   <div key={label} className="flex items-baseline justify-between gap-3">
                     <dt className={`text-sm ${t.muted}`}>{label}</dt>
-                    <dd className={`text-xl font-[800] ${t.text}`}>{value}</dd>
+                    <dd className={`text-xl font-bold ${t.text}`}>{value}</dd>
                   </div>
                 ))}
               </dl>
@@ -325,13 +324,13 @@ const Tile: React.FC<{ label: string; hint?: string; metric: DashboardMetric; pr
 }) => {
   const t = usePanelTheme();
   return (
-    <div className={`border rounded-2xl p-4 flex flex-col justify-between gap-2 ${t.card}`}>
+    <div className={`border rounded-[3px] p-4 flex flex-col justify-between gap-2 ${t.card}`}>
       <div>
         <div className={`text-xs font-bold ${t.muted}`}>{label}</div>
         {hint && <div className={`text-[11px] ${t.muted}`}>{hint}</div>}
       </div>
       <div className="flex items-end justify-between gap-2">
-        <div className={`text-3xl font-[800] ${t.text}`}>{whole(metric.current)}</div>
+        <div className={`text-3xl font-bold ${t.text}`}>{whole(metric.current)}</div>
         {trend && <Sparkline values={trend} />}
       </div>
       <Delta metric={metric} previous={previous} />
@@ -405,10 +404,10 @@ const CertificateHistorySection: React.FC<{ onOpenOrder: (code: string) => void 
   }, [q, page]);
 
   const pages = data ? Math.max(1, Math.ceil(data.total / data.pageSize)) : 1;
-  const pageButton = `px-3 py-2 border rounded-lg font-bold cursor-pointer disabled:opacity-40 disabled:cursor-default ${t.secondary}`;
+  const pageButton = `px-3 py-2 border rounded-[3px] font-bold cursor-pointer disabled:opacity-40 disabled:cursor-default ${t.secondary}`;
 
   return (
-    <section className={`border rounded-2xl p-5 ${t.card}`}>
+    <section className={`border rounded-[3px] p-5 ${t.card}`}>
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h2 className={`text-xs font-bold uppercase tracking-wider ${t.muted}`}>Historial de cartas certificadas</h2>
@@ -424,7 +423,7 @@ const CertificateHistorySection: React.FC<{ onOpenOrder: (code: string) => void 
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Correo, nº de certificado, carta o pedido"
-            className={`w-full pl-9 pr-3 py-2 border rounded-lg text-sm outline-none ${t.input}`}
+            className={`w-full pl-9 pr-3 py-2 border rounded-[3px] text-sm outline-none ${t.input}`}
           />
         </label>
       </div>
@@ -460,8 +459,7 @@ const CertificateHistorySection: React.FC<{ onOpenOrder: (code: string) => void 
                     <td className={`py-2.5 pr-3 text-right whitespace-nowrap ${t.text}`}>
                       {r.grade != null ? (
                         <>
-                          <div className="font-[800] text-base tabular-nums">{r.grade.toLocaleString('es-ES')}</div>
-                          <div className={`text-xs ${t.muted}`}>{r.gradeLabel?.replace(/\s[\d.]+$/, '')}</div>
+                          <div className="font-bold text-base tabular-nums">{r.grade.toLocaleString('es-ES')}</div>
                         </>
                       ) : (
                         <span className={t.muted}>—</span>
@@ -521,8 +519,8 @@ const NewsletterCard: React.FC = () => {
   };
 
   return (
-    <section className={`border rounded-xl p-5 flex flex-wrap items-center gap-5 ${t.card}`} aria-label="Newsletter">
-      <span className="w-10 h-10 rounded-xl bg-[#15803D] text-white flex items-center justify-center shrink-0">
+    <section className={`border rounded-[3px] p-5 flex flex-wrap items-center gap-5 ${t.card}`} aria-label="Newsletter">
+      <span className="w-10 h-10 rounded-[3px] bg-[#15803D] text-white flex items-center justify-center shrink-0">
         <Mail className="w-5 h-5" aria-hidden="true" />
       </span>
       <div className="flex-1 min-w-[200px]">
@@ -537,7 +535,7 @@ const NewsletterCard: React.FC = () => {
         type="button"
         onClick={download}
         disabled={!stats || stats.confirmed === 0}
-        className={`inline-flex items-center gap-2 px-3.5 py-2 border rounded-lg text-xs font-bold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${t.secondary}`}
+        className={`inline-flex items-center gap-2 px-3.5 py-2 border rounded-[3px] text-xs font-bold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${t.secondary}`}
       >
         <Download className="w-3.5 h-3.5" aria-hidden="true" />
         Descargar confirmados (CSV)

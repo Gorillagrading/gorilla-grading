@@ -3,8 +3,7 @@ import { Search } from 'lucide-react';
 import { ACTIVE_STATUSES, type OrderStatus } from '../../../shared/domain';
 import type { AdminOrderList } from '../../../shared/admin';
 import { adminErrorMessage, fetchAdminOrders } from '../../api/admin';
-import { STATUS_LABEL } from '../../utils/orderStatus';
-import { SHIPPING_LABEL, StatusPill, formatDate, money, usePanelTheme, waiting } from './ui';
+import { SHIPPING_LABEL, StatusPill, statusName, formatDate, money, usePanelTheme, waiting } from './ui';
 
 /** Pestañas de la cola, en el orden del recorrido del pedido. */
 const TAB_STATUSES: OrderStatus[] = [
@@ -12,11 +11,15 @@ const TAB_STATUSES: OrderStatus[] = [
   'QUALITY_ASSURANCE', 'SHIPPED', 'ON_HOLD', 'DELIVERED', 'CANCELLED',
 ];
 
-export const OrderQueue: React.FC<{ initialStatus?: string; onOpen: (code: string) => void }> = ({ initialStatus = 'active', onOpen }) => {
+export const OrderQueue: React.FC<{ initialStatus?: string; initialQuery?: string; onOpen: (code: string) => void }> = ({
+  initialStatus = 'active',
+  initialQuery = '',
+  onOpen,
+}) => {
   const t = usePanelTheme();
   const [status, setStatus] = useState<string>(initialStatus);
-  const [search, setSearch] = useState('');
-  const [q, setQ] = useState('');
+  const [search, setSearch] = useState(initialQuery);
+  const [q, setQ] = useState(initialQuery);
   const [sort, setSort] = useState<'oldest' | 'newest'>('oldest');
   const [page, setPage] = useState(1);
   const [data, setData] = useState<AdminOrderList | null>(null);
@@ -55,7 +58,7 @@ export const OrderQueue: React.FC<{ initialStatus?: string; onOpen: (code: strin
   const activeCount = ACTIVE_STATUSES.reduce((sum, s) => sum + (data?.counts[s] ?? 0), 0);
   const tabs: { key: string; label: string; count: number | undefined }[] = [
     { key: 'active', label: 'Activos', count: data ? activeCount : undefined },
-    ...TAB_STATUSES.map((s) => ({ key: s, label: STATUS_LABEL[s].es, count: data?.counts[s] ?? (data ? 0 : undefined) })),
+    ...TAB_STATUSES.map((s) => ({ key: s, label: statusName(s), count: data?.counts[s] ?? (data ? 0 : undefined) })),
   ];
   const from = data ? (data.page - 1) * data.pageSize + 1 : 0;
   const to = data ? Math.min(data.page * data.pageSize, data.total) : 0;
@@ -72,7 +75,7 @@ export const OrderQueue: React.FC<{ initialStatus?: string; onOpen: (code: strin
               aria-selected={selected}
               type="button"
               onClick={() => { setStatus(tab.key); setPage(1); }}
-              className={`px-3 py-2 border rounded-lg text-xs font-bold flex items-center gap-2 cursor-pointer transition-colors ${
+              className={`px-3 py-2 border rounded-[3px] text-xs font-bold flex items-center gap-2 cursor-pointer transition-colors ${
                 selected ? t.primary + ' border-transparent' : t.secondary
               }`}
             >
@@ -97,13 +100,13 @@ export const OrderQueue: React.FC<{ initialStatus?: string; onOpen: (code: strin
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Código, correo o nombre"
-            className={`w-full pl-9 pr-3 py-2.5 text-sm border rounded-lg focus:outline-none ${t.input}`}
+            className={`w-full pl-9 pr-3 py-2.5 text-sm border rounded-[3px] focus:outline-none ${t.input}`}
           />
         </label>
         <button
           type="button"
           onClick={() => { setSort(sort === 'oldest' ? 'newest' : 'oldest'); setPage(1); }}
-          className={`px-3 py-2.5 border rounded-lg text-xs font-bold cursor-pointer ${t.secondary}`}
+          className={`px-3 py-2.5 border rounded-[3px] text-xs font-bold cursor-pointer ${t.secondary}`}
         >
           Orden: {sort === 'oldest' ? 'los más antiguos primero' : 'los más recientes primero'}
         </button>
@@ -113,7 +116,7 @@ export const OrderQueue: React.FC<{ initialStatus?: string; onOpen: (code: strin
         <p role="alert" className="text-red-500 text-sm">{error}</p>
       )}
 
-      <div className={`border rounded-xl overflow-x-auto ${t.card}`} aria-busy={loading}>
+      <div className={`border rounded-[3px] overflow-x-auto ${t.card}`} aria-busy={loading}>
         <table className="w-full text-left text-sm min-w-[820px]">
           <thead>
             <tr className={`border-b font-mono text-[10px] uppercase tracking-wider ${t.rule} ${t.muted}`}>
@@ -178,10 +181,10 @@ export const OrderQueue: React.FC<{ initialStatus?: string; onOpen: (code: strin
         <div className="flex items-center justify-between text-xs">
           <span className={t.muted}>{from}–{to} de {data.total}</span>
           <div className="flex gap-2">
-            <button type="button" disabled={page <= 1} onClick={() => setPage(page - 1)} className={`px-3 py-2 border rounded-lg font-bold cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${t.secondary}`}>
+            <button type="button" disabled={page <= 1} onClick={() => setPage(page - 1)} className={`px-3 py-2 border rounded-[3px] font-bold cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${t.secondary}`}>
               Anterior
             </button>
-            <button type="button" disabled={to >= data.total} onClick={() => setPage(page + 1)} className={`px-3 py-2 border rounded-lg font-bold cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${t.secondary}`}>
+            <button type="button" disabled={to >= data.total} onClick={() => setPage(page + 1)} className={`px-3 py-2 border rounded-[3px] font-bold cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${t.secondary}`}>
               Siguiente
             </button>
           </div>

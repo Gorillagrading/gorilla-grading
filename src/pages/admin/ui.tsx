@@ -1,54 +1,60 @@
 import React from 'react';
 import type { OrderStatus } from '../../../shared/domain';
-import { useTheme } from '../../context/ThemeContext';
 import { STATUS_LABEL } from '../../utils/orderStatus';
 
-/** Colores del panel, coherentes con la cuenta del cliente. */
+/**
+ * Colores del panel ("banco de calibración"): suelo gris banco, hojas blancas con filetes de 1 px, tinta casi negra
+ * y el verde de Gorilla solo para la acción principal. El panel es siempre claro: se usa en un laboratorio iluminado.
+ */
 export function usePanelTheme() {
-  const isLight = useTheme().theme === 'light';
   return {
-    isLight,
-    card: isLight ? 'bg-white border-[#E2DBD0] shadow-sm' : 'bg-[#383838] border-[#4E4E4E]',
-    muted: isLight ? 'text-neutral-500' : 'text-[#A4ACA1]',
-    text: isLight ? 'text-[#14170F]' : 'text-white',
-    rule: isLight ? 'border-[#E2DBD0]' : 'border-[#4E4E4E]',
-    input: isLight
-      ? 'bg-white border-[#D8D2C5] text-[#14170F] placeholder:text-neutral-400 focus:border-[#16A34A]'
-      : 'bg-[#2A2A2A] border-[#4E4E4E] text-white placeholder:text-[#8C9185] focus:border-[#61B663]',
-    primary: isLight ? 'bg-[#15803D] hover:bg-[#166534] text-white' : 'bg-[#61B663] hover:bg-[#48C765] text-[#111311]',
-    secondary: isLight
-      ? 'bg-white border-[#D8D2C5] text-[#14170F] hover:border-[#16A34A]'
-      : 'bg-[#2A2A2A] border-[#4E4E4E] text-white hover:border-[#61B663]',
-    ghostHover: isLight ? 'hover:bg-black/5' : 'hover:bg-white/10',
-    positive: isLight ? 'text-[#15803D]' : 'text-[#61B663]',
-    negative: isLight ? 'text-red-600' : 'text-red-400',
+    isLight: true,
+    card: 'bg-white border-[#D7D9D3]',
+    muted: 'text-[#5A5F5B]',
+    text: 'text-[#121413]',
+    rule: 'border-[#D7D9D3]',
+    input: 'bg-white border-[#C7CAC4] text-[#121413] placeholder:text-[#6B706C] focus:border-[#2F8F3E] focus:ring-2 focus:ring-[#2F8F3E]/20',
+    primary: 'bg-[#2F8F3E] hover:bg-[#25762F] text-white',
+    secondary: 'bg-white border-[#C7CAC4] text-[#121413] hover:border-[#121413]',
+    ghostHover: 'hover:bg-[#EDEEEA]',
+    positive: 'text-[#25762F]',
+    negative: 'text-[#B42B22]',
     // Colores de las gráficas (SVG). La superficie es el fondo de `card`.
-    chart: isLight
-      ? { mark: '#15803D', grid: 'rgba(0,0,0,0.08)', wash: 'rgba(0,0,0,0.04)', trend: '#D4D4D4', surface: '#FFFFFF' }
-      : { mark: '#61B663', grid: 'rgba(255,255,255,0.12)', wash: 'rgba(255,255,255,0.06)', trend: '#737373', surface: '#383838' },
+    chart: { mark: '#2F8F3E', grid: 'rgba(18,20,19,0.08)', wash: 'rgba(18,20,19,0.04)', trend: '#B8BCB6', surface: '#FFFFFF' },
   };
 }
+
+/**
+ * Nombre de cada estado dentro del laboratorio. El cliente ve «Enviado» cuando manda su pedido; para el equipo,
+ * ese pedido está «Por recibir».
+ */
+export const statusName = (status: OrderStatus) =>
+  ({ SUBMITTED: 'Por recibir', PACKAGE_RECEIVED: 'Recibido', SHIPPED: 'Enviado al cliente' } as Partial<Record<OrderStatus, string>>)[status] ??
+  STATUS_LABEL[status].es;
 
 /** Etapas del recorrido normal de un pedido, en orden. Sirven para dibujar el avance. */
 const PIPELINE: OrderStatus[] = [
   'PACKAGE_RECEIVED', 'PRE_INSPECTION', 'OPTICAL_GRADING', 'ENCAPSULATION', 'QUALITY_ASSURANCE', 'SHIPPED', 'DELIVERED',
 ];
 
-/** Color sólido del marcador y del avance de cada estado. */
-const MARK: Record<OrderStatus, string> = {
-  DRAFT: 'bg-neutral-400',
-  SUBMITTED: 'bg-sky-500',
-  PAYMENT_PENDING: 'bg-amber-500',
-  PACKAGE_RECEIVED: 'bg-[#15803D] dark:bg-[#61B663]',
-  PRE_INSPECTION: 'bg-[#15803D] dark:bg-[#61B663]',
-  OPTICAL_GRADING: 'bg-[#15803D] dark:bg-[#61B663]',
-  ENCAPSULATION: 'bg-[#15803D] dark:bg-[#61B663]',
-  QUALITY_ASSURANCE: 'bg-violet-500',
-  SHIPPED: 'bg-teal-500',
-  DELIVERED: 'bg-[#14170F] dark:bg-white',
-  ON_HOLD: 'bg-orange-500',
-  CANCELLED: 'bg-red-500',
-  RETURNED: 'bg-neutral-400',
+/**
+ * Color de cada fase, como los parches de una carta de calibración: las fases del laboratorio van de verde claro
+ * a verde oscuro según avanzan; calidad en violeta; avisos en ámbar y rojo.
+ */
+export const STAGE_COLOR: Record<OrderStatus, string> = {
+  DRAFT: '#B8BCB6',
+  SUBMITTED: '#1E8FC6',
+  PAYMENT_PENDING: '#C98A12',
+  PACKAGE_RECEIVED: '#8CC79A',
+  PRE_INSPECTION: '#4FA862',
+  OPTICAL_GRADING: '#2F8F3E',
+  ENCAPSULATION: '#1F6B2B',
+  QUALITY_ASSURANCE: '#6A4FC4',
+  SHIPPED: '#3A403D',
+  DELIVERED: '#121413',
+  ON_HOLD: '#C98A12',
+  CANCELLED: '#B42B22',
+  RETURNED: '#8A8F8B',
 };
 
 /**
@@ -60,13 +66,13 @@ export const StatusPill: React.FC<{ status: OrderStatus }> = ({ status }) => {
   return (
     <span className="inline-flex flex-col gap-1.5 align-middle">
       <span className="inline-flex items-center gap-2 font-mono text-[10.5px] font-bold uppercase tracking-wider whitespace-nowrap">
-        <span className={`w-2 h-2 shrink-0 ${MARK[status]}`} />
-        {STATUS_LABEL[status].es}
+        <span className="w-2 h-2 shrink-0" style={{ background: STAGE_COLOR[status] }} />
+        {statusName(status)}
       </span>
       {step >= 0 && (
         <span className="flex gap-[3px]" aria-hidden="true">
           {PIPELINE.map((stage, i) => (
-            <span key={stage} className={`h-[3px] w-3.5 ${i <= step ? MARK[status] : 'bg-black/10 dark:bg-white/15'}`} />
+            <span key={stage} className="h-[3px] w-3.5" style={{ background: i <= step ? STAGE_COLOR[status] : '#E2E4DF' }} />
           ))}
         </span>
       )}

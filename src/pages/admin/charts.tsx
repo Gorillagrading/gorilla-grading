@@ -115,7 +115,7 @@ export const ColumnChart: React.FC<{
         )}
         {point && active != null && (
           <div
-            className={`pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-full rounded-lg border px-3 py-2 text-xs shadow-lg whitespace-nowrap ${t.card}`}
+            className={`pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-full rounded-[3px] border px-3 py-2 text-xs shadow-lg whitespace-nowrap ${t.card}`}
             style={{ left: left + active * slot + slot / 2, top: Math.max(0, y(point.value) - 8) }}
           >
             <div className={`font-bold text-sm ${t.text}`}>{format(point.value)}</div>
