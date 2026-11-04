@@ -119,7 +119,7 @@ export const EventsCalendar: React.FC = () => {
       onClick={() => setEditing({ id: e.id, form: formFrom(e) })}
       title={e.name}
       className={`block w-full truncate text-left text-[10px] font-bold px-1.5 py-0.5 rounded text-white cursor-pointer ${
-        e.published ? 'bg-[#0F1110] hover:bg-[#2A2E2B]' : 'bg-[#8A9388] hover:bg-[#6B7268]'
+        e.published ? 'bg-[#0F1110] hover:bg-[#2A2E2B]' : 'bg-[#666A67] hover:bg-[#3B3F3C]'
       }`}
     >
       {e.name}
@@ -248,7 +248,7 @@ const EventList: React.FC<{
           return (
             <li key={e.id} className={`flex flex-wrap items-center gap-4 px-5 py-4 border-b last:border-b-0 ${t.rule}`}>
               <span className={`w-14 shrink-0 rounded-[8px] overflow-hidden text-center border ${t.rule}`}>
-                <span className={`block text-[11px] font-semibold py-0.5 text-white ${e.published ? 'bg-[#0F1110]' : 'bg-[#8A9388]'}`}>
+                <span className={`block text-[11px] font-semibold py-0.5 text-white ${e.published ? 'bg-[#0F1110]' : 'bg-[#666A67]'}`}>
                   {start.toLocaleDateString('es-ES', { timeZone: 'Europe/Madrid', month: 'short' }).replace('.', '')}
                 </span>
                 <span className={`block text-xl font-bold py-1 ${t.text}`}>
@@ -258,7 +258,7 @@ const EventList: React.FC<{
               <div className="flex-1 min-w-[220px]">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className={`text-sm font-bold ${t.text}`}>{e.name}</span>
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full text-white ${e.published ? 'bg-[#0F1110]' : 'bg-[#8A9388]'}`}>
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full text-white ${e.published ? 'bg-[#0F1110]' : 'bg-[#666A67]'}`}>
                     {e.published ? 'Publicado' : 'Borrador'}
                   </span>
                   {!e.acceptsSubmissions && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full text-white bg-[#A86A12]">Sin entregas</span>}

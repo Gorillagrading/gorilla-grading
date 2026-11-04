@@ -1,174 +1,172 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-04T12:00:00Z",
+  "generatedAt": "2026-11-04T18:00:00Z",
   "title": "Design System: Gorilla Grading · Panel del laboratorio",
   "extensions": {
     "scope": "Solo el panel interno (/admin). La web pública conserva su propio aspecto.",
+    "sourceCommit": "e2077d1",
     "colorMeta": {
-      "gorilla-green": { "role": "primary", "displayName": "Verde Gorilla", "tonalRamp": ["#0F2E14", "#1A4A21", "#25762F", "#2F8F3E", "#4FA862", "#8CC79A", "#C3E2CA", "#E6F2E8"] },
-      "gorilla-green-deep": { "role": "primary", "displayName": "Verde Gorilla hondo" },
-      "shield-green": { "role": "primary", "displayName": "Verde escudo" },
-      "received-cyan": { "role": "secondary", "displayName": "Cian recibido", "tonalRamp": ["#0B2F42", "#11496A", "#176D99", "#1E8FC6", "#4FAAD6", "#86C6E4", "#BEE0F0", "#E6F3FA"] },
-      "phase-1": { "role": "secondary", "displayName": "Fase recibido" },
-      "phase-2": { "role": "secondary", "displayName": "Fase preinspección" },
-      "phase-4": { "role": "secondary", "displayName": "Fase encapsulado" },
-      "qa-violet": { "role": "secondary", "displayName": "Violeta calidad", "tonalRamp": ["#1F1640", "#33246A", "#4F3A99", "#6A4FC4", "#8B76D3", "#AE9FE1", "#D2C9EF", "#EEEAF9"] },
-      "shipped-graphite": { "role": "secondary", "displayName": "Grafito enviado" },
-      "warning-amber": { "role": "secondary", "displayName": "Ámbar aviso", "tonalRamp": ["#3A2805", "#5C4009", "#8A6A12", "#C98A12", "#D9A746", "#E6C47F", "#F1DFB8", "#FAF2E2"] },
-      "warning-amber-text": { "role": "secondary", "displayName": "Ámbar aviso (texto)" },
-      "overdue-red": { "role": "secondary", "displayName": "Rojo vencido", "tonalRamp": ["#3A0E0B", "#5E1712", "#8A211A", "#B42B22", "#C95A52", "#DC8C86", "#E3B3AE", "#F8E6E4"] },
-      "overdue-rule": { "role": "secondary", "displayName": "Filete de retraso" },
-      "graphite-rail": { "role": "neutral", "displayName": "Grafito carril", "tonalRamp": ["#121413", "#1A1D1C", "#232725", "#2A2F2D", "#2C302E", "#3A403D", "#A3A9A4", "#C4C8C3"] },
-      "graphite-raised": { "role": "neutral", "displayName": "Grafito alzado" },
-      "graphite-hover": { "role": "neutral", "displayName": "Grafito hover" },
-      "graphite-rule": { "role": "neutral", "displayName": "Filete de carril" },
-      "rail-text": { "role": "neutral", "displayName": "Texto de carril" },
-      "rail-muted": { "role": "neutral", "displayName": "Texto de carril secundario" },
-      "bench-floor": { "role": "neutral", "displayName": "Suelo banco", "tonalRamp": ["#3D423F", "#5A5F5B", "#8A8F8B", "#B8BCB6", "#D7D9D3", "#E2E4DF", "#EDEEEA", "#F7F8F5"] },
-      "sheet": { "role": "neutral", "displayName": "Hoja" },
-      "sheet-tint": { "role": "neutral", "displayName": "Hoja tintada" },
-      "group-band": { "role": "neutral", "displayName": "Banda de grupo" },
-      "fillet": { "role": "neutral", "displayName": "Filete" },
-      "fillet-soft": { "role": "neutral", "displayName": "Filete suave" },
-      "track": { "role": "neutral", "displayName": "Pista" },
-      "field-stroke": { "role": "neutral", "displayName": "Trazo de campo" },
-      "ink": { "role": "neutral", "displayName": "Tinta" },
+      "ink": { "role": "primary", "displayName": "Tinta", "tonalRamp": ["#0F1110", "#2A2E2B", "#3B3F3C", "#666A67", "#8A8E8B", "#C9CBC7", "#E7E7E2", "#F6F6F3"] },
+      "ink-hover": { "role": "primary", "displayName": "Tinta hover" },
       "ink-soft": { "role": "neutral", "displayName": "Tinta suave" },
       "muted": { "role": "neutral", "displayName": "Apagado" },
-      "placeholder": { "role": "neutral", "displayName": "Placeholder" },
-      "tick": { "role": "neutral", "displayName": "Tick de escala" },
-      "inert": { "role": "neutral", "displayName": "Inerte" }
+      "faint": { "role": "neutral", "displayName": "Tenue" },
+      "idle": { "role": "neutral", "displayName": "Inactivo" },
+      "closed-dot": { "role": "neutral", "displayName": "Punto cerrado" },
+      "late": { "role": "secondary", "displayName": "Tarde", "tonalRamp": ["#3D0F0B", "#621812", "#92241B", "#C2362B", "#D36359", "#E29690", "#F0C8C4", "#FAEDEC"] },
+      "warn": { "role": "secondary", "displayName": "Aviso", "tonalRamp": ["#352105", "#573609", "#8A5A0B", "#A86A12", "#C28C3F", "#D9B376", "#EDD7B0", "#FBF1DD"] },
+      "gorilla-green": { "role": "secondary", "displayName": "Verde Gorilla", "tonalRamp": ["#0F2E14", "#1A4A21", "#25762F", "#2F8F3E", "#4FA862", "#8CC79A", "#C3E2CA", "#E6F2E8"] },
+      "positive": { "role": "secondary", "displayName": "Positivo" },
+      "canvas": { "role": "neutral", "displayName": "Lienzo" },
+      "sheet": { "role": "neutral", "displayName": "Hoja" },
+      "row-hover": { "role": "neutral", "displayName": "Fila en hover" },
+      "wash": { "role": "neutral", "displayName": "Lavado" },
+      "segment-tray": { "role": "neutral", "displayName": "Bandeja segmentada" },
+      "track": { "role": "neutral", "displayName": "Pista" },
+      "fillet": { "role": "neutral", "displayName": "Filete" },
+      "field-stroke": { "role": "neutral", "displayName": "Trazo de campo" }
     },
-    "stageColor": {
-      "DRAFT": "#B8BCB6", "SUBMITTED": "#1E8FC6", "PAYMENT_PENDING": "#C98A12", "PACKAGE_RECEIVED": "#8CC79A",
-      "PRE_INSPECTION": "#4FA862", "OPTICAL_GRADING": "#2F8F3E", "ENCAPSULATION": "#1F6B2B", "QUALITY_ASSURANCE": "#6A4FC4",
-      "SHIPPED": "#3A403D", "DELIVERED": "#121413", "ON_HOLD": "#C98A12", "CANCELLED": "#B42B22", "RETURNED": "#8A8F8B"
+    "statusDot": {
+      "default": "#0F1110", "ON_HOLD": "#A86A12", "PAYMENT_PENDING": "#A86A12", "CANCELLED": "#C2362B",
+      "DELIVERED": "#2F8F3E", "RETURNED": "#9A9E9B", "DRAFT": "#9A9E9B"
     },
+    "lineStages": ["SUBMITTED", "PACKAGE_RECEIVED", "PRE_INSPECTION", "OPTICAL_GRADING", "ENCAPSULATION", "QUALITY_ASSURANCE", "SHIPPED"],
     "typographyMeta": {
-      "display": { "displayName": "Display", "purpose": "Resumen de Hoy (N tareas pendientes)." },
-      "stat": { "displayName": "Cifra", "purpose": "Recuento de cada parche de la tira de calibración." },
-      "headline": { "displayName": "Headline", "purpose": "Título de sección en la barra superior." },
-      "title": { "displayName": "Title", "purpose": "Título de una hoja." },
-      "body": { "displayName": "Body", "purpose": "Filas y texto corriente." },
-      "body-small": { "displayName": "Body small", "purpose": "Pistas, estado de plazo, metadatos." },
-      "code": { "displayName": "Código", "purpose": "Números de pedido y posición de carta." },
-      "label": { "displayName": "Rótulo de dato", "purpose": "Cabeceras de tabla y rótulos de campo; nunca titular de sección." },
-      "status": { "displayName": "Sello", "purpose": "Nombre del estado en el sello de estado." }
+      "display": { "displayName": "Display", "purpose": "Frase titular de Hoy." },
+      "station-count": { "displayName": "Recuento de estación", "purpose": "Cifra de cada estación de la línea del laboratorio." },
+      "headline": { "displayName": "Headline", "purpose": "Título de la página en la barra superior." },
+      "title": { "displayName": "Title", "purpose": "Título de hoja y de grupo de la cola." },
+      "body": { "displayName": "Body", "purpose": "Nombres, tablas, estado." },
+      "body-small": { "displayName": "Body small", "purpose": "Detalles, nombres de estación, cabeceras de tabla en frase." },
+      "code": { "displayName": "Código", "purpose": "Número de pedido en grupos de tres." },
+      "count": { "displayName": "Recuento", "purpose": "Contadores de carril, segmentos y grupos; n/7 del estado." }
     },
-    "focus": { "outline": "2px solid #2F8F3E", "outlineOffset": "2px", "selection": "background #2F8F3E; color #fff", "caret": "#2F8F3E", "scrollbar": "thin, #B8BCB6 on transparent" },
+    "focus": { "outline": "2px solid #0F1110", "outlineOffset": "2px", "selection": "background #0F1110; color #fff", "caret": "#0F1110", "fieldRing": "0 0 0 2px rgba(15,17,16,0.10)", "scrollbar": "thin, #C9CBC7 on transparent" },
     "shadows": [
-      { "name": "drawer", "value": "8px 0 24px rgba(0,0,0,0.25)", "purpose": "Carril abierto como cajón en tablet y móvil." },
+      { "name": "segment-on", "value": "0 1px 2px rgba(15,17,16,0.08)", "purpose": "Segmento elegido sobre su bandeja." },
+      { "name": "drawer", "value": "8px 0 24px rgba(15,17,16,0.18)", "purpose": "Carril abierto como cajón en tablet y móvil." },
       { "name": "dialog", "value": "0 25px 50px -12px rgba(0,0,0,0.25)", "purpose": "Diálogo de acción del detalle de pedido (shadow-2xl)." },
       { "name": "tooltip", "value": "0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1)", "purpose": "Tooltip de las gráficas (shadow-lg)." }
     ],
+    "materials": [
+      { "name": "topbar", "value": "background rgba(246,246,243,0.95); backdrop-filter: blur(8px)", "purpose": "Barra superior sticky sobre el lienzo." }
+    ],
     "motion": [
-      { "name": "color-shift", "value": "150ms cubic-bezier(0.4, 0, 0.2, 1)", "purpose": "Hover de navegación y chips (transition-colors)." },
-      { "name": "row-nudge", "value": "translateX(2px)", "purpose": "Chevron de las filas de la cola al pasar por la fila." }
+      { "name": "color-shift", "value": "150ms cubic-bezier(0.4, 0, 0.2, 1)", "purpose": "Hover de carril, segmentos y botones de tarea (transition-colors)." },
+      { "name": "station-grow", "value": "scale(1.25)", "purpose": "Círculo de la estación al pasar por ella." }
     ],
     "breakpoints": [
       { "name": "sm", "value": "640px" },
-      { "name": "md", "value": "768px" },
-      { "name": "lg", "value": "1024px", "purpose": "Carril fijo frente a cajón." },
-      { "name": "xl", "value": "1280px", "purpose": "Tira de 8 parches y columna de avisos de 300px." }
+      { "name": "md", "value": "768px", "purpose": "La fila de tarea pasa a cinco columnas." },
+      { "name": "lg", "value": "1024px", "purpose": "Carril fijo frente a cajón." }
     ]
   },
   "components": [
     {
-      "name": "Botón principal",
+      "name": "Botón de tarea (tinta)",
       "kind": "button",
       "refersTo": "button-primary",
-      "description": "Acción principal de un bloque de decisión.",
-      "html": "<button class=\"ds-btn-primary\">Confirmar recepción</button>",
-      "css": ".ds-btn-primary { font-family: 'Archivo Variable', 'Archivo', system-ui, sans-serif; height: 40px; padding: 0 16px; border: none; border-radius: 3px; background: #2F8F3E; color: #fff; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 150ms; } .ds-btn-primary:hover { background: #25762F; } .ds-btn-primary:focus-visible { outline: 2px solid #2F8F3E; outline-offset: 2px; } .ds-btn-primary:disabled { opacity: .6; }"
+      "description": "Acción que avanza el pedido, alineada a la derecha de la tarea.",
+      "html": "<button class=\"ds-btn-ink\">Subir PDF</button>",
+      "css": ".ds-btn-ink { font-family: 'Archivo Variable', 'Archivo', system-ui, sans-serif; display: inline-flex; align-items: center; height: 28px; padding: 0 12px; border: 1px solid transparent; border-radius: 6px; background: #0F1110; color: #fff; font-size: 12.5px; font-weight: 600; cursor: pointer; transition: background 150ms; } .ds-btn-ink:hover { background: #2A2E2B; } .ds-btn-ink:focus-visible { outline: 2px solid #0F1110; outline-offset: 2px; }"
     },
     {
-      "name": "Botón secundario",
+      "name": "Botón de contorno",
       "kind": "button",
-      "refersTo": "button-secondary",
-      "description": "Acciones de apoyo (Actualizar, exportar, paginar).",
-      "html": "<button class=\"ds-btn-secondary\">Actualizar</button>",
-      "css": ".ds-btn-secondary { font-family: 'Archivo Variable', 'Archivo', system-ui, sans-serif; height: 36px; padding: 0 14px; border: 1px solid #C7CAC4; border-radius: 3px; background: #fff; color: #121413; font-size: 13px; font-weight: 600; cursor: pointer; transition: border-color 150ms; } .ds-btn-secondary:hover { border-color: #121413; } .ds-btn-secondary:focus-visible { outline: 2px solid #2F8F3E; outline-offset: 2px; }"
+      "refersTo": "button-outline",
+      "description": "Resto de acciones de tarea y botones de barra.",
+      "html": "<button class=\"ds-btn-outline\">Recibir</button>",
+      "css": ".ds-btn-outline { font-family: 'Archivo Variable', 'Archivo', system-ui, sans-serif; display: inline-flex; align-items: center; height: 28px; padding: 0 12px; border: 1px solid #E1E1DC; border-radius: 6px; background: #fff; color: #0F1110; font-size: 12.5px; font-weight: 600; cursor: pointer; transition: border-color 150ms; } .ds-btn-outline:hover { border-color: #0F1110; } .ds-btn-outline:focus-visible { outline: 2px solid #0F1110; outline-offset: 2px; }"
     },
     {
       "name": "Buscador de la barra superior",
       "kind": "input",
       "refersTo": "input-search",
-      "description": "Búsqueda por número de pedido, cliente o correo.",
-      "html": "<label class=\"ds-search\"><svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"><circle cx=\"11\" cy=\"11\" r=\"8\"/><path d=\"m21 21-4.3-4.3\"/></svg><input placeholder=\"Nº de pedido, cliente o correo\"></label>",
-      "css": ".ds-search { position: relative; display: block; max-width: 420px; } .ds-search svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #6B706C; } .ds-search input { font-family: 'Archivo Variable', 'Archivo', system-ui, sans-serif; width: 100%; height: 36px; padding: 0 12px 0 36px; border: 1px solid #C7CAC4; border-radius: 3px; background: #F7F8F5; color: #121413; font-size: 14px; caret-color: #2F8F3E; } .ds-search input::placeholder { color: #6B706C; } .ds-search input:focus { outline: none; background: #fff; border-color: #2F8F3E; box-shadow: 0 0 0 2px rgba(47,143,62,.2); }"
+      "description": "Busca pedido, cliente o correo; se enfoca con la tecla /.",
+      "html": "<label class=\"ds-search\"><svg viewBox=\"0 0 24 24\" width=\"15\" height=\"15\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"><circle cx=\"11\" cy=\"11\" r=\"8\"/><path d=\"m21 21-4.3-4.3\"/></svg><input placeholder=\"Buscar pedido, cliente o correo\"><kbd>/</kbd></label>",
+      "css": ".ds-search { position: relative; display: block; max-width: 320px; } .ds-search svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #8A8E8B; } .ds-search input { font-family: 'Archivo Variable', 'Archivo', system-ui, sans-serif; width: 100%; height: 32px; padding: 0 32px; border: 1px solid #E1E1DC; border-radius: 7px; background: #fff; color: #0F1110; font-size: 13px; caret-color: #0F1110; } .ds-search input::placeholder { color: #8A8E8B; } .ds-search input:focus { outline: none; border-color: #0F1110; box-shadow: 0 0 0 2px rgba(15,17,16,.1); } .ds-search kbd { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 11px; line-height: 1; color: #666A67; border: 1px solid #E1E1DC; border-radius: 4px; padding: 3px 6px; }"
     },
     {
-      "name": "Navegación del carril",
+      "name": "Carril",
       "kind": "nav",
       "refersTo": "nav-item",
-      "description": "Secciones del panel en el carril grafito; el activo lleva filete verde a la izquierda.",
-      "html": "<nav class=\"ds-rail\"><button class=\"ds-rail-item is-on\">Hoy</button><button class=\"ds-rail-item\">Pedidos</button><button class=\"ds-rail-item\">Negocio</button></nav>",
-      "css": ".ds-rail { width: 240px; padding: 16px 12px; background: #1A1D1C; display: flex; flex-direction: column; gap: 2px; } .ds-rail-item { font-family: 'Archivo Variable', 'Archivo', system-ui, sans-serif; position: relative; height: 40px; padding: 0 12px; border: none; border-radius: 3px; background: transparent; color: #C4C8C3; font-size: 14px; text-align: left; cursor: pointer; transition: background 150ms, color 150ms; } .ds-rail-item:hover { background: #232725; color: #fff; } .ds-rail-item:focus-visible { outline: 2px solid #2F8F3E; outline-offset: 2px; } .ds-rail-item.is-on { background: #2A2F2D; color: #fff; font-weight: 600; } .ds-rail-item.is-on::before { content: ''; position: absolute; left: 0; top: 8px; bottom: 8px; width: 2px; background: #3FA64F; }"
+      "description": "Navegación clara con contadores en mono; el activo en lavado.",
+      "html": "<nav class=\"ds-rail\"><button class=\"ds-rail-item is-on\">Hoy <span>5</span></button><button class=\"ds-rail-item\">Pedidos <span>38</span></button><div class=\"ds-rail-group\">Dirección</div><button class=\"ds-rail-item\">Negocio</button></nav>",
+      "css": ".ds-rail { width: 248px; padding: 8px 12px 16px; background: #fff; border-right: 1px solid #E7E7E2; display: flex; flex-direction: column; gap: 1px; font-family: 'Archivo Variable', 'Archivo', system-ui, sans-serif; } .ds-rail-group { margin-top: 20px; padding: 0 10px 6px; font-size: 11.5px; color: #8A8E8B; } .ds-rail-item { display: flex; align-items: center; justify-content: space-between; height: 34px; padding: 0 10px; border: none; border-radius: 6px; background: transparent; color: #3B3F3C; font: inherit; font-size: 13.5px; text-align: left; cursor: pointer; transition: background 150ms, color 150ms; } .ds-rail-item span { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 11.5px; color: #8A8E8B; } .ds-rail-item:hover { background: #F6F6F3; color: #0F1110; } .ds-rail-item:focus-visible { outline: 2px solid #0F1110; outline-offset: 2px; } .ds-rail-item.is-on { background: #F1F1EE; color: #0F1110; font-weight: 600; } .ds-rail-item.is-on span { color: #0F1110; }"
     },
     {
-      "name": "Chip de filtro",
+      "name": "Control segmentado",
       "kind": "chip",
-      "refersTo": "filter-chip",
-      "description": "Filtra la cola de trabajo por tipo de tarea, con contador mono.",
-      "html": "<button class=\"ds-chip is-on\">Todas <span>12</span></button> <button class=\"ds-chip\">Aprobar en calidad <span>4</span></button>",
-      "css": ".ds-chip { font-family: 'Archivo Variable', 'Archivo', system-ui, sans-serif; display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border: 1px solid #C7CAC4; border-radius: 3px; background: #fff; color: #3D423F; font-size: 12px; font-weight: 500; cursor: pointer; transition: border-color 150ms; } .ds-chip span { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 11px; color: #6B706C; } .ds-chip:hover { border-color: #121413; } .ds-chip:focus-visible { outline: 2px solid #2F8F3E; outline-offset: 2px; } .ds-chip.is-on { background: #121413; border-color: #121413; color: #fff; } .ds-chip.is-on span { color: #C4C8C3; }"
+      "refersTo": "segmented",
+      "description": "Filtros de la cola y estados de Pedidos; el elegido se levanta en blanco.",
+      "html": "<div class=\"ds-seg\"><button class=\"is-on\">Todo <span>12</span></button><button>Escáner <span>4</span></button><button>Calidad <span>3</span></button></div>",
+      "css": ".ds-seg { display: inline-flex; gap: 2px; padding: 2px; border-radius: 8px; background: #EDEDE9; font-family: 'Archivo Variable', 'Archivo', system-ui, sans-serif; } .ds-seg button { height: 32px; padding: 0 12px; border: none; border-radius: 6px; background: transparent; color: #666A67; font: inherit; font-size: 13px; cursor: pointer; transition: color 150ms, background 150ms; } .ds-seg button span { margin-left: 6px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 11.5px; } .ds-seg button:hover { color: #0F1110; } .ds-seg button:focus-visible { outline: 2px solid #0F1110; outline-offset: 2px; } .ds-seg button.is-on { background: #fff; color: #0F1110; font-weight: 600; box-shadow: 0 1px 2px rgba(15,17,16,.08); }"
     },
     {
       "name": "Hoja",
       "kind": "card",
-      "refersTo": "sheet",
-      "description": "Superficie de trabajo: blanca, filete de 1px, esquinas de 3px, sin sombra.",
-      "html": "<section class=\"ds-sheet\"><header>Tu cola de trabajo</header><p>Ordenadas por lo que vence antes.</p></section>",
-      "css": ".ds-sheet { font-family: 'Archivo Variable', 'Archivo', system-ui, sans-serif; background: #fff; border: 1px solid #D7D9D3; border-radius: 3px; color: #121413; } .ds-sheet header { padding: 16px 20px; border-bottom: 1px solid #D7D9D3; font-size: 16px; font-weight: 700; } .ds-sheet p { margin: 0; padding: 12px 20px; font-size: 13px; color: #5A5F5B; }"
+      "refersTo": "sheet-lg",
+      "description": "Superficie de trabajo blanca con filete; 10px en las hojas grandes de Hoy, 8px en el resto.",
+      "html": "<section class=\"ds-sheet\"><header>Cola de trabajo</header><p>Y 3 más: las que llevan menos tiempo esperando.</p></section>",
+      "css": ".ds-sheet { font-family: 'Archivo Variable', 'Archivo', system-ui, sans-serif; background: #fff; border: 1px solid #E7E7E2; border-radius: 10px; color: #0F1110; overflow: hidden; } .ds-sheet header { padding: 14px 20px; border-bottom: 1px solid #E7E7E2; font-size: 13px; font-weight: 600; } .ds-sheet p { margin: 0; padding: 8px 20px; font-size: 12.5px; color: #666A67; }"
     },
     {
-      "name": "Sello de estado",
+      "name": "Estado",
       "kind": "custom",
       "refersTo": "status-pill",
-      "description": "Marcador cuadrado, nombre en mono mayúsculas y siete segmentos de avance.",
-      "html": "<span class=\"ds-status\"><span class=\"ds-status-name\"><i></i>Gradeo óptico</span><span class=\"ds-status-bar\"><b class=\"on\"></b><b class=\"on\"></b><b class=\"on\"></b><b></b><b></b><b></b><b></b></span></span>",
-      "css": ".ds-status { display: inline-flex; flex-direction: column; gap: 6px; } .ds-status-name { display: inline-flex; align-items: center; gap: 8px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: #121413; } .ds-status-name i { width: 8px; height: 8px; background: #2F8F3E; } .ds-status-bar { display: flex; gap: 3px; } .ds-status-bar b { width: 14px; height: 3px; background: #E2E4DF; } .ds-status-bar b.on { background: #2F8F3E; }"
+      "description": "Punto de 7px, nombre del estado y estación n/7.",
+      "html": "<span class=\"ds-status\"><i></i>Graduación óptica <span>4/7</span></span> <span class=\"ds-status\"><i style=\"background:#A86A12\"></i>En pausa</span>",
+      "css": ".ds-status { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; font-family: 'Archivo Variable', 'Archivo', system-ui, sans-serif; font-size: 13px; color: #0F1110; } .ds-status i { width: 7px; height: 7px; border-radius: 9999px; background: #0F1110; } .ds-status span { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 11px; color: #8A8E8B; }"
     },
     {
-      "name": "Regla de plazo",
+      "name": "Plazo",
       "kind": "custom",
-      "refersTo": "plazo-ruler",
-      "description": "Firma del panel: escala con un tick por día, marca roja en la fecha prevista y cruz de registro en hoy.",
-      "html": "<span class=\"ds-ruler\"><span class=\"ds-ruler-label\">Quedan 3 días</span><span class=\"ds-ruler-scale\"><span class=\"ticks\"></span><span class=\"track\"></span><span class=\"done\" style=\"width:62%\"></span><span class=\"due\" style=\"left:85%\"></span><span class=\"now-v\" style=\"left:62%\"></span><span class=\"now-h\" style=\"left:62%\"></span></span></span>",
-      "css": ".ds-ruler { display: flex; flex-direction: column; gap: 4px; width: 220px; font-family: 'Archivo Variable', 'Archivo', system-ui, sans-serif; } .ds-ruler-label { font-size: 12px; font-weight: 600; color: #2F8F3E; } .ds-ruler-scale { position: relative; display: block; height: 14px; } .ds-ruler-scale > span { position: absolute; display: block; } .ds-ruler-scale .ticks { left: 0; right: 0; bottom: 0; height: 6px; background-image: repeating-linear-gradient(90deg, #A9AEA9 0 1px, transparent 1px 10%); } .ds-ruler-scale .track { left: 0; right: 0; top: 3px; height: 3px; background: #E2E4DF; } .ds-ruler-scale .done { left: 0; top: 3px; height: 3px; background: #2F8F3E; } .ds-ruler-scale .due { top: 0; bottom: 0; width: 2px; margin-left: -1px; background: #B42B22; } .ds-ruler-scale .now-v { top: -2px; width: 1px; height: 18px; background: #121413; } .ds-ruler-scale .now-h { top: 4px; width: 9px; height: 1px; margin-left: -4px; background: #121413; }"
+      "refersTo": "plazo",
+      "description": "Barra compacta de 56px con el plazo en palabras; tinta, ámbar o rojo.",
+      "html": "<span class=\"ds-plazo\"><span class=\"bar\"><span style=\"width:40%\"></span></span>6 días</span> <span class=\"ds-plazo is-warn\"><span class=\"bar\"><span style=\"width:85%\"></span></span>Mañana</span> <span class=\"ds-plazo is-late\"><span class=\"bar\"><span style=\"width:100%\"></span></span>+2 días</span>",
+      "css": ".ds-plazo { display: inline-flex; align-items: center; gap: 10px; white-space: nowrap; font-family: 'Archivo Variable', 'Archivo', system-ui, sans-serif; font-size: 13px; color: #0F1110; } .ds-plazo .bar { position: relative; width: 56px; height: 3px; border-radius: 9999px; background: #ECECE8; overflow: hidden; } .ds-plazo .bar span { position: absolute; top: 0; bottom: 0; left: 0; border-radius: 9999px; background: currentColor; } .ds-plazo.is-warn { color: #A86A12; font-weight: 600; } .ds-plazo.is-late { color: #C2362B; font-weight: 600; }"
+    },
+    {
+      "name": "Línea del laboratorio",
+      "kind": "custom",
+      "refersTo": "lab-line",
+      "description": "Firma: estaciones sobre una línea de tinta, recuento arriba, una rayita por pedido, rojas las que van tarde.",
+      "html": "<ol class=\"ds-line\"><li><b>3</b><span class=\"t\"><i></i><i></i><i></i></span><s class=\"on\"></s><em>Recibido</em></li><li><b>5</b><span class=\"t\"><i class=\"late\"></i><i></i><i></i><i></i><i></i></span><s class=\"on\"></s><em>Graduación <strong>· 1 tarde</strong></em></li><li><b class=\"zero\">0</b><span class=\"t\"></span><s></s><em>Calidad</em></li></ol>",
+      "css": ".ds-line { position: relative; display: grid; grid-template-columns: repeat(3, 1fr); margin: 0; padding: 0; list-style: none; font-family: 'Archivo Variable', 'Archivo', system-ui, sans-serif; color: #0F1110; } .ds-line::before { content: ''; position: absolute; left: 16.66%; right: 16.66%; top: 61px; height: 1px; background: #0F1110; } .ds-line li { position: relative; height: 96px; display: flex; flex-direction: column; align-items: center; } .ds-line b { font-size: 22px; line-height: 28px; font-weight: 600; letter-spacing: -0.02em; } .ds-line b.zero { color: #C9CBC7; } .ds-line .t { display: flex; align-items: flex-end; gap: 3px; height: 22px; margin-top: 3px; } .ds-line .t i { display: block; width: 3px; height: 14px; border-radius: 1px; background: #0F1110; } .ds-line .t i.late { height: 18px; background: #C2362B; } .ds-line s { position: absolute; top: 57px; width: 9px; height: 9px; box-sizing: border-box; border-radius: 9999px; border: 1.5px solid #0F1110; background: #fff; transition: transform 150ms; } .ds-line s.on { background: #0F1110; } .ds-line li:hover s { transform: scale(1.25); } .ds-line em { position: absolute; top: 74px; font-style: normal; font-size: 12px; color: #666A67; white-space: nowrap; } .ds-line em strong { color: #C2362B; font-weight: 600; }"
     }
   ],
   "narrative": {
-    "northStar": "Banco de calibración",
-    "overview": "El panel interno (/admin) es el banco de medida del laboratorio: el plazo de cada pedido se lee sobre una escala, no se adivina. Un carril lateral grafito sostiene la herramienta; el trabajo ocurre en hojas blancas apoyadas sobre un suelo gris banco, separadas por filetes de 1 px. La densidad es la de un instrumento: filas compactas, cifras tabulares, códigos en mono, y color solo cuando significa algo (acción principal, avance, o una fase concreta de la carta de calibración).\n\nEl orden de lectura es fijo: primero lo urgente (fuera de plazo), luego la cola por acción, luego el estado del laboratorio entero. Los estados se sellan y nunca desaparecen: pausas y cancelaciones siguen visibles con su parche. El panel es siempre claro; se usa en un laboratorio iluminado. Rechaza el dashboard de tarjetas de colores con iconos y saludos.\n\nEste mundo cubre solo el panel interno. La web pública (`/`, cuenta del cliente, verificador) conserva su propio aspecto y no hereda estas reglas.",
+    "northStar": "Banco de calibración (versión mínima de empresa)",
+    "overview": "El panel interno (/admin) sigue siendo el banco de medida del laboratorio, pero dicho en voz baja. Un carril blanco a la izquierda, un lienzo neutro casi blanco, hojas blancas con filetes finos, y una sola tinta casi negra que hace de botón principal, foco y selección. El color aparece solo cuando significa algo: rojo cuando un pedido va tarde, ámbar cuando vence ya, y el verde Gorilla queda reducido al escudo y al punto de \"entregado\".\n\nEl orden de lectura es fijo: una frase con lo que toca hoy, la línea del laboratorio con todo lo que está en marcha, y la cola de trabajo de quien entra, agrupada por acción y con un botón por tarea. Los títulos van en frase; las cifras son tabulares y los códigos van en mono. El panel es siempre claro; se usa en un laboratorio iluminado. Rechaza el dashboard de tarjetas de colores con iconos y saludos.\n\nEste mundo cubre solo el panel interno. La web pública (`/`, cuenta del cliente, verificador) conserva su propio aspecto y no hereda estas reglas.",
     "keyCharacteristics": [
-      "Carril grafito fijo de 240 px + barra superior blanca de 56 px con búsqueda por número.",
-      "Hojas blancas con filete de 1 px y esquinas de 3 px sobre suelo gris banco; sin sombras en reposo.",
-      "Una familia (Archivo Variable) con cifras tabulares, más JetBrains Mono para códigos, recuentos y rótulos de dato.",
-      "Verde Gorilla solo para la acción principal, el avance y el foco.",
-      "Estados codificados como parches de una carta de calibración (STAGE_COLOR).",
-      "Firma: la regla de plazo en cada fila de la cola."
+      "Carril blanco de 248 px con filete derecho, grupos \"Laboratorio\" / \"Dirección\" y contadores en mono apagado.",
+      "Barra superior de 60 px sobre el lienzo (95% con desenfoque): ruta en migas y buscador con atajo \"/\".",
+      "Hojas blancas con filete de 1 px y esquinas de 8 px (10 px en las dos hojas grandes de Hoy).",
+      "Una tinta (ink) para acción principal, foco y selección; color solo para tarde, aviso y entregado.",
+      "Títulos en frase; mono solo para códigos y recuentos.",
+      "Firma: la línea del laboratorio."
     ],
     "rules": [
-      { "name": "The Green Means Go Rule", "body": "El verde Gorilla marca la acción principal y el avance; nunca decora. Una pantalla tiene como mucho un botón primario por bloque de decisión.", "section": "colors" },
-      { "name": "The Calibration Chart Rule", "body": "El color de un estado sale siempre de STAGE_COLOR. No se inventan colores de estado por pantalla.", "section": "colors" },
-      { "name": "The Fixed Scale Rule", "body": "La urgencia se expresa con la escala (verde en plazo, ámbar ≤ 1 día, rojo vencido), no con colores sueltos.", "section": "colors" },
-      { "name": "The Measured Figure Rule", "body": "Toda cifra se compone tabular; los códigos van en mono. Ningún número baila al actualizarse.", "section": "typography" },
-      { "name": "The Flat Bench Rule", "body": "Ninguna hoja en reposo lleva sombra. Si algo necesita destacar, cambia su filete (rojo para retraso) o su posición en la cola, no su elevación.", "section": "elevation" }
+      { "name": "The One Ink Rule", "body": "La acción principal, el foco y la selección son tinta. El verde no es el color de acción.", "section": "colors" },
+      { "name": "The Meaning Only Rule", "body": "Un color que no sea tinta o neutro tiene que decir tarde, aviso o entregado. Nada más se colorea.", "section": "colors" },
+      { "name": "The Fixed Scale Rule", "body": "El plazo se dice siempre igual: tinta en plazo, ámbar si vence hoy o mañana, rojo si va tarde.", "section": "colors" },
+      { "name": "The Sentence Case Rule", "body": "Títulos, cabeceras de tabla y rótulos van en frase, en la familia de texto. No hay rótulos en mayúsculas ni en mono.", "section": "typography" },
+      { "name": "The Flat Sheet Rule", "body": "Las hojas no llevan sombra. Para separar, filete o lienzo.", "section": "elevation" }
     ],
     "dos": [
-      "**Do** consumir `usePanelTheme()` para hojas, texto, campos y botones en cualquier pantalla nueva del panel.",
-      "**Do** colorear cualquier estado con STAGE_COLOR y mostrarlo con el sello de estado.",
-      "**Do** separar con filetes de 1px (fillet, fillet-soft) y capas tonales, con esquinas de 3px.",
-      "**Do** poner números de pedido, recuentos y medidas en JetBrains Mono y todas las cifras tabulares.",
-      "**Do** ordenar lo urgente primero y mostrar pausas y cancelaciones, nunca ocultarlas."
+      "**Do** consumir `usePanelTheme()` y las constantes `INK`, `LATE`, `WARN` en cualquier pantalla nueva del panel.",
+      "**Do** usar tinta para la acción principal y contorno para el resto; un botón de acción por tarea, alineado a la derecha.",
+      "**Do** escribir títulos, cabeceras y rótulos en frase.",
+      "**Do** poner números de pedido (en grupos de tres) y recuentos en JetBrains Mono, con cifras tabulares en todo.",
+      "**Do** decir el plazo con la barra compacta y palabras, en la escala tinta / ámbar / rojo.",
+      "**Do** mostrar pausas y cancelaciones; nunca ocultarlas."
     ],
     "donts": [
-      "**Don't** usar sombras en hojas en reposo; solo cajón, diálogo y tooltip.",
-      "**Don't** usar el verde Gorilla como decoración o fondo de bloques.",
-      "**Don't** inventar colores de estado o de rol fuera de la carta de calibración.",
-      "**Don't** construir tarjetas de colores con icono grande y saludo; el panel abre con la cola.",
-      "**Don't** usar píldoras redondeadas para estados; el sello es cuadrado.",
+      "**Don't** usar el verde Gorilla para botones, enlaces o estados que no sean \"entregado\".",
+      "**Don't** colorear estados de la ruta normal; van en tinta.",
+      "**Don't** poner rótulos en mayúsculas ni rótulos en mono sobre títulos o campos.",
+      "**Don't** dar sombra a las hojas.",
+      "**Don't** construir tarjetas de colores con icono grande y saludo; Hoy abre con la frase, la línea y la cola.",
       "**Don't** traer el aspecto de la web pública (menú, pie, fondos crema) al panel."
     ]
   }

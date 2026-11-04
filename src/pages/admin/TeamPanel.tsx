@@ -8,10 +8,10 @@ import { usePanelTheme } from './ui';
 
 /** Color e icono de cada rol, iguales en las tarjetas, las insignias y el formulario. */
 const ROLE_STYLE: Record<StaffRole, { color: string; icon: LucideIcon }> = {
-  staff: { color: '#0284C7', icon: PackageOpen },
-  grader: { color: '#2F8F3E', icon: ClipboardList },
-  qa: { color: '#4F46E5', icon: ShieldCheck },
-  admin: { color: '#B45309', icon: Crown },
+  staff: { color: '#0F1110', icon: PackageOpen },
+  grader: { color: '#0F1110', icon: ClipboardList },
+  qa: { color: '#0F1110', icon: ShieldCheck },
+  admin: { color: '#0F1110', icon: Crown },
 };
 
 const initials = (m: TeamMemberDto) => {
@@ -135,10 +135,9 @@ export const TeamPanel: React.FC<{ user: UserDto }> = ({ user }) => {
                 <div className="p-5 pb-4">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <div className="font-mono text-[10px] font-bold tracking-[0.2em]" style={{ color }}>PUESTO {String(index + 1).padStart(2, '0')}</div>
-                      <h3 className={`mt-1 text-lg font-bold leading-tight ${t.text}`}>{info.name}</h3>
+                      <h3 className={`text-lg font-semibold leading-tight ${t.text}`}>{info.name}</h3>
                     </div>
-                    <span className="w-10 h-10 rounded-[8px] flex items-center justify-center shrink-0" style={{ background: `${color}1F`, color }}>
+                    <span className="w-10 h-10 rounded-[8px] flex items-center justify-center shrink-0" style={{ background: '#F1F1EE', color }}>
                       <Icon className="w-5 h-5" aria-hidden="true" />
                     </span>
                   </div>
@@ -167,7 +166,7 @@ export const TeamPanel: React.FC<{ user: UserDto }> = ({ user }) => {
                 </div>
 
                 {/* Las personas de este puesto */}
-                <div className={`flex-1 flex flex-col border-t rounded-b-2xl ${t.rule} ${t.isLight ? 'bg-[#FAF8F5]' : 'bg-[#2F2F2F]'}`}>
+                <div className={`flex-1 flex flex-col border-t rounded-b-[8px] ${t.rule} ${t.isLight ? 'bg-[#FAFAF8]' : 'bg-[#2F2F2F]'}`}>
                   <div className={`flex items-center justify-between px-5 pt-3 pb-1 text-[12px] ${t.muted}`}>
                     <span>{people.length} {people.length === 1 ? 'persona' : 'personas'}</span>
                   </div>

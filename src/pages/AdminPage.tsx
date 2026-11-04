@@ -103,7 +103,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ path, onNavigate }) => {
         <h1 className="text-xl font-bold">{title}</h1>
         <p className="text-sm text-[#666A67]">{body}</p>
         {action && (
-          <button type="button" onClick={() => onNavigate(action.to)} className="w-full h-10 rounded-[8px] bg-[#2F8F3E] hover:bg-[#25762F] text-white text-sm font-semibold cursor-pointer">
+          <button type="button" onClick={() => onNavigate(action.to)} className="w-full h-10 rounded-[8px] bg-[#0F1110] hover:bg-[#2A2E2B] text-white text-sm font-semibold cursor-pointer">
             {action.label}
           </button>
         )}
