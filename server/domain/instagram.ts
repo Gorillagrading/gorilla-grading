@@ -108,7 +108,8 @@ async function discoverUserId(token: string, fetchImpl: FetchLike): Promise<stri
   const attempts: [string, (body: any) => string | undefined][] = [
     [`/me?fields=instagram_business_account&${t}`, (b) => b?.instagram_business_account?.id],
     [`/me/accounts?fields=instagram_business_account&limit=25&${t}`, (b) => b?.data?.find((x: any) => x?.instagram_business_account)?.instagram_business_account?.id],
-    [`/me/instagram_accounts?fields=id,username&limit=25&${t}`, (b) => b?.data?.[0]?.id],
+    // Usuario del sistema: la cuenta aparece entre los activos que se le han asignado en el Administrador comercial.
+    [`/me/assigned_instagram_accounts?fields=id,username&limit=25&${t}`, (b) => b?.data?.[0]?.id],
   ];
   for (const [path, pick] of attempts) {
     const { status, body } = await getJson(`${GRAPH_FACEBOOK}${path}`, fetchImpl);

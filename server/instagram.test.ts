@@ -128,10 +128,10 @@ describe('clave unificada o de Facebook (graph.facebook.com)', () => {
     expect((fetcher as any).mock.calls.some((c: any[]) => String(c[0]).includes('graph.facebook.com/v21.0/1784/media'))).toBe(true);
   });
 
-  it('con una clave de usuario del sistema usa /me/instagram_accounts', async () => {
+  it('con una clave de usuario del sistema usa las cuentas que tiene asignadas', async () => {
     process.env.INSTAGRAM_ACCESS_TOKEN = 'clave-sistema';
     const fetcher = facebookOnly({
-      '/me/instagram_accounts': { data: [{ id: '5555', username: 'gorillagradinginternational' }] },
+      '/me/assigned_instagram_accounts': { data: [{ id: '5555', username: 'gorillagradinginternational' }] },
       '/5555/media': { data: [media()] },
     });
     expect((await getInstagramPosts(db, 8, fetcher)).posts).toHaveLength(1);
@@ -154,7 +154,7 @@ describe('clave unificada o de Facebook (graph.facebook.com)', () => {
 
   it('una clave que no caduca no se renueva ni da error', async () => {
     process.env.INSTAGRAM_ACCESS_TOKEN = 'clave-sistema';
-    await getInstagramPosts(db, 8, facebookOnly({ '/me/instagram_accounts': { data: [{ id: '5555' }] }, '/5555/media': { data: [media()] } }));
+    await getInstagramPosts(db, 8, facebookOnly({ '/me/assigned_instagram_accounts': { data: [{ id: '5555' }] }, '/5555/media': { data: [media()] } }));
     await db.execute(sql`update integration_tokens set refreshed_at = now() - interval '40 days'`);
     const log = vi.spyOn(console, 'error').mockImplementation(() => {});
     expect(await renewInstagramToken(db, facebookOnly({}))).toBe('not_needed');
