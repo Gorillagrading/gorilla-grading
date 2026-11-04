@@ -1,10 +1,11 @@
-import { and, desc, eq, inArray, type SQL } from 'drizzle-orm';
+import { and, desc, eq, inArray, isNotNull, type SQL } from 'drizzle-orm';
 import type { Db } from '../../db/client.js';
 import {
   cardIdentities,
   certificates,
   gradingDefects,
   gradingResults,
+  itemImages,
   orderItems,
   orders,
 } from '../../db/schema.js';
@@ -59,6 +60,7 @@ export async function loadCards(
       result: gradingResults,
       identity: cardIdentities,
       declaredValueCents: orderItems.declaredValueCents,
+      itemId: orderItems.id,
     })
     .from(certificates)
     .innerJoin(gradingResults, eq(gradingResults.id, certificates.gradingResultId))
@@ -95,6 +97,23 @@ export async function loadCards(
   );
   // El informe del escáner, sin rutas privadas. Los recortes de las esquinas solo al consultar un certificado
   // concreto: en una lista serían muchos enlaces firmados que nadie mira.
+  // Fotos de la carta ya encapsulada que sube el laboratorio (la más reciente de cada cara). Solo al consultar
+  // un certificado concreto, como los recortes de las esquinas.
+  const slabPhotos = filter.number
+    ? await db
+        .select({ itemId: itemImages.orderItemId, kind: itemImages.kind, key: itemImages.storageKey })
+        .from(itemImages)
+        .where(and(inArray(itemImages.orderItemId, rows.map((r) => r.itemId)), isNotNull(itemImages.uploadedAt)))
+        .orderBy(desc(itemImages.createdAt))
+    : [];
+  const slabs = await Promise.all(
+    rows.map(async ({ itemId }) => {
+      const latest = (kind: 'front' | 'back') => slabPhotos.find((p) => p.itemId === itemId && p.kind === kind)?.key;
+      const front = await signedUrl(latest('front'));
+      const back = await signedUrl(latest('back'));
+      return front || back ? { front, back } : null;
+    }),
+  );
   const scans = await Promise.all(
     rows.map(async ({ result }, index) => {
       const report = result.scanReport as ScanReport | null;
@@ -178,6 +197,7 @@ export async function loadCards(
               deduction: d.deduction,
             })),
       scan: scans[index],
+      slabImages: slabs[index],
       population: {
         totalGraded: samePrint.length,
         higherCount: samePrint.filter((p) => (p.grade ?? 0) > grade).length,

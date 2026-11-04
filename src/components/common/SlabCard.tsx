@@ -10,6 +10,9 @@ interface SlabCardProps {
   onInspect?: () => void;
   size?: 'sm' | 'md' | 'lg';
   variant?: 'slab' | 'card-only';
+  /** Daño del escáner resaltado (su número), compartido con la lista de daños. */
+  highlighted?: number | null;
+  onDefectHover?: (n: number | null) => void;
 }
 
 export const SlabCard: React.FC<SlabCardProps> = ({
@@ -17,7 +20,9 @@ export const SlabCard: React.FC<SlabCardProps> = ({
   interactive = true,
   onInspect,
   size = 'md',
-  variant = 'slab'
+  variant = 'slab',
+  highlighted = null,
+  onDefectHover,
 }) => {
   const { t, language } = useLanguage();
   const { theme } = useTheme();
@@ -85,6 +90,32 @@ export const SlabCard: React.FC<SlabCardProps> = ({
             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
             loading="lazy"
           />
+
+          {/* Daños del informe del escáner, con su número, sobre la cara que se ve. */}
+          {card.defects
+            .filter((d) => d.n !== undefined && (d.side ?? 'front') === (isFlipped ? 'back' : 'front'))
+            .map((d) => (
+              <button
+                key={d.id}
+                type="button"
+                aria-label={`${d.n}. ${d.title}`}
+                onMouseEnter={() => onDefectHover?.(d.n!)}
+                onMouseLeave={() => onDefectHover?.(null)}
+                onFocus={() => onDefectHover?.(d.n!)}
+                onBlur={() => onDefectHover?.(null)}
+                onClick={(e) => {
+                  // En el móvil no hay ratón: tocar el número lo resalta en vez de abrir el dossier.
+                  e.stopPropagation();
+                  onDefectHover?.(highlighted === d.n ? null : d.n!);
+                }}
+                className={`absolute -translate-x-1/2 -translate-y-1/2 flex items-center justify-center w-5 h-5 rounded-full ring-2 text-white font-mono text-[10px] font-bold shadow transition-transform duration-150 cursor-pointer ${
+                  highlighted === d.n ? 'z-30 scale-150 bg-red-600 ring-white' : 'z-10 bg-red-600/90 ring-white/80 hover:scale-125'
+                }`}
+                style={{ left: `${d.x}%`, top: `${d.y}%` }}
+              >
+                {d.n}
+              </button>
+            ))}
 
           {/* Dynamic Holographic Specular Glare across card face */}
           <div

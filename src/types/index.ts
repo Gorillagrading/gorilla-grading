@@ -72,6 +72,8 @@ export interface GradedCard {
   isAuthentic: boolean;
   /** Informe del escáner, si la nota sale de él. */
   scan?: PublicScanReport | null;
+  /** Fotos de la carta ya encapsulada en su slab. */
+  slabImages?: { front: string; back: string } | null;
 }
 
 /** Carta certificada tal como la ve el público: sin el valor declarado, que es del dueño. */

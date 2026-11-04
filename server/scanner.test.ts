@@ -226,6 +226,10 @@ describe('importación del informe en una carta', () => {
   it('al aprobar la salida, el certificado lleva el número del informe y el cliente ve el informe completo', async () => {
     const code = await receivedOrder();
     await upload(code, 'grader@lab.test');
+    // Foto de la carta ya en su slab, que sube el laboratorio.
+    const photo = await (await api(`/admin/orders/${code}/items/1/images`, 'staff@lab.test', { body: { kind: 'front', contentType: 'image/jpeg', byteSize: 1000 } })).json() as any;
+    t.storage.put(photo.upload.url.replace('memory://upload/', ''));
+    await api(`/admin/orders/${code}/items/1/images/${photo.image.id}/confirm`, 'staff@lab.test', { body: {} });
     expect((await api(`/admin/orders/${code}/items/1/grading/approve`, 'qa@lab.test', { body: {} })).status).toBe(200);
     await db.execute(sql`update custody_events set occurred_at = occurred_at - interval '40 days'`);
     await db.execute(sql`update orders set auto_anchor_at = auto_anchor_at - interval '40 days' where auto_anchor_at is not null`);
@@ -253,6 +257,10 @@ describe('importación del informe en una carta', () => {
     expect(certificate.defects[0]).toMatchObject({ n: 1, title: 'Filo comido', category: 'Edges', side: 'front' });
     expect(certificate.scan).toMatchObject({ certificateNumber: '199157603', criteria: '3.20', final: 5, faces: [{ side: 'front', corners: { length: 4 } }] });
     expect(certificate.scan.images.corners.front.bottomRight).toMatch(/front-esquina-bottomRight\.jpg/);
+    // La foto del slab va aparte del escaneo, que sigue siendo la imagen con los daños.
+    expect(certificate.slabImages.front).toMatch(/items\/.+\/front-.+\.jpg/);
+    expect(certificate.slabImages.front).not.toMatch(/escaneo/);
+    expect(certificate.slabImages.back).toBe('');
     // Nada privado: ni la ruta del PDF ni su huella.
     expect(JSON.stringify(certificate.scan)).not.toMatch(/informe\.pdf|sha256/);
   });

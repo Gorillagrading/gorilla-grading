@@ -12,16 +12,16 @@ const CORNER_LABEL: Record<CornerPosition, Record<Lang, string>> = {
   bottomLeft: { es: 'Inferior izquierda', en: 'Bottom left' },
   bottomRight: { es: 'Inferior derecha', en: 'Bottom right' },
 };
-const AREA_LABEL: Record<DamageArea, Record<Lang, string>> = {
+export const AREA_LABEL: Record<DamageArea, Record<Lang, string>> = {
   edges: { es: 'Bordes', en: 'Edges' },
   surface: { es: 'Superficie', en: 'Surface' },
   corners: { es: 'Esquinas', en: 'Corners' },
 };
-const SIZE_LABEL = { small: { es: 'pequeño', en: 'small' }, medium: { es: 'mediano', en: 'medium' }, large: { es: 'grande', en: 'large' } } as const;
+export const SIZE_LABEL = { small: { es: 'pequeño', en: 'small' }, medium: { es: 'mediano', en: 'medium' }, large: { es: 'grande', en: 'large' } } as const;
 const SIDE_LABEL: Record<ScanSide, Record<Lang, string>> = { front: { es: 'Anverso', en: 'Front' }, back: { es: 'Reverso', en: 'Back' } };
 
 /** El escáner escribe en español; en inglés se traducen los tipos de daño y los sitios que conocemos. */
-const KIND_EN: Record<string, string> = {
+export const KIND_EN: Record<string, string> = {
   'filo comido': 'Edge wear',
   manchón: 'Smudge',
   'desconchón de tinta': 'Ink chip',
@@ -33,17 +33,17 @@ const KIND_EN: Record<string, string> = {
   doblez: 'Crease',
   arruga: 'Crease',
 };
-const LOCATION_EN: Record<string, string> = {
+export const LOCATION_EN: Record<string, string> = {
   'borde de arriba': 'top edge',
   'borde de abajo': 'bottom edge',
   'borde derecho': 'right edge',
   'borde izquierdo': 'left edge',
 };
-const translate = (text: string, dictionary: Record<string, string>, lang: Lang) =>
+export const translate = (text: string, dictionary: Record<string, string>, lang: Lang) =>
   lang === 'en' ? (dictionary[text.trim().toLowerCase()] ?? text) : text;
 
 /** Números con coma en español: 2,47. */
-const mm = (n: number, lang: Lang, digits = 2) =>
+export const mm = (n: number, lang: Lang, digits = 2) =>
   n.toLocaleString(lang === 'es' ? 'es-ES' : 'en-GB', { minimumFractionDigits: digits, maximumFractionDigits: digits });
 
 /** El reparto más descentrado de los dos ejes ("51/49" frente a "50/50"). */
@@ -398,6 +398,27 @@ const FinalGrade: React.FC<BlockProps & { scan: PublicScanReport }> = ({ scan, l
           <p className={`mt-2 text-xs leading-relaxed ${muted}`} lang="es">{scan.method}</p>
         </details>
       )}
+    </div>
+  );
+};
+
+/** Solo las esquinas del informe (recortes ampliados, nota y tabla), para el verificador. */
+export const ScanCorners: React.FC<{ scan: PublicScanReport }> = ({ scan }) => {
+  const { language } = useLanguage();
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
+  const lang: Lang = language === 'es' ? 'es' : 'en';
+  const kicker = `font-mono text-[9px] sm:text-[10px] tracking-[0.2em] uppercase font-bold ${isLight ? 'text-gray-500' : 'text-gray-400'}`;
+  const faces = scan.faces.filter((f) => f.corners.length > 0);
+  if (faces.length === 0) return null;
+  return (
+    <div className="space-y-6">
+      {faces.map((face) => (
+        <div key={face.side}>
+          {faces.length > 1 && <p className={`${kicker} mb-2`}>{SIDE_LABEL[face.side][lang]}</p>}
+          <Corners face={face} images={scan.images.corners[face.side] ?? {}} lang={lang} isLight={isLight} kicker={kicker} />
+        </div>
+      ))}
     </div>
   );
 };

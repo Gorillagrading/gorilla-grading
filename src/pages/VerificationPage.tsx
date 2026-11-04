@@ -6,6 +6,9 @@ import { ApiError } from '../api/client';
 import { channelFromUrl, fetchCertificate, type PublicCertificate } from '../api/certificates';
 import { SlabCard } from '../components/common/SlabCard';
 import { DefectInspector } from '../components/common/DefectInspector';
+import { SlabPhotos } from '../components/common/SlabPhotos';
+import { DamageList } from '../components/common/DamageList';
+import { ScanCorners } from '../components/common/ScanReportPanel';
 import { CertificateStatusBanner } from '../components/common/CertificateStatusBanner';
 import { Search, ShieldCheck, ArrowRight } from 'lucide-react';
 import { VerifyLogo } from '../components/luxury/VerifyLogo';
@@ -29,6 +32,8 @@ export const VerificationPage: React.FC<VerificationPageProps> = ({ onNavigate }
   const [searchInput, setSearchInput] = useState(initialQuery);
   const [activeCard, setActiveCard] = useState<PublicCertificate | null>(null);
   const [loading, setLoading] = useState(false);
+  /** Daño resaltado: el número que se señala en la carta o en la lista de debajo. */
+  const [hoveredDamage, setHoveredDamage] = useState<number | null>(null);
   const [error, setError] = useState<{ kind: 'not_found' | 'rate_limited' | 'other'; query: string } | null>(null);
 
   const errorMsg = !error
@@ -183,7 +188,14 @@ export const VerificationPage: React.FC<VerificationPageProps> = ({ onNavigate }
               {/* Subtle background glow */}
               <div className="absolute inset-0 bg-[#48C765]/5 blur-[80px] pointer-events-none opacity-40 group-hover:opacity-80 transition-opacity" />
               <div className="relative z-10 flex justify-center">
-                <SlabCard card={activeCard} size="md" variant="card-only" onInspect={() => onNavigate(`/certificates/${activeCard.certNumber}`)} />
+                <SlabCard
+                  card={activeCard}
+                  size="md"
+                  variant="card-only"
+                  onInspect={() => onNavigate(`/certificates/${activeCard.certNumber}`)}
+                  highlighted={hoveredDamage}
+                  onDefectHover={setHoveredDamage}
+                />
               </div>
             </div>
             
@@ -194,6 +206,8 @@ export const VerificationPage: React.FC<VerificationPageProps> = ({ onNavigate }
               <span>{language === 'es' ? 'Ver Dossier con Slab 3D' : 'View Dossier with 3D Slab'}</span>
               <span>→</span>
             </button>
+
+            {activeCard.scan && <DamageList scan={activeCard.scan} highlighted={hoveredDamage} onHover={setHoveredDamage} />}
           </div>
 
           {/* Right Column: Editorial Data Sheet */}
@@ -318,6 +332,13 @@ export const VerificationPage: React.FC<VerificationPageProps> = ({ onNavigate }
               </div>
             </div>
 
+            {/* 3b. Esquinas del informe del escáner: recortes ampliados y medidas. */}
+            {activeCard.scan && (
+              <div className={`py-5 border-b ${isLight ? 'border-gray-200' : 'border-white/10'}`}>
+                <ScanCorners scan={activeCard.scan} />
+              </div>
+            )}
+
             {/* 4. Population Census */}
             <div className={`py-5 border-b ${isLight ? 'border-gray-200' : 'border-white/10'}`}>
               <div className="grid grid-cols-3 gap-6">
@@ -348,9 +369,13 @@ export const VerificationPage: React.FC<VerificationPageProps> = ({ onNavigate }
               </div>
             </div>
 
-            {/* 5. Defect Inspector (Full Width Module) */}
+            {/* 5. La carta en su slab (foto del laboratorio). Sin foto, el mapa de defectos. */}
             <div className="mt-5">
-              <DefectInspector card={activeCard} />
+              {activeCard.slabImages ? (
+                <SlabPhotos images={activeCard.slabImages} name={activeCard.name} />
+              ) : (
+                <DefectInspector card={activeCard} />
+              )}
             </div>
 
           </div>

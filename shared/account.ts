@@ -66,6 +66,8 @@ export interface GradedCardDto {
   isAuthentic: boolean;
   /** Informe del escáner, si la nota sale de él. Las imágenes de las esquinas solo vienen al consultar un certificado. */
   scan?: PublicScanReport | null;
+  /** Fotos de la carta ya encapsulada en su slab (enlaces firmados). Solo al consultar un certificado concreto. */
+  slabImages?: { front: string; back: string } | null;
 }
 
 /**

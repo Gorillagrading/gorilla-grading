@@ -112,6 +112,12 @@ export const GradingPanel: React.FC<{
           onSave={(body) => run(() => identifyCard(code, item.position, body), 'Carta identificada.')}
         />
 
+        {!gradable && order.order.status === 'SUBMITTED' && (
+          <p className={`text-xs font-bold ${t.isLight ? 'text-amber-700' : 'text-amber-300'}`}>
+            Confirma la recepción del paquete para identificar la carta e importar el informe del escáner (PDF).
+          </p>
+        )}
+
         <Photos code={code} position={item.position} images={images} canPhoto={canPhoto} busy={busy} run={run} />
 
         {grading && !editing && <ResultView grading={grading} />}
@@ -302,7 +308,10 @@ const Photos: React.FC<{
 
   return (
     <div>
-      <h4 className={`font-mono text-[10px] uppercase tracking-wider mb-2 ${t.muted}`}>Fotos</h4>
+      <h4 className={`font-mono text-[10px] uppercase tracking-wider mb-1 ${t.muted}`}>Fotos del slab (opcional)</h4>
+      <p className={`text-[11px] mb-2 ${t.muted}`}>
+        Solo si quieres guardar fotos de la carta ya encapsulada. Las imágenes del certificado (el escaneo y las esquinas) salen del PDF del escáner.
+      </p>
       {images.length > 0 && (
         <ul className="flex flex-wrap gap-3 mb-3">
           {images.map((img) => (
