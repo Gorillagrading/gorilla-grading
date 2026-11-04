@@ -22,6 +22,12 @@ export const VerifyCodeBody = z.object({
 });
 export type VerifyCodeBody = z.infer<typeof VerifyCodeBody>;
 
+/** Cambiar el nombre de la propia cuenta (el que se ve en el panel y en los pedidos). */
+export const UpdateMeBody = z.object({
+  fullName: z.string().trim().min(1).max(80),
+});
+export type UpdateMeBody = z.infer<typeof UpdateMeBody>;
+
 export const UserDto = z.object({
   id: z.uuid(),
   email: z.string(),

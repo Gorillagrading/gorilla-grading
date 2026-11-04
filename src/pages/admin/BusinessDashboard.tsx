@@ -282,7 +282,6 @@ export const BusinessDashboard: React.FC<{ onOpenOrder: (code: string) => void }
 
           <NewsletterCard />
 
-          <CertificateHistorySection onOpenOrder={onOpenOrder} />
 
           <p className={`text-xs ${t.muted}`}>
             Ingresos: pagos confirmados por Stripe (con IVA). Clientes: cuentas de clientes, sin el personal del laboratorio.
@@ -364,7 +363,7 @@ const OrderLink: React.FC<{ code: string; onOpen: (code: string) => void }> = ({
 const CERT_STATUS: Record<string, string> = { revoked: 'Revocado', superseded: 'Sustituido' };
 
 /** Todas las cartas certificadas, con su cliente y su número de certificado. Con buscador y páginas. */
-const CertificateHistorySection: React.FC<{ onOpenOrder: (code: string) => void }> = ({ onOpenOrder }) => {
+export const CertificateHistorySection: React.FC<{ onOpenOrder: (code: string) => void }> = ({ onOpenOrder }) => {
   const t = usePanelTheme();
   const [search, setSearch] = useState('');
   const [q, setQ] = useState('');

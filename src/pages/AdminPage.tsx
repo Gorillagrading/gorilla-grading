@@ -7,7 +7,7 @@ import { STAFF_ROLES } from '../../shared/admin';
 import { useAuth } from '../context/AuthContext';
 import { fetchAdminOrders, fetchStaffToday } from '../api/admin';
 import { ACTIVE_STATUSES } from '../../shared/domain';
-import { BusinessDashboard } from './admin/BusinessDashboard';
+import { BusinessDashboard, CertificateHistorySection } from './admin/BusinessDashboard';
 import { OrderDetail } from './admin/OrderDetail';
 import { OrderQueue } from './admin/OrderQueue';
 import { TodayPanel } from './admin/TodayPanel';
@@ -25,6 +25,7 @@ export const DASHBOARD_PATH = '/admin/dashboard';
 export const QUEUE_PATH = '/admin/orders';
 export const EVENTS_PATH = '/admin/events';
 export const TEAM_PATH = '/admin/team';
+export const HISTORY_PATH = '/admin/history';
 
 /** Última pantalla de lista visitada, para que "Volver" desde un pedido regrese a ella. */
 let lastListPath = '/admin';
@@ -45,10 +46,73 @@ const Shield: React.FC = () => (
   </svg>
 );
 
-type Section = 'today' | 'queue' | 'events' | 'team' | 'dashboard' | 'detail';
+/**
+ * El nombre de quien usa el panel. Se pulsa para cambiarlo: así cada persona del laboratorio aparece con su nombre
+ * (en el panel, en el historial de cada pedido y en las aprobaciones).
+ */
+const NameEditor: React.FC<{ name: string | null; email: string }> = ({ name, email }) => {
+  const { updateName } = useAuth();
+  const [editing, setEditing] = useState(false);
+  const [value, setValue] = useState(name ?? '');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+
+  if (!editing) {
+    return (
+      <button
+        type="button"
+        onClick={() => { setValue(name ?? ''); setEditing(true); }}
+        title="Cambiar mi nombre"
+        className="block max-w-full text-left text-[13px] font-semibold text-[#0F1110] truncate cursor-pointer hover:underline underline-offset-4 decoration-[#C9CBC7]"
+      >
+        {name ?? 'Pon tu nombre'}
+      </button>
+    );
+  }
+  return (
+    <form
+      onSubmit={async (e) => {
+        e.preventDefault();
+        if (!value.trim()) return;
+        setBusy(true);
+        setError('');
+        try {
+          await updateName(value.trim());
+          setEditing(false);
+        } catch {
+          setError('No se pudo guardar.');
+        } finally {
+          setBusy(false);
+        }
+      }}
+      className="space-y-1"
+    >
+      <label className="sr-only" htmlFor="my-name">Tu nombre</label>
+      <input
+        id="my-name"
+        autoFocus
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        onKeyDown={(e) => e.key === 'Escape' && setEditing(false)}
+        maxLength={80}
+        placeholder={email}
+        className="w-full h-7 px-2 rounded-[6px] border border-[#0F1110] text-[13px] focus:outline-none"
+      />
+      <div className="flex items-center gap-2 text-[12px]">
+        <button type="submit" disabled={busy || !value.trim()} className="font-semibold text-[#0F1110] hover:underline cursor-pointer disabled:opacity-50">
+          {busy ? 'Guardando…' : 'Guardar'}
+        </button>
+        <button type="button" onClick={() => setEditing(false)} className="text-[#666A67] hover:underline cursor-pointer">Cancelar</button>
+        {error && <span className="text-[#C2362B]">{error}</span>}
+      </div>
+    </form>
+  );
+};
+
+type Section = 'today' | 'queue' | 'events' | 'team' | 'dashboard' | 'history' | 'detail';
 
 const TITLE: Record<Section, string> = {
-  today: 'Hoy', queue: 'Pedidos', events: 'Eventos', team: 'Equipo', dashboard: 'Negocio', detail: 'Pedido',
+  today: 'Hoy', queue: 'Pedidos', events: 'Eventos', team: 'Equipo', dashboard: 'Negocio', history: 'Historial de certificados', detail: 'Pedido',
 };
 
 /**
@@ -125,6 +189,8 @@ export const AdminPage: React.FC<AdminPageProps> = ({ path, onNavigate }) => {
     ? 'detail'
     : isAdmin && path === DASHBOARD_PATH
       ? 'dashboard'
+      : isAdmin && path === HISTORY_PATH
+        ? 'history'
       : isAdmin && path === EVENTS_PATH
         ? 'events'
         : isAdmin && path === TEAM_PATH
@@ -139,7 +205,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ path, onNavigate }) => {
     onNavigate(to);
   };
 
-  type NavItem = { to: string; label: string; icon: LucideIcon; on: boolean; count?: number };
+  type NavItem = { to: string; label: string; icon?: LucideIcon; on: boolean; count?: number; sub?: boolean };
   const groups: { name: string; items: NavItem[] }[] = [
     {
       name: 'Laboratorio',
@@ -155,6 +221,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ path, onNavigate }) => {
             { to: EVENTS_PATH, label: 'Eventos', icon: CalendarDays, on: section === 'events' },
             { to: TEAM_PATH, label: 'Equipo', icon: Users, on: section === 'team' },
             { to: DASHBOARD_PATH, label: 'Negocio', icon: LineChart, on: section === 'dashboard' },
+            { to: HISTORY_PATH, label: 'Historial', on: section === 'history', sub: true },
           ],
         }]
       : []),
@@ -185,11 +252,11 @@ export const AdminPage: React.FC<AdminPageProps> = ({ path, onNavigate }) => {
                     type="button"
                     onClick={() => go(n.to)}
                     aria-current={n.on ? 'page' : undefined}
-                    className={`w-full flex items-center gap-2.5 h-[34px] px-2.5 rounded-[6px] text-[13.5px] text-left cursor-pointer transition-colors ${
-                      n.on ? 'bg-[#F1F1EE] text-[#0F1110] font-semibold' : 'text-[#3B3F3C] hover:bg-[#F6F6F3] hover:text-[#0F1110]'
-                    }`}
+                    className={`flex items-center gap-2.5 rounded-[6px] text-left cursor-pointer transition-colors ${
+                      n.sub ? 'h-[30px] ml-[17px] w-[calc(100%-17px)] pl-[17px] pr-2.5 text-[13px] relative before:absolute before:left-0 before:top-0 before:bottom-0 before:w-px before:bg-[#E1E1DC]' : 'w-full h-[34px] px-2.5 text-[13.5px]'
+                    } ${n.on ? 'bg-[#F1F1EE] text-[#0F1110] font-semibold' : 'text-[#3B3F3C] hover:bg-[#F6F6F3] hover:text-[#0F1110]'}`}
                   >
-                    <Icon className={`w-4 h-4 shrink-0 ${n.on ? 'text-[#0F1110]' : 'text-[#8A8E8B]'}`} strokeWidth={1.75} aria-hidden="true" />
+                    {Icon && <Icon className={`w-4 h-4 shrink-0 ${n.on ? 'text-[#0F1110]' : 'text-[#8A8E8B]'}`} strokeWidth={1.75} aria-hidden="true" />}
                     <span className="flex-1">{n.label}</span>
                     {n.count !== undefined && n.count > 0 && (
                       <span className={`font-mono text-[11.5px] ${n.on ? 'text-[#0F1110]' : 'text-[#8A8E8B]'}`}>{n.count}</span>
@@ -208,7 +275,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ path, onNavigate }) => {
             {initials}
           </span>
           <div className="min-w-0 flex-1 leading-tight">
-            <div className="text-[13px] font-semibold text-[#0F1110] truncate">{user.fullName ?? user.email}</div>
+            <NameEditor name={user.fullName} email={user.email} />
             <div className="text-[12px] text-[#666A67]">{ROLE_LABEL[user.role] ?? user.role}</div>
           </div>
           <button type="button" onClick={() => go('/')} title="Ver la web" aria-label="Ver la web" className="w-7 h-7 shrink-0 inline-flex items-center justify-center rounded-[6px] text-[#666A67] hover:bg-[#F1F1EE] hover:text-[#0F1110] cursor-pointer">
@@ -253,7 +320,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ path, onNavigate }) => {
             <Menu className="w-5 h-5" aria-hidden="true" />
           </button>
           <nav aria-label="Ruta" className="flex items-center gap-2 text-[13px] min-w-0">
-            <span className="hidden sm:inline text-[#8A8E8B]">{section === 'events' || section === 'team' || section === 'dashboard' ? 'Dirección' : 'Laboratorio'}</span>
+            <span className="hidden sm:inline text-[#8A8E8B]">{section === 'events' || section === 'team' || section === 'dashboard' || section === 'history' ? 'Dirección' : 'Laboratorio'}</span>
             <span className="hidden sm:inline text-[#C9CBC7]" aria-hidden="true">/</span>
             {section === 'detail' && (
               <>
@@ -294,6 +361,8 @@ export const AdminPage: React.FC<AdminPageProps> = ({ path, onNavigate }) => {
         <main className="flex-1 w-full max-w-[1280px] px-4 sm:px-6 lg:px-10 py-8">
           {section === 'dashboard' ? (
             <BusinessDashboard onOpenOrder={openOrder} />
+          ) : section === 'history' ? (
+            <CertificateHistorySection onOpenOrder={openOrder} />
           ) : section === 'events' ? (
             <EventsCalendar />
           ) : section === 'team' ? (

@@ -38,7 +38,8 @@ export const OrderQueue: React.FC<{ initialStatus?: string; initialQuery?: strin
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    fetchAdminOrders({ status, q: q || undefined, sort, page })
+    // Al buscar se busca en todos los pedidos, estén en la fase que estén.
+    fetchAdminOrders({ status: q || status === 'all' ? undefined : status, q: q || undefined, sort, page })
       .then((list) => {
         if (cancelled) return;
         setData(list);
@@ -58,6 +59,7 @@ export const OrderQueue: React.FC<{ initialStatus?: string; initialQuery?: strin
   const activeCount = ACTIVE_STATUSES.reduce((sum, s) => sum + (data?.counts[s] ?? 0), 0);
   const tabs: { key: string; label: string; count: number | undefined }[] = [
     { key: 'active', label: 'Activos', count: data ? activeCount : undefined },
+    { key: 'all', label: 'Todos', count: data ? Object.values(data.counts).reduce((a, b) => a + (b ?? 0), 0) : undefined },
     ...TAB_STATUSES.map((s) => ({ key: s, label: statusName(s), count: data?.counts[s] ?? (data ? 0 : undefined) })),
   ];
   const from = data ? (data.page - 1) * data.pageSize + 1 : 0;
@@ -71,7 +73,7 @@ export const OrderQueue: React.FC<{ initialStatus?: string; initialQuery?: strin
       <div className="overflow-x-auto">
         <div className="inline-flex gap-0.5 p-0.5 rounded-[8px] bg-[#EDEDE9]" role="tablist" aria-label="Estado de los pedidos">
           {tabs.map((tab) => {
-            const selected = status === tab.key;
+            const selected = !q && status === tab.key;
             return (
               <button
                 key={tab.key}
@@ -105,7 +107,7 @@ export const OrderQueue: React.FC<{ initialStatus?: string; initialQuery?: strin
           />
         </label>
         <span className="text-[13px] text-[#666A67] sm:mr-auto">
-          {data ? `${data.total} ${data.total === 1 ? 'pedido' : 'pedidos'}` : ' '}
+          {data ? `${data.total} ${data.total === 1 ? 'pedido' : 'pedidos'}${q ? ' en todas las fases' : ''}` : ' '}
         </span>
         <label className="inline-flex items-center gap-2 text-[13px] text-[#666A67]">
           Ordenar

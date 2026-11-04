@@ -1,8 +1,10 @@
 import { Hono } from 'hono';
 import { deleteCookie, getCookie, setCookie } from 'hono/cookie';
-import { RequestCodeBody, VerifyCodeBody } from '../../shared/auth.js';
+import { RequestCodeBody, UpdateMeBody, VerifyCodeBody } from '../../shared/auth.js';
+import { eq } from 'drizzle-orm';
+import { users } from '../../db/schema.js';
 import { SESSION_COOKIE, requireUser } from '../auth/middleware.js';
-import { CODE_TTL_MS, issueLoginCode, revokeSession, verifyLoginCode } from '../auth/service.js';
+import { CODE_TTL_MS, issueLoginCode, revokeSession, toUserDto, verifyLoginCode } from '../auth/service.js';
 import type { AppEnv, Deps } from '../context.js';
 import { isProduction } from '../env.js';
 import { clientIp, parseJson } from '../http.js';
@@ -46,6 +48,13 @@ export function authRoutes(deps: Deps) {
   });
 
   routes.get('/me', requireUser(deps), (c) => c.json({ user: c.get('user') }));
+
+  // La persona cambia su propio nombre.
+  routes.put('/me', requireUser(deps), async (c) => {
+    const body = await parseJson(c, UpdateMeBody);
+    const [updated] = await deps.getDb().update(users).set({ fullName: body.fullName }).where(eq(users.id, c.get('user').id)).returning();
+    return c.json({ user: toUserDto(updated) });
+  });
 
   return routes;
 }

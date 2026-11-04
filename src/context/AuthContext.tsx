@@ -17,6 +17,8 @@ interface AuthContextType {
   logout: () => Promise<void>;
   /** Vuelve a comprobar la sesión tras un error. */
   retrySession: () => void;
+  /** Cambia el nombre de la propia cuenta. */
+  updateName: (fullName: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -28,6 +30,7 @@ const AuthContext = createContext<AuthContextType>({
   verifyCode: async () => {},
   logout: async () => {},
   retrySession: () => {},
+  updateName: async () => {},
 });
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -98,6 +101,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
+  const updateName = useCallback(async (fullName: string) => {
+    const { user } = await api<{ user: UserDto }>('/me', { method: 'PUT', body: { fullName } });
+    setUser(user);
+  }, []);
+
   return (
     <AuthContext.Provider
       value={{
@@ -109,6 +117,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         verifyCode,
         logout,
         retrySession,
+        updateName,
       }}
     >
       {children}
