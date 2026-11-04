@@ -30,6 +30,7 @@ beforeEach(async () => {
   await db.execute(sql`truncate integration_tokens`);
   resetInstagramMemory();
   delete process.env.INSTAGRAM_ACCESS_TOKEN;
+  delete process.env.INSTAGRAM_USER_ID;
 });
 
 afterEach(() => {
@@ -105,6 +106,62 @@ describe('getInstagramPosts', () => {
   });
 });
 
+describe('clave unificada o de Facebook (graph.facebook.com)', () => {
+  /** Simula a Meta: la clave no vale en graph.instagram.com y sí en graph.facebook.com. */
+  const facebookOnly = (routes: Record<string, unknown>) =>
+    vi.fn(async (input: any) => {
+      const url = String(input);
+      if (url.startsWith('https://graph.instagram.com')) return new Response('{"error":{"message":"Invalid OAuth access token"}}', { status: 400 });
+      for (const [fragment, body] of Object.entries(routes)) if (url.includes(fragment)) return new Response(JSON.stringify(body), { status: 200 });
+      return new Response('{"error":{"message":"no existe"}}', { status: 400 });
+    }) as unknown as typeof fetch;
+
+  it('encuentra la cuenta de Instagram a través de las páginas y lee sus publicaciones', async () => {
+    process.env.INSTAGRAM_ACCESS_TOKEN = 'clave-sistema';
+    const fetcher = facebookOnly({
+      '/me/accounts': { data: [{ id: 'p1' }, { id: 'p2', instagram_business_account: { id: '1784' } }] },
+      '/1784/media': { data: [media()] },
+    });
+    const result = await getInstagramPosts(db, 8, fetcher);
+    expect(result.configured).toBe(true);
+    expect(result.posts).toHaveLength(1);
+    expect((fetcher as any).mock.calls.some((c: any[]) => String(c[0]).includes('graph.facebook.com/v21.0/1784/media'))).toBe(true);
+  });
+
+  it('con una clave de usuario del sistema usa /me/instagram_accounts', async () => {
+    process.env.INSTAGRAM_ACCESS_TOKEN = 'clave-sistema';
+    const fetcher = facebookOnly({
+      '/me/instagram_accounts': { data: [{ id: '5555', username: 'gorillagradinginternational' }] },
+      '/5555/media': { data: [media()] },
+    });
+    expect((await getInstagramPosts(db, 8, fetcher)).posts).toHaveLength(1);
+  });
+
+  it('INSTAGRAM_USER_ID evita la búsqueda', async () => {
+    process.env.INSTAGRAM_ACCESS_TOKEN = 'clave-sistema';
+    process.env.INSTAGRAM_USER_ID = '9999';
+    const fetcher = facebookOnly({ '/9999/media': { data: [media()] } });
+    expect((await getInstagramPosts(db, 8, fetcher)).posts).toHaveLength(1);
+    expect((fetcher as any).mock.calls.some((c: any[]) => String(c[0]).includes('/me/accounts'))).toBe(false);
+  });
+
+  it('si no encuentra ninguna cuenta no rompe y lo registra', async () => {
+    process.env.INSTAGRAM_ACCESS_TOKEN = 'clave-sistema';
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {});
+    expect(await getInstagramPosts(db, 8, facebookOnly({}))).toEqual({ configured: true, posts: [] });
+    expect(String(log.mock.calls[0][0])).toContain('no se encontró la cuenta vinculada');
+  });
+
+  it('una clave que no caduca no se renueva ni da error', async () => {
+    process.env.INSTAGRAM_ACCESS_TOKEN = 'clave-sistema';
+    await getInstagramPosts(db, 8, facebookOnly({ '/me/instagram_accounts': { data: [{ id: '5555' }] }, '/5555/media': { data: [media()] } }));
+    await db.execute(sql`update integration_tokens set refreshed_at = now() - interval '40 days'`);
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {});
+    expect(await renewInstagramToken(db, facebookOnly({}))).toBe('not_needed');
+    expect(log).not.toHaveBeenCalled();
+  });
+});
+
 describe('GET /instagram/posts', () => {
   it('responde 200 y se puede guardar en caché cuando hay publicaciones', async () => {
     process.env.INSTAGRAM_ACCESS_TOKEN = 'clave-1';
@@ -157,7 +214,10 @@ describe('renewInstagramToken', () => {
     await renewInstagramToken(db, renewal('x'));
     await db.execute(sql`update integration_tokens set refreshed_at = now() - interval '25 days'`);
     vi.spyOn(console, 'error').mockImplementation(() => {});
-    const fetcher = vi.fn(async () => new Response('{}', { status: 400 })) as unknown as typeof fetch;
+    // La clave es de Instagram (la consulta de /me responde) pero Instagram rechaza renovarla.
+    const fetcher = vi.fn(async (input: any) =>
+      String(input).includes('refresh_access_token') ? new Response('{}', { status: 400 }) : new Response('{"id":"1"}', { status: 200 }),
+    ) as unknown as typeof fetch;
     expect(await renewInstagramToken(db, fetcher)).toBe('failed');
   });
 });

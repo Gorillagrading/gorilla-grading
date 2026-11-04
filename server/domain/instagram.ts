@@ -5,14 +5,19 @@ import type { Db } from '../../db/client.js';
 import type { InstagramPostDto, InstagramPostsResponse } from '../../shared/instagram.js';
 
 /**
- * Publicaciones de la cuenta de Instagram de Gorilla Grading, leídas con la API oficial de Instagram
- * (inicio de sesión de Instagram, cuenta profesional). La clave de acceso dura 60 días: se guarda en la
- * base de datos y se renueva sola desde la tarea programada, así que nadie tiene que acordarse.
+ * Publicaciones de la cuenta de Instagram de Gorilla Grading, leídas con la API oficial de Instagram.
+ * Sirven los dos tipos de clave que entrega Meta, y se detecta solo cuál es:
+ *  - Clave de «inicio de sesión de Instagram» (graph.instagram.com): dura 60 días. Se guarda en la base de datos
+ *    y se renueva sola desde la tarea programada, así que nadie tiene que acordarse.
+ *  - Clave de «inicio de sesión unificado» o de Facebook (graph.facebook.com): de usuario del sistema o de
+ *    página, no caduca. Se necesita el identificador de la cuenta de Instagram, que se busca solo (o se fija con
+ *    INSTAGRAM_USER_ID). No hay nada que renovar.
  *
  * Para conectar la cuenta basta con pegar la clave en la variable INSTAGRAM_ACCESS_TOKEN (ver docs).
  */
 
 const GRAPH = 'https://graph.instagram.com';
+const GRAPH_FACEBOOK = 'https://graph.facebook.com/v21.0';
 const PROVIDER = 'instagram';
 const FIELDS = 'id,caption,media_type,media_product_type,media_url,thumbnail_url,permalink,timestamp';
 /** Se renueva cuando faltan menos de estos días para que caduque, o hace más de ellos que se renovó. */
@@ -76,12 +81,70 @@ async function currentToken(db: Db): Promise<string | null> {
   return row?.accessToken ?? null;
 }
 
+interface JsonResult {
+  status: number;
+  body: any;
+}
+
+/** Una consulta que nunca lanza: devuelve el estado y el cuerpo (null si no se pudo leer). */
+async function getJson(url: string, fetchImpl: FetchLike): Promise<JsonResult> {
+  try {
+    const res = await fetchImpl(url, { signal: AbortSignal.timeout(8000) });
+    return { status: res.status, body: await res.json().catch(() => null) };
+  } catch {
+    return { status: 0, body: null };
+  }
+}
+
+/** Cómo se lee la cuenta con cada clave, para no repetir la detección en cada visita. */
+const sources = new Map<string, { kind: 'instagram' } | { kind: 'facebook'; userId: string }>();
+
+/** Busca la cuenta de Instagram a la que da acceso una clave de Facebook o unificada. */
+async function discoverUserId(token: string, fetchImpl: FetchLike): Promise<string | null> {
+  const explicit = process.env.INSTAGRAM_USER_ID?.trim();
+  if (explicit) return explicit;
+  const t = `access_token=${encodeURIComponent(token)}`;
+  // Según el tipo de clave (de página, de usuario o de usuario del sistema) la cuenta aparece en un sitio distinto.
+  const attempts: [string, (body: any) => string | undefined][] = [
+    [`/me?fields=instagram_business_account&${t}`, (b) => b?.instagram_business_account?.id],
+    [`/me/accounts?fields=instagram_business_account&limit=25&${t}`, (b) => b?.data?.find((x: any) => x?.instagram_business_account)?.instagram_business_account?.id],
+    [`/me/instagram_accounts?fields=id,username&limit=25&${t}`, (b) => b?.data?.[0]?.id],
+  ];
+  for (const [path, pick] of attempts) {
+    const { status, body } = await getJson(`${GRAPH_FACEBOOK}${path}`, fetchImpl);
+    const found = status === 200 ? pick(body) : undefined;
+    if (found) return String(found);
+  }
+  return null;
+}
+
 async function fetchMedia(token: string, limit: number, fetchImpl: FetchLike): Promise<MediaItem[]> {
-  const url = `${GRAPH}/me/media?fields=${FIELDS}&limit=${Math.max(limit * 2, 12)}&access_token=${encodeURIComponent(token)}`;
-  const res = await fetchImpl(url, { signal: AbortSignal.timeout(8000) });
-  if (!res.ok) throw new Error(`Instagram respondió ${res.status}`);
-  const body = (await res.json()) as { data?: MediaItem[] };
-  return body.data ?? [];
+  const key = hash(token);
+  const query = `fields=${FIELDS}&limit=${Math.max(limit * 2, 12)}&access_token=${encodeURIComponent(token)}`;
+  let source = sources.get(key);
+  const explicitUser = process.env.INSTAGRAM_USER_ID?.trim();
+  if (!source && explicitUser) source = { kind: 'facebook', userId: explicitUser };
+
+  if (!source || source.kind === 'instagram') {
+    const { status, body } = await getJson(`${GRAPH}/me/media?${query}`, fetchImpl);
+    if (status === 200 && Array.isArray(body?.data)) {
+      sources.set(key, { kind: 'instagram' });
+      return body.data;
+    }
+    if (source?.kind === 'instagram') throw new Error(`Instagram respondió ${status}`);
+    // No es una clave de Instagram: se prueba como clave de Facebook o unificada.
+    const userId = await discoverUserId(token, fetchImpl);
+    if (!userId) throw new Error(`La clave no sirve para Instagram (respondió ${status}) y no se encontró la cuenta vinculada`);
+    source = { kind: 'facebook', userId };
+  }
+
+  const { status, body } = await getJson(`${GRAPH_FACEBOOK}/${source.userId}/media?${query}`, fetchImpl);
+  if (status !== 200 || !Array.isArray(body?.data)) {
+    sources.delete(key);
+    throw new Error(`Instagram respondió ${status}${body?.error?.message ? `: ${String(body.error.message).slice(0, 160)}` : ''}`);
+  }
+  sources.set(key, source);
+  return body.data;
 }
 
 let memory: { at: number; response: InstagramPostsResponse } | null = null;
@@ -89,6 +152,7 @@ let memory: { at: number; response: InstagramPostsResponse } | null = null;
 /** Borra lo guardado en memoria (para las pruebas). */
 export const resetInstagramMemory = () => {
   memory = null;
+  sources.clear();
 };
 
 /**
@@ -113,7 +177,10 @@ export async function getInstagramPosts(db: Db, limit = 8, fetchImpl: FetchLike 
  * Renueva la clave si le toca. Instagram devuelve una nueva con 60 días más; hay que renovarla antes de que
  * caduque (y pasadas 24 horas de su creación). Se llama desde la tarea programada diaria.
  */
-export async function renewInstagramToken(db: Db, fetchImpl: FetchLike = fetch): Promise<'not_configured' | 'not_due' | 'renewed' | 'failed'> {
+export async function renewInstagramToken(
+  db: Db,
+  fetchImpl: FetchLike = fetch,
+): Promise<'not_configured' | 'not_due' | 'not_needed' | 'renewed' | 'failed'> {
   try {
     const token = await currentToken(db);
     if (!token) return 'not_configured';
@@ -124,6 +191,11 @@ export async function renewInstagramToken(db: Db, fetchImpl: FetchLike = fetch):
     const age = now - row.refreshedAt.getTime();
     const expiresSoon = row.expiresAt ? row.expiresAt.getTime() - now < RENEW_BEFORE_DAYS * DAY_MS : false;
     if (age < RENEW_BEFORE_DAYS * DAY_MS && !expiresSoon) return 'not_due';
+
+    // Solo las claves de «inicio de sesión de Instagram» caducan y se renuevan. Las de usuario del sistema o de
+    // Facebook no caducan: si esta no es de Instagram, no hay nada que hacer.
+    const kind = await getJson(`${GRAPH}/me?fields=id&access_token=${encodeURIComponent(row.accessToken)}`, fetchImpl);
+    if (kind.status !== 200) return 'not_needed';
 
     const res = await fetchImpl(
       `${GRAPH}/refresh_access_token?grant_type=ig_refresh_token&access_token=${encodeURIComponent(row.accessToken)}`,
