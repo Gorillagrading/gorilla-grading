@@ -156,7 +156,7 @@ export const LuxuryNavbar: React.FC<LuxuryNavbarProps> = ({ onNavigate }) => {
         </div>
 
         {/* Center Navigation Links — executive small caps with well-proportioned spacing */}
-        <nav className="hidden md:flex items-center gap-4 lg:gap-6 xl:gap-8">
+        <nav className={`hidden md:flex items-center gap-4 lg:gap-6 xl:gap-8 transition-opacity duration-150 ${isSearchOpen ? 'opacity-0 pointer-events-none' : ''}`} aria-hidden={isSearchOpen || undefined}>
           {navLinks.map((link) => (
             <button
               key={link.path}
@@ -175,11 +175,13 @@ export const LuxuryNavbar: React.FC<LuxuryNavbarProps> = ({ onNavigate }) => {
             <form onSubmit={handleSearchSubmit} className="flex md:hidden items-center">
               <input
                 type="text"
+                inputMode="numeric"
+                enterKeyHint="search"
                 placeholder={language === 'es' ? 'Nº de certificado' : 'Certificate no.'}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 autoFocus
-                className={`${isLight ? 'bg-white border border-gray-300 text-gray-900 placeholder:text-gray-400 focus:border-gray-900' : 'bg-[#161B16] border border-white/20 text-white focus:border-white'} text-xs px-3 py-1.5 rounded-none w-36 focus:outline-none focus:w-44 transition-all font-mono`}
+                className={`${isLight ? 'bg-white border border-gray-300 text-gray-900 placeholder:text-gray-400 focus:border-gray-900' : 'bg-[#161B16] border border-white/20 text-white focus:border-white'} text-base h-9 px-3 rounded-none w-[min(11rem,46vw)] focus:outline-none transition-all font-mono`}
               />
               <button 
                 type="button" 
@@ -218,15 +220,17 @@ export const LuxuryNavbar: React.FC<LuxuryNavbarProps> = ({ onNavigate }) => {
             </button>
 
             {isSearchOpen && (
-              <div className="absolute right-0 top-full mt-2 z-50">
+              <div className="absolute right-full mr-2 top-1/2 -translate-y-1/2 z-50">
                 <form onSubmit={handleSearchSubmit} className="relative flex items-center">
                   <input
                     type="text"
+                    inputMode="numeric"
+                    enterKeyHint="search"
                     placeholder={language === 'es' ? 'Nº de certificado' : 'Certificate no.'}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     autoFocus
-                    className={`w-52 sm:w-56 text-xs pl-3 pr-12 py-1.5 border font-mono uppercase tracking-wider focus:outline-none transition-all shadow-xl ${
+                    className={`w-[min(360px,40vw)] h-9 text-sm pl-3 pr-14 border font-mono tracking-wider focus:outline-none transition-all ${
                       isLight 
                         ? 'bg-white border-black/30 text-[#111827] placeholder:text-black/35 focus:border-[#16A34A]' 
                         : 'bg-[#141714] border-white/30 text-white placeholder:text-white/35 focus:border-[#4ADE80]'
@@ -313,7 +317,7 @@ export const LuxuryNavbar: React.FC<LuxuryNavbarProps> = ({ onNavigate }) => {
           {/* Submit a Card — main call to action, brand green */}
           <button
             onClick={() => go('/submit')}
-            className="btn-gorilla-square hidden sm:inline-flex gap-1.5 px-4 lg:px-5 py-2.5 text-xs tracking-normal"
+            className={`btn-gorilla-square hidden sm:inline-flex gap-1.5 px-4 lg:px-5 py-2.5 text-xs tracking-normal ${isSearchOpen ? 'max-md:!hidden' : ''}`}
           >
             <span>{t('ref.nav.submit')}</span>
             <span aria-hidden="true" className="text-xs">→</span>
