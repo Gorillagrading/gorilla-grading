@@ -2,14 +2,14 @@ import React, { useEffect, useRef, useState } from 'react';
 import '@fontsource-variable/archivo/wght.css';
 import '@fontsource/jetbrains-mono/latin-400.css';
 import '@fontsource/jetbrains-mono/latin-600.css';
-import { CalendarDays, ExternalLink, Inbox, LineChart, LogOut, Menu, Package, Search, Users, X, type LucideIcon } from 'lucide-react';
+import { CalendarDays, ChevronDown, ExternalLink, Inbox, LineChart, LogOut, Menu, Package, Search, Users, X, type LucideIcon } from 'lucide-react';
 import { STAFF_ROLES } from '../../shared/admin';
 import { useAuth } from '../context/AuthContext';
 import { fetchAdminOrders, fetchStaffToday } from '../api/admin';
-import { ACTIVE_STATUSES } from '../../shared/domain';
+import { ACTIVE_STATUSES, type OrderStatus } from '../../shared/domain';
 import { BusinessDashboard, CertificateHistorySection } from './admin/BusinessDashboard';
 import { OrderDetail } from './admin/OrderDetail';
-import { OrderQueue } from './admin/OrderQueue';
+import { OrderQueue, QUEUE_STATUSES, queueFilterName } from './admin/OrderQueue';
 import { TodayPanel } from './admin/TodayPanel';
 import { EventsCalendar } from './admin/EventsCalendar';
 import { TeamPanel } from './admin/TeamPanel';
@@ -124,7 +124,23 @@ export const AdminPage: React.FC<AdminPageProps> = ({ path, onNavigate }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [search, setSearch] = useState('');
   /** Contadores del carril: tareas de hoy de quien entra y pedidos activos del laboratorio. */
-  const [counts, setCounts] = useState<{ today?: number; active?: number }>({});
+  const [counts, setCounts] = useState<{ today?: number; active?: number; byStatus?: Partial<Record<OrderStatus, number>> }>({});
+  /** Si el submenú de Pedidos está desplegado. Se recuerda en este navegador. */
+  const [ordersOpen, setOrdersOpen] = useState(() => {
+    try {
+      return localStorage.getItem('gg.rail.orders') !== 'closed';
+    } catch {
+      return true;
+    }
+  });
+  const toggleOrders = (open: boolean) => {
+    setOrdersOpen(open);
+    try {
+      localStorage.setItem('gg.rail.orders', open ? 'open' : 'closed');
+    } catch {
+      // Sin almacenamiento, solo dura esta visita.
+    }
+  };
   const searchRef = useRef<HTMLInputElement>(null);
   const isStaff = !!user && (STAFF_ROLES as readonly string[]).includes(user.role);
 
@@ -136,7 +152,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ path, onNavigate }) => {
         .then((d) => !cancelled && setCounts((c) => ({ ...c, today: d.sections.reduce((n, x) => n + x.count, 0) })))
         .catch(() => undefined);
       fetchAdminOrders({ status: 'active', sort: 'oldest', page: 1 })
-        .then((l) => !cancelled && setCounts((c) => ({ ...c, active: ACTIVE_STATUSES.reduce((n, st) => n + (l.counts[st] ?? 0), 0) })))
+        .then((l) => !cancelled && setCounts((c) => ({ ...c, byStatus: l.counts, active: ACTIVE_STATUSES.reduce((n, st) => n + (l.counts[st] ?? 0), 0) })))
         .catch(() => undefined);
     };
     load();
@@ -205,13 +221,25 @@ export const AdminPage: React.FC<AdminPageProps> = ({ path, onNavigate }) => {
     onNavigate(to);
   };
 
-  type NavItem = { to: string; label: string; icon?: LucideIcon; on: boolean; count?: number; sub?: boolean };
+  type NavItem = { to: string; label: string; icon?: LucideIcon; on: boolean; count?: number; sub?: boolean; children?: NavItem[] };
+  const queueStatus = section === 'queue' ? initialStatus : null;
+  const byStatus = counts.byStatus;
+  const orderFilters: NavItem[] = ['active', 'all', ...QUEUE_STATUSES].map((key) => ({
+    to: `${QUEUE_PATH}?status=${key}`,
+    label: queueFilterName(key),
+    on: queueStatus === key,
+    sub: true,
+    count: !byStatus ? undefined
+      : key === 'active' ? counts.active
+      : key === 'all' ? Object.values(byStatus).reduce((a, b) => a + (b ?? 0), 0)
+      : byStatus[key as OrderStatus] ?? 0,
+  }));
   const groups: { name: string; items: NavItem[] }[] = [
     {
       name: 'Laboratorio',
       items: [
         { to: '/admin', label: 'Hoy', icon: Inbox, on: section === 'today', count: counts.today },
-        { to: QUEUE_PATH, label: 'Pedidos', icon: Package, on: section === 'queue' || section === 'detail', count: counts.active },
+        { to: QUEUE_PATH, label: 'Pedidos', icon: Package, on: section === 'detail', count: counts.active, children: orderFilters },
       ],
     },
     ...(isAdmin
@@ -246,22 +274,61 @@ export const AdminPage: React.FC<AdminPageProps> = ({ path, onNavigate }) => {
             <div className="space-y-px">
               {group.items.map((n) => {
                 const Icon = n.icon;
-                return (
+                const item = (it: NavItem) => (
                   <button
-                    key={n.to}
+                    key={it.to}
                     type="button"
-                    onClick={() => go(n.to)}
-                    aria-current={n.on ? 'page' : undefined}
+                    onClick={() => go(it.to)}
+                    aria-current={it.on ? 'page' : undefined}
                     className={`flex items-center gap-2.5 rounded-[6px] text-left cursor-pointer transition-colors ${
-                      n.sub ? 'h-[30px] ml-[17px] w-[calc(100%-17px)] pl-[17px] pr-2.5 text-[13px] relative before:absolute before:left-0 before:top-0 before:bottom-0 before:w-px before:bg-[#E1E1DC]' : 'w-full h-[34px] px-2.5 text-[13.5px]'
-                    } ${n.on ? 'bg-[#F1F1EE] text-[#0F1110] font-semibold' : 'text-[#3B3F3C] hover:bg-[#F6F6F3] hover:text-[#0F1110]'}`}
+                      it.sub ? 'h-[30px] ml-[17px] w-[calc(100%-17px)] pl-[17px] pr-2.5 text-[13px] relative before:absolute before:left-0 before:top-0 before:bottom-0 before:w-px before:bg-[#E1E1DC]' : 'w-full h-[34px] px-2.5 text-[13.5px]'
+                    } ${it.on ? 'bg-[#F1F1EE] text-[#0F1110] font-semibold' : 'text-[#3B3F3C] hover:bg-[#F6F6F3] hover:text-[#0F1110]'}`}
                   >
-                    {Icon && <Icon className={`w-4 h-4 shrink-0 ${n.on ? 'text-[#0F1110]' : 'text-[#8A8E8B]'}`} strokeWidth={1.75} aria-hidden="true" />}
-                    <span className="flex-1">{n.label}</span>
-                    {n.count !== undefined && n.count > 0 && (
-                      <span className={`font-mono text-[11.5px] ${n.on ? 'text-[#0F1110]' : 'text-[#8A8E8B]'}`}>{n.count}</span>
+                    {it === n && Icon && <Icon className={`w-4 h-4 shrink-0 ${it.on ? 'text-[#0F1110]' : 'text-[#8A8E8B]'}`} strokeWidth={1.75} aria-hidden="true" />}
+                    <span className="flex-1 truncate">{it.label}</span>
+                    {it.count !== undefined && (it.count > 0 || it.sub) && (
+                      <span className={`font-mono text-[11.5px] ${it.on ? 'text-[#0F1110]' : it.count ? 'text-[#8A8E8B]' : 'text-[#C9CBC7]'}`}>{it.count}</span>
                     )}
                   </button>
+                );
+                if (!n.children) return item(n);
+                // Pedidos: al pulsarlo se abre la lista y se despliegan sus fases; la flecha pliega y despliega.
+                const open = ordersOpen;
+                return (
+                  <div key={n.to}>
+                    <div className="relative flex items-center">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          toggleOrders(true);
+                          go(`${QUEUE_PATH}?status=active`);
+                        }}
+                        aria-current={n.on ? 'page' : undefined}
+                        className={`w-full flex items-center gap-2.5 h-[34px] pl-2.5 pr-9 rounded-[6px] text-[13.5px] text-left cursor-pointer transition-colors ${
+                          n.on || section === 'queue' ? 'text-[#0F1110] font-semibold' : 'text-[#3B3F3C] hover:bg-[#F6F6F3] hover:text-[#0F1110]'
+                        } ${n.on ? 'bg-[#F1F1EE]' : ''}`}
+                      >
+                        {Icon && <Icon className={`w-4 h-4 shrink-0 ${n.on || section === 'queue' ? 'text-[#0F1110]' : 'text-[#8A8E8B]'}`} strokeWidth={1.75} aria-hidden="true" />}
+                        <span className="flex-1">{n.label}</span>
+                        {!open && n.count !== undefined && n.count > 0 && <span className="font-mono text-[11.5px] text-[#8A8E8B]">{n.count}</span>}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => toggleOrders(!open)}
+                        aria-expanded={open}
+                        aria-controls="rail-orders"
+                        aria-label={open ? 'Plegar las fases de Pedidos' : 'Desplegar las fases de Pedidos'}
+                        className="absolute right-1 w-7 h-7 inline-flex items-center justify-center rounded-[6px] text-[#8A8E8B] hover:bg-[#F1F1EE] hover:text-[#0F1110] cursor-pointer"
+                      >
+                        <ChevronDown className={`w-4 h-4 transition-transform duration-150 ${open ? '' : '-rotate-90'}`} aria-hidden="true" />
+                      </button>
+                    </div>
+                    {open && (
+                      <div id="rail-orders" className="mt-px space-y-px pb-1">
+                        {n.children.map(item)}
+                      </div>
+                    )}
+                  </div>
                 );
               })}
             </div>

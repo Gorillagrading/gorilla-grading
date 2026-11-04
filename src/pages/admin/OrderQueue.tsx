@@ -5,11 +5,15 @@ import type { AdminOrderList } from '../../../shared/admin';
 import { adminErrorMessage, fetchAdminOrders } from '../../api/admin';
 import { PlazoRuler, SHIPPING_LABEL, StatusPill, groupCode, formatDate, money, statusName, usePanelTheme, waiting } from './ui';
 
-/** Pestañas de la cola, en el orden del recorrido del pedido. */
-const TAB_STATUSES: OrderStatus[] = [
+/** Fases de la cola, en el orden del recorrido del pedido. Se eligen en el menú lateral, bajo «Pedidos». */
+export const QUEUE_STATUSES: OrderStatus[] = [
   'SUBMITTED', 'PACKAGE_RECEIVED', 'PRE_INSPECTION', 'OPTICAL_GRADING', 'ENCAPSULATION',
   'QUALITY_ASSURANCE', 'SHIPPED', 'ON_HOLD', 'DELIVERED', 'CANCELLED',
 ];
+
+/** Nombre de un filtro de la cola: «Activos», «Todos» o el nombre de la fase. */
+export const queueFilterName = (key: string) =>
+  key === 'active' ? 'Activos' : key === 'all' ? 'Todos' : statusName(key as OrderStatus);
 
 export const OrderQueue: React.FC<{ initialStatus?: string; initialQuery?: string; onOpen: (code: string) => void }> = ({
   initialStatus = 'active',
@@ -56,12 +60,7 @@ export const OrderQueue: React.FC<{ initialStatus?: string; initialQuery?: strin
     };
   }, [status, q, sort, page]);
 
-  const activeCount = ACTIVE_STATUSES.reduce((sum, s) => sum + (data?.counts[s] ?? 0), 0);
-  const tabs: { key: string; label: string; count: number | undefined }[] = [
-    { key: 'active', label: 'Activos', count: data ? activeCount : undefined },
-    { key: 'all', label: 'Todos', count: data ? Object.values(data.counts).reduce((a, b) => a + (b ?? 0), 0) : undefined },
-    ...TAB_STATUSES.map((s) => ({ key: s, label: statusName(s), count: data?.counts[s] ?? (data ? 0 : undefined) })),
-  ];
+  const filterName = queueFilterName(status);
   const from = data ? (data.page - 1) * data.pageSize + 1 : 0;
   const to = data ? Math.min(data.page * data.pageSize, data.total) : 0;
 
@@ -69,30 +68,6 @@ export const OrderQueue: React.FC<{ initialStatus?: string; initialQuery?: strin
 
   return (
     <div className="space-y-4">
-      {/* Fases del pedido: control segmentado, cada fase con sus pedidos */}
-      <div className="overflow-x-auto">
-        <div className="inline-flex gap-0.5 p-0.5 rounded-[8px] bg-[#EDEDE9]" role="tablist" aria-label="Estado de los pedidos">
-          {tabs.map((tab) => {
-            const selected = !q && status === tab.key;
-            return (
-              <button
-                key={tab.key}
-                role="tab"
-                aria-selected={selected}
-                type="button"
-                onClick={() => { setStatus(tab.key); setPage(1); }}
-                className={`h-8 px-3 rounded-[6px] text-[13px] whitespace-nowrap cursor-pointer transition-colors ${
-                  selected ? 'bg-white text-[#0F1110] font-semibold shadow-[0_1px_2px_rgba(15,17,16,0.08)]' : 'text-[#666A67] hover:text-[#0F1110]'
-                }`}
-              >
-                {tab.label}
-                {tab.count !== undefined && <span className={`ml-1.5 font-mono text-[11.5px] ${tab.count ? '' : 'text-[#A9ADAA]'}`}>{tab.count}</span>}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
       <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
         <label className="relative sm:w-[340px]">
           <span className="sr-only">Buscar por código, correo o nombre</span>
@@ -107,7 +82,11 @@ export const OrderQueue: React.FC<{ initialStatus?: string; initialQuery?: strin
           />
         </label>
         <span className="text-[13px] text-[#666A67] sm:mr-auto">
-          {data ? `${data.total} ${data.total === 1 ? 'pedido' : 'pedidos'}${q ? ' en todas las fases' : ''}` : ' '}
+          {data ? (
+            <>
+              <strong className="font-semibold text-[#0F1110]">{q ? 'Todas las fases' : filterName}</strong> · {data.total} {data.total === 1 ? 'pedido' : 'pedidos'}
+            </>
+          ) : ' '}
         </span>
         <label className="inline-flex items-center gap-2 text-[13px] text-[#666A67]">
           Ordenar
