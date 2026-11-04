@@ -1,14 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import '@fontsource-variable/archivo/wght.css';
 import '@fontsource/jetbrains-mono/latin-400.css';
 import '@fontsource/jetbrains-mono/latin-600.css';
-import { CalendarDays, ExternalLink, Inbox, LineChart, LogOut, Menu, Package, Search, Users, type LucideIcon } from 'lucide-react';
+import { CalendarDays, ExternalLink, Inbox, LineChart, LogOut, Menu, Package, Search, Users, X, type LucideIcon } from 'lucide-react';
 import { STAFF_ROLES } from '../../shared/admin';
 import { useAuth } from '../context/AuthContext';
 import { fetchAdminOrders, fetchStaffToday } from '../api/admin';
 import { ACTIVE_STATUSES } from '../../shared/domain';
-import { PIPELINE_STAGES } from '../../shared/staff-today';
-import { STAGE_COLOR } from './admin/ui';
 import { BusinessDashboard } from './admin/BusinessDashboard';
 import { OrderDetail } from './admin/OrderDetail';
 import { OrderQueue } from './admin/OrderQueue';
@@ -39,10 +37,10 @@ interface AdminPageProps {
 
 /** El escudo de Gorilla, sin animación, para el carril del panel. */
 const Shield: React.FC = () => (
-  <svg viewBox="8 8 68 76" className="w-7 h-8 shrink-0" aria-hidden="true">
-    <path d="M8 16A8 8 0 0 1 16 8h52a8 8 0 0 1 8 8v34c0 16-16 28-34 34C24 78 8 66 8 50Z" fill="#3FA64F" />
+  <svg viewBox="8 8 68 76" className="w-[22px] h-[26px] shrink-0" aria-hidden="true">
+    <path d="M8 16A8 8 0 0 1 16 8h52a8 8 0 0 1 8 8v34c0 16-16 28-34 34C24 78 8 66 8 50Z" fill="#2F8F3E" />
     <g transform="translate(42,44)">
-      <path d="M13 -9 A15.5 15.5 0 1 0 15.5 3 H2" fill="none" stroke="#1A1D1C" strokeWidth="7.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M13 -9 A15.5 15.5 0 1 0 15.5 3 H2" fill="none" stroke="#FFFFFF" strokeWidth="7.5" strokeLinecap="round" strokeLinejoin="round" />
     </g>
   </svg>
 );
@@ -63,7 +61,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ path, onNavigate }) => {
   const [search, setSearch] = useState('');
   /** Contadores del carril: tareas de hoy de quien entra y pedidos activos del laboratorio. */
   const [counts, setCounts] = useState<{ today?: number; active?: number }>({});
-  const [clock, setClock] = useState(() => new Date());
+  const searchRef = useRef<HTMLInputElement>(null);
   const isStaff = !!user && (STAFF_ROLES as readonly string[]).includes(user.role);
 
   useEffect(() => {
@@ -85,19 +83,27 @@ export const AdminPage: React.FC<AdminPageProps> = ({ path, onNavigate }) => {
     };
   }, [isStaff, path]);
 
+  // "/" lleva al buscador desde cualquier sitio del panel, salvo cuando se está escribiendo.
   useEffect(() => {
-    const timer = setInterval(() => setClock(new Date()), 30_000);
-    return () => clearInterval(timer);
+    const onKey = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (e.key !== '/' || e.metaKey || e.ctrlKey || e.altKey) return;
+      if (target && (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName))) return;
+      e.preventDefault();
+      searchRef.current?.focus();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
   }, []);
 
   const message = (title: string, body: string, action?: { label: string; to: string }) => (
     <div className="gg-panel min-h-screen flex items-center justify-center px-4">
-      <div className="w-full max-w-sm bg-white border border-[#D7D9D3] rounded-[3px] p-8 text-center space-y-4">
+      <div className="w-full max-w-sm bg-white border border-[#E7E7E2] rounded-[8px] p-8 text-center space-y-4">
         <div className="flex justify-center"><Shield /></div>
         <h1 className="text-xl font-bold">{title}</h1>
-        <p className="text-sm text-[#5A5F5B]">{body}</p>
+        <p className="text-sm text-[#666A67]">{body}</p>
         {action && (
-          <button type="button" onClick={() => onNavigate(action.to)} className="w-full h-10 rounded-[3px] bg-[#2F8F3E] hover:bg-[#25762F] text-white text-sm font-semibold cursor-pointer">
+          <button type="button" onClick={() => onNavigate(action.to)} className="w-full h-10 rounded-[8px] bg-[#2F8F3E] hover:bg-[#25762F] text-white text-sm font-semibold cursor-pointer">
             {action.label}
           </button>
         )}
@@ -154,43 +160,23 @@ export const AdminPage: React.FC<AdminPageProps> = ({ path, onNavigate }) => {
       : []),
   ];
   const initials = (user.fullName ?? user.email).split(/[\s@._-]+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join('').toUpperCase();
-  const hour = clock.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Madrid' });
+
 
   const rail = (
-    <div className="relative flex flex-col h-full bg-[#1A1D1C] text-[#C4C8C3]">
-      {/* Regla milimetrada en el borde: una marca cada 8 px, más larga cada 40 */}
-      <span
-        className="pointer-events-none absolute right-0 top-0 bottom-0 w-[9px] border-r border-[#2F3532]"
-        style={{
-          backgroundImage:
-            'repeating-linear-gradient(180deg, #3A413D 0 1px, transparent 1px 8px), repeating-linear-gradient(180deg, #4A524D 0 1px, transparent 1px 40px)',
-          backgroundSize: '4px 100%, 9px 100%',
-          backgroundRepeat: 'no-repeat',
-          backgroundPosition: 'right top, right top',
-        }}
-        aria-hidden="true"
-      />
-      <div className="px-5 pt-5 pb-4">
-        <div className="flex items-center gap-3">
-          <Shield />
-          <div className="leading-tight">
-            <div className="text-[15px] font-bold text-white">Gorilla Grading</div>
-            <div className="text-[12px] text-[#A3A9A4]">Panel del laboratorio</div>
-          </div>
-        </div>
-        {/* Franja de calibración: el color de cada fase del pedido */}
-        <div className="mt-4 mr-3 flex h-[5px] gap-[2px]" aria-hidden="true">
-          {PIPELINE_STAGES.map((st) => (
-            <span key={st} className="flex-1" style={{ background: STAGE_COLOR[st] }} />
-          ))}
-        </div>
+    <div className="flex flex-col h-full bg-white border-r border-[#E7E7E2] text-[#3B3F3C]">
+      <div className="flex items-center gap-2.5 px-5 h-[60px] shrink-0">
+        <Shield />
+        <span className="text-[14px] font-semibold text-[#0F1110] tracking-[-0.005em]">Gorilla Grading</span>
+        <button type="button" onClick={() => setMenuOpen(false)} className="lg:hidden ml-auto w-8 h-8 inline-flex items-center justify-center rounded-[6px] hover:bg-[#F1F1EE] cursor-pointer" aria-label="Cerrar el menú">
+          <X className="w-4 h-4" aria-hidden="true" />
+        </button>
       </div>
 
-      <nav className="flex-1 overflow-y-auto px-3 pb-4 space-y-5" aria-label="Secciones del panel">
-        {groups.map((group) => (
-          <div key={group.name}>
-            <div className="px-3 pb-1.5 text-[11px] font-semibold text-[#8D938E]">{group.name}</div>
-            <div className="space-y-0.5">
+      <nav className="flex-1 overflow-y-auto px-3 pt-2 pb-4" aria-label="Secciones del panel">
+        {groups.map((group, gi) => (
+          <div key={group.name} className={gi > 0 ? 'mt-5' : ''}>
+            {gi > 0 && <div className="px-2.5 pb-1.5 text-[11.5px] text-[#8A8E8B]">{group.name}</div>}
+            <div className="space-y-px">
               {group.items.map((n) => {
                 const Icon = n.icon;
                 return (
@@ -199,21 +185,14 @@ export const AdminPage: React.FC<AdminPageProps> = ({ path, onNavigate }) => {
                     type="button"
                     onClick={() => go(n.to)}
                     aria-current={n.on ? 'page' : undefined}
-                    className={`relative w-full flex items-center gap-3 h-10 pl-3 pr-2.5 rounded-[3px] text-[14px] text-left cursor-pointer transition-colors ${
-                      n.on ? 'bg-[#262B29] text-white font-semibold' : 'text-[#C4C8C3] hover:bg-[#222624] hover:text-white'
+                    className={`w-full flex items-center gap-2.5 h-[34px] px-2.5 rounded-[6px] text-[13.5px] text-left cursor-pointer transition-colors ${
+                      n.on ? 'bg-[#F1F1EE] text-[#0F1110] font-semibold' : 'text-[#3B3F3C] hover:bg-[#F6F6F3] hover:text-[#0F1110]'
                     }`}
                   >
-                    {n.on && <span className="absolute left-0 top-1.5 bottom-1.5 w-[3px] bg-[#3FA64F]" aria-hidden="true" />}
-                    <Icon className="w-[18px] h-[18px] shrink-0" strokeWidth={1.75} aria-hidden="true" />
+                    <Icon className={`w-4 h-4 shrink-0 ${n.on ? 'text-[#0F1110]' : 'text-[#8A8E8B]'}`} strokeWidth={1.75} aria-hidden="true" />
                     <span className="flex-1">{n.label}</span>
-                    {n.count !== undefined && (
-                      <span
-                        className={`min-w-[26px] h-[20px] px-1.5 inline-flex items-center justify-center rounded-[2px] font-mono text-[11px] ${
-                          n.on ? 'bg-[#2F8F3E] text-white' : 'bg-[#2A2F2D] text-[#C4C8C3]'
-                        }`}
-                      >
-                        {n.count}
-                      </span>
+                    {n.count !== undefined && n.count > 0 && (
+                      <span className={`font-mono text-[11.5px] ${n.on ? 'text-[#0F1110]' : 'text-[#8A8E8B]'}`}>{n.count}</span>
                     )}
                   </button>
                 );
@@ -223,89 +202,96 @@ export const AdminPage: React.FC<AdminPageProps> = ({ path, onNavigate }) => {
         ))}
       </nav>
 
-      <div className="mx-3 mb-3 mr-5 border border-[#2C302E] rounded-[3px]">
-        <div className="flex items-baseline justify-between px-3 py-2.5 border-b border-[#2C302E]">
-          <span className="font-mono text-[18px] leading-none text-white">{hour}</span>
-          <span className="text-[11px] text-[#8D938E]">hora de Madrid</span>
-        </div>
-        <div className="flex items-center gap-3 px-3 py-3">
-          <span className="w-8 h-8 shrink-0 inline-flex items-center justify-center rounded-[3px] bg-[#2F8F3E] text-white text-[12px] font-bold" aria-hidden="true">
+      <div className="mx-3 mb-3 pt-3 border-t border-[#E7E7E2]">
+        <div className="flex items-center gap-2.5 px-1.5">
+          <span className="w-7 h-7 shrink-0 inline-flex items-center justify-center rounded-full bg-[#0F1110] text-white text-[11px] font-semibold" aria-hidden="true">
             {initials}
           </span>
-          <div className="min-w-0 leading-tight">
-            <div className="text-[13px] font-semibold text-white truncate">{user.fullName ?? user.email}</div>
-            <div className="text-[12px] text-[#A3A9A4]">{ROLE_LABEL[user.role] ?? user.role}</div>
+          <div className="min-w-0 flex-1 leading-tight">
+            <div className="text-[13px] font-semibold text-[#0F1110] truncate">{user.fullName ?? user.email}</div>
+            <div className="text-[12px] text-[#666A67]">{ROLE_LABEL[user.role] ?? user.role}</div>
           </div>
-        </div>
-        <div className="grid grid-cols-2 border-t border-[#2C302E] text-[12px]">
-          <button type="button" onClick={() => go('/')} className="inline-flex items-center justify-center gap-1.5 h-9 text-[#C4C8C3] hover:bg-[#222624] hover:text-white cursor-pointer">
-            <ExternalLink className="w-3.5 h-3.5" aria-hidden="true" /> Ver la web
+          <button type="button" onClick={() => go('/')} title="Ver la web" aria-label="Ver la web" className="w-7 h-7 shrink-0 inline-flex items-center justify-center rounded-[6px] text-[#666A67] hover:bg-[#F1F1EE] hover:text-[#0F1110] cursor-pointer">
+            <ExternalLink className="w-4 h-4" aria-hidden="true" />
           </button>
           <button
             type="button"
             onClick={() => void logout().finally(() => onNavigate('/login'))}
-            className="inline-flex items-center justify-center gap-1.5 h-9 border-l border-[#2C302E] text-[#C4C8C3] hover:bg-[#222624] hover:text-white cursor-pointer"
+            title="Cerrar sesión"
+            aria-label="Cerrar sesión"
+            className="w-7 h-7 shrink-0 inline-flex items-center justify-center rounded-[6px] text-[#666A67] hover:bg-[#F1F1EE] hover:text-[#0F1110] cursor-pointer"
           >
-            <LogOut className="w-3.5 h-3.5" aria-hidden="true" /> Salir
+            <LogOut className="w-4 h-4" aria-hidden="true" />
           </button>
         </div>
       </div>
     </div>
   );
 
-  const today = new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Europe/Madrid' });
 
   return (
     <div className="gg-panel min-h-screen lg:grid lg:grid-cols-[248px_minmax(0,1fr)]">
       {/* Carril lateral: fijo en ordenador, cajón en tablet y móvil */}
-      <div className="hidden lg:block bg-[#1A1D1C]">
+      <div className="hidden lg:block bg-white">
         <div className="sticky top-0 h-screen">{rail}</div>
       </div>
       {menuOpen && (
         <div className="lg:hidden fixed inset-0 z-50 flex" role="dialog" aria-modal="true" aria-label="Menú del panel">
-          <div className="w-[260px] max-w-[80vw] h-full shadow-[8px_0_24px_rgba(0,0,0,0.25)]">{rail}</div>
+          <div className="w-[260px] max-w-[80vw] h-full shadow-[8px_0_24px_rgba(15,17,16,0.18)]">{rail}</div>
           <button type="button" className="flex-1 bg-black/40 cursor-pointer" aria-label="Cerrar el menú" onClick={() => setMenuOpen(false)} />
         </div>
       )}
 
       <div className="min-w-0 flex flex-col min-h-screen">
-        <header className="sticky top-0 z-30 h-14 bg-white border-b border-[#D7D9D3] flex items-center gap-3 px-4 sm:px-6 lg:px-8">
+        <header className="sticky top-0 z-30 h-[60px] bg-[#F6F6F3]/95 backdrop-blur border-b border-[#E7E7E2] flex items-center gap-3 px-4 sm:px-6 lg:px-10">
           <button
             type="button"
             onClick={() => setMenuOpen(true)}
-            className="lg:hidden -ml-1 w-9 h-9 inline-flex items-center justify-center rounded-[3px] hover:bg-[#EDEEEA] cursor-pointer"
+            className="lg:hidden -ml-1 w-9 h-9 inline-flex items-center justify-center rounded-[6px] hover:bg-[#EDEDE9] cursor-pointer"
             aria-label="Abrir el menú"
           >
             <Menu className="w-5 h-5" aria-hidden="true" />
           </button>
-          <h1 className="text-[17px] font-bold whitespace-nowrap">{TITLE[section]}</h1>
+          <nav aria-label="Ruta" className="flex items-center gap-2 text-[13px] min-w-0">
+            <span className="hidden sm:inline text-[#8A8E8B]">{section === 'events' || section === 'team' || section === 'dashboard' ? 'Dirección' : 'Laboratorio'}</span>
+            <span className="hidden sm:inline text-[#C9CBC7]" aria-hidden="true">/</span>
+            {section === 'detail' && (
+              <>
+                <button type="button" onClick={() => onNavigate(lastListPath)} className="text-[#8A8E8B] hover:text-[#0F1110] cursor-pointer">Pedidos</button>
+                <span className="text-[#C9CBC7]" aria-hidden="true">/</span>
+              </>
+            )}
+            <h1 className="text-[15px] font-semibold text-[#0F1110] truncate">{section === 'detail' && code ? `Pedido ${code}` : TITLE[section]}</h1>
+          </nav>
           <form
             role="search"
-            className="ml-auto sm:ml-6 flex-1 max-w-[420px]"
+            className="ml-auto w-full max-w-[320px]"
             onSubmit={(e) => {
               e.preventDefault();
               const q = search.trim();
               const digits = q.replace(/[\s.-]/g, '');
               setSearch('');
+              searchRef.current?.blur();
               if (/^\d{9}$/.test(digits)) openOrder(digits);
               else if (q) go(`${QUEUE_PATH}?q=${encodeURIComponent(q)}`);
             }}
           >
             <label className="relative block">
               <span className="sr-only">Buscar un pedido</span>
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B706C]" aria-hidden="true" />
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-[15px] h-[15px] text-[#8A8E8B]" aria-hidden="true" />
               <input
+                ref={searchRef}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Nº de pedido, cliente o correo"
-                className="w-full h-9 pl-9 pr-3 rounded-[3px] border border-[#C7CAC4] bg-[#F7F8F5] text-[14px] placeholder:text-[#6B706C] focus:bg-white focus:border-[#2F8F3E] focus:outline-none focus:ring-2 focus:ring-[#2F8F3E]/20"
+                placeholder="Buscar pedido, cliente o correo"
+                className="w-full h-8 pl-8 pr-8 rounded-[7px] border border-[#E1E1DC] bg-white text-[13px] placeholder:text-[#8A8E8B] focus:border-[#0F1110] focus:outline-none focus:ring-2 focus:ring-[#0F1110]/10"
               />
+              <kbd className="hidden sm:block absolute right-2 top-1/2 -translate-y-1/2 font-mono text-[11px] leading-none text-[#666A67] border border-[#E1E1DC] rounded-[4px] px-1.5 py-[3px]">/</kbd>
             </label>
           </form>
-          <span className="hidden md:block ml-4 text-[13px] text-[#5A5F5B] first-letter:uppercase whitespace-nowrap">{today}</span>
         </header>
 
-        <main className="flex-1 w-full max-w-[1320px] px-4 sm:px-6 lg:px-8 py-6">
+        <main className="flex-1 w-full max-w-[1280px] px-4 sm:px-6 lg:px-10 py-8">
           {section === 'dashboard' ? (
             <BusinessDashboard onOpenOrder={openOrder} />
           ) : section === 'events' ? (

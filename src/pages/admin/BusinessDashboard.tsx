@@ -84,14 +84,14 @@ export const BusinessDashboard: React.FC<{ onOpenOrder: (code: string) => void }
   }, [range, reload]);
 
   const current = RANGES.find((r) => r.key === range)!;
-  const card = `border rounded-[3px] p-5 ${t.card}`;
-  const heading = `text-xs font-bold uppercase tracking-wider ${t.muted}`;
+  const card = `border rounded-[8px] p-5 ${t.card}`;
+  const heading = `text-[13px] font-semibold ${t.muted}`;
 
   return (
     <div className="space-y-5">
       {/* Filtro: una sola fila, encima de todo lo que filtra. */}
       <div className="flex flex-wrap items-center gap-3">
-        <div className={`inline-flex rounded-[3px] border p-1 ${t.secondary}`} role="radiogroup" aria-label="Periodo">
+        <div className={`inline-flex rounded-[8px] border p-1 ${t.secondary}`} role="radiogroup" aria-label="Periodo">
           {RANGES.map((r) => (
             <button
               key={r.key}
@@ -99,7 +99,7 @@ export const BusinessDashboard: React.FC<{ onOpenOrder: (code: string) => void }
               role="radio"
               aria-checked={range === r.key}
               onClick={() => setRange(r.key)}
-              className={`px-3 py-1.5 rounded-md text-xs font-bold cursor-pointer transition-colors ${
+              className={`px-3 py-1.5 rounded-[6px] text-xs font-bold cursor-pointer transition-colors ${
                 range === r.key ? t.primary : t.ghostHover
               }`}
             >
@@ -110,7 +110,7 @@ export const BusinessDashboard: React.FC<{ onOpenOrder: (code: string) => void }
         <button
           type="button"
           onClick={() => setReload((n) => n + 1)}
-          className={`inline-flex items-center gap-1.5 px-3 py-2 border rounded-[3px] text-xs font-bold cursor-pointer ${t.secondary}`}
+          className={`inline-flex items-center gap-1.5 px-3 py-2 border rounded-[8px] text-xs font-bold cursor-pointer ${t.secondary}`}
         >
           <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} /> Actualizar
         </button>
@@ -235,7 +235,7 @@ export const BusinessDashboard: React.FC<{ onOpenOrder: (code: string) => void }
                 <div className="mt-3 overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className={`text-left text-[11px] uppercase tracking-wider ${t.muted}`}>
+                      <tr className={`text-left text-[12px] ${t.muted}`}>
                         <th className="pb-2 pr-3 font-bold">Fecha</th>
                         <th className="pb-2 pr-3 font-bold">Cliente</th>
                         <th className="pb-2 pr-3 font-bold">Pedido</th>
@@ -324,7 +324,7 @@ const Tile: React.FC<{ label: string; hint?: string; metric: DashboardMetric; pr
 }) => {
   const t = usePanelTheme();
   return (
-    <div className={`border rounded-[3px] p-4 flex flex-col justify-between gap-2 ${t.card}`}>
+    <div className={`border rounded-[8px] p-4 flex flex-col justify-between gap-2 ${t.card}`}>
       <div>
         <div className={`text-xs font-bold ${t.muted}`}>{label}</div>
         {hint && <div className={`text-[11px] ${t.muted}`}>{hint}</div>}
@@ -404,13 +404,13 @@ const CertificateHistorySection: React.FC<{ onOpenOrder: (code: string) => void 
   }, [q, page]);
 
   const pages = data ? Math.max(1, Math.ceil(data.total / data.pageSize)) : 1;
-  const pageButton = `px-3 py-2 border rounded-[3px] font-bold cursor-pointer disabled:opacity-40 disabled:cursor-default ${t.secondary}`;
+  const pageButton = `px-3 py-2 border rounded-[8px] font-bold cursor-pointer disabled:opacity-40 disabled:cursor-default ${t.secondary}`;
 
   return (
-    <section className={`border rounded-[3px] p-5 ${t.card}`}>
+    <section className={`border rounded-[8px] p-5 ${t.card}`}>
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h2 className={`text-xs font-bold uppercase tracking-wider ${t.muted}`}>Historial de cartas certificadas</h2>
+          <h2 className={`text-[13px] font-semibold ${t.muted}`}>Historial de cartas certificadas</h2>
           <p className={`mt-1 text-sm ${t.muted}`}>
             Todas las cartas, desde el inicio{data ? ` · ${plural(data.total, 'certificado', 'certificados')}` : ''}.
           </p>
@@ -423,7 +423,7 @@ const CertificateHistorySection: React.FC<{ onOpenOrder: (code: string) => void 
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Correo, nº de certificado, carta o pedido"
-            className={`w-full pl-9 pr-3 py-2 border rounded-[3px] text-sm outline-none ${t.input}`}
+            className={`w-full pl-9 pr-3 py-2 border rounded-[8px] text-sm outline-none ${t.input}`}
           />
         </label>
       </div>
@@ -435,7 +435,7 @@ const CertificateHistorySection: React.FC<{ onOpenOrder: (code: string) => void 
           {data.rows.length ? (
             <table className="w-full text-sm">
               <thead>
-                <tr className={`text-left text-[11px] uppercase tracking-wider ${t.muted}`}>
+                <tr className={`text-left text-[12px] ${t.muted}`}>
                   <th className="pb-2 pr-3 font-bold">Fecha</th>
                   <th className="pb-2 pr-3 font-bold">Nº de certificado</th>
                   <th className="pb-2 pr-3 font-bold">Carta</th>
@@ -519,8 +519,8 @@ const NewsletterCard: React.FC = () => {
   };
 
   return (
-    <section className={`border rounded-[3px] p-5 flex flex-wrap items-center gap-5 ${t.card}`} aria-label="Newsletter">
-      <span className="w-10 h-10 rounded-[3px] bg-[#15803D] text-white flex items-center justify-center shrink-0">
+    <section className={`border rounded-[8px] p-5 flex flex-wrap items-center gap-5 ${t.card}`} aria-label="Newsletter">
+      <span className="w-10 h-10 rounded-[8px] bg-[#0F1110] text-white flex items-center justify-center shrink-0">
         <Mail className="w-5 h-5" aria-hidden="true" />
       </span>
       <div className="flex-1 min-w-[200px]">
@@ -535,7 +535,7 @@ const NewsletterCard: React.FC = () => {
         type="button"
         onClick={download}
         disabled={!stats || stats.confirmed === 0}
-        className={`inline-flex items-center gap-2 px-3.5 py-2 border rounded-[3px] text-xs font-bold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${t.secondary}`}
+        className={`inline-flex items-center gap-2 px-3.5 py-2 border rounded-[8px] text-xs font-bold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${t.secondary}`}
       >
         <Download className="w-3.5 h-3.5" aria-hidden="true" />
         Descargar confirmados (CSV)

@@ -9,7 +9,7 @@ import { usePanelTheme } from './ui';
 /** Color e icono de cada rol, iguales en las tarjetas, las insignias y el formulario. */
 const ROLE_STYLE: Record<StaffRole, { color: string; icon: LucideIcon }> = {
   staff: { color: '#0284C7', icon: PackageOpen },
-  grader: { color: '#16A34A', icon: ClipboardList },
+  grader: { color: '#2F8F3E', icon: ClipboardList },
   qa: { color: '#4F46E5', icon: ShieldCheck },
   admin: { color: '#B45309', icon: Crown },
 };
@@ -87,7 +87,7 @@ export const TeamPanel: React.FC<{ user: UserDto }> = ({ user }) => {
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <p className={`text-xs max-w-xl ${t.muted}`}>Cada persona entra con su correo y el código que le llega. Su puesto decide qué puede hacer en el panel.</p>
-        <button type="button" onClick={() => setAdding(true)} className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-[3px] text-xs font-semibold cursor-pointer ${t.primary}`}>
+        <button type="button" onClick={() => setAdding(true)} className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-[8px] text-xs font-semibold cursor-pointer ${t.primary}`}>
           <UserPlus className="w-4 h-4" aria-hidden="true" />
           Añadir persona
         </button>
@@ -95,7 +95,7 @@ export const TeamPanel: React.FC<{ user: UserDto }> = ({ user }) => {
 
       {/* Lectura rápida del equipo */}
       {members && (
-        <dl className={`grid grid-cols-3 border rounded-[3px] overflow-hidden divide-x ${t.card} ${t.rule}`}>
+        <dl className={`grid grid-cols-3 border rounded-[8px] overflow-hidden divide-x ${t.card} ${t.rule}`}>
           {[
             { label: 'Personas', value: members.length },
             { label: 'Activas en 24 h', value: activeToday },
@@ -103,7 +103,7 @@ export const TeamPanel: React.FC<{ user: UserDto }> = ({ user }) => {
           ].map((stat) => (
             <div key={stat.label} className={`px-4 py-3 ${t.rule}`}>
               <dd className={`text-2xl font-bold leading-none ${t.text}`}>{stat.value}</dd>
-              <dt className={`mt-1.5 font-mono text-[10px] uppercase tracking-wider ${t.muted}`}>{stat.label}</dt>
+              <dt className={`mt-1.5 text-[12px] ${t.muted}`}>{stat.label}</dt>
             </div>
           ))}
         </dl>
@@ -121,7 +121,7 @@ export const TeamPanel: React.FC<{ user: UserDto }> = ({ user }) => {
             const info = ROLE_INFO[role];
             const people = byRole(role);
             return (
-              <section key={role} className={`relative flex flex-col border rounded-[3px] ${t.card}`} aria-label={info.name}>
+              <section key={role} className={`relative flex flex-col border rounded-[8px] ${t.card}`} aria-label={info.name}>
                 <div className="h-1 rounded-t-2xl" style={{ background: color }} aria-hidden="true" />
                 {index < STAFF_ROLES.length - 1 && (
                   <span
@@ -138,7 +138,7 @@ export const TeamPanel: React.FC<{ user: UserDto }> = ({ user }) => {
                       <div className="font-mono text-[10px] font-bold tracking-[0.2em]" style={{ color }}>PUESTO {String(index + 1).padStart(2, '0')}</div>
                       <h3 className={`mt-1 text-lg font-bold leading-tight ${t.text}`}>{info.name}</h3>
                     </div>
-                    <span className="w-10 h-10 rounded-[3px] flex items-center justify-center shrink-0" style={{ background: `${color}1F`, color }}>
+                    <span className="w-10 h-10 rounded-[8px] flex items-center justify-center shrink-0" style={{ background: `${color}1F`, color }}>
                       <Icon className="w-5 h-5" aria-hidden="true" />
                     </span>
                   </div>
@@ -168,7 +168,7 @@ export const TeamPanel: React.FC<{ user: UserDto }> = ({ user }) => {
 
                 {/* Las personas de este puesto */}
                 <div className={`flex-1 flex flex-col border-t rounded-b-2xl ${t.rule} ${t.isLight ? 'bg-[#FAF8F5]' : 'bg-[#2F2F2F]'}`}>
-                  <div className={`flex items-center justify-between px-5 pt-3 pb-1 font-mono text-[10px] uppercase tracking-wider ${t.muted}`}>
+                  <div className={`flex items-center justify-between px-5 pt-3 pb-1 text-[12px] ${t.muted}`}>
                     <span>{people.length} {people.length === 1 ? 'persona' : 'personas'}</span>
                   </div>
                   <ul className="px-3 pb-3 space-y-1.5 flex-1">
@@ -176,7 +176,7 @@ export const TeamPanel: React.FC<{ user: UserDto }> = ({ user }) => {
                       const me = m.id === user.id;
                       const busy = busyId === m.id;
                       return (
-                        <li key={m.id} className={`rounded-[3px] border px-3 py-2.5 ${t.card}`}>
+                        <li key={m.id} className={`rounded-[8px] border px-3 py-2.5 ${t.card}`}>
                           <div className="flex items-center gap-2.5">
                             <span className="w-8 h-8 rounded-full flex items-center justify-center text-white text-[11px] font-bold shrink-0" style={{ background: color }} aria-hidden="true">
                               {initials(m)}
@@ -190,7 +190,7 @@ export const TeamPanel: React.FC<{ user: UserDto }> = ({ user }) => {
                             </div>
                           </div>
                           <div className={`mt-2 flex items-center gap-1.5 text-[11px] ${t.muted}`}>
-                            <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${m.activated ? 'bg-[#16A34A]' : 'bg-[#D97706]'}`} aria-hidden="true" />
+                            <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${m.activated ? 'bg-[#2F8F3E]' : 'bg-[#A86A12]'}`} aria-hidden="true" />
                             {m.activated ? lastSeen(m.lastSeenAt) : 'Pendiente de su primer acceso'}
                           </div>
                           {!me && (
@@ -201,7 +201,7 @@ export const TeamPanel: React.FC<{ user: UserDto }> = ({ user }) => {
                                 value={m.role}
                                 disabled={busy}
                                 onChange={(e) => changeRole(m, e.target.value as StaffRole)}
-                                className={`flex-1 min-w-0 px-2 py-1.5 text-[11px] font-bold border rounded-md focus:outline-none disabled:opacity-60 cursor-pointer ${t.input}`}
+                                className={`flex-1 min-w-0 px-2 py-1.5 text-[11px] font-bold border rounded-[6px] focus:outline-none disabled:opacity-60 cursor-pointer ${t.input}`}
                                 title="Cambiar de puesto"
                               >
                                 {STAFF_ROLES.map((r) => <option key={r} value={r}>{ROLE_INFO[r].name}</option>)}
@@ -212,7 +212,7 @@ export const TeamPanel: React.FC<{ user: UserDto }> = ({ user }) => {
                                 onClick={() => remove(m)}
                                 aria-label={`Quitar a ${m.email} del equipo`}
                                 title="Quitar del equipo"
-                                className={`p-1.5 border rounded-md cursor-pointer disabled:opacity-50 ${t.secondary}`}
+                                className={`p-1.5 border rounded-[6px] cursor-pointer disabled:opacity-50 ${t.secondary}`}
                               >
                                 <UserMinus className={`w-3.5 h-3.5 ${t.negative}`} aria-hidden="true" />
                               </button>
@@ -222,13 +222,13 @@ export const TeamPanel: React.FC<{ user: UserDto }> = ({ user }) => {
                       );
                     })}
                     {people.length === 0 && (
-                      <li className={`rounded-[3px] border border-dashed px-3 py-4 text-center text-[11px] ${t.rule} ${t.muted}`}>Nadie tiene este puesto todavía.</li>
+                      <li className={`rounded-[8px] border border-dashed px-3 py-4 text-center text-[11px] ${t.rule} ${t.muted}`}>Nadie tiene este puesto todavía.</li>
                     )}
                   </ul>
                   <button
                     type="button"
                     onClick={() => setAdding(role)}
-                    className={`mx-3 mb-3 inline-flex items-center justify-center gap-1.5 py-2 rounded-[3px] border border-dashed text-[11px] font-bold cursor-pointer ${t.rule} ${t.muted} ${t.ghostHover}`}
+                    className={`mx-3 mb-3 inline-flex items-center justify-center gap-1.5 py-2 rounded-[8px] border border-dashed text-[11px] font-bold cursor-pointer ${t.rule} ${t.muted} ${t.ghostHover}`}
                   >
                     <Plus className="w-3.5 h-3.5" aria-hidden="true" />
                     Añadir a este puesto
@@ -262,13 +262,13 @@ const AddMemberForm: React.FC<{ initialRole: StaffRole; onCancel: () => void; on
   const [role, setRole] = useState<StaffRole>(initialRole);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
-  const field = `w-full px-3 py-2.5 text-sm border rounded-[3px] focus:outline-none ${t.input}`;
+  const field = `w-full px-3 py-2.5 text-sm border rounded-[8px] focus:outline-none ${t.input}`;
   const label = `block text-xs font-bold mb-1 ${t.text}`;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60" role="dialog" aria-modal="true" aria-label="Añadir persona">
       <form
-        className={`w-full max-w-2xl max-h-[90vh] overflow-y-auto border rounded-[3px] ${t.card}`}
+        className={`w-full max-w-2xl max-h-[90vh] overflow-y-auto border rounded-[8px] ${t.card}`}
         onSubmit={async (e) => {
           e.preventDefault();
           setBusy(true);
@@ -284,7 +284,7 @@ const AddMemberForm: React.FC<{ initialRole: StaffRole; onCancel: () => void; on
       >
         <header className={`flex items-center justify-between px-6 py-4 border-b ${t.rule}`}>
           <h3 className={`text-lg font-bold ${t.text}`}>Añadir persona al equipo</h3>
-          <button type="button" onClick={onCancel} aria-label="Cerrar" className={`p-1.5 rounded-[3px] cursor-pointer ${t.ghostHover} ${t.text}`}>
+          <button type="button" onClick={onCancel} aria-label="Cerrar" className={`p-1.5 rounded-[8px] cursor-pointer ${t.ghostHover} ${t.text}`}>
             <X className="w-5 h-5" />
           </button>
         </header>
@@ -309,11 +309,11 @@ const AddMemberForm: React.FC<{ initialRole: StaffRole; onCancel: () => void; on
                 return (
                   <label
                     key={r}
-                    className={`flex gap-3 p-3.5 rounded-[3px] border-2 cursor-pointer transition-colors ${picked ? '' : t.rule}`}
+                    className={`flex gap-3 p-3.5 rounded-[8px] border-2 cursor-pointer transition-colors ${picked ? '' : t.rule}`}
                     style={picked ? { borderColor: color } : undefined}
                   >
                     <input type="radio" name="role" value={r} checked={picked} onChange={() => setRole(r)} className="sr-only" />
-                    <span className="w-9 h-9 rounded-[3px] flex items-center justify-center text-white shrink-0" style={{ background: color }}>
+                    <span className="w-9 h-9 rounded-[8px] flex items-center justify-center text-white shrink-0" style={{ background: color }}>
                       <Icon className="w-[18px] h-[18px]" aria-hidden="true" />
                     </span>
                     <span className="flex-1">
@@ -335,7 +335,7 @@ const AddMemberForm: React.FC<{ initialRole: StaffRole; onCancel: () => void; on
         </div>
         <footer className={`flex justify-end gap-2 px-6 py-4 border-t ${t.rule}`}>
           <button type="button" onClick={onCancel} className={`px-4 py-2.5 text-xs font-bold cursor-pointer ${t.muted} hover:underline`}>Cancelar</button>
-          <button type="submit" disabled={busy || !email.includes('@')} className={`px-5 py-2.5 rounded-[3px] text-xs font-semibold cursor-pointer disabled:opacity-50 ${t.primary}`}>
+          <button type="submit" disabled={busy || !email.includes('@')} className={`px-5 py-2.5 rounded-[8px] text-xs font-semibold cursor-pointer disabled:opacity-50 ${t.primary}`}>
             {busy ? 'Dando de alta…' : 'Dar de alta y avisar'}
           </button>
         </footer>

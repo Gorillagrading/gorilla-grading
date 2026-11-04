@@ -1633,13 +1633,14 @@ html .min-h-screen {
 .gg-panel {
   font-family: 'Archivo Variable', 'Archivo', system-ui, sans-serif;
   font-feature-settings: 'tnum' 1;
-  color: #121413;
-  background: #EDEEEA;
+  color: #0F1110;
+  background: #F6F6F3;
+  -webkit-font-smoothing: antialiased;
 }
-html:has(.gg-panel), body:has(.gg-panel) { background: #EDEEEA; }
+html:has(.gg-panel), body:has(.gg-panel) { background: #F6F6F3; }
 .gg-panel .font-sans { font-family: inherit; }
 .gg-panel .font-mono { font-family: 'JetBrains Mono', ui-monospace, monospace; letter-spacing: 0; }
-.gg-panel ::selection { background: #2F8F3E; color: #fff; }
-.gg-panel :focus-visible { outline: 2px solid #2F8F3E; outline-offset: 2px; }
-.gg-panel * { scrollbar-color: #B8BCB6 transparent; scrollbar-width: thin; }
-.gg-panel input, .gg-panel select, .gg-panel textarea { caret-color: #2F8F3E; }
+.gg-panel ::selection { background: #0F1110; color: #fff; }
+.gg-panel :focus-visible { outline: 2px solid #0F1110; outline-offset: 2px; }
+.gg-panel * { scrollbar-color: #C9CBC7 transparent; scrollbar-width: thin; }
+.gg-panel input, .gg-panel select, .gg-panel textarea { caret-color: #0F1110; }

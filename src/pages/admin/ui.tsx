@@ -3,24 +3,29 @@ import type { OrderStatus } from '../../../shared/domain';
 import { STATUS_LABEL } from '../../utils/orderStatus';
 
 /**
- * Colores del panel ("banco de calibración"): suelo gris banco, hojas blancas con filetes de 1 px, tinta casi negra
- * y el verde de Gorilla solo para la acción principal. El panel es siempre claro: se usa en un laboratorio iluminado.
+ * Colores del panel: fondo neutro, hojas blancas con filetes finos y una sola tinta casi negra. El color solo
+ * aparece cuando significa algo (rojo: tarde; ámbar: vence ya). El panel es siempre claro: se usa en un
+ * laboratorio iluminado.
  */
+export const INK = '#0F1110';
+export const LATE = '#C2362B';
+export const WARN = '#A86A12';
+
 export function usePanelTheme() {
   return {
     isLight: true,
-    card: 'bg-white border-[#D7D9D3]',
-    muted: 'text-[#5A5F5B]',
-    text: 'text-[#121413]',
-    rule: 'border-[#D7D9D3]',
-    input: 'bg-white border-[#C7CAC4] text-[#121413] placeholder:text-[#6B706C] focus:border-[#2F8F3E] focus:ring-2 focus:ring-[#2F8F3E]/20',
-    primary: 'bg-[#2F8F3E] hover:bg-[#25762F] text-white',
-    secondary: 'bg-white border-[#C7CAC4] text-[#121413] hover:border-[#121413]',
-    ghostHover: 'hover:bg-[#EDEEEA]',
+    card: 'bg-white border-[#E7E7E2]',
+    muted: 'text-[#666A67]',
+    text: 'text-[#0F1110]',
+    rule: 'border-[#E7E7E2]',
+    input: 'bg-white border-[#E1E1DC] text-[#0F1110] placeholder:text-[#8A8E8B] focus:border-[#0F1110] focus:ring-2 focus:ring-[#0F1110]/10',
+    primary: 'bg-[#0F1110] hover:bg-[#2A2E2B] text-white',
+    secondary: 'bg-white border-[#E1E1DC] text-[#0F1110] hover:border-[#0F1110]',
+    ghostHover: 'hover:bg-[#F1F1EE]',
     positive: 'text-[#25762F]',
-    negative: 'text-[#B42B22]',
+    negative: 'text-[#C2362B]',
     // Colores de las gráficas (SVG). La superficie es el fondo de `card`.
-    chart: { mark: '#2F8F3E', grid: 'rgba(18,20,19,0.08)', wash: 'rgba(18,20,19,0.04)', trend: '#B8BCB6', surface: '#FFFFFF' },
+    chart: { mark: '#0F1110', grid: 'rgba(15,17,16,0.07)', wash: 'rgba(15,17,16,0.035)', trend: '#C9CBC7', surface: '#FFFFFF' },
   };
 }
 
@@ -32,50 +37,40 @@ export const statusName = (status: OrderStatus) =>
   ({ SUBMITTED: 'Por recibir', PACKAGE_RECEIVED: 'Recibido', SHIPPED: 'Enviado al cliente' } as Partial<Record<OrderStatus, string>>)[status] ??
   STATUS_LABEL[status].es;
 
-/** Etapas del recorrido normal de un pedido, en orden. Sirven para dibujar el avance. */
-const PIPELINE: OrderStatus[] = [
-  'PACKAGE_RECEIVED', 'PRE_INSPECTION', 'OPTICAL_GRADING', 'ENCAPSULATION', 'QUALITY_ASSURANCE', 'SHIPPED', 'DELIVERED',
+/** Estaciones de la línea del laboratorio, en orden. */
+export const LINE_STAGES: OrderStatus[] = [
+  'SUBMITTED', 'PACKAGE_RECEIVED', 'PRE_INSPECTION', 'OPTICAL_GRADING', 'ENCAPSULATION', 'QUALITY_ASSURANCE', 'SHIPPED',
 ];
 
-/**
- * Color de cada fase, como los parches de una carta de calibración: las fases del laboratorio van de verde claro
- * a verde oscuro según avanzan; calidad en violeta; avisos en ámbar y rojo.
- */
-export const STAGE_COLOR: Record<OrderStatus, string> = {
-  DRAFT: '#B8BCB6',
-  SUBMITTED: '#1E8FC6',
-  PAYMENT_PENDING: '#C98A12',
-  PACKAGE_RECEIVED: '#8CC79A',
-  PRE_INSPECTION: '#4FA862',
-  OPTICAL_GRADING: '#2F8F3E',
-  ENCAPSULATION: '#1F6B2B',
-  QUALITY_ASSURANCE: '#6A4FC4',
-  SHIPPED: '#3A403D',
-  DELIVERED: '#121413',
-  ON_HOLD: '#C98A12',
-  CANCELLED: '#B42B22',
-  RETURNED: '#8A8F8B',
+/** Nombre corto de cada estación de la línea. */
+export const STATION_NAME: Partial<Record<OrderStatus, string>> = {
+  SUBMITTED: 'Por recibir',
+  PACKAGE_RECEIVED: 'Recibido',
+  PRE_INSPECTION: 'Pre-inspección',
+  OPTICAL_GRADING: 'Graduación',
+  ENCAPSULATION: 'Encapsulado',
+  QUALITY_ASSURANCE: 'Calidad',
+  SHIPPED: 'Enviado',
 };
 
-/**
- * Estado del pedido: marcador cuadrado sólido, nombre en mayúsculas y, en el recorrido normal,
- * una barra de siete tramos que muestra en qué etapa va. Sin caja ni fondo translúcido.
- */
+/** Color del punto de estado: tinta para el recorrido normal; color solo cuando el estado pide atención o cierra. */
+const DOT: Partial<Record<OrderStatus, string>> = {
+  ON_HOLD: WARN,
+  PAYMENT_PENDING: WARN,
+  CANCELLED: LATE,
+  DELIVERED: '#2F8F3E',
+  RETURNED: '#9A9E9B',
+  DRAFT: '#9A9E9B',
+};
+
+/** Estado del pedido: un punto y su nombre; en el recorrido normal, en qué estación va (3/7). */
 export const StatusPill: React.FC<{ status: OrderStatus }> = ({ status }) => {
-  const step = PIPELINE.indexOf(status);
+  const step = LINE_STAGES.indexOf(status);
   return (
-    <span className="inline-flex flex-col gap-1.5 align-middle">
-      <span className="inline-flex items-center gap-2 font-mono text-[10.5px] font-bold uppercase tracking-wider whitespace-nowrap">
-        <span className="w-2 h-2 shrink-0" style={{ background: STAGE_COLOR[status] }} />
-        {statusName(status)}
-      </span>
-      {step >= 0 && (
-        <span className="flex gap-[3px]" aria-hidden="true">
-          {PIPELINE.map((stage, i) => (
-            <span key={stage} className="h-[3px] w-3.5" style={{ background: i <= step ? STAGE_COLOR[status] : '#E2E4DF' }} />
-          ))}
-        </span>
-      )}
+    <span className="inline-flex items-center gap-2 whitespace-nowrap text-[13px] align-middle">
+      <span className="w-[7px] h-[7px] rounded-full shrink-0" style={{ background: DOT[status] ?? INK }} aria-hidden="true" />
+      {statusName(status)}
+      {step >= 0 && <span className="font-mono text-[11px] text-[#8A8E8B]">{step + 1}/{LINE_STAGES.length}</span>}
     </span>
   );
 };
@@ -88,6 +83,9 @@ export const formatDate = (iso: string | null) =>
 
 export const formatDateTime = (iso: string) =>
   new Date(iso).toLocaleString('es-ES', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+/** Un código de 9 cifras en tres grupos, como se lee en voz alta: 713 209 782. */
+export const groupCode = (code: string) => (/^\d{9}$/.test(code) ? code.replace(/(\d{3})(\d{3})(\d{3})/, '$1 $2 $3') : code);
 
 /** "hoy", "hace 1 día", "hace 12 días". */
 export function waiting(iso: string): string {
@@ -123,47 +121,29 @@ export function daysLeft(task: Plazo, now = new Date()): number | null {
 }
 
 /**
- * Regla de plazo: el plazo del servicio como una escala con una marca por día, la fecha prevista en rojo
- * y una cruz de registro en hoy. Si el pedido va tarde, la escala se alarga y el tramo de retraso va en rojo.
+ * Plazo de un pedido en una línea: una barra corta con lo consumido del plazo y lo que queda dicho en palabras
+ * ("6 días", "Mañana", "+2 días"). Tinta si va bien, ámbar si vence ya, rojo si va tarde.
  */
 export const PlazoRuler: React.FC<{ task: Plazo }> = ({ task }) => {
   const left = daysLeft(task);
-  if (task.status === 'ON_HOLD') return <span className="text-[12px] font-semibold text-[#8A6A12]">Plazo detenido</span>;
+  if (task.status === 'ON_HOLD') return <span className="text-[13px] font-medium" style={{ color: WARN }}>Detenido</span>;
   if (!task.startedAt || !task.dueDate || left === null) {
-    return <span className="text-[12px] text-[#5A5F5B]">{task.status === 'SUBMITTED' ? 'Plazo sin empezar' : `Esperando ${waiting(task.since)}`}</span>;
+    return <span className="text-[13px] text-[#8A8E8B]">{task.status === 'SUBMITTED' ? 'Sin empezar' : `Espera ${waiting(task.since)}`}</span>;
   }
   const start = dayStart(new Date(task.startedAt));
   const due = parseDay(task.dueDate);
-  const now = dayStart(new Date());
-  const end = Math.max(due, now);
-  const span = Math.max(end - start, DAY);
-  const pos = (t: number) => `${Math.min(100, Math.max(0, ((t - start) / span) * 100))}%`;
-  const days = Math.round(span / DAY);
-  const step = days > 30 ? Math.ceil(days / 30) : 1;
+  const used = Math.min(1, Math.max(0.04, (dayStart(new Date()) - start) / Math.max(due - start, DAY)));
   const late = left < 0;
   const tight = !late && left <= 1;
-  const color = late ? '#B42B22' : tight ? '#C98A12' : '#2F8F3E';
-  const label = late ? `${-left} ${-left === 1 ? 'día' : 'días'} de retraso` : left === 0 ? 'Vence hoy' : `Quedan ${left} ${left === 1 ? 'día' : 'días'}`;
+  const color = late ? LATE : tight ? WARN : INK;
+  const label = late ? `+${-left} ${-left === 1 ? 'día' : 'días'}` : left === 0 ? 'Hoy' : left === 1 ? 'Mañana' : `${left} días`;
 
   return (
-    <span className="flex flex-col gap-1 w-full" title={`Fecha prevista: ${new Date(due).toLocaleDateString('es-ES')}`}>
-      <span className="text-[12px] font-semibold" style={{ color }}>{label}</span>
-      <span className="relative block h-3.5" aria-hidden="true">
-        {/* Escala: una marca por día */}
-        <span
-          className="absolute inset-x-0 bottom-0 h-1.5"
-          style={{ backgroundImage: `repeating-linear-gradient(90deg, #A9AEA9 0 1px, transparent 1px ${100 / (days / step)}%)` }}
-        />
-        <span className="absolute inset-x-0 top-[3px] h-[3px] bg-[#E2E4DF]" />
-        <span className="absolute left-0 top-[3px] h-[3px]" style={{ width: pos(Math.min(now, due)), background: '#2F8F3E' }} />
-        {late && <span className="absolute top-[3px] h-[3px] bg-[#B42B22]" style={{ left: pos(due), width: `calc(${pos(now)} - ${pos(due)})` }} />}
-        {/* Fecha prevista */}
-        <span className="absolute top-0 bottom-0 w-[2px] -ml-px bg-[#B42B22]" style={{ left: pos(due) }} />
-        {/* Hoy: cruz de registro */}
-        <span className="absolute top-[-2px] w-[1px] h-[18px] bg-[#121413]" style={{ left: pos(now) }} />
-        <span className="absolute top-[4px] w-[9px] h-[1px] -ml-[4px] bg-[#121413]" style={{ left: pos(now) }} />
+    <span className="inline-flex items-center gap-2.5 whitespace-nowrap" title={`Fecha prevista: ${new Date(due).toLocaleDateString('es-ES')}`}>
+      <span className="relative w-14 h-[3px] rounded-full bg-[#ECECE8] overflow-hidden" aria-hidden="true">
+        <span className="absolute inset-y-0 left-0 rounded-full" style={{ width: `${(late ? 1 : used) * 100}%`, background: color }} />
       </span>
+      <span className={`text-[13px] ${late || tight ? 'font-semibold' : ''}`} style={{ color }}>{label}</span>
     </span>
   );
 };
-

@@ -119,7 +119,7 @@ export const EventsCalendar: React.FC = () => {
       onClick={() => setEditing({ id: e.id, form: formFrom(e) })}
       title={e.name}
       className={`block w-full truncate text-left text-[10px] font-bold px-1.5 py-0.5 rounded text-white cursor-pointer ${
-        e.published ? 'bg-[#2D9A46] hover:bg-[#23803A]' : 'bg-[#8A9388] hover:bg-[#6B7268]'
+        e.published ? 'bg-[#0F1110] hover:bg-[#2A2E2B]' : 'bg-[#8A9388] hover:bg-[#6B7268]'
       }`}
     >
       {e.name}
@@ -136,7 +136,7 @@ export const EventsCalendar: React.FC = () => {
         <button
           type="button"
           onClick={() => setEditing({ id: null, form: emptyForm(localKey(new Date())) })}
-          className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-[3px] text-xs font-semibold cursor-pointer ${t.primary}`}
+          className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-[8px] text-xs font-semibold cursor-pointer ${t.primary}`}
         >
           <Plus className="w-4 h-4" aria-hidden="true" />
           Nuevo evento
@@ -147,9 +147,9 @@ export const EventsCalendar: React.FC = () => {
       {notice && <p role="status" className={`text-sm ${t.positive}`}>{notice}</p>}
 
       {/* Mes */}
-      <section className={`border rounded-[3px] overflow-hidden ${t.card}`} aria-label="Calendario">
+      <section className={`border rounded-[8px] overflow-hidden ${t.card}`} aria-label="Calendario">
         <header className={`flex items-center justify-between px-5 py-3 border-b ${t.rule}`}>
-          <button type="button" onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1))} className={`p-2 rounded-[3px] cursor-pointer ${t.ghostHover} ${t.text}`} aria-label="Mes anterior">
+          <button type="button" onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1))} className={`p-2 rounded-[8px] cursor-pointer ${t.ghostHover} ${t.text}`} aria-label="Mes anterior">
             <ChevronLeft className="w-4 h-4" />
           </button>
           <div className="flex items-center gap-3">
@@ -167,16 +167,16 @@ export const EventsCalendar: React.FC = () => {
               Hoy
             </button>
           </div>
-          <button type="button" onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1))} className={`p-2 rounded-[3px] cursor-pointer ${t.ghostHover} ${t.text}`} aria-label="Mes siguiente">
+          <button type="button" onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1))} className={`p-2 rounded-[8px] cursor-pointer ${t.ghostHover} ${t.text}`} aria-label="Mes siguiente">
             <ChevronRight className="w-4 h-4" />
           </button>
         </header>
-        <div className={`grid grid-cols-7 text-center font-mono text-[10px] uppercase tracking-wider py-2 border-b ${t.rule} ${t.muted}`}>
+        <div className={`grid grid-cols-7 text-center text-[12px] py-2 border-b ${t.rule} ${t.muted}`}>
           {WEEKDAYS.map((d) => <div key={d}>{d}</div>)}
         </div>
         <div className="grid grid-cols-7">
           {cells.map((d, i) => {
-            if (!d) return <div key={i} className={`min-h-[84px] border-b border-r ${t.rule} ${t.isLight ? 'bg-[#FAF8F3]' : 'bg-[#333333]'}`} />;
+            if (!d) return <div key={i} className={`min-h-[84px] border-b border-r ${t.rule} ${t.isLight ? 'bg-[#FAFAF8]' : 'bg-[#333333]'}`} />;
             const key = localKey(d);
             const list = byDay.get(key) ?? [];
             const isToday = key === todayKey;
@@ -187,12 +187,12 @@ export const EventsCalendar: React.FC = () => {
                   if ((ev.target as HTMLElement).closest('button')) return;
                   setEditing({ id: null, form: emptyForm(key) });
                 }}
-                className={`min-h-[84px] p-1.5 border-b border-r space-y-1 cursor-pointer transition-colors ${t.rule} ${t.isLight ? 'hover:bg-[#F7F4EC]' : 'hover:bg-[#404040]'}`}
+                className={`min-h-[84px] p-1.5 border-b border-r space-y-1 cursor-pointer transition-colors ${t.rule} ${t.isLight ? 'hover:bg-[#F6F6F3]' : 'hover:bg-[#404040]'}`}
                 title="Pulsa para crear un evento este día"
               >
                 <div
                   className={`text-xs font-bold w-6 h-6 flex items-center justify-center rounded-full ${
-                    isToday ? 'bg-[#2D9A46] text-white' : t.text
+                    isToday ? 'bg-[#0F1110] text-white' : t.text
                   }`}
                 >
                   {d.getDate()}
@@ -236,8 +236,8 @@ const EventList: React.FC<{
 }> = ({ title, empty, events, onEdit, onDelete }) => {
   const t = usePanelTheme();
   return (
-    <section className={`border rounded-[3px] ${t.card}`} aria-label={title}>
-      <h3 className={`px-5 py-3 border-b text-sm font-bold uppercase ${t.rule} ${t.text}`}>
+    <section className={`border rounded-[8px] ${t.card}`} aria-label={title}>
+      <h3 className={`px-5 py-3 border-b text-[14px] font-semibold ${t.rule} ${t.text}`}>
         {title} {events && <span className={`font-mono text-xs ${t.muted}`}>{events.length}</span>}
       </h3>
       {events === null && <p className={`px-5 py-6 text-sm ${t.muted}`}>Cargando…</p>}
@@ -247,8 +247,8 @@ const EventList: React.FC<{
           const start = new Date(e.startsAt);
           return (
             <li key={e.id} className={`flex flex-wrap items-center gap-4 px-5 py-4 border-b last:border-b-0 ${t.rule}`}>
-              <span className={`w-14 shrink-0 rounded-[3px] overflow-hidden text-center border ${t.rule}`}>
-                <span className={`block text-[10px] font-bold uppercase py-0.5 text-white ${e.published ? 'bg-[#2D9A46]' : 'bg-[#8A9388]'}`}>
+              <span className={`w-14 shrink-0 rounded-[8px] overflow-hidden text-center border ${t.rule}`}>
+                <span className={`block text-[11px] font-semibold py-0.5 text-white ${e.published ? 'bg-[#0F1110]' : 'bg-[#8A9388]'}`}>
                   {start.toLocaleDateString('es-ES', { timeZone: 'Europe/Madrid', month: 'short' }).replace('.', '')}
                 </span>
                 <span className={`block text-xl font-bold py-1 ${t.text}`}>
@@ -258,10 +258,10 @@ const EventList: React.FC<{
               <div className="flex-1 min-w-[220px]">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className={`text-sm font-bold ${t.text}`}>{e.name}</span>
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full text-white ${e.published ? 'bg-[#2D9A46]' : 'bg-[#8A9388]'}`}>
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full text-white ${e.published ? 'bg-[#0F1110]' : 'bg-[#8A9388]'}`}>
                     {e.published ? 'Publicado' : 'Borrador'}
                   </span>
-                  {!e.acceptsSubmissions && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full text-white bg-[#D97706]">Sin entregas</span>}
+                  {!e.acceptsSubmissions && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full text-white bg-[#A86A12]">Sin entregas</span>}
                   <span className={`text-[11px] ${t.muted}`}>{KIND_TEXT[e.kind]}</span>
                 </div>
                 <div className={`flex items-center gap-1.5 text-xs mt-1 first-letter:uppercase ${t.muted}`}>
@@ -278,11 +278,11 @@ const EventList: React.FC<{
                 {e.orderCount === 1 ? 'pedido' : 'pedidos'}
               </div>
               <div className="flex gap-2">
-                <button type="button" onClick={() => onEdit(e)} className={`inline-flex items-center gap-1.5 px-3 py-2 border rounded-[3px] text-xs font-bold cursor-pointer ${t.secondary}`}>
+                <button type="button" onClick={() => onEdit(e)} className={`inline-flex items-center gap-1.5 px-3 py-2 border rounded-[8px] text-xs font-bold cursor-pointer ${t.secondary}`}>
                   <Pencil className="w-3.5 h-3.5" aria-hidden="true" /> Editar
                 </button>
                 {e.orderCount === 0 && (
-                  <button type="button" onClick={() => onDelete(e)} aria-label={`Borrar ${e.name}`} className={`p-2 border rounded-[3px] cursor-pointer ${t.secondary}`}>
+                  <button type="button" onClick={() => onDelete(e)} aria-label={`Borrar ${e.name}`} className={`p-2 border rounded-[8px] cursor-pointer ${t.secondary}`}>
                     <Trash2 className={`w-3.5 h-3.5 ${t.negative}`} aria-hidden="true" />
                   </button>
                 )}
@@ -305,7 +305,7 @@ const EventForm: React.FC<{
   const [form, setForm] = useState(initial);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
-  const field = `w-full px-3 py-2.5 text-sm border rounded-[3px] focus:outline-none ${t.input}`;
+  const field = `w-full px-3 py-2.5 text-sm border rounded-[8px] focus:outline-none ${t.input}`;
   const label = `block text-xs font-bold mb-1 ${t.text}`;
   const set = (key: keyof Form) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
     setForm({ ...form, [key]: e.target.type === 'checkbox' ? (e.target as HTMLInputElement).checked : e.target.value });
@@ -341,10 +341,10 @@ const EventForm: React.FC<{
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60" role="dialog" aria-modal="true" aria-label={isNew ? 'Nuevo evento' : 'Editar evento'}>
-      <form onSubmit={submit} className={`w-full max-w-2xl max-h-[90vh] overflow-y-auto border rounded-[3px] ${t.card}`}>
+      <form onSubmit={submit} className={`w-full max-w-2xl max-h-[90vh] overflow-y-auto border rounded-[8px] ${t.card}`}>
         <header className={`flex items-center justify-between px-6 py-4 border-b ${t.rule}`}>
           <h3 className={`text-lg font-bold ${t.text}`}>{isNew ? 'Nuevo evento' : 'Editar evento'}</h3>
-          <button type="button" onClick={onCancel} aria-label="Cerrar" className={`p-1.5 rounded-[3px] cursor-pointer ${t.ghostHover} ${t.text}`}>
+          <button type="button" onClick={onCancel} aria-label="Cerrar" className={`p-1.5 rounded-[8px] cursor-pointer ${t.ghostHover} ${t.text}`}>
             <X className="w-5 h-5" />
           </button>
         </header>
@@ -396,18 +396,18 @@ const EventForm: React.FC<{
             <textarea value={form.details} onChange={set('details')} maxLength={500} rows={2} placeholder="Ej. Stand 14 · entregas de 10:00 a 19:00" className={field} />
           </label>
           <label className={`flex items-center gap-2 text-sm ${t.text}`}>
-            <input type="checkbox" checked={form.published} onChange={set('published')} className="accent-[#16A34A] w-4 h-4" />
+            <input type="checkbox" checked={form.published} onChange={set('published')} className="accent-[#0F1110] w-4 h-4" />
             Publicado (lo ven los clientes)
           </label>
           <label className={`flex items-center gap-2 text-sm ${t.text}`}>
-            <input type="checkbox" checked={form.acceptsSubmissions} onChange={set('acceptsSubmissions')} className="accent-[#16A34A] w-4 h-4" />
+            <input type="checkbox" checked={form.acceptsSubmissions} onChange={set('acceptsSubmissions')} className="accent-[#0F1110] w-4 h-4" />
             Acepta entregas de cartas
           </label>
         </div>
         {error && <p role="alert" className={`px-6 text-sm ${t.negative}`}>{error}</p>}
         <footer className={`flex justify-end gap-2 px-6 py-4 border-t ${t.rule}`}>
           <button type="button" onClick={onCancel} className={`px-4 py-2.5 text-xs font-bold cursor-pointer ${t.muted} hover:underline`}>Cancelar</button>
-          <button type="submit" disabled={busy} className={`px-5 py-2.5 rounded-[3px] text-xs font-semibold cursor-pointer disabled:opacity-50 ${t.primary}`}>
+          <button type="submit" disabled={busy} className={`px-5 py-2.5 rounded-[8px] text-xs font-semibold cursor-pointer disabled:opacity-50 ${t.primary}`}>
             {busy ? 'Guardando…' : isNew ? 'Crear evento' : 'Guardar cambios'}
           </button>
         </footer>

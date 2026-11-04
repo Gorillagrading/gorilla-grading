@@ -84,10 +84,10 @@ export const OrderDetail: React.FC<{ code: string; onBack: () => void }> = ({ co
 
   if (notFound) {
     return (
-      <div className={`border rounded-[3px] p-10 text-center ${t.card}`}>
-        <h2 className={`text-xl font-bold uppercase ${t.text}`}>Pedido no encontrado</h2>
+      <div className={`border rounded-[8px] p-10 text-center ${t.card}`}>
+        <h2 className={`text-xl font-semibold ${t.text}`}>Pedido no encontrado</h2>
         <p className={`text-sm mt-2 ${t.muted}`}>No existe ningún pedido con el código {code}.</p>
-        <button type="button" onClick={onBack} className={`mt-5 px-5 py-2.5 rounded-[3px] text-xs font-bold cursor-pointer ${t.primary}`}>
+        <button type="button" onClick={onBack} className={`mt-5 px-5 py-2.5 rounded-[8px] text-xs font-bold cursor-pointer ${t.primary}`}>
           Volver a la cola
         </button>
       </div>
@@ -107,7 +107,7 @@ export const OrderDetail: React.FC<{ code: string; onBack: () => void }> = ({ co
       </button>
 
       {/* Cabecera */}
-      <div className={`border rounded-[3px] p-5 sm:p-6 ${t.card}`}>
+      <div className={`border rounded-[8px] p-5 sm:p-6 ${t.card}`}>
         <div className="flex flex-wrap items-center gap-3">
           <h2 className={`font-mono text-xl sm:text-2xl font-bold tracking-tight ${t.text}`}>{o.code}</h2>
           <StatusPill status={o.status} />
@@ -123,7 +123,7 @@ export const OrderDetail: React.FC<{ code: string; onBack: () => void }> = ({ co
             ['Total', `${money(o.totalCents)} · ${o.paymentStatus === 'unpaid' ? 'sin pagar' : o.paymentStatus}`],
           ].map(([label, value]) => (
             <div key={label}>
-              <dt className={`font-mono text-[10px] uppercase tracking-wider ${t.muted}`}>{label}</dt>
+              <dt className={`text-[12px] ${t.muted}`}>{label}</dt>
               <dd className={`mt-1 font-medium ${t.text}`}>{value}</dd>
             </div>
           ))}
@@ -136,11 +136,11 @@ export const OrderDetail: React.FC<{ code: string; onBack: () => void }> = ({ co
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         <div className="lg:col-span-2 space-y-6 order-2 lg:order-1">
           {/* Cartas */}
-          <section className={`border rounded-[3px] overflow-x-auto ${t.card}`} aria-label="Cartas del pedido">
-            <h3 className={`px-5 pt-5 pb-3 text-sm font-bold uppercase ${t.text}`}>Cartas ({order.items.length})</h3>
+          <section className={`border rounded-[8px] overflow-x-auto ${t.card}`} aria-label="Cartas del pedido">
+            <h3 className={`px-5 pt-5 pb-3 text-[14px] font-semibold ${t.text}`}>Cartas ({order.items.length})</h3>
             <table className="w-full text-left text-sm min-w-[560px]">
               <thead>
-                <tr className={`border-y font-mono text-[10px] uppercase tracking-wider ${t.rule} ${t.muted}`}>
+                <tr className={`border-y text-[12px] ${t.rule} ${t.muted}`}>
                   <th className="px-5 py-2 font-bold">#</th>
                   <th className="px-3 py-2 font-bold">Carta</th>
                   <th className="px-3 py-2 font-bold">Servicio</th>
@@ -169,8 +169,8 @@ export const OrderDetail: React.FC<{ code: string; onBack: () => void }> = ({ co
           </section>
 
           {/* Graduación y fotos */}
-          <section className={`border rounded-[3px] p-5 space-y-3 ${t.card}`} aria-label="Graduación y fotos">
-            <h3 className={`text-sm font-bold uppercase ${t.text}`}>Graduación y fotos</h3>
+          <section className={`border rounded-[8px] p-5 space-y-3 ${t.card}`} aria-label="Graduación y fotos">
+            <h3 className={`text-[14px] font-semibold ${t.text}`}>Graduación y fotos</h3>
             {order.items.map((item) => (
               <GradingPanel
                 key={item.position}
@@ -190,11 +190,11 @@ export const OrderDetail: React.FC<{ code: string; onBack: () => void }> = ({ co
           </section>
 
           {/* Historial */}
-          <section className={`border rounded-[3px] p-5 ${t.card}`} aria-label="Historial del pedido">
-            <h3 className={`text-sm font-bold uppercase mb-4 ${t.text}`}>Historial</h3>
+          <section className={`border rounded-[8px] p-5 ${t.card}`} aria-label="Historial del pedido">
+            <h3 className={`text-[14px] font-semibold mb-4 ${t.text}`}>Historial</h3>
             <ol className="space-y-5">
               {timeline.map((event) => (
-                <li key={event.id} className={`pl-4 border-l-2 ${t.isLight ? 'border-[#D8D2C5]' : 'border-[#4E4E4E]'}`}>
+                <li key={event.id} className={`pl-4 border-l-2 ${t.isLight ? 'border-[#E7E7E2]' : 'border-[#4E4E4E]'}`}>
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                     <span className={`font-bold text-sm ${t.text}`}>{event.publicLabel}</span>
                     <StatusPill status={event.toStatus} />
@@ -204,7 +204,7 @@ export const OrderDetail: React.FC<{ code: string; onBack: () => void }> = ({ co
                   </div>
                   {event.publicDescription && (
                     <p className={`text-xs mt-1.5 ${t.muted}`}>
-                      <span className="font-mono text-[10px] uppercase tracking-wider mr-1">Lo ve el cliente:</span>
+                      <span className="text-[12px] mr-1">Lo ve el cliente:</span>
                       {event.publicDescription}
                     </p>
                   )}
@@ -212,7 +212,7 @@ export const OrderDetail: React.FC<{ code: string; onBack: () => void }> = ({ co
                     <p className={`flex gap-1.5 text-xs mt-1.5 ${t.text}`}>
                       <Lock className={`w-3 h-3 shrink-0 mt-0.5 ${t.muted}`} aria-hidden="true" />
                       <span>
-                        <span className={`font-mono text-[10px] uppercase tracking-wider mr-1 ${t.muted}`}>Nota interna:</span>
+                        <span className={`text-[12px] mr-1 ${t.muted}`}>Nota interna:</span>
                         {event.internalNote}
                       </span>
                     </p>
@@ -225,8 +225,8 @@ export const OrderDetail: React.FC<{ code: string; onBack: () => void }> = ({ co
 
         <div className="space-y-6 order-1 lg:order-2">
           {/* Acciones */}
-          <section className={`border rounded-[3px] p-5 ${t.card}`} aria-label="Siguiente paso">
-            <h3 className={`text-sm font-bold uppercase mb-3 ${t.text}`}>Siguiente paso</h3>
+          <section className={`border rounded-[8px] p-5 ${t.card}`} aria-label="Siguiente paso">
+            <h3 className={`text-[14px] font-semibold mb-3 ${t.text}`}>Siguiente paso</h3>
             {order.transitions.length === 0 ? (
               <p className={`text-xs ${t.muted}`}>
                 {['DELIVERED', 'CANCELLED', 'RETURNED'].includes(o.status)
@@ -241,7 +241,7 @@ export const OrderDetail: React.FC<{ code: string; onBack: () => void }> = ({ co
                       type="button"
                       disabled={!option.allowed}
                       onClick={() => { setNotice(''); setError(''); setAction(option); }}
-                      className={`w-full px-4 py-3 rounded-[3px] text-xs font-semibold text-left cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                      className={`w-full px-4 py-3 rounded-[8px] text-xs font-semibold text-left cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
                         isRisky(option) ? `border ${t.secondary}` : t.primary
                       }`}
                     >
@@ -258,8 +258,8 @@ export const OrderDetail: React.FC<{ code: string; onBack: () => void }> = ({ co
 
           {/* Avance automático */}
           {order.automation && (
-            <section className={`border rounded-[3px] p-5 ${t.card}`} aria-label="Avance automático">
-              <h3 className={`text-sm font-bold uppercase mb-3 ${t.text}`}>Avance automático</h3>
+            <section className={`border rounded-[8px] p-5 ${t.card}`} aria-label="Avance automático">
+              <h3 className={`text-[14px] font-semibold mb-3 ${t.text}`}>Avance automático</h3>
               {order.automation.awaitingFinalApproval ? (
                 <p className={`flex gap-2.5 text-xs leading-relaxed ${t.text}`}>
                   <CheckCircle2 className={`w-4 h-4 shrink-0 mt-px ${t.positive}`} aria-hidden="true" />
@@ -287,15 +287,15 @@ export const OrderDetail: React.FC<{ code: string; onBack: () => void }> = ({ co
           )}
 
           {/* Envíos */}
-          <section className={`border rounded-[3px] p-5 ${t.card}`} aria-label="Envíos">
-            <h3 className={`text-sm font-bold uppercase mb-3 ${t.text}`}>Envíos y seguimiento</h3>
+          <section className={`border rounded-[8px] p-5 ${t.card}`} aria-label="Envíos">
+            <h3 className={`text-[14px] font-semibold mb-3 ${t.text}`}>Envíos y seguimiento</h3>
             {order.shipments.length === 0 ? (
               <p className={`text-xs ${t.muted}`}>Todavía no hay ningún envío registrado.</p>
             ) : (
               <ul className="space-y-2.5 mb-4">
                 {order.shipments.map((s) => (
                   <li key={s.id} className="text-xs">
-                    <span className={`font-mono text-[10px] uppercase tracking-wider mr-2 ${t.muted}`}>{s.direction === 'inbound' ? 'Entrada' : 'Devolución'}</span>
+                    <span className={`text-[12px] mr-2 ${t.muted}`}>{s.direction === 'inbound' ? 'Entrada' : 'Devolución'}</span>
                     <span className={`font-bold ${t.text}`}>{s.carrier}</span>
                     <span className={`font-mono ml-2 ${t.text}`}>{s.trackingNumber}</span>
                   </li>
@@ -320,8 +320,8 @@ export const OrderDetail: React.FC<{ code: string; onBack: () => void }> = ({ co
           </section>
 
           {/* Cliente */}
-          <section className={`border rounded-[3px] p-5 text-sm ${t.card}`} aria-label="Cliente">
-            <h3 className={`text-sm font-bold uppercase mb-3 ${t.text}`}>Cliente</h3>
+          <section className={`border rounded-[8px] p-5 text-sm ${t.card}`} aria-label="Cliente">
+            <h3 className={`text-[14px] font-semibold mb-3 ${t.text}`}>Cliente</h3>
             <div className={`font-bold ${t.text}`}>{order.customer.fullName ?? 'Sin nombre'}</div>
             <a href={`mailto:${order.customer.email}`} className={`font-mono text-xs underline underline-offset-4 ${t.muted}`}>{order.customer.email}</a>
             <div className={`text-[11px] mt-1 ${t.muted}`}>Idioma: {order.customer.locale === 'en' ? 'inglés' : 'español'}</div>
@@ -378,7 +378,7 @@ const ShipmentForm: React.FC<{ onSubmit: (body: { direction: 'inbound' | 'outbou
   const [carrier, setCarrier] = useState('');
   const [trackingNumber, setTrackingNumber] = useState('');
   const [busy, setBusy] = useState(false);
-  const field = `w-full px-3 py-2 text-sm border rounded-[3px] focus:outline-none ${t.input}`;
+  const field = `w-full px-3 py-2 text-sm border rounded-[8px] focus:outline-none ${t.input}`;
 
   return (
     <form
@@ -399,7 +399,7 @@ const ShipmentForm: React.FC<{ onSubmit: (body: { direction: 'inbound' | 'outbou
       </select>
       <input id="ship-carrier" aria-label="Transportista" placeholder="Transportista (GLS, CTT…)" value={carrier} onChange={(e) => setCarrier(e.target.value)} maxLength={80} required className={field} />
       <input id="ship-tracking" aria-label="Número de seguimiento" placeholder="Número de seguimiento" value={trackingNumber} onChange={(e) => setTrackingNumber(e.target.value)} maxLength={80} required className={`${field} font-mono`} />
-      <button type="submit" disabled={busy || !carrier.trim() || !trackingNumber.trim()} className={`w-full px-4 py-2.5 border rounded-[3px] text-xs font-bold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${t.secondary}`}>
+      <button type="submit" disabled={busy || !carrier.trim() || !trackingNumber.trim()} className={`w-full px-4 py-2.5 border rounded-[8px] text-xs font-bold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${t.secondary}`}>
         {busy ? 'Guardando…' : 'Añadir envío'}
       </button>
     </form>
@@ -419,7 +419,7 @@ const ActionDialog: React.FC<{
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const firstField = useRef<HTMLTextAreaElement>(null);
-  const field = `w-full px-3 py-2 text-sm border rounded-[3px] focus:outline-none ${t.input}`;
+  const field = `w-full px-3 py-2 text-sm border rounded-[8px] focus:outline-none ${t.input}`;
 
   useEffect(() => {
     firstField.current?.focus();
@@ -445,17 +445,17 @@ const ActionDialog: React.FC<{
           setError(await onConfirm(publicDescription.trim(), internalNote.trim()));
           setBusy(false);
         }}
-        className={`w-full max-w-lg p-6 border rounded-[3px] shadow-2xl space-y-4 ${t.card}`}
+        className={`w-full max-w-lg p-6 border rounded-[8px] shadow-2xl space-y-4 ${t.card}`}
       >
         <div>
-          <h3 id="action-title" className={`text-lg font-bold uppercase ${t.text}`}>{title}</h3>
+          <h3 id="action-title" className={`text-lg font-semibold ${t.text}`}>{title}</h3>
           <p className={`text-xs mt-1 ${t.muted}`}>
             «{STATUS_LABEL[from].es}» → «{STATUS_LABEL[option.to].es}». El cliente verá este cambio en su seguimiento.
           </p>
         </div>
 
         <label className="block">
-          <span className={`block font-mono text-[10px] uppercase tracking-wider mb-1 ${t.muted}`}>Mensaje para el cliente (opcional)</span>
+          <span className={`block text-[12px] mb-1 ${t.muted}`}>Mensaje para el cliente (opcional)</span>
           <textarea
             id="action-public"
             ref={firstField}
@@ -469,7 +469,7 @@ const ActionDialog: React.FC<{
         </label>
 
         <label className="block">
-          <span className={`block font-mono text-[10px] uppercase tracking-wider mb-1 ${t.muted}`}>
+          <span className={`block text-[12px] mb-1 ${t.muted}`}>
             Nota interna {option.requiresNote ? '(obligatoria, el cliente no la ve)' : '(opcional, el cliente no la ve)'}
           </span>
           <textarea
@@ -486,8 +486,8 @@ const ActionDialog: React.FC<{
         {error && <p role="alert" className="text-sm text-red-500">{error}</p>}
 
         <div className="flex justify-end gap-3">
-          <button type="button" onClick={onClose} className={`px-4 py-2.5 border rounded-[3px] text-xs font-bold cursor-pointer ${t.secondary}`}>Cancelar</button>
-          <button type="submit" disabled={busy} className={`px-5 py-2.5 rounded-[3px] text-xs font-semibold cursor-pointer disabled:opacity-60 ${t.primary}`}>
+          <button type="button" onClick={onClose} className={`px-4 py-2.5 border rounded-[8px] text-xs font-bold cursor-pointer ${t.secondary}`}>Cancelar</button>
+          <button type="submit" disabled={busy} className={`px-5 py-2.5 rounded-[8px] text-xs font-semibold cursor-pointer disabled:opacity-60 ${t.primary}`}>
             {busy ? 'Guardando…' : 'Confirmar'}
           </button>
         </div>
