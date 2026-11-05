@@ -9,7 +9,6 @@ import { channelFromUrl, fetchCertificate, type PublicCertificate } from '../api
 import { cardYear, formatGrade } from '../utils/cardDisplay';
 import { ScanReportPanel } from '../components/common/ScanReportPanel';
 import { 
-  ShieldCheck, 
   Printer, 
   Share2, 
   ArrowLeft, 
@@ -259,39 +258,6 @@ export const CertificateDetailPage: React.FC<CertificateDetailPageProps> = ({
           <DefectInspector card={card} large />
 
           {card.scan && <ScanReportPanel scan={card.scan} />}
-
-          {/* Firma del registro */}
-          <div 
-            className={`p-6 border space-y-3 font-mono text-xs shadow-md ${
-              isLight ? 'border-gray-200' : 'border-white/10'
-            }`}
-            style={{ backgroundColor: isLight ? '#FFFFFF' : '#0E120E' }}
-          >
-            <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-black tracking-wide">
-              <ShieldCheck className="w-4 h-4" />
-              <span>{card.signature ? (es ? 'FIRMA DIGITAL DEL REGISTRO' : 'DIGITAL SIGNATURE OF THE RECORD') : (es ? 'REGISTRO DE CERTIFICACIÓN' : 'CERTIFICATION RECORD')}</span>
-            </div>
-            <p className={`text-[11px] leading-relaxed ${isLight ? 'text-gray-600' : 'text-gray-400'}`}>
-              {card.signature
-                ? (es
-                    ? 'El registro de este certificado está firmado con Ed25519. Cualquiera puede comprobar la firma con la clave pública del laboratorio.'
-                    : 'The record of this certificate is signed with Ed25519. Anyone can check the signature with the laboratory public key.')
-                : (es
-                    ? 'Este certificado figura en el registro público de Gorilla Grading. Todavía no incluye firma digital.'
-                    : 'This certificate is listed in the Gorilla Grading public registry. It does not include a digital signature yet.')}
-            </p>
-            {card.signature && (
-              <div 
-                className={`p-3 border text-[10px] break-all font-mono ${
-                  isLight ? 'border-gray-200 text-gray-700' : 'border-white/10 text-gray-400'
-                }`}
-                style={{ backgroundColor: isLight ? '#F9FAF9' : '#070907' }}
-              >
-                ED25519: {card.signature}
-                {card.keyId && <div className="mt-1 opacity-70">KEY: {card.keyId}</div>}
-              </div>
-            )}
-          </div>
         </div>
       </div>
 
