@@ -162,7 +162,11 @@ export const LuxuryNavbar: React.FC<LuxuryNavbarProps> = ({ onNavigate }) => {
             }`}
             title="Gorilla Grading International"
           >
-            GGI
+            <span className="overflow-hidden flex" aria-label="GGI">
+              {['G', 'G', 'I'].map((letter, i) => (
+                <span key={i} className="ggi-letter" style={{ animationDelay: `${i * 0.3}s` }} aria-hidden="true">{letter}</span>
+              ))}
+            </span>
           </span>
         </div>
 
