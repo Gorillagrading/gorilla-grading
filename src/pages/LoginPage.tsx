@@ -94,7 +94,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onNavigate }) => {
         />
       )}
 
-      <div className="w-full max-w-[440px] relative z-10">
+      <div className="w-full max-w-[360px] relative z-10">
         
         {/* Exterior Metrological Hairline Frame */}
         <div 
@@ -105,7 +105,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onNavigate }) => {
         >
           {/* Core Luxury Card */}
           <div 
-            className={`p-7 sm:p-10 relative overflow-hidden rounded-[22px] transition-all duration-300 border ${
+            className={`p-5 sm:p-7 relative overflow-hidden rounded-[22px] transition-all duration-300 border ${
               isLight 
                 ? 'bg-[#FAF8F5] border-[#E8E2D5] shadow-[0_20px_50px_rgba(0,0,0,0.06)]' 
                 : 'bg-[#121612]/95 border-white/[0.08] shadow-[0_25px_60px_rgba(0,0,0,0.7)] backdrop-blur-xl'
@@ -115,7 +115,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onNavigate }) => {
             <div className="absolute inset-0 bg-[url('/images/noise.png')] opacity-15 mix-blend-overlay pointer-events-none" />
 
             {/* Official Gorilla Brand Crest - Clickable to Home */}
-            <div className="flex justify-center mb-6">
+            <div className="flex justify-center mb-4">
               <button 
                 onClick={() => onNavigate('/')}
                 title={language === 'es' ? 'Ir al inicio de Gorilla Grading' : 'Go to Gorilla Grading home'}
@@ -125,7 +125,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onNavigate }) => {
                     : 'bg-[#181E17] border-white/10 hover:border-[#48C765]/40'
                 }`}
               >
-                <div className="w-9 h-9 flex items-center justify-center p-0.5">
+                <div className="w-7 h-7 flex items-center justify-center p-0.5">
                   <img 
                     src="/brand/logo-green.png" 
                     alt="Gorilla Grading Logo" 
@@ -145,12 +145,12 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onNavigate }) => {
                   transition={{ duration: 0.2 }}
                   className="flex flex-col relative z-10"
                 >
-                  <h1 className="font-['Nunito',sans-serif] text-2xl sm:text-3xl uppercase text-center mb-1 font-[900] tracking-normal">
+                  <h1 className="font-['Nunito',sans-serif] text-xl sm:text-2xl uppercase text-center mb-1 font-[900] tracking-normal">
                     {language === 'es' ? 'Acceso Seguro' : 'Secure Access'}
                   </h1>
                   
                   <p 
-                    className={`text-center font-mono text-[9.5px] uppercase tracking-widest mb-3 ${
+                    className={`text-center font-mono text-[9.5px] uppercase tracking-widest mb-2 ${
                       isLight ? 'text-neutral-500' : 'text-[#48C765]'
                     }`}
                   >
@@ -158,7 +158,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onNavigate }) => {
                   </p>
 
                   <p 
-                    className={`text-center font-sans text-xs mb-6 px-2 leading-relaxed ${
+                    className={`text-center font-sans text-xs mb-4 px-1 leading-relaxed ${
                       isLight ? 'text-neutral-600' : 'text-[#A4ACA1]'
                     }`}
                   >
@@ -168,7 +168,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onNavigate }) => {
                   </p>
 
                   {/* Email Form */}
-                  <form onSubmit={handleEmailSubmit} className="flex flex-col gap-4">
+                  <form onSubmit={handleEmailSubmit} className="flex flex-col gap-3">
                     <div className="flex flex-col gap-1.5">
                       <label 
                         className={`font-mono text-[9.5px] uppercase tracking-widest font-semibold ${
@@ -185,7 +185,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onNavigate }) => {
                           if (error) setError('');
                         }}
                         placeholder="collector@example.com"
-                        className={`px-4 py-3.5 rounded-xl text-sm font-sans focus:outline-none transition-all duration-200 border ${
+                        className={`px-3.5 py-2.5 rounded-xl text-[16px] sm:text-sm font-sans focus:outline-none transition-all duration-200 border ${
                           isLight 
                             ? 'bg-white border-[#DDD6C9] text-neutral-900 placeholder:text-neutral-400 focus:border-[#16A34A] focus:ring-2 focus:ring-[#16A34A]/15 shadow-sm'
                             : 'bg-[#181E18] border-white/10 text-white placeholder:text-white/30 focus:border-[#48C765] focus:bg-[#1B231B] focus:ring-2 focus:ring-[#48C765]/20'
@@ -197,14 +197,14 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onNavigate }) => {
                     
                     <button 
                       type="submit" 
-                      className="btn-gorilla-square w-full py-3.5 text-xs font-extrabold uppercase tracking-wider shadow-lg cursor-pointer transition-transform active:scale-[0.99]"
+                      className="btn-gorilla-square w-full py-2.5 text-xs font-extrabold uppercase tracking-wider shadow-lg cursor-pointer transition-transform active:scale-[0.99]"
                     >
                       {language === 'es' ? 'Recibir Código' : 'Get Code'}
                     </button>
                   </form>
 
                   {/* Divider: New Collector Guidance */}
-                  <div className="flex items-center gap-3 my-6">
+                  <div className="flex items-center gap-3 my-4">
                     <div className={`h-[1px] flex-1 ${isLight ? 'bg-neutral-200' : 'bg-white/10'}`} />
                     <span className={`font-mono text-[9px] uppercase tracking-widest font-semibold ${isLight ? 'text-neutral-400' : 'text-[#A4ACA1]'}`}>
                       {language === 'es' ? '¿NUEVO COLECCIONISTA?' : 'NEW COLLECTOR?'}
@@ -213,7 +213,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onNavigate }) => {
                   </div>
 
                   {/* Clear Explanatory Copy */}
-                  <p className={`text-center font-sans text-xs mb-3.5 leading-relaxed px-1 ${isLight ? 'text-neutral-600' : 'text-[#C5CDC2]'}`}>
+                  <p className={`text-center font-sans text-xs mb-3 leading-relaxed px-1 ${isLight ? 'text-neutral-600' : 'text-[#C5CDC2]'}`}>
                     {language === 'es'
                       ? 'Tu cuenta se activa automáticamente al enviar tu primer lote de cartas a certificar.'
                       : 'Your collector vault is activated automatically when you submit your first batch of cards.'}
@@ -223,14 +223,14 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onNavigate }) => {
                   <button
                     type="button"
                     onClick={() => onNavigate('/submit')}
-                    className="btn-gorilla-square-secondary w-full py-3 px-4 text-xs font-bold tracking-normal flex items-center justify-center gap-2 group cursor-pointer"
+                    className="btn-gorilla-square-secondary w-full py-2.5 px-4 text-xs font-bold tracking-normal flex items-center justify-center gap-2 group cursor-pointer"
                   >
                     <span>{language === 'es' ? 'Enviar Cartas a Graduar' : 'Submit Cards for Grading'}</span>
                     <span className="transition-transform duration-200 group-hover:translate-x-1 font-bold">→</span>
                   </button>
 
                   {/* Secondary Shortcut: Track Existing Package */}
-                  <div className="mt-4 pt-3 border-t border-dashed border-neutral-200 dark:border-white/[0.08] text-center">
+                  <div className="mt-3 pt-2.5 border-t border-dashed border-neutral-200 dark:border-white/[0.08] text-center">
                     <button
                       type="button"
                       onClick={() => onNavigate('/track')}
@@ -274,10 +274,10 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onNavigate }) => {
                   transition={{ duration: 0.2 }}
                   className="flex flex-col relative z-10"
                 >
-                  <h1 className="font-['Nunito',sans-serif] text-2xl sm:text-3xl uppercase text-center mb-1 font-[900] tracking-normal">
+                  <h1 className="font-['Nunito',sans-serif] text-xl sm:text-2xl uppercase text-center mb-1 font-[900] tracking-normal">
                     {language === 'es' ? 'Verificación' : 'Verification'}
                   </h1>
-                  <p className={`text-center font-sans text-xs mb-6 px-4 ${isLight ? 'text-neutral-600' : 'text-[#A4ACA1]'}`}>
+                  <p className={`text-center font-sans text-xs mb-4 px-2 ${isLight ? 'text-neutral-600' : 'text-[#A4ACA1]'}`}>
                     {language === 'es' 
                       ? `Hemos enviado un código de acceso a ${email}` 
                       : `We sent an access code to ${email}`}
@@ -292,7 +292,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onNavigate }) => {
                         placeholder="000000"
                         maxLength={6}
                         autoFocus
-                        className={`px-4 py-3.5 text-2xl sm:text-3xl tracking-[0.45em] font-mono text-center w-full rounded-xl border focus:outline-none transition-all ${
+                        className={`px-3 py-2.5 text-xl sm:text-2xl tracking-[0.4em] font-mono text-center w-full rounded-xl border focus:outline-none transition-all ${
                           isLight 
                             ? 'bg-white border-[#DDD6C9] text-neutral-900 focus:border-[#16A34A] focus:ring-2 focus:ring-[#16A34A]/15 shadow-sm'
                             : 'bg-[#181E18] border-white/10 text-white focus:border-[#48C765] focus:bg-[#1B231B] focus:ring-2 focus:ring-[#48C765]/20'
@@ -306,7 +306,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onNavigate }) => {
                     <button
                       type="submit"
                       disabled={verifying}
-                      className="btn-gorilla-square w-full py-3.5 text-xs font-extrabold uppercase tracking-wider shadow-lg cursor-pointer transition-transform active:scale-[0.99] disabled:opacity-60 disabled:cursor-wait"
+                      className="btn-gorilla-square w-full py-2.5 text-xs font-extrabold uppercase tracking-wider shadow-lg cursor-pointer transition-transform active:scale-[0.99] disabled:opacity-60 disabled:cursor-wait"
                     >
                       {verifying
                         ? (language === 'es' ? 'Comprobando...' : 'Checking...')
