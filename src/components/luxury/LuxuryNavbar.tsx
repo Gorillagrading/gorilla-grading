@@ -131,12 +131,12 @@ export const LuxuryNavbar: React.FC<LuxuryNavbarProps> = ({ onNavigate }) => {
       className={`sticky top-0 w-full transition-all duration-300 ${isMobileMenuOpen ? 'z-[10000]' : 'z-50'} ${headerBgClass}`}
       style={isMobileMenuOpen ? { backgroundColor: isLight ? '#FFFFFF' : '#0B0E0B' } : undefined}
     >
-      <div className="max-w-[1440px] mx-auto px-6 lg:px-10 flex items-center justify-between gap-4 h-20">
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 flex items-center justify-between gap-2 sm:gap-4 h-20">
         
         {/* Brand Logo & Name */}
         <div 
           onClick={() => go('/')}
-          className="flex items-center gap-3 cursor-pointer group shrink-0"
+          className="flex items-center gap-2 sm:gap-3 cursor-pointer group shrink-0"
         >
          <div className="flex flex-col items-center justify-center">
           <img
@@ -157,7 +157,7 @@ export const LuxuryNavbar: React.FC<LuxuryNavbarProps> = ({ onNavigate }) => {
          </div>
           {/* Siglas de la empresa (Gorilla Grading International), también en móvil */}
           <span
-            className={`flex max-[359px]:hidden items-center h-9 sm:h-10 pl-2.5 sm:pl-3 border-l font-['Nunito',sans-serif] font-black text-[14px] sm:text-[16px] tracking-[0.2em] ${
+            className={`flex max-[359px]:hidden items-center h-9 sm:h-10 pl-2 sm:pl-3 border-l font-['Nunito',sans-serif] font-black text-[13px] sm:text-[16px] tracking-[0.14em] sm:tracking-[0.2em] ${
               isLight ? 'border-black/20 text-[#3F463F]' : 'border-white/25 text-[#C9CFC6]'
             }`}
             title="Gorilla Grading International"
@@ -332,7 +332,7 @@ export const LuxuryNavbar: React.FC<LuxuryNavbarProps> = ({ onNavigate }) => {
           {/* Submit a Card — main call to action, brand green */}
           <button
             onClick={() => go('/submit')}
-            className={`btn-gorilla-square hidden sm:inline-flex gap-1.5 px-4 lg:px-5 py-2.5 text-xs tracking-normal ${isSearchOpen ? 'max-md:!hidden' : ''}`}
+            className={`btn-gorilla-square hidden sm:inline-flex gap-1.5 px-2.5 sm:px-4 lg:px-5 py-2.5 text-xs tracking-normal ${isSearchOpen ? 'max-md:!hidden' : ''}`}
           >
             <span>{t('ref.nav.submit')}</span>
             <span aria-hidden="true" className="text-xs">→</span>
