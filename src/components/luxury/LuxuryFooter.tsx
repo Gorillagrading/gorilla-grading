@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
-import { GradedCardsCounter } from './GradedCardsCounter';
 
 interface LuxuryFooterProps {
   onNavigate?: (path: string) => void;
@@ -266,9 +265,6 @@ export const LuxuryFooter: React.FC<LuxuryFooterProps> = ({ onNavigate }) => {
                   </svg>
                 </button>
               </form>
-
-              {/* Graded Cards Counter — Below search */}
-              <GradedCardsCounter />
             </div>
           </div>
 
