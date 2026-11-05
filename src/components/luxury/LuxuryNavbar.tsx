@@ -136,8 +136,9 @@ export const LuxuryNavbar: React.FC<LuxuryNavbarProps> = ({ onNavigate }) => {
         {/* Brand Logo & Name */}
         <div 
           onClick={() => go('/')}
-          className="flex flex-col items-center justify-center cursor-pointer group shrink-0"
+          className="flex items-center gap-3 cursor-pointer group shrink-0"
         >
+         <div className="flex flex-col items-center justify-center">
           <img
             src="/brand/logo-green.png"
             alt="Gorilla Grading Shield"
@@ -153,6 +154,16 @@ export const LuxuryNavbar: React.FC<LuxuryNavbarProps> = ({ onNavigate }) => {
               GRADING
             </span>
           </div>
+         </div>
+          {/* Siglas de la empresa (Gorilla Grading International): discretas, solo en pantallas anchas */}
+          <span
+            className={`hidden lg:flex items-center h-9 pl-3 border-l font-['Nunito',sans-serif] font-bold text-[10px] tracking-[0.28em] ${
+              isLight ? 'border-black/15 text-[#6B7268]' : 'border-white/15 text-[#8C9185]'
+            }`}
+            title="Gorilla Grading International"
+          >
+            GGI
+          </span>
         </div>
 
         {/* Center Navigation Links — executive small caps with well-proportioned spacing */}
