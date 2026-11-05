@@ -15,6 +15,10 @@ interface SlabCardProps {
   onDefectHover?: (n: number | null) => void;
 }
 
+/** Ampliación de la imagen del escáner para recortar el borde negro que deja alrededor de la carta. */
+const SCAN_CROP_X = 1.07;
+const SCAN_CROP_Y = 1.06;
+
 export const SlabCard: React.FC<SlabCardProps> = ({
   card,
   interactive = true,
@@ -79,10 +83,13 @@ export const SlabCard: React.FC<SlabCardProps> = ({
           className="relative w-full aspect-[2.5/3.5] rounded-[18px] overflow-hidden cursor-pointer group shadow-[0_12px_28px_rgba(0,0,0,0.25)] border border-black/10 hover:border-[#22C55E]/80 bg-[#1A1A1A] transition-colors"
         >
           {/* Card Artwork Image */}
+          {/* El escáner deja un borde negro alrededor de la carta: se amplía la imagen un poco para recortarlo.
+              Los números de los daños se recolocan con la misma escala para que sigan sobre su sitio. */}
           <img
             src={isFlipped ? card.backImage : card.frontImage}
             alt={card.name}
             className="w-full h-full object-cover"
+            style={{ transform: `scale(${SCAN_CROP_X}, ${SCAN_CROP_Y})` }}
             loading="lazy"
           />
 
@@ -106,7 +113,7 @@ export const SlabCard: React.FC<SlabCardProps> = ({
                 className={`absolute -translate-x-1/2 -translate-y-1/2 flex items-center justify-center w-5 h-5 rounded-full ring-2 text-white font-mono text-[10px] font-bold shadow transition-transform duration-150 cursor-pointer ${
                   highlighted === d.n ? 'z-30 scale-150 bg-red-600 ring-white' : 'z-10 bg-red-600/90 ring-white/80 hover:scale-125'
                 }`}
-                style={{ left: `${d.x}%`, top: `${d.y}%` }}
+                style={{ left: `${50 + (d.x - 50) * SCAN_CROP_X}%`, top: `${50 + (d.y - 50) * SCAN_CROP_Y}%` }}
               >
                 {d.n}
               </button>
