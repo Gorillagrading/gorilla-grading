@@ -271,19 +271,50 @@ export const TechDetailModal: React.FC<TechDetailModalProps> = ({ isOpen, onClos
                     </div>
 
                     {/* Specimen Display */}
-                    <div className="relative w-36 sm:w-56 h-48 sm:h-76 flex items-center justify-center p-2">
+                    <div className="relative w-36 sm:w-56 h-48 sm:h-[19rem] flex items-center justify-center p-2">
                       {/* Authentic Archival Photo Mounting Corners */}
                       <RegistrationCorners />
 
-                      <img 
-                        src="/images/alakazam_hero.png" 
-                        alt="Especimen óptico 1200 DPI"
-                        className={`w-full h-full object-contain filter transition-all duration-300 ${
-                          scanFilter === 'polarized' ? 'contrast-115 brightness-100' : 'contrast-100 brightness-105'
-                        } ${
-                          isLight ? 'drop-shadow-[0_16px_28px_rgba(0,0,0,0.18)]' : 'drop-shadow-[0_20px_40px_rgba(0,0,0,0.7)]'
-                        }`}
-                      />
+                      {/* La carta con su barrido de escáner: el recuadro tiene la proporción de la carta para que
+                          la línea y el reflejo recorran exactamente la carta y no se salgan de ella. */}
+                      <div className="relative h-full max-w-full overflow-hidden" style={{ aspectRatio: '680 / 946' }}>
+                        <img
+                          src="/images/cards/cade_cunningham_front.jpg"
+                          alt={isEs ? 'Carta de baloncesto holográfica bajo el escáner óptico a 1200 DPI' : 'Holographic basketball card under the 1200 DPI optical scanner'}
+                          className={`block w-full h-full object-cover filter transition-all duration-300 ${
+                            scanFilter === 'polarized' ? 'contrast-115 brightness-100' : 'contrast-100 brightness-105'
+                          } ${
+                            isLight ? 'drop-shadow-[0_16px_28px_rgba(0,0,0,0.18)]' : 'drop-shadow-[0_20px_40px_rgba(0,0,0,0.7)]'
+                          }`}
+                        />
+
+                        {/* Barrido del sensor telecéntrico: una línea de luz recorre la carta de arriba abajo, línea a línea */}
+                        {!reduceMotion && (
+                          <motion.div
+                            aria-hidden="true"
+                            className="absolute inset-x-0 pointer-events-none h-12 -mt-12"
+                            initial={{ top: '0%', opacity: 0 }}
+                            animate={{ top: ['0%', '0%', '100%', '100%', '100%'], opacity: [0, 1, 1, 0, 0] }}
+                            transition={{ duration: 4.8, times: [0, 0.04, 0.72, 0.76, 1], repeat: Infinity, ease: 'linear' }}
+                          >
+                            <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#22C55E]/35" />
+                            <div className="absolute inset-x-0 bottom-0 h-[2px] bg-[#86EFAC] shadow-[0_0_10px_2px_rgba(74,222,128,0.8)]" />
+                          </motion.div>
+                        )}
+
+                        {/* Con iluminación D65 normal el holograma devuelve un reflejo especular. La polarización cruzada
+                            a 90° lo anula: por eso el reflejo solo aparece con "D65 Estándar". */}
+                        {!reduceMotion && scanFilter === 'standard' && (
+                          <motion.div
+                            aria-hidden="true"
+                            className="absolute inset-0 pointer-events-none mix-blend-screen"
+                            style={{ background: 'linear-gradient(105deg, transparent 38%, rgba(255,255,255,0.6) 50%, transparent 62%)' }}
+                            initial={{ x: '-110%' }}
+                            animate={{ x: ['-110%', '110%'] }}
+                            transition={{ duration: 2.6, repeat: Infinity, repeatDelay: 0.8, ease: 'easeInOut' }}
+                          />
+                        )}
+                      </div>
 
                       {/* Optical Grid Overlay */}
                       <div className="absolute inset-0 border border-current/10 pointer-events-none grid grid-cols-3 grid-rows-3 opacity-25" />
@@ -636,7 +667,7 @@ export const TechDetailModal: React.FC<TechDetailModalProps> = ({ isOpen, onClos
                     </div>
 
                     {/* Unobstructed Card Specimen */}
-                    <div className="relative w-36 sm:w-52 h-48 sm:h-72 flex items-center justify-center">
+                    <div className="relative w-[8.6rem] sm:w-[12rem] h-[14.4rem] sm:h-[20rem] flex items-center justify-center">
                       <img 
                         src="/images/imb.jpeg"
                         alt="Medición centesimal de carta"
@@ -844,9 +875,9 @@ export const TechDetailModal: React.FC<TechDetailModalProps> = ({ isOpen, onClos
                         transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
                       >
                         <img
-                          src="/images/hero-slab-promo-poster.png"
-                          alt="Cápsula Gorilla Grading con sellado ultrasónico"
-                          className={`w-full h-full object-cover filter contrast-105 pointer-events-none select-none ${
+                          src="/images/slab-custom-label.webp"
+                          alt={isEs ? 'Slab Gorilla Grading con etiqueta personalizada y código QR' : 'Gorilla Grading slab with custom label and QR code'}
+                          className={`w-full h-full object-contain pointer-events-none select-none ${
                             isLight ? 'drop-shadow-[0_18px_30px_rgba(0,0,0,0.2)]' : 'drop-shadow-[0_22px_45px_rgba(0,0,0,0.75)]'
                           }`}
                         />
