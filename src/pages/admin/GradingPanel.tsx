@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { Camera, FileUp, Trash2, X } from 'lucide-react';
+import { Camera, Check, CheckCircle2, FileUp, Trash2, X } from 'lucide-react';
 import type { AdminOrderDetail } from '../../../shared/admin';
 import type { AdminGradingResult, GradingBody } from '../../../shared/grading-admin';
 import { GRADE_LABELS, traceGrade } from '../../../shared/grading';
@@ -21,12 +21,6 @@ const GRADABLE = ['PACKAGE_RECEIVED', 'PRE_INSPECTION', 'OPTICAL_GRADING', 'ENCA
 const SCALE = Array.from({ length: 19 }, (_, i) => 10 - i * 0.5);
 const fmt = (n: number) => n.toLocaleString('es-ES', { minimumFractionDigits: 0, maximumFractionDigits: 1 });
 
-const STATUS_TEXT: Record<AdminGradingResult['status'], string> = {
-  draft: 'Borrador',
-  pending_qa: 'Pendiente de calidad',
-  approved: 'Aprobado',
-};
-
 const CATEGORY_TEXT = { centering: 'Centrado', corners: 'Esquinas', edges: 'Bordes', surface: 'Superficie' } as const;
 const SEVERITY_TEXT = { flawless: 'Sin defecto', minor: 'Leve', moderate: 'Moderado', critical: 'Grave' } as const;
 const KIND_TEXT = { front: 'Anverso', back: 'Reverso', extra: 'Extra' } as const;
@@ -44,14 +38,24 @@ export const GradingPanel: React.FC<{
   const t = usePanelTheme();
   const { user } = useAuth();
   const role = user?.role ?? 'customer';
+  const isAdmin = role === 'admin';
   const grading = item.grading;
   const gradable = GRADABLE.includes(order.order.status);
-  const canGrade = gradable && (role === 'grader' || role === 'admin') && (!grading || grading.status !== 'approved' || role === 'admin');
-  const canReview = gradable && (role === 'qa' || role === 'admin') && grading?.status === 'pending_qa';
-  const ownWork = !!grading && grading.gradedBy === user?.email;
-  const canPhoto = ['staff', 'grader', 'admin'].includes(role);
-  // Se identifica mientras la carta está en el laboratorio; el servidor impide cambiarla una vez certificada.
-  const canIdentify = canPhoto && (gradable || order.order.status === 'ON_HOLD');
+  const isLab = ['staff', 'grader', 'qa', 'admin'].includes(role);
+  const confirmed = grading?.status === 'approved';
+  // Un resultado confirmado solo lo cambia un administrador (con un PDF nuevo o a mano).
+  const canLoad = gradable && isLab && (!confirmed || isAdmin);
+  const kinds = new Set(images.map((img) => img.kind));
+  // Una carta no auténtica no se encapsula: no necesita fotos del slab.
+  const needsPhotos = !grading || grading.isAuthentic;
+  const hasPhotos = kinds.has('front') && kinds.has('back');
+  const hasPdf = !!grading && grading.status !== 'draft';
+  const canConfirm = gradable && isLab && grading?.status === 'pending_qa';
+  const missingForConfirm = [
+    !hasPdf && 'el PDF del escáner',
+    needsPhotos && !hasPhotos && 'las fotos del slab (anverso y reverso)',
+    hasPdf && !item.cardName && 'el nombre de la carta (pídelo a un administrador)',
+  ].filter(Boolean) as string[];
 
   const [editing, setEditing] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -76,100 +80,173 @@ export const GradingPanel: React.FC<{
     }
   };
 
+  const state = confirmed
+    ? { text: 'Confirmada', tone: 'text-[#25762F] bg-[#EAF4EC]' }
+    : grading?.status === 'pending_qa'
+      ? { text: hasPhotos || !needsPhotos ? 'Lista para confirmar' : 'Faltan fotos del slab', tone: 'text-[#A86A12] bg-[#FBF1DD]' }
+      : { text: 'Falta el PDF', tone: 'text-[#666A67] bg-[#F1F1EE]' };
+
   return (
-    <details className={`border rounded-[8px] ${t.rule}`}>
+    <details className={`border rounded-[8px] ${t.rule}`} open={!confirmed && gradable}>
       <summary className="flex flex-wrap items-center gap-x-3 gap-y-1 px-4 py-3 cursor-pointer select-none">
         <span className={`font-mono text-xs ${t.muted}`}>{String(item.position).padStart(2, '0')}</span>
         <span className={`font-bold text-sm ${t.text}`}>{cardTitle(item.cardName, item.position)}</span>
-        {!item.cardName && (
-          <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold text-[#A86A12] bg-[#FBF1DD]">Sin identificar</span>
-        )}
         <span className="flex-1" />
-        {grading ? (
-          <span className={`text-xs font-bold ${grading.status === 'approved' ? t.positive : t.isLight ? 'text-amber-700' : 'text-amber-300'}`}>
-            {STATUS_TEXT[grading.status]}
-            {grading.finalGrade !== null && ` · ${fmt(grading.finalGrade)}`}
-            {grading.rule === 'scanner' && ' · escáner'}
-            {!grading.isAuthentic && ' · No auténtica'}
-          </span>
-        ) : (
-          <span className={`text-xs ${t.muted}`}>Sin resultado</span>
+        {grading?.finalGrade != null && grading.status !== 'draft' && (
+          <span className={`text-sm font-bold ${t.text}`}>{fmt(grading.finalGrade)}</span>
         )}
-        <span className={`text-[11px] ${t.muted}`}>{images.length} {images.length === 1 ? 'foto' : 'fotos'}</span>
+        {grading && !grading.isAuthentic && <span className={`text-xs font-bold ${t.negative}`}>No auténtica</span>}
+        <span className={`px-2 py-0.5 rounded-full text-[11px] font-semibold ${state.tone}`}>{state.text}</span>
       </summary>
 
-      <div className={`border-t px-4 py-4 space-y-5 ${t.rule}`}>
+      <div className={`border-t px-4 py-4 space-y-4 ${t.rule}`}>
         {local && (
           <p role={local.kind === 'error' ? 'alert' : 'status'} className={`text-xs font-bold ${local.kind === 'error' ? 'text-red-500' : t.positive}`}>
             {local.text}
           </p>
         )}
 
-        <Identification
-          item={item}
-          canEdit={canIdentify}
-          busy={busy}
-          onSave={(body) => run(() => identifyCard(code, item.position, body), 'Carta identificada.')}
-        />
-
         {!gradable && order.order.status === 'SUBMITTED' && (
           <p className={`text-xs font-bold ${t.isLight ? 'text-amber-700' : 'text-amber-300'}`}>
-            Confirma la recepción del paquete para identificar la carta e importar el informe del escáner (PDF).
+            Confirma primero la recepción del paquete. Después podrás subir el PDF del escáner y las fotos del slab.
           </p>
         )}
 
-        <Photos code={code} position={item.position} images={images} canPhoto={canPhoto} busy={busy} run={run} />
-
-        {grading && !editing && <ResultView grading={grading} />}
-
-        {canReview && !ownWork && (
-          <ReviewActions
-            busy={busy}
-            onApprove={() => run(() => approveGrading(code, item.position), 'Resultado aprobado.')}
-            onReject={(reason) => run(() => rejectGrading(code, item.position, reason), 'Devuelto al graduador como borrador.')}
-          />
-        )}
-        {canReview && ownWork && (
-          <p className={`text-xs ${t.isLight ? 'text-amber-700' : 'text-amber-300'}`}>
-            Graduaste esta carta tú: la aprobación tiene que hacerla otra persona.
-          </p>
-        )}
-
-        {canGrade && !editing && (
-          <div className="space-y-3">
+        {/* Paso 1: el PDF del escáner */}
+        <Step n={1} done={hasPdf} title="Informe del escáner (PDF)">
+          {hasPdf && grading && <ResultView grading={grading} />}
+          {canLoad && (
             <ScannerImport
               busy={busy}
-              replaces={!!grading}
-              onFile={(file) => run(() => importScanReport(code, item.position, file), 'Informe del escáner importado. Queda pendiente de control de calidad.')}
+              replaces={hasPdf}
+              onFile={(file) => run(() => importScanReport(code, item.position, file), 'PDF leído. Revisa el resultado y confírmalo.')}
             />
-            <button
-              type="button"
-              onClick={() => setEditing(true)}
-              className={`px-4 py-2.5 border rounded-[8px] text-xs font-bold cursor-pointer ${t.secondary}`}
-            >
-              {grading ? (grading.status === 'approved' ? 'Corregir a mano (nueva versión)' : 'Editar a mano') : 'Introducir a mano'}
-            </button>
-          </div>
-        )}
+          )}
+        </Step>
 
-        {canGrade && editing && (
-          <GradingForm
-            key={`${grading?.version ?? 0}-${grading?.status ?? 'none'}`}
-            initial={grading}
-            busy={busy}
-            images={images}
-            onCancel={() => setEditing(false)}
-            onSave={async (body) => {
-              const ok = await run(
-                () => saveGrading(code, item.position, body),
-                body.submit ? 'Enviado a control de calidad.' : 'Borrador guardado.',
-              );
-              if (ok) setEditing(false);
-            }}
-          />
+        {/* Paso 2: las fotos de la carta ya encapsulada */}
+        <Step n={2} done={hasPhotos || !needsPhotos} title={needsPhotos ? 'Fotos del slab (anverso y reverso)' : 'Fotos del slab (no hacen falta: la carta no es auténtica)'}>
+          <Photos code={code} position={item.position} images={images} canPhoto={isLab && (!confirmed || isAdmin)} busy={busy} run={run} />
+        </Step>
+
+        {/* Paso 3: confirmar */}
+        <Step n={3} done={confirmed} title="Confirmar el resultado">
+          {confirmed ? (
+            <p className={`text-xs ${t.muted}`}>
+              Confirmado{grading?.qaApprovedBy ? ` por ${grading.qaApprovedBy}` : ''}. Se emitirá el certificado al aprobar la salida del pedido.
+            </p>
+          ) : (
+            <div className="space-y-2">
+              <button
+                type="button"
+                disabled={busy || !canConfirm || missingForConfirm.length > 0}
+                onClick={() => void run(() => approveGrading(code, item.position), 'Carta confirmada.')}
+                className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-[8px] text-xs font-semibold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${t.primary}`}
+              >
+                <CheckCircle2 className="w-4 h-4" aria-hidden="true" /> Confirmar carta
+              </button>
+              {missingForConfirm.length > 0 ? (
+                <p className={`text-[11px] ${t.muted}`}>Para confirmar falta: {missingForConfirm.join(' y ')}.</p>
+              ) : (
+                <p className={`text-[11px] ${t.muted}`}>Comprueba que lo leído coincide con el PDF. Al confirmar, el resultado queda fijado.</p>
+              )}
+            </div>
+          )}
+        </Step>
+
+        {/* Solo administración: corregir los datos de la carta o el resultado a mano */}
+        {isAdmin && (gradable || order.order.status === 'ON_HOLD') && (
+          <details className={`border-t pt-3 ${t.rule}`}>
+            <summary className={`text-[12px] font-semibold cursor-pointer ${t.muted}`}>Correcciones de administrador</summary>
+            <div className="mt-3 space-y-4">
+              <Identification
+                item={item}
+                canEdit
+                busy={busy}
+                onSave={(body) => run(() => identifyCard(code, item.position, body), 'Datos de la carta guardados.')}
+              />
+              {grading?.status === 'pending_qa' && (
+                <RejectAction busy={busy} onReject={(reason) => run(() => rejectGrading(code, item.position, reason), 'Resultado anulado. Hay que volver a subir el PDF.')} />
+              )}
+              {!editing ? (
+                <button type="button" onClick={() => setEditing(true)} className={`px-4 py-2.5 border rounded-[8px] text-xs font-bold cursor-pointer ${t.secondary}`}>
+                  {grading ? 'Corregir el resultado a mano (nueva versión)' : 'Introducir el resultado a mano'}
+                </button>
+              ) : (
+                <GradingForm
+                  key={`${grading?.version ?? 0}-${grading?.status ?? 'none'}`}
+                  initial={grading}
+                  busy={busy}
+                  images={images}
+                  onCancel={() => setEditing(false)}
+                  onSave={async (body) => {
+                    const ok = await run(() => saveGrading(code, item.position, body), body.submit ? 'Resultado guardado. Falta confirmarlo.' : 'Borrador guardado.');
+                    if (ok) setEditing(false);
+                  }}
+                />
+              )}
+            </div>
+          </details>
         )}
       </div>
     </details>
+  );
+};
+
+/** Un paso del trabajo con una carta: número (o marca de hecho), título y contenido. */
+const Step: React.FC<{ n: number; done: boolean; title: string; children: React.ReactNode }> = ({ n, done, title, children }) => {
+  const t = usePanelTheme();
+  return (
+    <section className="grid grid-cols-[24px_minmax(0,1fr)] gap-x-3">
+      <span
+        className={`w-6 h-6 rounded-full inline-flex items-center justify-center text-[11px] font-semibold ${done ? 'bg-[#2F8F3E] text-white' : 'border border-[#C9CBC7] text-[#666A67]'}`}
+        aria-hidden="true"
+      >
+        {done ? <Check className="w-3.5 h-3.5" strokeWidth={2.5} /> : n}
+      </span>
+      <div className="min-w-0 space-y-2">
+        <h4 className={`text-[13px] font-semibold leading-6 ${t.text}`}>
+          {title}
+          <span className="sr-only">{done ? ' (hecho)' : ' (pendiente)'}</span>
+        </h4>
+        {children}
+      </div>
+    </section>
+  );
+};
+
+/** Administración puede anular un resultado sin confirmar (por ejemplo, si se subió el PDF de otra carta). */
+const RejectAction: React.FC<{ busy: boolean; onReject: (reason: string) => void }> = ({ busy, onReject }) => {
+  const t = usePanelTheme();
+  const [open, setOpen] = useState(false);
+  const [reason, setReason] = useState('');
+  if (!open) {
+    return (
+      <button type="button" onClick={() => setOpen(true)} className={`px-4 py-2.5 border rounded-[8px] text-xs font-bold cursor-pointer ${t.secondary}`}>
+        Anular el resultado sin confirmar
+      </button>
+    );
+  }
+  return (
+    <div className="space-y-2">
+      <textarea
+        aria-label="Motivo"
+        value={reason}
+        onChange={(e) => setReason(e.target.value)}
+        maxLength={500}
+        rows={2}
+        placeholder="Motivo (queda registrado)"
+        className={`w-full px-3 py-2 text-sm border rounded-[8px] focus:outline-none ${t.input}`}
+      />
+      <div className="flex gap-2">
+        <button type="button" disabled={busy || !reason.trim()} onClick={() => onReject(reason.trim())} className={`px-4 py-2 rounded-[8px] text-xs font-semibold cursor-pointer disabled:opacity-50 ${t.primary}`}>
+          Anular
+        </button>
+        <button type="button" onClick={() => setOpen(false)} className={`px-4 py-2 border rounded-[8px] text-xs font-bold cursor-pointer ${t.secondary}`}>
+          Cancelar
+        </button>
+      </div>
+    </div>
   );
 };
 
@@ -304,70 +381,67 @@ const Photos: React.FC<{
 }> = ({ code, position, images, canPhoto, busy, run }) => {
   const t = usePanelTheme();
   const input = useRef<HTMLInputElement>(null);
-  const [kind, setKind] = useState<'front' | 'back' | 'extra'>('front');
+  const [kind, setKind] = useState<'front' | 'back'>('front');
+  const latest = (k: 'front' | 'back') => images.find((img) => img.kind === k);
 
   return (
-    <div>
-      <h4 className={`text-[12px] mb-1 ${t.muted}`}>Fotos del slab (opcional)</h4>
-      <p className={`text-[11px] mb-2 ${t.muted}`}>
-        Solo si quieres guardar fotos de la carta ya encapsulada. Las imágenes del certificado (el escaneo y las esquinas) salen del PDF del escáner.
-      </p>
-      {images.length > 0 && (
-        <ul className="flex flex-wrap gap-3 mb-3">
-          {images.map((img) => (
-            <li key={img.id} className="relative">
-              <a href={img.url} target="_blank" rel="noreferrer">
-                <img src={img.url} alt={KIND_TEXT[img.kind]} className={`h-24 w-auto rounded border object-contain ${t.rule}`} />
-              </a>
-              <span className={`absolute left-1 bottom-1 px-1.5 py-0.5 rounded text-[10px] font-bold ${t.isLight ? 'bg-white/90 text-[#14170F]' : 'bg-black/70 text-white'}`}>
-                {KIND_TEXT[img.kind]}
-              </span>
-              {canPhoto && (
+    <div className="space-y-2">
+      <p className={`text-[11px] ${t.muted}`}>La carta ya encapsulada. Es la foto que se ve en el certificado público; las imágenes del escaneo salen del PDF.</p>
+      <input
+        ref={input}
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          e.target.value = '';
+          if (file) void run(() => uploadItemImage(code, position, kind, file), `Foto del ${KIND_TEXT[kind].toLowerCase()} subida.`);
+        }}
+      />
+      <div className="flex flex-wrap gap-3">
+        {(['front', 'back'] as const).map((k) => {
+          const img = latest(k);
+          return (
+            <div key={k} className={`w-[calc(50%-6px)] max-w-[132px] border rounded-[8px] p-2 ${t.rule}`}>
+              <div className={`text-[11px] font-semibold mb-1.5 ${t.text}`}>{KIND_TEXT[k]}</div>
+              {img ? (
+                <div className="relative">
+                  <a href={img.url} target="_blank" rel="noreferrer">
+                    <img src={img.url} alt={`Slab, ${KIND_TEXT[k].toLowerCase()}`} className="h-28 w-full rounded object-contain bg-[#F6F6F3]" />
+                  </a>
+                  {canPhoto && (
+                    <button
+                      type="button"
+                      aria-label={`Borrar foto del ${KIND_TEXT[k].toLowerCase()}`}
+                      disabled={busy}
+                      onClick={() => window.confirm('¿Borrar esta foto?') && void run(() => deleteItemImage(code, position, img.id), 'Foto borrada.')}
+                      className="absolute -top-2 -right-2 p-1 rounded-full bg-red-600 text-white cursor-pointer disabled:opacity-50"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </button>
+                  )}
+                </div>
+              ) : canPhoto ? (
                 <button
                   type="button"
-                  aria-label={`Borrar foto ${KIND_TEXT[img.kind]}`}
                   disabled={busy}
-                  onClick={() => window.confirm('¿Borrar esta foto?') && void run(() => deleteItemImage(code, position, img.id), 'Foto borrada.')}
-                  className="absolute -top-2 -right-2 p-1 rounded-full bg-red-600 text-white cursor-pointer disabled:opacity-50"
+                  onClick={() => {
+                    setKind(k);
+                    // Espera a que se guarde el lado elegido antes de abrir el selector de archivos.
+                    setTimeout(() => input.current?.click(), 0);
+                  }}
+                  className={`w-full h-28 rounded border border-dashed inline-flex flex-col items-center justify-center gap-1 text-[11px] font-semibold cursor-pointer disabled:opacity-50 ${t.rule} ${t.muted} hover:border-[#0F1110] hover:text-[#0F1110]`}
                 >
-                  <Trash2 className="w-3 h-3" />
+                  <Camera className="w-4 h-4" aria-hidden="true" /> {busy ? 'Subiendo…' : 'Subir foto'}
                 </button>
+              ) : (
+                <div className={`h-28 rounded bg-[#F6F6F3] flex items-center justify-center text-[11px] ${t.muted}`}>Sin foto</div>
               )}
-            </li>
-          ))}
-        </ul>
-      )}
-      {canPhoto ? (
-        <div className="flex flex-wrap items-center gap-2">
-          <select aria-label="Tipo de foto" value={kind} onChange={(e) => setKind(e.target.value as typeof kind)} className={`px-3 py-2 text-xs border rounded-[8px] ${t.input}`}>
-            <option value="front">Anverso</option>
-            <option value="back">Reverso</option>
-            <option value="extra">Extra (detalle)</option>
-          </select>
-          <input
-            ref={input}
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            className="hidden"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              e.target.value = '';
-              if (file) void run(() => uploadItemImage(code, position, kind, file), 'Foto subida.');
-            }}
-          />
-          <button
-            type="button"
-            disabled={busy}
-            onClick={() => input.current?.click()}
-            className={`inline-flex items-center gap-2 px-4 py-2 border rounded-[8px] text-xs font-bold cursor-pointer disabled:opacity-50 ${t.secondary}`}
-          >
-            <Camera className="w-4 h-4" /> {busy ? 'Subiendo…' : 'Subir foto'}
-          </button>
-          <span className={`text-[11px] ${t.muted}`}>JPEG, PNG o WebP · hasta 30 MB</span>
-        </div>
-      ) : images.length === 0 ? (
-        <p className={`text-xs ${t.muted}`}>Todavía no hay fotos.</p>
-      ) : null}
+            </div>
+          );
+        })}
+      </div>
+      {canPhoto && <p className={`text-[11px] ${t.muted}`}>JPEG, PNG o WebP · hasta 30 MB</p>}
     </div>
   );
 };
@@ -388,8 +462,7 @@ const ResultView: React.FC<{ grading: AdminGradingResult }> = ({ grading }) => {
   return (
     <div className="space-y-3">
       <h4 className={`text-[12px] ${t.muted}`}>
-        Resultado · versión {grading.version} · graduó {grading.gradedBy}
-        {grading.qaApprovedBy && ` · aprobó ${grading.qaApprovedBy}`}
+        {grading.rule === 'scanner' ? 'Leído del PDF' : 'Introducido a mano'} · versión {grading.version} · subió {grading.gradedBy}
       </h4>
       {!grading.isAuthentic ? (
         <p className={`text-sm font-bold ${t.negative}`}>No se ha podido autenticar la carta.</p>
@@ -435,11 +508,12 @@ const ScannerImport: React.FC<{ busy: boolean; replaces: boolean; onFile: (file:
   const [tooBig, setTooBig] = useState(false);
 
   return (
-    <div className={`border rounded-[8px] p-3 space-y-2 ${t.rule}`}>
-      <p className={`text-xs ${t.muted}`}>
-        Sube el informe en PDF del escáner. Se leen las notas, las medidas, las esquinas, los daños y el número de certificado,
-        y el resultado pasa a control de calidad.{replaces && ' Sustituye al resultado actual.'}
-      </p>
+    <div className="space-y-2">
+      {!replaces && (
+        <p className={`text-xs ${t.muted}`}>
+          Se leen del PDF la carta, las notas, las medidas, las esquinas, los daños y el número de certificado. No hay que escribir nada a mano.
+        </p>
+      )}
       <input
         ref={input}
         type="file"
@@ -457,9 +531,10 @@ const ScannerImport: React.FC<{ busy: boolean; replaces: boolean; onFile: (file:
         type="button"
         disabled={busy}
         onClick={() => input.current?.click()}
-        className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-[8px] text-xs font-semibold cursor-pointer disabled:opacity-50 ${t.primary}`}
+        className={`inline-flex items-center gap-2 rounded-[8px] text-xs font-semibold cursor-pointer disabled:opacity-50 ${replaces ? `px-3 py-2 border ${t.secondary}` : `px-4 py-2.5 ${t.primary}`}`}
+        title={replaces ? 'Un PDF nuevo sustituye al actual' : undefined}
       >
-        <FileUp className="w-4 h-4" /> {busy ? 'Leyendo el informe…' : 'Importar informe del escáner (PDF)'}
+        <FileUp className="w-4 h-4" /> {busy ? 'Leyendo el PDF…' : replaces ? 'Subir otro PDF' : 'Subir el PDF del escáner'}
       </button>
       {tooBig && <p role="alert" className="text-xs font-bold text-red-500">El PDF pesa más de 4 MB.</p>}
     </div>
@@ -510,52 +585,6 @@ const ScanSummary: React.FC<{ scan: NonNullable<AdminGradingResult['scan']> }> =
         </div>
       ))}
       <p className={`font-mono text-[10px] break-all ${t.muted}`}>PDF SHA-256 {scan.pdfSha256}</p>
-    </div>
-  );
-};
-
-// ---------------------------------------------------------------------------
-// Revisión de calidad
-// ---------------------------------------------------------------------------
-
-const ReviewActions: React.FC<{ busy: boolean; onApprove: () => void; onReject: (reason: string) => void }> = ({ busy, onApprove, onReject }) => {
-  const t = usePanelTheme();
-  const [rejecting, setRejecting] = useState(false);
-  const [reason, setReason] = useState('');
-
-  return (
-    <div className={`border rounded-[8px] p-3 space-y-3 ${t.rule}`}>
-      <p className={`text-xs font-bold ${t.text}`}>Control de calidad</p>
-      {!rejecting ? (
-        <div className="flex flex-wrap gap-2">
-          <button type="button" disabled={busy} onClick={onApprove} className={`px-4 py-2.5 rounded-[8px] text-xs font-semibold cursor-pointer disabled:opacity-50 ${t.primary}`}>
-            Aprobar resultado
-          </button>
-          <button type="button" disabled={busy} onClick={() => setRejecting(true)} className={`px-4 py-2.5 border rounded-[8px] text-xs font-bold cursor-pointer ${t.secondary}`}>
-            Devolver para revisar
-          </button>
-        </div>
-      ) : (
-        <div className="space-y-2">
-          <textarea
-            aria-label="Motivo de la devolución"
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-            maxLength={500}
-            rows={2}
-            placeholder="Motivo (queda registrado)"
-            className={`w-full px-3 py-2 text-sm border rounded-[8px] focus:outline-none ${t.input}`}
-          />
-          <div className="flex gap-2">
-            <button type="button" disabled={busy || !reason.trim()} onClick={() => onReject(reason.trim())} className={`px-4 py-2 rounded-[8px] text-xs font-semibold cursor-pointer disabled:opacity-50 ${t.primary}`}>
-              Devolver
-            </button>
-            <button type="button" onClick={() => setRejecting(false)} className={`px-4 py-2 border rounded-[8px] text-xs font-bold cursor-pointer ${t.secondary}`}>
-              Cancelar
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

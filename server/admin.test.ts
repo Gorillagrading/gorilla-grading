@@ -470,46 +470,35 @@ describe('cambios de estado', () => {
       expect((await move(code, 'admin@lab.test', 'SHIPPED', 'QUALITY_ASSURANCE')).status).toBe(200);
     });
 
-    it('si un admin adelantó el encapsulado a mano, no puede aprobar él mismo la salida', async () => {
+    it('aunque un admin adelantara el encapsulado a mano, él mismo puede aprobar la salida', async () => {
       await staffSetup();
       const code = await placeOrder();
-    await approveAllGrading(db, code);
+      await approveAllGrading(db, code);
       await move(code, 'staff@lab.test', 'PACKAGE_RECEIVED', 'SUBMITTED');
       await move(code, 'admin@lab.test', 'PRE_INSPECTION', 'PACKAGE_RECEIVED');
       await move(code, 'admin@lab.test', 'OPTICAL_GRADING', 'PRE_INSPECTION');
       await move(code, 'admin@lab.test', 'ENCAPSULATION', 'OPTICAL_GRADING');
       await move(code, 'admin@lab.test', 'QUALITY_ASSURANCE', 'ENCAPSULATION');
-      await api(`/admin/orders/${code}/shipments`, 'staff@lab.test', { body: { direction: 'outbound', carrier: 'GLS', trackingNumber: 'ES-1' } });
 
+      // Ya no hay regla de dos personas para la salida.
       const detail = (await read(await api(`/admin/orders/${code}`, 'admin@lab.test'))).order;
-      expect(detail.transitions.find((x: any) => x.to === 'SHIPPED')).toMatchObject({ allowed: false, blockedReason: 'two_person_rule' });
-      const res = await move(code, 'admin@lab.test', 'SHIPPED', 'QUALITY_ASSURANCE');
-      expect(res.status).toBe(409);
-      expect(await read(res)).toMatchObject({ code: 'two_person_rule' });
-      expect((await db.select().from(orders))[0].status).toBe('QUALITY_ASSURANCE');
-
-      // Otra persona sí puede.
-      expect((await move(code, 'qa@lab.test', 'SHIPPED', 'QUALITY_ASSURANCE')).status).toBe(200);
+      expect(detail.transitions.find((x: any) => x.to === 'SHIPPED')).toMatchObject({ allowed: true });
+      expect((await move(code, 'admin@lab.test', 'SHIPPED', 'QUALITY_ASSURANCE')).status).toBe(200);
+      expect((await db.select().from(orders))[0].status).toBe('SHIPPED');
     });
 
-    it('la devolución por mensajería no sale sin número de seguimiento', async () => {
+    it('la devolución por mensajería sale aunque aún no tenga número de seguimiento', async () => {
       await staffSetup();
       const code = await placeOrder();
-    await approveAllGrading(db, code);
+      await approveAllGrading(db, code);
       await untilQuality(code, { tracking: false });
 
-      const blocked = await move(code, 'qa@lab.test', 'SHIPPED', 'QUALITY_ASSURANCE');
-      expect(blocked.status).toBe(409);
-      expect(await read(blocked)).toMatchObject({ code: 'tracking_required' });
       const detail = (await read(await api(`/admin/orders/${code}`, 'qa@lab.test'))).order;
-      expect(detail.transitions.find((x: any) => x.to === 'SHIPPED')).toMatchObject({ allowed: false, blockedReason: 'tracking_required' });
-
-      // Un envío de entrada (el del cliente) no sirve como seguimiento de la devolución.
-      await api(`/admin/orders/${code}/shipments`, 'staff@lab.test', { body: { direction: 'inbound', carrier: 'Correos', trackingNumber: 'IN-1' } });
-      expect((await move(code, 'qa@lab.test', 'SHIPPED', 'QUALITY_ASSURANCE')).status).toBe(409);
-
-      await api(`/admin/orders/${code}/shipments`, 'staff@lab.test', { body: { direction: 'outbound', carrier: 'GLS', trackingNumber: 'ES-1' } });
+      const ship = detail.transitions.find((x: any) => x.to === 'SHIPPED');
+      expect(ship).toMatchObject({ allowed: true });
+      expect(ship.blockedReason).toBeUndefined();
       expect((await move(code, 'qa@lab.test', 'SHIPPED', 'QUALITY_ASSURANCE')).status).toBe(200);
+      expect((await db.select().from(orders))[0].status).toBe('SHIPPED');
     });
 
     it('la entrega en mano no necesita seguimiento y usa su propio texto', async () => {

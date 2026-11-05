@@ -5,15 +5,15 @@
 import type { OrderStatus } from './domain.js';
 import type { StaffRole } from './admin.js';
 
+/**
+ * El trabajo del equipo, en el orden del recorrido: recibir el paquete; por cada carta, subir el PDF del escáner y
+ * las fotos del slab y confirmar el resultado; aprobar la salida del pedido y confirmar la entrega.
+ */
 export const TODAY_SECTIONS = [
   'late',
   'toReceive',
-  'toIdentify',
-  'photosMissing',
-  'returnedByQa',
-  'toGrade',
-  'myDrafts',
-  'toReview',
+  'toScan',
+  'toConfirm',
   'readyToShip',
   'toDeliver',
   'onHold',
@@ -22,10 +22,10 @@ export type TodaySectionKey = (typeof TODAY_SECTIONS)[number];
 
 /** Qué ve cada rol, en el orden en que lo ve. */
 export const SECTIONS_BY_ROLE: Record<StaffRole, readonly TodaySectionKey[]> = {
-  staff: ['toReceive', 'toIdentify', 'toDeliver', 'onHold', 'photosMissing'],
-  grader: ['returnedByQa', 'toIdentify', 'toGrade', 'myDrafts', 'photosMissing'],
-  qa: ['toReview', 'readyToShip'],
-  admin: ['late', 'returnedByQa', 'toReceive', 'toIdentify', 'toGrade', 'myDrafts', 'toReview', 'readyToShip', 'toDeliver', 'onHold', 'photosMissing'],
+  staff: ['toReceive', 'toScan', 'toConfirm', 'toDeliver', 'onHold'],
+  grader: ['toScan', 'toConfirm'],
+  qa: ['toScan', 'toConfirm', 'readyToShip'],
+  admin: ['late', 'toReceive', 'toScan', 'toConfirm', 'readyToShip', 'toDeliver', 'onHold'],
 };
 
 /** Secciones de pedidos enteros que se pueden abrir filtradas en la lista de pedidos. */

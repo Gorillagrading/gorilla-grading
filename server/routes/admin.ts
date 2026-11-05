@@ -63,22 +63,24 @@ export function adminRoutes(deps: Deps) {
   });
 
   // Resultado de graduación de una carta. La posición es el número de carta dentro del pedido (#01 = 1).
-  const grader = [requireUser(deps), requireRole('grader', 'admin')] as const;
-  const qa = [requireUser(deps), requireRole('qa', 'admin')] as const;
+  // El resultado sale del PDF del escáner: cualquier persona del laboratorio lo sube y lo confirma.
+  // Introducir notas a mano o devolver un resultado queda solo para administración.
+  const lab = staff;
+  const adminOnly = [requireUser(deps), requireRole('admin')] as const;
   const position = (c: { req: { param: (name: string) => string } }) => {
     const n = Number(c.req.param('position'));
     if (!Number.isInteger(n) || n < 1) throw new ProblemError(404, 'Not Found', 'No existe esa carta en el pedido.', { code: 'item_not_found' });
     return n;
   };
 
-  routes.put('/admin/orders/:code/items/:position/grading', ...grader, async (c) => {
+  routes.put('/admin/orders/:code/items/:position/grading', ...adminOnly, async (c) => {
     const body = await parseJson(c, GradingBody);
     const grading = await saveGrading(deps.getDb(), c.get('user'), c.req.param('code'), position(c), body, { ip: clientIp(c) });
     return c.json({ grading });
   });
 
   // Informe del escáner: el cuerpo es el PDF tal cual. Lo lee el servidor y deja el resultado pendiente de calidad.
-  routes.post('/admin/orders/:code/items/:position/scan-report', ...grader, async (c) => {
+  routes.post('/admin/orders/:code/items/:position/scan-report', ...lab, async (c) => {
     const pdf = new Uint8Array(await c.req.arrayBuffer());
     if (pdf.byteLength === 0 || new TextDecoder().decode(pdf.subarray(0, 5)) !== '%PDF-') {
       throw new ProblemError(422, 'Validation Error', 'El archivo no es un PDF.', { code: 'scan_report_unreadable' });
@@ -90,12 +92,12 @@ export function adminRoutes(deps: Deps) {
     return c.json({ grading });
   });
 
-  routes.post('/admin/orders/:code/items/:position/grading/approve', ...qa, async (c) => {
+  routes.post('/admin/orders/:code/items/:position/grading/approve', ...lab, async (c) => {
     const grading = await approveGrading(deps.getDb(), c.get('user'), c.req.param('code'), position(c), { ip: clientIp(c) });
     return c.json({ grading });
   });
 
-  routes.post('/admin/orders/:code/items/:position/grading/reject', ...qa, async (c) => {
+  routes.post('/admin/orders/:code/items/:position/grading/reject', ...adminOnly, async (c) => {
     const body = await parseJson(c, RejectGradingBody);
     const grading = await rejectGrading(deps.getDb(), c.get('user'), c.req.param('code'), position(c), body.reason, { ip: clientIp(c) });
     return c.json({ grading });
@@ -198,11 +200,11 @@ export function adminRoutes(deps: Deps) {
     return c.json({ env, steps, ok: steps.every((s) => s.ok) });
   });
 
-  // Fotos de las cartas. Las suben quienes reciben o gradúan; control de calidad solo las mira.
-  const photographer = [requireUser(deps), requireRole('staff', 'grader', 'admin')] as const;
+  // Fotos de la carta ya encapsulada (slab): las sube cualquier persona del laboratorio.
+  const photographer = staff;
 
-  // Qué carta es cada una: la apuntan quienes reciben o gradúan al abrir el paquete.
-  routes.put('/admin/orders/:code/items/:position/card', ...photographer, async (c) => {
+  // Los datos de la carta salen del PDF del escáner; corregirlos a mano es cosa de administración.
+  routes.put('/admin/orders/:code/items/:position/card', ...adminOnly, async (c) => {
     const body = await parseJson(c, IdentifyCardBody);
     await identifyCard(deps.getDb(), c.get('user'), c.req.param('code'), position(c), body, { ip: clientIp(c) });
     return c.json({ order: await getAdminOrder(deps.getDb(), c.get('user'), c.req.param('code')) });

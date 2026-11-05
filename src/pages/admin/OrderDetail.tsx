@@ -4,7 +4,7 @@ import type { AdminOrderDetail, AdminTransitionOption } from '../../../shared/ad
 import type { OrderStatus } from '../../../shared/domain';
 import type { ImageDto } from '../../../shared/photos';
 import {
-  addAdminShipment, adminErrorMessage, fetchAdminOrder, fetchOrderImages, transitionAdminOrder,
+  adminErrorMessage, fetchAdminOrder, fetchOrderImages, transitionAdminOrder,
 } from '../../api/admin';
 import { ApiError } from '../../api/client';
 import { STATUS_LABEL } from '../../utils/orderStatus';
@@ -14,9 +14,7 @@ import {
 } from './ui';
 
 const BLOCKED_TEXT: Record<NonNullable<AdminTransitionOption['blockedReason']>, string> = {
-  tracking_required: 'Registra antes el transportista y el número de seguimiento de la devolución.',
-  grading_incomplete: 'Todas las cartas necesitan su resultado de graduación aprobado por control de calidad.',
-  two_person_rule: 'Quien encapsuló este pedido no puede aprobarlo. Tiene que hacerlo otra persona.',
+  grading_incomplete: 'Falta confirmar alguna carta: cada una necesita su PDF, las fotos del slab y la confirmación.',
 };
 
 function actionLabel(option: AdminTransitionOption, order: AdminOrderDetail): string {
@@ -169,8 +167,11 @@ export const OrderDetail: React.FC<{ code: string; onBack: () => void }> = ({ co
           </section>
 
           {/* Graduación y fotos */}
-          <section className={`border rounded-[8px] p-5 space-y-3 ${t.card}`} aria-label="Graduación y fotos">
-            <h3 className={`text-[14px] font-semibold ${t.text}`}>Graduación y fotos</h3>
+          <section className={`border rounded-[8px] p-5 space-y-3 ${t.card}`} aria-label="Resultado de cada carta">
+            <div>
+              <h3 className={`text-[14px] font-semibold ${t.text}`}>Resultado de cada carta</h3>
+              <p className={`text-xs mt-0.5 ${t.muted}`}>Por cada carta: sube el PDF del escáner, las fotos del slab y confirma. Con todas confirmadas se aprueba la salida.</p>
+            </div>
             {order.items.map((item) => (
               <GradingPanel
                 key={item.position}
@@ -286,13 +287,11 @@ export const OrderDetail: React.FC<{ code: string; onBack: () => void }> = ({ co
             </section>
           )}
 
-          {/* Envíos */}
-          <section className={`border rounded-[8px] p-5 ${t.card}`} aria-label="Envíos">
-            <h3 className={`text-[14px] font-semibold mb-3 ${t.text}`}>Envíos y seguimiento</h3>
-            {order.shipments.length === 0 ? (
-              <p className={`text-xs ${t.muted}`}>Todavía no hay ningún envío registrado.</p>
-            ) : (
-              <ul className="space-y-2.5 mb-4">
+          {/* Envíos registrados antes (ya no se piden: el seguimiento es automático) */}
+          {order.shipments.length > 0 && (
+            <section className={`border rounded-[8px] p-5 ${t.card}`} aria-label="Envíos">
+              <h3 className={`text-[14px] font-semibold mb-3 ${t.text}`}>Envíos registrados</h3>
+              <ul className="space-y-2.5">
                 {order.shipments.map((s) => (
                   <li key={s.id} className="text-xs">
                     <span className={`text-[12px] mr-2 ${t.muted}`}>{s.direction === 'inbound' ? 'Entrada' : 'Devolución'}</span>
@@ -301,23 +300,8 @@ export const OrderDetail: React.FC<{ code: string; onBack: () => void }> = ({ co
                   </li>
                 ))}
               </ul>
-            )}
-            {order.canAddShipment && (
-              <ShipmentForm
-                onSubmit={async (body) => {
-                  try {
-                    setOrder(await addAdminShipment(code, body));
-                    setError('');
-                    setNotice('Envío registrado. El cliente ya lo ve en su seguimiento.');
-                    return true;
-                  } catch (err) {
-                    setError(adminErrorMessage(err));
-                    return false;
-                  }
-                }}
-              />
-            )}
-          </section>
+            </section>
+          )}
 
           {/* Cliente */}
           <section className={`border rounded-[8px] p-5 text-sm ${t.card}`} aria-label="Cliente">
@@ -369,40 +353,6 @@ export const OrderDetail: React.FC<{ code: string; onBack: () => void }> = ({ co
         />
       )}
     </div>
-  );
-};
-
-const ShipmentForm: React.FC<{ onSubmit: (body: { direction: 'inbound' | 'outbound'; carrier: string; trackingNumber: string }) => Promise<boolean> }> = ({ onSubmit }) => {
-  const t = usePanelTheme();
-  const [direction, setDirection] = useState<'inbound' | 'outbound'>('outbound');
-  const [carrier, setCarrier] = useState('');
-  const [trackingNumber, setTrackingNumber] = useState('');
-  const [busy, setBusy] = useState(false);
-  const field = `w-full px-3 py-2 text-sm border rounded-[8px] focus:outline-none ${t.input}`;
-
-  return (
-    <form
-      className="space-y-2.5"
-      onSubmit={async (e) => {
-        e.preventDefault();
-        setBusy(true);
-        if (await onSubmit({ direction, carrier: carrier.trim(), trackingNumber: trackingNumber.trim() })) {
-          setCarrier('');
-          setTrackingNumber('');
-        }
-        setBusy(false);
-      }}
-    >
-      <select id="ship-direction" aria-label="Tipo de envío" value={direction} onChange={(e) => setDirection(e.target.value as 'inbound' | 'outbound')} className={field}>
-        <option value="outbound">Devolución al cliente</option>
-        <option value="inbound">Envío del cliente al laboratorio</option>
-      </select>
-      <input id="ship-carrier" aria-label="Transportista" placeholder="Transportista (GLS, CTT…)" value={carrier} onChange={(e) => setCarrier(e.target.value)} maxLength={80} required className={field} />
-      <input id="ship-tracking" aria-label="Número de seguimiento" placeholder="Número de seguimiento" value={trackingNumber} onChange={(e) => setTrackingNumber(e.target.value)} maxLength={80} required className={`${field} font-mono`} />
-      <button type="submit" disabled={busy || !carrier.trim() || !trackingNumber.trim()} className={`w-full px-4 py-2.5 border rounded-[8px] text-xs font-bold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${t.secondary}`}>
-        {busy ? 'Guardando…' : 'Añadir envío'}
-      </button>
-    </form>
   );
 };
 

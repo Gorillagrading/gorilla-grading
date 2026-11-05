@@ -552,7 +552,6 @@ export const gradingResults = pgTable(
           and (${t.gradeLabel} <> 'Pristine 10' or (${t.centeringScore} = 10 and ${t.cornersScore} = 10 and ${t.edgesScore} = 10 and ${t.surfaceScore} = 10)))
       )`,
     ),
-    check('grading_results_double_signature', sql`${t.qaApprovedBy} is null or ${t.qaApprovedBy} <> ${t.gradedBy}`),
     check(
       'grading_results_approved_has_qa',
       // Una carta que no es auténtica no tiene nota, pero también se aprueba.

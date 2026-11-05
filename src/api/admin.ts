@@ -110,7 +110,7 @@ export function adminErrorMessage(err: unknown): string {
     case 'grading_approved':
       return 'El resultado ya está aprobado. Solo un administrador puede corregirlo.';
     case 'grading_not_pending':
-      return 'Este resultado no está pendiente de control de calidad.';
+      return 'Esta carta no tiene un resultado pendiente de confirmar.';
     case 'grade_above_subgrades':
       return 'La nota final no puede superar la que dan las subnotas.';
     case 'upload_failed':
@@ -121,8 +121,10 @@ export function adminErrorMessage(err: unknown): string {
       return `Error del almacenamiento: ${err.message}`;
     case 'storage_unavailable':
       return 'El almacenamiento de fotos no está configurado todavía.';
-    case 'tracking_required':
-      return 'Registra primero el transportista y el número de seguimiento de la devolución.';
+    case 'slab_photos_required':
+      return 'Sube las fotos del slab (anverso y reverso) antes de confirmar la carta.';
+    case 'card_unidentified':
+      return 'La carta no tiene nombre: el PDF no lo traía. Pide a un administrador que lo corrija.';
     case 'note_required':
       return 'Escribe el motivo: este cambio necesita una nota.';
     case 'invalid_transition':

@@ -1,6 +1,6 @@
 import { eq, sql } from 'drizzle-orm';
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import { auditLogs, gradingDefects, gradingResults, orders } from '../db/schema.js';
+import { auditLogs, gradingDefects, gradingResults, orderItems, orders } from '../db/schema.js';
 import { advanceDueOrders } from './domain/automation.js';
 import { createTestApp, createTestDb, insertAllTiers, insertUser, type TestDb, identifyCards } from './testing.js';
 
@@ -44,7 +44,7 @@ const api = (path: string, email: string, init: { method?: string; body?: unknow
   });
 
 async function placeOrder() {
-  await loginAs('cliente@example.com');
+  if (!cookies.has('cliente@example.com')) await loginAs('cliente@example.com');
   const res = await api('/orders', 'cliente@example.com', {
     body: {
       items: [
@@ -90,45 +90,57 @@ const grade = (code: string, email: string, body: unknown, position = 1) =>
 const action = (code: string, email: string, name: 'approve' | 'reject', body?: unknown, position = 1) =>
   api(`/admin/orders/${code}/items/${position}/grading/${name}`, email, { method: 'POST', body: body ?? {} });
 
-describe('introducir el resultado', () => {
+/** Sube y confirma las fotos del slab de una carta (por defecto, anverso y reverso). */
+async function slabPhotos(code: string, position = 1, kinds: ('front' | 'back')[] = ['front', 'back']) {
+  for (const kind of kinds) {
+    const { image, upload } = await read(
+      await api(`/admin/orders/${code}/items/${position}/images`, 'staff@lab.test', { body: { kind, contentType: 'image/jpeg', byteSize: 1000 } }),
+    );
+    t.storage.put(upload.url.replace('memory://upload/', ''));
+    expect((await api(`/admin/orders/${code}/items/${position}/images/${image.id}/confirm`, 'staff@lab.test', { body: {} })).status).toBe(200);
+  }
+}
+
+// El resultado normal sale del PDF del escáner; las notas a mano solo las introduce administración.
+describe('introducir el resultado a mano', () => {
   it('calcula la nota final y la etiqueta a partir de las subnotas', async () => {
     const code = await received();
-    const res = await grade(code, 'grader@lab.test', scores(9.5, 9, 9, 9.5));
+    const res = await grade(code, 'admin@lab.test', scores(9.5, 9, 9, 9.5));
     expect(res.status).toBe(200);
     // Media 9,25 -> 9; la peor es 9, así que no sube.
     expect((await read(res)).grading).toMatchObject({
-      version: 1, status: 'draft', isAuthentic: true, finalGrade: 9, gradeLabel: 'Mint 9', gradedBy: 'grader@lab.test',
+      version: 1, status: 'draft', isAuthentic: true, finalGrade: 9, gradeLabel: 'Mint 9', gradedBy: 'admin@lab.test',
       centering: { score: 9.5, frontRatio: '52/48 L/R' },
     });
   });
 
   it('aplica la regla de la nota: tres 10 y un 9,5 dan Gem Mint 10; cuatro 10, Pristine 10', async () => {
     const code = await received();
-    expect((await read(await grade(code, 'grader@lab.test', scores(10, 10, 10, 9.5)))).grading).toMatchObject({ finalGrade: 10, gradeLabel: 'Gem Mint 10' });
-    expect((await read(await grade(code, 'grader@lab.test', scores(10, 10, 10, 10)))).grading).toMatchObject({ finalGrade: 10, gradeLabel: 'Pristine 10' });
+    expect((await read(await grade(code, 'admin@lab.test', scores(10, 10, 10, 9.5)))).grading).toMatchObject({ finalGrade: 10, gradeLabel: 'Gem Mint 10' });
+    expect((await read(await grade(code, 'admin@lab.test', scores(10, 10, 10, 10)))).grading).toMatchObject({ finalGrade: 10, gradeLabel: 'Pristine 10' });
   });
 
   it('una nota inferior a la de las subnotas se acepta; una superior, no', async () => {
     const code = await received();
-    const lower = await grade(code, 'grader@lab.test', { ...scores(9.5, 9.5, 9.5, 9.5), finalGrade: 9 });
+    const lower = await grade(code, 'admin@lab.test', { ...scores(9.5, 9.5, 9.5, 9.5), finalGrade: 9 });
     expect((await read(lower)).grading).toMatchObject({ finalGrade: 9, gradeLabel: 'Mint 9' });
 
-    const higher = await grade(code, 'grader@lab.test', { ...scores(8, 8, 8, 8), finalGrade: 9 });
+    const higher = await grade(code, 'admin@lab.test', { ...scores(8, 8, 8, 8), finalGrade: 9 });
     expect(higher.status).toBe(422);
     expect(await read(higher)).toMatchObject({ code: 'grade_above_subgrades', maxAllowed: 8 });
   });
 
   it('valores fuera de escala o subnotas que faltan se rechazan', async () => {
     const code = await received();
-    expect((await grade(code, 'grader@lab.test', scores(9.3, 9, 9, 9))).status).toBe(422);
-    expect((await grade(code, 'grader@lab.test', scores(11, 9, 9, 9))).status).toBe(422);
+    expect((await grade(code, 'admin@lab.test', scores(9.3, 9, 9, 9))).status).toBe(422);
+    expect((await grade(code, 'admin@lab.test', scores(11, 9, 9, 9))).status).toBe(422);
     const { surface: _omitted, ...incomplete } = scores(9, 9, 9, 9);
-    expect((await grade(code, 'grader@lab.test', incomplete)).status).toBe(422);
+    expect((await grade(code, 'admin@lab.test', incomplete)).status).toBe(422);
   });
 
   it('una carta no auténtica se guarda sin notas', async () => {
     const code = await received();
-    const res = await grade(code, 'grader@lab.test', { isAuthentic: false });
+    const res = await grade(code, 'admin@lab.test', { isAuthentic: false });
     expect((await read(res)).grading).toMatchObject({ isAuthentic: false, finalGrade: null, gradeLabel: null, centering: null });
   });
 
@@ -138,7 +150,7 @@ describe('introducir el resultado', () => {
       { side: 'front', category: 'corners', severity: 'minor', title: 'Esquina superior derecha', x: 96.5, y: 3.2, deduction: 0.5 },
       { side: 'back', category: 'surface', severity: 'moderate', title: 'Arañazo', description: 'Visible con luz rasante', x: 40, y: 60 },
     ];
-    await grade(code, 'grader@lab.test', { ...scores(9, 9, 9, 9), defects });
+    await grade(code, 'admin@lab.test', { ...scores(9, 9, 9, 9), defects });
     const detail = (await read(await api(`/admin/orders/${code}`, 'staff@lab.test'))).order;
     expect(detail.items[0].grading.defects).toHaveLength(2);
     expect(detail.items[0].grading.defects[1]).toMatchObject({ title: 'Arañazo', deduction: 0, description: 'Visible con luz rasante' });
@@ -147,93 +159,135 @@ describe('introducir el resultado', () => {
 
   it('volver a guardar un borrador lo reemplaza, no crea otra versión', async () => {
     const code = await received();
-    await grade(code, 'grader@lab.test', { ...scores(9, 9, 9, 9), defects: [{ side: 'front', category: 'edges', severity: 'minor', title: 'A', x: 1, y: 1 }] });
-    await grade(code, 'grader@lab.test', scores(8, 8, 8, 8));
+    await grade(code, 'admin@lab.test', { ...scores(9, 9, 9, 9), defects: [{ side: 'front', category: 'edges', severity: 'minor', title: 'A', x: 1, y: 1 }] });
+    await grade(code, 'admin@lab.test', scores(8, 8, 8, 8));
     expect(await db.select().from(gradingResults)).toHaveLength(1);
     expect(await db.select().from(gradingDefects)).toHaveLength(0);
     expect((await db.select().from(gradingResults))[0].finalGrade).toBe(8);
   });
 
-  it('solo graduadores y administradores; y no antes de recibir el paquete', async () => {
+  it('solo administración; y no antes de recibir el paquete', async () => {
     const code = await placeOrder();
-    expect((await grade(code, 'grader@lab.test', scores(9, 9, 9, 9))).status).toBe(409);
-    expect(await read(await grade(code, 'grader@lab.test', scores(9, 9, 9, 9)))).toMatchObject({ code: 'grading_not_allowed' });
+    expect((await grade(code, 'admin@lab.test', scores(9, 9, 9, 9))).status).toBe(409);
+    expect(await read(await grade(code, 'admin@lab.test', scores(9, 9, 9, 9)))).toMatchObject({ code: 'grading_not_allowed' });
 
     await move(code, 'staff@lab.test', 'PACKAGE_RECEIVED', 'SUBMITTED');
-    for (const email of ['staff@lab.test', 'qa@lab.test', 'cliente@example.com']) {
+    for (const email of ['staff@lab.test', 'grader@lab.test', 'qa@lab.test', 'cliente@example.com']) {
       expect((await grade(code, email, scores(9, 9, 9, 9))).status, email).toBe(403);
     }
+    expect(await db.select().from(gradingResults)).toHaveLength(0);
     expect((await grade(code, 'admin@lab.test', scores(9, 9, 9, 9))).status).toBe(200);
   });
 
   it('una carta que no existe en el pedido da 404', async () => {
     const code = await received();
-    expect((await grade(code, 'grader@lab.test', scores(9, 9, 9, 9), 3)).status).toBe(404);
-    expect((await grade(code, 'grader@lab.test', scores(9, 9, 9, 9), 0)).status).toBe(404);
-    expect((await grade('284727469', 'grader@lab.test', scores(9, 9, 9, 9))).status).toBe(404);
+    expect((await grade(code, 'admin@lab.test', scores(9, 9, 9, 9), 3)).status).toBe(404);
+    expect((await grade(code, 'admin@lab.test', scores(9, 9, 9, 9), 0)).status).toBe(404);
+    expect((await grade('284727469', 'admin@lab.test', scores(9, 9, 9, 9))).status).toBe(404);
   });
 
   it('queda registrado quién hizo cada cosa', async () => {
     const code = await received();
-    await grade(code, 'grader@lab.test', { ...scores(9, 9, 9, 9), submit: true });
+    await grade(code, 'admin@lab.test', { ...scores(9, 9, 9, 9), submit: true });
     const actions = (await db.select().from(auditLogs)).map((a) => a.action);
     expect(actions).toContain('grading.submitted');
   });
 });
 
-describe('control de calidad', () => {
-  it('lo aprueba otra persona; pasa a aprobado con su firma', async () => {
-    const code = await received();
-    await grade(code, 'grader@lab.test', { ...scores(9, 9, 9, 9), submit: true });
-    const res = await action(code, 'qa@lab.test', 'approve');
-    expect(res.status).toBe(200);
-    expect((await read(res)).grading).toMatchObject({ status: 'approved', qaApprovedBy: 'qa@lab.test', gradedBy: 'grader@lab.test' });
+describe('confirmar el resultado', () => {
+  it('lo confirma cualquier persona del laboratorio; pasa a aprobado con su firma', async () => {
+    // El resultado lo pone admin a mano; que admin confirme lo suyo se prueba aparte.
+    for (const email of ['staff@lab.test', 'grader@lab.test', 'qa@lab.test']) {
+      const code = await received();
+      await grade(code, 'admin@lab.test', { ...scores(9, 9, 9, 9), submit: true });
+      await slabPhotos(code);
+      const res = await action(code, email, 'approve');
+      expect(res.status, email).toBe(200);
+      expect((await read(res)).grading, email).toMatchObject({ status: 'approved', qaApprovedBy: email, gradedBy: 'admin@lab.test' });
+    }
   });
 
-  it('no se puede aprobar un borrador ni aprobar dos veces', async () => {
+  it('quien subió el resultado puede confirmarlo él mismo', async () => {
     const code = await received();
-    await grade(code, 'grader@lab.test', scores(9, 9, 9, 9));
-    expect(await read(await action(code, 'qa@lab.test', 'approve'))).toMatchObject({ code: 'grading_not_pending' });
-    await grade(code, 'grader@lab.test', { ...scores(9, 9, 9, 9), submit: true });
+    await grade(code, 'admin@lab.test', { ...scores(9, 9, 9, 9), submit: true });
+    await slabPhotos(code);
+    const res = await action(code, 'admin@lab.test', 'approve');
+    expect(res.status).toBe(200);
+    expect((await read(res)).grading).toMatchObject({ status: 'approved', qaApprovedBy: 'admin@lab.test', gradedBy: 'admin@lab.test' });
+  });
+
+  it('los clientes no pueden confirmar', async () => {
+    const code = await received();
+    await grade(code, 'admin@lab.test', { ...scores(9, 9, 9, 9), submit: true });
+    await slabPhotos(code);
+    expect((await action(code, 'cliente@example.com', 'approve')).status).toBe(403);
+  });
+
+  it('no se puede confirmar un borrador ni confirmar dos veces', async () => {
+    const code = await received();
+    await slabPhotos(code);
+    await grade(code, 'admin@lab.test', scores(9, 9, 9, 9));
+    const draft = await action(code, 'qa@lab.test', 'approve');
+    expect(draft.status).toBe(409);
+    expect(await read(draft)).toMatchObject({ code: 'grading_not_pending' });
+    await grade(code, 'admin@lab.test', { ...scores(9, 9, 9, 9), submit: true });
     expect((await action(code, 'qa@lab.test', 'approve')).status).toBe(200);
     expect((await action(code, 'qa@lab.test', 'approve')).status).toBe(409);
   });
 
-  it('quien graduó no puede aprobar su propio trabajo, ni siendo administrador', async () => {
+  it('una carta auténtica no se confirma sin las dos fotos del slab (anverso y reverso)', async () => {
     const code = await received();
     await grade(code, 'admin@lab.test', { ...scores(9, 9, 9, 9), submit: true });
-    const res = await action(code, 'admin@lab.test', 'approve');
-    expect(res.status).toBe(409);
-    expect(await read(res)).toMatchObject({ code: 'two_person_rule' });
+
+    const none = await action(code, 'qa@lab.test', 'approve');
+    expect(none.status).toBe(409);
+    expect(await read(none)).toMatchObject({ code: 'slab_photos_required' });
+
+    await slabPhotos(code, 1, ['front']);
+    expect(await read(await action(code, 'qa@lab.test', 'approve'))).toMatchObject({ code: 'slab_photos_required' });
+
+    await slabPhotos(code, 1, ['back']);
     expect((await action(code, 'qa@lab.test', 'approve')).status).toBe(200);
   });
 
-  it('un graduador o el personal no pueden aprobar', async () => {
+  it('una carta no auténtica se confirma sin fotos: no se encapsula', async () => {
     const code = await received();
-    await grade(code, 'grader@lab.test', { ...scores(9, 9, 9, 9), submit: true });
-    for (const email of ['grader2@lab.test', 'staff@lab.test', 'cliente@example.com']) {
-      expect((await action(code, email, 'approve')).status, email).toBe(403);
-    }
+    await grade(code, 'admin@lab.test', { isAuthentic: false, submit: true });
+    const res = await action(code, 'qa@lab.test', 'approve');
+    expect(res.status).toBe(200);
+    expect((await read(res)).grading).toMatchObject({ status: 'approved', isAuthentic: false });
   });
 
-  it('puede devolver el resultado a borrador con un motivo, que queda registrado', async () => {
+  it('una carta sin nombre no se confirma', async () => {
     const code = await received();
-    await grade(code, 'grader@lab.test', { ...scores(9, 9, 9, 9), submit: true });
-    expect((await action(code, 'qa@lab.test', 'reject', {})).status).toBe(422);
-    const res = await action(code, 'qa@lab.test', 'reject', { reason: 'Revisa el centrado del reverso' });
+    await grade(code, 'admin@lab.test', { ...scores(9, 9, 9, 9), submit: true });
+    await slabPhotos(code);
+    await db.update(orderItems).set({ cardName: null }).where(eq(orderItems.position, 1));
+    const res = await action(code, 'qa@lab.test', 'approve');
+    expect(res.status).toBe(409);
+    expect(await read(res)).toMatchObject({ code: 'card_unidentified' });
+  });
+
+  it('solo administración devuelve el resultado a borrador, con un motivo que queda registrado', async () => {
+    const code = await received();
+    await grade(code, 'admin@lab.test', { ...scores(9, 9, 9, 9), submit: true });
+    for (const email of ['staff@lab.test', 'grader@lab.test', 'qa@lab.test', 'cliente@example.com']) {
+      expect((await action(code, email, 'reject', { reason: 'Revisa el centrado del reverso' })).status, email).toBe(403);
+    }
+    expect((await action(code, 'admin@lab.test', 'reject', {})).status).toBe(422);
+    const res = await action(code, 'admin@lab.test', 'reject', { reason: 'Revisa el centrado del reverso' });
     expect((await read(res)).grading.status).toBe('draft');
     const [log] = await db.select().from(auditLogs).where(eq(auditLogs.action, 'grading.rejected'));
     expect(log.after).toMatchObject({ reason: 'Revisa el centrado del reverso' });
   });
 
-  it('un resultado aprobado solo lo corrige un administrador, y deja la versión anterior como histórico', async () => {
+  it('un resultado confirmado solo lo corrige un administrador, y deja la versión anterior como histórico', async () => {
     const code = await received();
-    await grade(code, 'grader@lab.test', { ...scores(9, 9, 9, 9), submit: true });
-    await action(code, 'qa@lab.test', 'approve');
+    await grade(code, 'admin@lab.test', { ...scores(9, 9, 9, 9), submit: true });
+    await slabPhotos(code);
+    expect((await action(code, 'qa@lab.test', 'approve')).status).toBe(200);
 
-    const blocked = await grade(code, 'grader@lab.test', scores(8, 8, 8, 8));
-    expect(blocked.status).toBe(409);
-    expect(await read(blocked)).toMatchObject({ code: 'grading_approved' });
+    expect((await grade(code, 'grader@lab.test', scores(8, 8, 8, 8))).status).toBe(403);
 
     const fixed = await grade(code, 'admin@lab.test', { ...scores(8, 8, 8, 8), submit: true });
     expect((await read(fixed)).grading).toMatchObject({ version: 2, status: 'pending_qa', finalGrade: 8, qaApprovedBy: null });
@@ -250,11 +304,12 @@ describe('salida del laboratorio', () => {
     await db.execute(sql`update orders set auto_anchor_at = auto_anchor_at - interval '40 days' where auto_anchor_at is not null`);
     await advanceDueOrders(db);
     expect((await db.select().from(orders))[0].status).toBe('QUALITY_ASSURANCE');
-    await api(`/admin/orders/${code}/shipments`, 'staff@lab.test', { body: { direction: 'outbound', carrier: 'GLS', trackingNumber: 'ES-1' } });
+    await slabPhotos(code, 1);
+    await slabPhotos(code, 2);
     return code;
   }
 
-  it('el pedido no sale hasta que todas las cartas tienen el resultado aprobado', async () => {
+  it('el pedido no sale hasta que todas las cartas tienen el resultado confirmado', async () => {
     const code = await untilQuality();
     const shipOption = async () =>
       (await read(await api(`/admin/orders/${code}`, 'qa@lab.test'))).order.transitions.find((x: any) => x.to === 'SHIPPED');
@@ -264,15 +319,16 @@ describe('salida del laboratorio', () => {
     expect(blocked.status).toBe(409);
     expect(await read(blocked)).toMatchObject({ code: 'grading_incomplete' });
 
-    // Se aprueba solo la primera carta: sigue bloqueado.
-    await grade(code, 'grader@lab.test', { ...scores(9, 9, 9, 9), submit: true }, 1);
+    // Se confirma solo la primera carta: sigue bloqueado.
+    await grade(code, 'admin@lab.test', { ...scores(9, 9, 9, 9), submit: true }, 1);
     await action(code, 'qa@lab.test', 'approve', undefined, 1);
     expect((await move(code, 'qa@lab.test', 'SHIPPED', 'QUALITY_ASSURANCE')).status).toBe(409);
 
-    // La segunda estaba pendiente de calidad, no aprobada: tampoco vale.
-    await grade(code, 'grader@lab.test', { ...scores(8.5, 8.5, 8.5, 8.5), submit: true }, 2);
+    // La segunda estaba pendiente de confirmar, no confirmada: tampoco vale.
+    await grade(code, 'admin@lab.test', { ...scores(8.5, 8.5, 8.5, 8.5), submit: true }, 2);
     expect((await move(code, 'qa@lab.test', 'SHIPPED', 'QUALITY_ASSURANCE')).status).toBe(409);
 
+    // Sin número de seguimiento registrado, la salida se aprueba igual.
     await action(code, 'qa@lab.test', 'approve', undefined, 2);
     expect(await shipOption()).toMatchObject({ allowed: true });
     expect((await move(code, 'qa@lab.test', 'SHIPPED', 'QUALITY_ASSURANCE')).status).toBe(200);

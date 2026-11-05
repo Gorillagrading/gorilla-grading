@@ -777,7 +777,7 @@ export const CollectorVaultPage: React.FC<CollectorVaultPageProps> = ({ onNaviga
 
                       <div className="flex items-center justify-between pl-2 pt-0.5">
                         <span className={`font-mono text-[9px] ${isLight ? 'text-neutral-400' : 'text-[#8C9185]'}`}>
-                          {order.carrier ?? (es ? 'Sin transportista asignado' : 'No carrier assigned')}
+                          {order.carrier}
                         </span>
                         <button
                           onClick={() => onNavigate(`/track?code=${order.code}`)}
@@ -862,7 +862,7 @@ export const CollectorVaultPage: React.FC<CollectorVaultPageProps> = ({ onNaviga
                                     {order.code}
                                   </span>
                                   <span className="font-mono text-[10px] text-neutral-400 block mt-0.5">
-                                    {order.carrier ?? (es ? 'Sin transportista asignado' : 'No carrier assigned')}{order.trackingNumber && <> &bull; {order.trackingNumber}</>}
+                                    {order.carrier}{order.carrier && order.trackingNumber && <> &bull; {order.trackingNumber}</>}
                                   </span>
                                 </div>
                               </div>

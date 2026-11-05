@@ -128,15 +128,16 @@ describe('subir fotos', () => {
     expect(await db.select().from(itemImages)).toHaveLength(0);
   });
 
-  it('suben quienes reciben o gradúan; control de calidad solo mira; los clientes no entran', async () => {
+  it('sube cualquier persona del laboratorio, también control de calidad; los clientes no entran', async () => {
     const code = await received();
     const body = { kind: 'back', contentType: 'image/png', byteSize: 1000 };
-    for (const email of ['staff@lab.test', 'grader@lab.test', 'admin@lab.test']) {
+    for (const email of ['staff@lab.test', 'grader@lab.test', 'qa@lab.test', 'admin@lab.test']) {
       expect((await reserve(code, email, body)).status, email).toBe(201);
     }
-    for (const email of ['qa@lab.test', 'cliente@example.com']) {
-      expect((await reserve(code, email, body)).status, email).toBe(403);
-    }
+    expect((await reserve(code, 'cliente@example.com', body)).status).toBe(403);
+    // Control de calidad también confirma y borra sus fotos.
+    const id = await addPhoto(code, 'front', 1, 'qa@lab.test');
+    expect((await api(`/admin/orders/${code}/items/1/images/${id}`, 'qa@lab.test', { method: 'DELETE' })).status).toBe(204);
     expect((await api(`/admin/orders/${code}/images`, 'qa@lab.test')).status).toBe(200);
     expect((await api(`/admin/orders/${code}/images`, 'cliente@example.com')).status).toBe(403);
     expect((await api(`/admin/orders/${code}/images`)).status).toBe(401);
@@ -181,10 +182,11 @@ describe('resultados para el cliente', () => {
     await db.execute(sql`update custody_events set occurred_at = occurred_at - interval '40 days'`);
     await db.execute(sql`update orders set auto_anchor_at = auto_anchor_at - interval '40 days' where auto_anchor_at is not null`);
     await advanceDueOrders(db);
-    await api(`/admin/orders/${code}/shipments`, 'staff@lab.test', { body: { direction: 'outbound', carrier: 'GLS', trackingNumber: 'ES-1' } });
     for (const position of [1, 2]) {
-      await api(`/admin/orders/${code}/items/${position}/grading`, 'grader@lab.test', { method: 'PUT', body: scores(position === 1 ? 9.5 : 8.5) });
-      await api(`/admin/orders/${code}/items/${position}/grading/approve`, 'qa@lab.test', { body: {} });
+      // Las notas a mano solo las pone administración; confirmar lo puede hacer cualquiera del laboratorio.
+      await api(`/admin/orders/${code}/items/${position}/grading`, 'admin@lab.test', { method: 'PUT', body: scores(position === 1 ? 9.5 : 8.5) });
+      const confirmed = await api(`/admin/orders/${code}/items/${position}/grading/approve`, 'qa@lab.test', { body: {} });
+      expect(confirmed.status).toBe(200);
     }
     expect((await move(code, 'qa@lab.test', 'SHIPPED', 'QUALITY_ASSURANCE')).status).toBe(200);
   }
@@ -192,7 +194,7 @@ describe('resultados para el cliente', () => {
   it('mientras el pedido está en el laboratorio no se ve ni la nota ni las fotos', async () => {
     const code = await received();
     await addPhoto(code, 'front');
-    await api(`/admin/orders/${code}/items/1/grading`, 'grader@lab.test', { method: 'PUT', body: scores(9) });
+    await api(`/admin/orders/${code}/items/1/grading`, 'admin@lab.test', { method: 'PUT', body: scores(9) });
 
     const res = await results(code, 'cliente@example.com');
     expect(res.status).toBe(200);
@@ -206,6 +208,9 @@ describe('resultados para el cliente', () => {
     const code = await received();
     await addPhoto(code, 'front', 1);
     await addPhoto(code, 'back', 1, 'grader@lab.test');
+    // Sin las fotos del slab no se confirma una carta auténtica: la segunda también las lleva.
+    await addPhoto(code, 'front', 2);
+    await addPhoto(code, 'back', 2);
     await toShipped(code);
 
     const { results: view } = await read(await results(code, 'cliente@example.com'));
@@ -217,10 +222,12 @@ describe('resultados para el cliente', () => {
     expect(first.images.map((i: any) => i.kind).sort()).toEqual(['back', 'front']);
     expect(first.images[0].url).toMatch(/\?ttl=900$/);
     expect(second.grading).toMatchObject({ finalGrade: 8.5 });
-    expect(second.images).toEqual([]);
+    expect(second.images).toHaveLength(2);
+    expect(second.images.every((i: any) => !first.images.some((f: any) => f.url === i.url))).toBe(true);
 
     // Nada interno: ni quién graduó, ni la estación, ni las claves del almacenamiento.
     const text = JSON.stringify(view);
+    expect(text).not.toContain('admin@lab.test');
     expect(text).not.toContain('grader@lab.test');
     expect(text).not.toContain('qa@lab.test');
     expect(text).not.toContain('Mesa 3');

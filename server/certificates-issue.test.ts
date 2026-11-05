@@ -73,8 +73,9 @@ async function placeOrder() {
 const move = (code: string, email: string, to: string, expectedStatus: string) =>
   api(`/admin/orders/${code}/transitions`, email, { body: { to, expectedStatus } });
 
+// Las notas a mano solo las pone administración (lo normal es el PDF del escáner).
 const grade = (code: string, position: number, body: unknown) =>
-  api(`/admin/orders/${code}/items/${position}/grading`, 'grader@lab.test', { method: 'PUT', body });
+  api(`/admin/orders/${code}/items/${position}/grading`, 'admin@lab.test', { method: 'PUT', body });
 const approve = (code: string, position: number) =>
   api(`/admin/orders/${code}/items/${position}/grading/approve`, 'qa@lab.test', { body: {} });
 

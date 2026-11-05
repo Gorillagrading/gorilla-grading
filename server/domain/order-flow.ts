@@ -76,8 +76,8 @@ const COPY: Partial<Record<OrderStatus, Record<Locale, Copy>>> = {
     en: { label: 'Encapsulation', description: 'We seal each card in its slab, with serial number and verification QR code.' },
   },
   QUALITY_ASSURANCE: {
-    es: { label: 'Control de calidad', description: 'Un segundo experto revisa la nota y firma el certificado.' },
-    en: { label: 'Quality assurance', description: 'A second expert reviews the grade and signs the certificate.' },
+    es: { label: 'Control de calidad', description: 'Revisamos el resultado del escáner y firmamos el certificado.' },
+    en: { label: 'Quality assurance', description: 'We review the scanner result and sign the certificate.' },
   },
   SHIPPED: {
     es: { label: 'Devolución en camino', description: 'Tus cartas salen hacia ti con envío asegurado y firma.' },

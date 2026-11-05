@@ -140,6 +140,14 @@ describe('importación del informe en una carta', () => {
     });
   const move = (code: string, email: string, to: string, expectedStatus: string) =>
     api(`/admin/orders/${code}/transitions`, email, { body: { to, expectedStatus } });
+  /** Fotos de la carta ya en su slab (anverso y reverso), que sube el laboratorio. */
+  async function slabPhotos(code: string, position = 1) {
+    for (const kind of ['front', 'back'] as const) {
+      const photo = (await (await api(`/admin/orders/${code}/items/${position}/images`, 'staff@lab.test', { body: { kind, contentType: 'image/jpeg', byteSize: 1000 } })).json()) as any;
+      t.storage.put(photo.upload.url.replace('memory://upload/', ''));
+      await api(`/admin/orders/${code}/items/${position}/images/${photo.image.id}/confirm`, 'staff@lab.test', { body: {} });
+    }
+  }
 
   async function receivedOrder(cards = 1) {
     const res = await api('/orders', 'cliente@example.com', {
@@ -189,10 +197,10 @@ describe('importación del informe en una carta', () => {
     expect((row.scanReport as any).images.corners.front.topLeft).toMatch(/front-esquina-topLeft\.jpg$/);
   });
 
-  it('solo gradúan grader y admin; un archivo que no es PDF o un informe que no cuadra no guardan nada', async () => {
+  it('los clientes no suben informes; un archivo que no es PDF o un informe que no cuadra no guardan nada', async () => {
     const code = await receivedOrder();
-    expect((await upload(code, 'staff@lab.test')).status).toBe(403);
-    const notPdf = await upload(code, 'grader@lab.test', new TextEncoder().encode('hola'));
+    expect((await upload(code, 'cliente@example.com')).status).toBe(403);
+    const notPdf = await upload(code, 'staff@lab.test', new TextEncoder().encode('hola'));
     expect(notPdf.status).toBe(422);
     expect(await read(notPdf)).toMatchObject({ code: 'scan_report_unreadable' });
     // Un PDF roto por dentro.
@@ -200,6 +208,33 @@ describe('importación del informe en una carta', () => {
     expect(broken.status).toBe(422);
     expect(await db.select().from(gradingResults)).toHaveLength(0);
     expect(t.storage.files.size).toBe(0);
+  });
+
+  it('sube el PDF cualquier persona del laboratorio', async () => {
+    for (const email of ['staff@lab.test', 'grader@lab.test', 'qa@lab.test']) {
+      const code = await receivedOrder();
+      // Cada informe lleva su número de certificado: se libera antes de importarlo en otro pedido.
+      await db.delete(gradingResults);
+      expect((await upload(code, email)).status, email).toBe(200);
+    }
+  });
+
+  it('una persona distinta de quien subió el PDF confirma la carta cuando tiene las fotos del slab', async () => {
+    const code = await receivedOrder();
+    expect((await upload(code, 'staff@lab.test')).status).toBe(200);
+    const confirm = () => api(`/admin/orders/${code}/items/1/grading/approve`, 'grader@lab.test', { body: {} });
+    expect(await read(await confirm())).toMatchObject({ code: 'slab_photos_required' });
+    await slabPhotos(code);
+    const res = await confirm();
+    expect(res.status).toBe(200);
+    expect((await read(res)).grading).toMatchObject({ status: 'approved', gradedBy: 'staff@lab.test', qaApprovedBy: 'grader@lab.test' });
+  });
+
+  it('quien subió el PDF puede confirmar la carta él mismo', async () => {
+    const code = await receivedOrder();
+    expect((await upload(code, 'staff@lab.test')).status).toBe(200);
+    await slabPhotos(code);
+    expect((await api(`/admin/orders/${code}/items/1/grading/approve`, 'staff@lab.test', { body: {} })).status).toBe(200);
   });
 
   it('el mismo informe no se puede importar en dos cartas', async () => {
@@ -226,15 +261,12 @@ describe('importación del informe en una carta', () => {
   it('al aprobar la salida, el certificado lleva el número del informe y el cliente ve el informe completo', async () => {
     const code = await receivedOrder();
     await upload(code, 'grader@lab.test');
-    // Foto de la carta ya en su slab, que sube el laboratorio.
-    const photo = await (await api(`/admin/orders/${code}/items/1/images`, 'staff@lab.test', { body: { kind: 'front', contentType: 'image/jpeg', byteSize: 1000 } })).json() as any;
-    t.storage.put(photo.upload.url.replace('memory://upload/', ''));
-    await api(`/admin/orders/${code}/items/1/images/${photo.image.id}/confirm`, 'staff@lab.test', { body: {} });
+    await slabPhotos(code);
     expect((await api(`/admin/orders/${code}/items/1/grading/approve`, 'qa@lab.test', { body: {} })).status).toBe(200);
     await db.execute(sql`update custody_events set occurred_at = occurred_at - interval '40 days'`);
     await db.execute(sql`update orders set auto_anchor_at = auto_anchor_at - interval '40 days' where auto_anchor_at is not null`);
     await advanceDueOrders(db);
-    await api(`/admin/orders/${code}/shipments`, 'staff@lab.test', { body: { direction: 'outbound', carrier: 'GLS', trackingNumber: 'ES-1' } });
+    // Sin número de seguimiento registrado: la salida ya no lo exige.
     expect((await move(code, 'qa@lab.test', 'SHIPPED', 'QUALITY_ASSURANCE')).status).toBe(200);
 
     const [cert] = await db.select().from(certificates);
@@ -260,7 +292,7 @@ describe('importación del informe en una carta', () => {
     // La foto del slab va aparte del escaneo, que sigue siendo la imagen con los daños.
     expect(certificate.slabImages.front).toMatch(/items\/.+\/front-.+\.jpg/);
     expect(certificate.slabImages.front).not.toMatch(/escaneo/);
-    expect(certificate.slabImages.back).toBe('');
+    expect(certificate.slabImages.back).toMatch(/items\/.+\/back-.+\.jpg/);
     // Nada privado: ni la ruta del PDF ni su huella.
     expect(JSON.stringify(certificate.scan)).not.toMatch(/informe\.pdf|sha256/);
   });

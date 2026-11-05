@@ -9,19 +9,15 @@ import { GO, LATE, LINE_STAGES, PlazoRuler, STATION_NAME, daysLeft, groupCode, w
 /** Cada tipo de tarea: su nombre, el nombre corto del filtro y el botón con lo que hay que hacer. */
 const KIND: Record<TodaySectionKey, { title: string; short: string; action: string; primary?: boolean }> = {
   late: { title: 'Fuera de plazo', short: 'Fuera de plazo', action: 'Abrir', primary: true },
-  returnedByQa: { title: 'Devueltas por calidad', short: 'Devueltas', action: 'Corregir', primary: true },
-  toReceive: { title: 'Confirmar recepción', short: 'Recepción', action: 'Recibir' },
-  toIdentify: { title: 'Identificar cartas', short: 'Identificar', action: 'Identificar' },
-  toGrade: { title: 'Importar informe del escáner', short: 'Escáner', action: 'Subir PDF', primary: true },
-  myDrafts: { title: 'Borradores sin enviar', short: 'Borradores', action: 'Continuar' },
-  toReview: { title: 'Aprobar en calidad', short: 'Calidad', action: 'Revisar', primary: true },
-  readyToShip: { title: 'Aprobar la salida', short: 'Salida', action: 'Aprobar salida', primary: true },
-  toDeliver: { title: 'Confirmar entrega', short: 'Entrega', action: 'Confirmar' },
+  toReceive: { title: '1 · Recibir paquetes', short: 'Recibir', action: 'Recibir' },
+  toScan: { title: '2 · Subir el PDF del escáner y las fotos del slab', short: 'PDF y fotos', action: 'Subir', primary: true },
+  toConfirm: { title: '3 · Confirmar el resultado', short: 'Confirmar', action: 'Confirmar', primary: true },
+  readyToShip: { title: '4 · Aprobar la salida', short: 'Salida', action: 'Aprobar salida', primary: true },
+  toDeliver: { title: '5 · Confirmar la entrega', short: 'Entrega', action: 'Entregado' },
   onHold: { title: 'En pausa', short: 'Pausa', action: 'Resolver' },
-  photosMissing: { title: 'Fotos del slab', short: 'Fotos', action: 'Subir fotos' },
 };
 /** Lo urgente va primero, siempre. */
-const URGENT: TodaySectionKey[] = ['late', 'returnedByQa'];
+const URGENT: TodaySectionKey[] = ['late'];
 
 const timeLabel = (d: Date) => d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Madrid' });
 /** Como mucho tantas rayitas por estación; el resto se resume con "+N". */
@@ -35,7 +31,7 @@ export const TodayPanel: React.FC<{
   user: UserDto;
   onOpenOrder: (code: string) => void;
   onOpenQueue: (status: string) => void;
-}> = ({ user, onOpenOrder, onOpenQueue }) => {
+}> = ({ onOpenOrder, onOpenQueue }) => {
   const [data, setData] = useState<StaffToday | null>(null);
   const [updatedAt, setUpdatedAt] = useState<Date | null>(null);
   const [error, setError] = useState('');
@@ -55,7 +51,7 @@ export const TodayPanel: React.FC<{
   }, []);
   useEffect(load, [load]);
 
-  const title = (key: TodaySectionKey) => (key === 'myDrafts' && user.role === 'admin' ? 'Borradores' : KIND[key].title);
+  const title = (key: TodaySectionKey) => KIND[key].title;
   const sections = data?.sections ?? [];
   const pending = sections.reduce((sum, s) => sum + s.count, 0);
   const active = sections

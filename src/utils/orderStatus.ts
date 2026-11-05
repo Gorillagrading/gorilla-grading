@@ -58,8 +58,8 @@ export const STEP_COPY: Partial<Record<OrderStatus, { label: Bilingual; descript
   QUALITY_ASSURANCE: {
     label: { es: 'Control de calidad', en: 'Quality assurance' },
     description: {
-      es: 'Un segundo experto revisa la nota y firma el certificado.',
-      en: 'A second expert reviews the grade and signs the certificate.',
+      es: 'Revisamos el resultado del escáner y firmamos el certificado.',
+      en: 'We review the scanner result and sign the certificate.',
     },
   },
   SHIPPED: {

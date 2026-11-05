@@ -244,6 +244,8 @@ export const TrackingPage: React.FC<TrackingPageProps> = ({ onNavigate }) => {
                   <div className={`flex flex-col gap-2.5 font-mono text-[10px] tracking-[0.15em] uppercase ${
                     isLight ? 'text-[#4A5048]' : 'text-[#A4ACA1]'
                   }`}>
+                    {tracking.carrier && (
+                      <>
                     <div className={`flex justify-between border-b pb-1.5 ${isLight ? 'border-black/5' : 'border-white/5'}`}>
                       <span className={isLight ? 'text-[#1C201D]/55 font-semibold' : 'text-white/40'}>Carrier</span>
                       <span className={`font-medium ${isLight ? 'text-[#1C201D]' : 'text-white'}`}>{tracking.carrier ?? '—'}</span>
@@ -252,6 +254,8 @@ export const TrackingPage: React.FC<TrackingPageProps> = ({ onNavigate }) => {
                       <span className={isLight ? 'text-[#1C201D]/55 font-semibold' : 'text-white/40'}>Tracking</span>
                       <span className={`font-medium ${isLight ? 'text-[#1C201D]' : 'text-white'}`}>{tracking.trackingNumber ?? '—'}</span>
                     </div>
+                      </>
+                    )}
                     <div className={`flex justify-between border-b pb-1.5 ${isLight ? 'border-black/5' : 'border-white/5'}`}>
                       <span className={isLight ? 'text-[#1C201D]/55 font-semibold' : 'text-white/40'}>Placed</span>
                       <span className={`font-medium ${isLight ? 'text-[#1C201D]' : 'text-white'}`}>{formatDate(tracking.submittedAt)}</span>

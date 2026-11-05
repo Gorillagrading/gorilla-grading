@@ -81,7 +81,7 @@ export interface AdminTransitionOption {
   requiresNote: boolean;
   /** Falso si la persona tiene permiso pero hoy no se puede hacer; `blockedReason` explica por qué. */
   allowed: boolean;
-  blockedReason?: 'tracking_required' | 'two_person_rule' | 'grading_incomplete';
+  blockedReason?: 'grading_incomplete';
 }
 
 export interface AdminOrderDetail {

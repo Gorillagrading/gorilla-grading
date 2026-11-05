@@ -1,6 +1,6 @@
-import { and, eq, inArray, ne } from 'drizzle-orm';
+import { and, eq, inArray, isNotNull, ne } from 'drizzle-orm';
 import type { Db } from '../../db/client.js';
-import { auditLogs, gradingDefects, gradingResults, orderItems, orders, users } from '../../db/schema.js';
+import { auditLogs, gradingDefects, gradingResults, itemImages, orderItems, orders, users } from '../../db/schema.js';
 import type { UserDto } from '../../shared/auth.js';
 import type { AdminGradingResult, GradingBody } from '../../shared/grading-admin.js';
 import { deriveFinalGrade, deriveGradeLabel } from '../../shared/grading.js';
@@ -232,7 +232,10 @@ export async function saveGrading(
   return (await loadGradingResults(db, [item.id])).get(item.id)!;
 }
 
-/** Control de calidad aprueba el resultado. Quien graduó no puede aprobar su propio trabajo. */
+/**
+ * Confirma el resultado leído del PDF del escáner. Lo hace una sola persona del laboratorio (puede ser quien subió
+ * el PDF), y solo cuando la carta tiene nombre y, si es auténtica, las dos fotos del slab (anverso y reverso).
+ */
 export async function approveGrading(
   db: Db,
   actor: UserDto,
@@ -244,10 +247,19 @@ export async function approveGrading(
   const { order, item } = await loadItem(db, code, position);
   const current = await currentResult(db, item.id);
   if (!current || current.status !== 'pending_qa') {
-    throw conflict('Este resultado no está pendiente de control de calidad.', 'grading_not_pending');
+    throw conflict('Esta carta no tiene un resultado pendiente de confirmar.', 'grading_not_pending');
   }
-  if (current.gradedBy === actor.id) {
-    throw conflict('Quien gradúa la carta no puede aprobar su propio resultado. Debe hacerlo otra persona.', 'two_person_rule');
+  if (!item.cardName) {
+    throw conflict('La carta no tiene nombre: el PDF no lo traía. Pide a un administrador que lo corrija.', 'card_unidentified');
+  }
+  const photos = await db
+    .select({ kind: itemImages.kind })
+    .from(itemImages)
+    .where(and(eq(itemImages.orderItemId, item.id), isNotNull(itemImages.uploadedAt)));
+  const kinds = new Set(photos.map((p) => p.kind));
+  // Una carta no auténtica no se encapsula: no lleva fotos del slab.
+  if (current.isAuthentic && (!kinds.has('front') || !kinds.has('back'))) {
+    throw conflict('Sube las fotos del slab (anverso y reverso) antes de confirmar la carta.', 'slab_photos_required');
   }
   await db.transaction(async (tx) => {
     await tx
@@ -271,7 +283,7 @@ export async function rejectGrading(
   const { order, item } = await loadItem(db, code, position);
   const current = await currentResult(db, item.id);
   if (!current || current.status !== 'pending_qa') {
-    throw conflict('Este resultado no está pendiente de control de calidad.', 'grading_not_pending');
+    throw conflict('Esta carta no tiene un resultado pendiente de confirmar.', 'grading_not_pending');
   }
   await db.transaction(async (tx) => {
     await tx.update(gradingResults).set({ status: 'draft' }).where(eq(gradingResults.id, current.id));

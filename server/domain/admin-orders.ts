@@ -116,16 +116,10 @@ async function loadContext(db: Db, code: string) {
 type Context = NonNullable<Awaited<ReturnType<typeof loadContext>>>;
 
 /** Motivo por el que una acción permitida por rol no se puede hacer ahora, si lo hay. */
-function businessBlock(ctx: Context, rule: TransitionRule, actorId: string): AdminTransitionOption['blockedReason'] {
-  if (rule.to === 'SHIPPED' && ctx.order.shippingMethod === 'COURIER_INSURED') {
-    const hasTracking = ctx.shipments.some((s) => s.direction === 'outbound' && !!s.trackingNumber);
-    if (!hasTracking) return 'tracking_required';
-  }
+function businessBlock(ctx: Context, rule: TransitionRule): AdminTransitionOption['blockedReason'] {
+  // Un pedido no sale del laboratorio hasta que todas sus cartas tienen el resultado confirmado.
   if (rule.from === 'QUALITY_ASSURANCE' && rule.to === 'SHIPPED') {
-    // Un pedido no sale del laboratorio hasta que todas sus cartas tienen el resultado aprobado.
     if (ctx.items.some(({ item }) => ctx.grading.get(item.id)?.status !== 'approved')) return 'grading_incomplete';
-    const encapsulatedBy = [...ctx.events].reverse().find((e) => e.event.toStatus === 'ENCAPSULATION')?.event.actorId;
-    if (encapsulatedBy && encapsulatedBy === actorId) return 'two_person_rule';
   }
   return undefined;
 }
@@ -141,7 +135,7 @@ function buildDetail(ctx: Context, viewer: UserDto): AdminOrderDetail {
   const transitions = rulesFrom(order.status, order.statusBeforeHold)
     .filter((rule) => rule.roles.includes(viewer.role))
     .map<AdminTransitionOption>((rule) => {
-      const blockedReason = businessBlock(ctx, rule, viewer.id);
+      const blockedReason = businessBlock(ctx, rule);
       return { to: rule.to, requiresNote: !!rule.requiresNote, allowed: !blockedReason, blockedReason };
     });
 
@@ -254,20 +248,10 @@ export async function transitionOrder(
     throw new ProblemError(422, 'Validation Error', 'Este cambio necesita una nota con el motivo.', { code: 'note_required' });
   }
 
-  const blocked = businessBlock(ctx, rule, actor.id);
-  if (blocked === 'tracking_required') {
-    throw new ProblemError(409, 'Conflict', 'Registra el transportista y el número de seguimiento de la devolución antes de enviarla.', {
-      code: 'tracking_required',
-    });
-  }
+  const blocked = businessBlock(ctx, rule);
   if (blocked === 'grading_incomplete') {
-    throw new ProblemError(409, 'Conflict', 'Todas las cartas deben tener el resultado de graduación aprobado por control de calidad antes de enviar el pedido.', {
+    throw new ProblemError(409, 'Conflict', 'Todas las cartas deben tener su resultado confirmado antes de aprobar la salida del pedido.', {
       code: 'grading_incomplete',
-    });
-  }
-  if (blocked === 'two_person_rule') {
-    throw new ProblemError(409, 'Conflict', 'Quien encapsuló el pedido no puede aprobar su salida de control de calidad. Debe hacerlo otra persona.', {
-      code: 'two_person_rule',
     });
   }
 
