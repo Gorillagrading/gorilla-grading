@@ -4,6 +4,7 @@ import { HomeTechnologySection } from '../components/luxury/HomeTechnologySectio
 import { TechnologySection } from '../components/luxury/TechnologySection';
 import { HomeVerificationModule } from '../components/luxury/HomeVerificationModule';
 import { LuxuryPricingSection } from '../components/luxury/LuxuryPricingSection';
+import { MissionBanner } from '../components/luxury/MissionBanner';
 import { TechDetailModal } from '../components/luxury/TechDetailModal';
 import { VerifiedAuditsSection, LiveLabActivitySection } from '../components/luxury/MarketingPlaceholders';
 import { PromoCTA } from '../components/luxury/PromoCTA';
@@ -52,6 +53,9 @@ export const LuxuryReferenceHomePage: React.FC<LuxuryReferenceHomePageProps> = (
 
       {/* 10. Live Laboratory Activity & Community Feed */}
       <LiveLabActivitySection />
+
+      {/* 11. Customer Promise / International Shipping */}
+      <MissionBanner onNavigate={onNavigate} />
 
       {/* 12. Newsletter Subscription */}
       <NewsletterSection />
