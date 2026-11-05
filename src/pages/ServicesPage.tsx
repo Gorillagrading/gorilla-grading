@@ -39,7 +39,7 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ onNavigate }) => {
         : 'The recommended standard for mid-to-high value cards and iconic holos with subgrades.',
       price: '25',
       turnaround: language === 'es' ? '5 Días Hábiles' : '5 Business Days',
-      maxValue: '€1.500',
+      maxValue: '€2.000',
       badge: t('pricing.badgePopular'),
       featured: true,
       features: [
@@ -58,7 +58,7 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ onNavigate }) => {
         : 'Accelerated queue in high-security vault for tournaments and urgent market liquidity.',
       price: '50',
       turnaround: language === 'es' ? '2 Días Hábiles' : '2 Business Days',
-      maxValue: '€3.000',
+      maxValue: '€10.000',
       badge: language === 'es' ? 'ALTA PRIORIDAD' : 'PRIORITY QUEUE',
       featured: false,
       features: [

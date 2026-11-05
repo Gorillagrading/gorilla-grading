@@ -465,8 +465,8 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
                 ? 'El estándar del mercado. Cartas de valor medio-alto con 4 subgrados métricos.' 
                 : 'The market standard. Mid-to-high value cards with micrometric subgrades.',
               turnaround: language === 'es' ? '5 días hábiles' : '5 business days',
-              maxInsurance: '1.500 €',
-              maxInsuranceNum: 1500,
+              maxInsurance: '2.000 €',
+              maxInsuranceNum: 2000,
               price: 25,
               accentColor: '#16A34A'
             },
@@ -478,8 +478,8 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
                 ? 'Procesamiento en cola preferente para transacciones de mercado y eventos.' 
                 : 'Priority queue routing for urgent transactions, market timing, and conventions.',
               turnaround: language === 'es' ? '2 días hábiles' : '2 business days',
-              maxInsurance: '3.000 €',
-              maxInsuranceNum: 3000,
+              maxInsurance: '10.000 €',
+              maxInsuranceNum: 10000,
               price: 50,
               accentColor: '#EA580C'
             },
