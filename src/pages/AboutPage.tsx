@@ -1,6 +1,5 @@
 import React from 'react';
 import { CompanyStorySection } from '../components/luxury/CompanyStorySection';
-import { MissionBanner } from '../components/luxury/MissionBanner';
 import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import { ShieldCheck, Microscope, Award, Users } from 'lucide-react';
@@ -138,9 +137,6 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onNavigate }) => {
 
         </div>
       </section>
-
-      {/* 3. Mission Banner */}
-      <MissionBanner onNavigate={onNavigate} />
 
       {/* 4. Quick Links Navigation */}
       <section className={`w-full py-16 px-6 lg:px-12 border-t transition-colors duration-300 ${
