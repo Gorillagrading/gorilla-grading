@@ -123,8 +123,8 @@ export const LuxuryNavbar: React.FC<LuxuryNavbarProps> = ({ onNavigate }) => {
         ? 'bg-white text-[#111827] border-b border-black/[0.05] shadow-xs' 
         : 'bg-[#0B0E0B] text-white border-b border-white/[0.05] shadow-xs')
     : (isLight 
-        ? 'bg-transparent text-[#111827] backdrop-blur-md border-b border-transparent' 
-        : 'bg-transparent text-white backdrop-blur-md border-b border-transparent');
+        ? 'bg-white/90 text-[#111827] backdrop-blur-md border-b border-black/[0.05]' 
+        : 'bg-[#0B0E0B]/90 text-white backdrop-blur-md border-b border-white/[0.05]');
 
   return (
     <header 
