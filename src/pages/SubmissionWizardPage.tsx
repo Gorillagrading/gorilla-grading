@@ -1521,7 +1521,7 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
                 )}
                 {(shippingMethod === 'VAULT_STORE' || shippingMethod === 'COURIER_INSURED') && LAB_RECEIVING_ADDRESS && (
                   <div className={`pt-2 ${muted}`}>
-                    <span className="font-bold">{shippingMethod === 'VAULT_STORE' ? (es ? 'Entrega tus cartas en: ' : 'Bring your cards to: ') : (es ? 'Envía tus cartas a: ' : 'Send your cards to: ')}</span>
+                    <span className="font-bold">{es ? 'Entrega o envía tus cartas a esta dirección: ' : 'Hand over or send your cards to this address: '}</span>
                     {addressLines(LAB_RECEIVING_ADDRESS).join(', ')}
                   </div>
                 )}
