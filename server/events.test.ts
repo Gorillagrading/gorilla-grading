@@ -144,7 +144,7 @@ describe('el cliente elige el evento antes de pagar', () => {
     expect((await read(await api(`/tracking/${created.code}`, null))).tracking.handover).toBeNull();
   });
 
-  it('con mensajería, mientras no haya dirección del laboratorio, se le dice que se la enviaremos', async () => {
+  it('con mensajería, el cliente ve la dirección del punto de venta a la que enviar las cartas', async () => {
     const res = await order({
       shippingMethod: 'COURIER_INSURED',
       shippingAddress: { line1: 'Calle 1', city: 'Madrid', postalCode: '28001', countryCode: 'ES' },
@@ -152,8 +152,19 @@ describe('el cliente elige el evento antes de pagar', () => {
     const { order: created } = await read(res);
     const mail = t.mails.find((m) => m.subject.includes(created.code))!;
     expect(mail.text).toContain('Siguiente paso: envía tus cartas al laboratorio');
-    expect(mail.text).toContain('Te enviaremos por correo la dirección exacta del laboratorio');
+    expect(mail.text).toContain('Travesía de la Iglesia 3 (local)');
     const mine = await read(await api(`/tracking/${created.code}`, 'cliente@example.com'));
-    expect(mine.tracking.handover).toEqual({ kind: 'ship', address: null });
+    expect(mine.tracking.handover).toMatchObject({ kind: 'ship', address: { line1: 'Travesía de la Iglesia 3 (local)', postalCode: '28860' } });
+  });
+
+  it('con punto de venta no pide dirección ni evento y muestra la misma dirección', async () => {
+    const res = await order({ shippingMethod: 'VAULT_STORE', shippingAddress: undefined, eventId: undefined });
+    expect(res.status).toBe(201);
+    const { order: created } = await read(res);
+    const mail = t.mails.find((m) => m.subject.includes(created.code))!;
+    expect(mail.text).toContain('punto de venta');
+    expect(mail.text).toContain('28860 Paracuellos de Jarama, Madrid');
+    const mine = await read(await api(`/tracking/${created.code}`, 'cliente@example.com'));
+    expect(mine.tracking.handover).toMatchObject({ kind: 'store', address: { postalCode: '28860' } });
   });
 });

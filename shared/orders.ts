@@ -6,8 +6,8 @@
 import { z } from 'zod';
 import { ShippingMethod } from './domain.js';
 
-/** Métodos de devolución que se pueden elegir hoy. VAULT_STORE existe en la base pero aún no se ofrece. */
-export const SubmittableShippingMethod = ShippingMethod.extract(['COURIER_INSURED', 'CARD_SHOW_DROPOFF']);
+/** Métodos de devolución que se pueden elegir: mensajería, evento o punto de venta (VAULT_STORE). */
+export const SubmittableShippingMethod = ShippingMethod.extract(['COURIER_INSURED', 'CARD_SHOW_DROPOFF', 'VAULT_STORE']);
 export type SubmittableShippingMethod = z.infer<typeof SubmittableShippingMethod>;
 
 export const MAX_CARDS_PER_ORDER = 500;

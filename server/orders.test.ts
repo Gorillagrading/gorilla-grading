@@ -64,7 +64,7 @@ describe('POST /quotes', () => {
   it('rechaza datos mal formados con 422', async () => {
     for (const body of [
       { items: [], shippingMethod: 'COURIER_INSURED' },
-      { items: [{ tier: 'standard' }], shippingMethod: 'VAULT_STORE' },
+      { items: [{ tier: 'standard' }], shippingMethod: 'DRONE' },
       { items: [{ tier: '' }], shippingMethod: 'COURIER_INSURED' },
       { items: Array.from({ length: 501 }, () => ({ tier: 'standard' })), shippingMethod: 'COURIER_INSURED' },
     ]) {
@@ -264,7 +264,7 @@ describe('POST /orders: lo que no se puede enviar', () => {
     ['sin nombre de quien envía', { fullName: ' ' }],
     ['identificador demasiado corto', { clientToken: 'abc' }],
     ['país inválido', { shippingAddress: { line1: 'x', city: 'y', postalCode: '1', countryCode: 'ESP' } }],
-    ['método de devolución no disponible', { shippingMethod: 'VAULT_STORE' }],
+    ['método de devolución no disponible', { shippingMethod: 'DRONE' }],
   ])('rechaza con 422: %s', async (_name, override) => {
     const cookie = await loginAs('ana@example.com');
     const res = await submit(orderBody(override), cookie);

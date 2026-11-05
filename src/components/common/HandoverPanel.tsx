@@ -20,10 +20,12 @@ export const HandoverPanel: React.FC<{
   const panel = isLight ? 'bg-white border-[#E5DEC9] shadow-sm' : 'bg-[#151A15] border-white/10';
   const accent = isLight ? 'text-[#2D9A46]' : 'text-[#48C765]';
 
-  const ship = handover.kind === 'ship';
-  const address = ship ? handover.address : null;
-  const event = !ship ? handover.event : null;
-  const Icon = ship ? Truck : MapPin;
+  const store = handover.kind === 'store';
+  // Mensajería y punto de venta comparten dirección: la diferencia es cómo llegan las cartas.
+  const ship = handover.kind === 'ship' || store;
+  const address = handover.kind === 'dropoff' ? null : handover.address;
+  const event = handover.kind === 'dropoff' ? handover.event : null;
+  const Icon = ship && !store ? Truck : MapPin;
 
   const copyText = address ? addressLines(address).join('\n') : event ? [event.name, event.venue, event.address, event.city].filter(Boolean).join('\n') : '';
   const copy = async () => {
@@ -46,7 +48,9 @@ export const HandoverPanel: React.FC<{
           <div className="flex-1 min-w-0">
             <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#A7E3B5]">{es ? 'Siguiente paso' : 'Next step'}</div>
             <h2 className="font-['Nunito',sans-serif] text-xl sm:text-2xl font-[900] leading-tight">
-              {ship
+              {store
+                ? (es ? 'Entrega tus cartas en nuestro punto de venta' : 'Bring your cards to our point of sale')
+                : ship
                 ? (es ? 'Envía tus cartas a esta dirección' : 'Send your cards to this address')
                 : (es ? 'Entrega tus cartas en este evento' : 'Hand over your cards at this event')}
             </h2>
@@ -111,7 +115,13 @@ export const HandoverPanel: React.FC<{
 
           {/* Qué hacer */}
           <ol className={`space-y-3 text-sm ${strong}`}>
-            {(ship
+            {(store
+              ? [
+                  es ? 'Lleva tus cartas protegidas, cada una en su funda.' : 'Bring your cards protected, each one in a sleeve.',
+                  es ? `Al llegar, dile al equipo tu número de pedido ${code}.` : `When you arrive, tell the team your order number ${code}.`,
+                  es ? 'Te avisaremos por correo en cuanto las recibamos.' : 'We will email you as soon as we receive them.',
+                ]
+              : ship
               ? [
                   es ? 'Protege cada carta en su funda y prepara un paquete resistente.' : 'Protect each card in a sleeve and use a sturdy package.',
                   es ? `Escribe el número de pedido ${code} en una nota dentro del paquete.` : `Write the order number ${code} on a note inside the package.`,

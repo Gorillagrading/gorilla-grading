@@ -103,8 +103,8 @@ const RESUMED: Record<Locale, Copy> = {
 };
 
 const PICKUP: Record<Locale, Copy> = {
-  es: { label: 'Listo para entrega en mano', description: 'Tus cartas están listas para recogerlas en el evento acordado.' },
-  en: { label: 'Ready for in-person handover', description: 'Your cards are ready to be collected at the agreed event.' },
+  es: { label: 'Listo para entrega en mano', description: 'Tus cartas están listas para recogerlas en mano.' },
+  en: { label: 'Ready for in-person handover', description: 'Your cards are ready to be collected in person.' },
 };
 
 /** Texto estándar que ve el cliente al entrar en un estado, en su idioma. */
@@ -116,7 +116,7 @@ export function publicCopy(
 ): Copy {
   const lang: Locale = locale === 'en' ? 'en' : 'es';
   if (from === 'ON_HOLD' && to !== 'CANCELLED') return RESUMED[lang];
-  if (to === 'SHIPPED' && shippingMethod === 'CARD_SHOW_DROPOFF') return PICKUP[lang];
+  if (to === 'SHIPPED' && (shippingMethod === 'CARD_SHOW_DROPOFF' || shippingMethod === 'VAULT_STORE')) return PICKUP[lang];
   return COPY[to]?.[lang] ?? { label: to, description: '' };
 }
 

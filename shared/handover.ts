@@ -18,15 +18,21 @@ export interface LabAddress {
 }
 
 /**
- * Dirección del laboratorio a la que los clientes envían sus paquetes.
- * PENDIENTE: la empresa tiene que confirmar la dirección exacta. Mientras sea null, el cliente
- * ve que se la enviaremos por correo, nunca una dirección inventada.
+ * Dirección a la que los clientes envían o llevan sus cartas: el punto de venta de Gorilla Grading.
+ * Es la misma para el envío por mensajería y para la entrega en el punto de venta.
  */
-export const LAB_RECEIVING_ADDRESS: LabAddress | null = null;
+export const LAB_RECEIVING_ADDRESS: LabAddress | null = {
+  recipient: 'Gorilla Grading',
+  line1: 'Travesía de la Iglesia 3 (local)',
+  postalCode: '28860',
+  city: 'Paracuellos de Jarama, Madrid',
+  country: 'España',
+};
 
 export type Handover =
   | { kind: 'ship'; address: LabAddress | null }
-  | { kind: 'dropoff'; event: PublicEventDto | null };
+  | { kind: 'dropoff'; event: PublicEventDto | null }
+  | { kind: 'store'; address: LabAddress | null };
 
 /** La dirección en líneas, tal como se escribe en el paquete. */
 export const addressLines = (a: LabAddress) =>

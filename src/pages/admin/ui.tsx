@@ -112,7 +112,7 @@ export function waiting(iso: string): string {
 export const SHIPPING_LABEL: Record<string, string> = {
   COURIER_INSURED: 'Mensajería asegurada',
   CARD_SHOW_DROPOFF: 'Entrega en evento',
-  VAULT_STORE: 'Custodia en bóveda',
+  VAULT_STORE: 'Punto de venta',
 };
 
 /** Lo que hace falta para dibujar el plazo de un pedido. */

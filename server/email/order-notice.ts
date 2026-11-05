@@ -43,6 +43,7 @@ const COPY = {
       `Hemos registrado tu pedido ${code}${count ? ` (${count} cartas)` : ''}${total ? `, total ${total}` : ''}.`,
     submittedNext: 'En cuanto recibamos tus cartas te avisaremos.',
     shipTitle: 'Siguiente paso: envía tus cartas al laboratorio',
+    storeTitle: 'Siguiente paso: entrega tus cartas en nuestro punto de venta',
     shipPending: 'Te enviaremos por correo la dirección exacta del laboratorio antes de que prepares el paquete.',
     shipCode: (code: string) => `Escribe el número de pedido ${code} en una nota dentro del paquete.`,
     dropTitle: 'Siguiente paso: entrega tus cartas en el evento',
@@ -66,6 +67,7 @@ const COPY = {
       `We registered your order ${code}${count ? ` (${count} cards)` : ''}${total ? `, total ${total}` : ''}.`,
     submittedNext: 'We will let you know as soon as we receive your cards.',
     shipTitle: 'Next step: send your cards to the laboratory',
+    storeTitle: 'Next step: bring your cards to our point of sale',
     shipPending: 'We will email you the exact laboratory address before you prepare your package.',
     shipCode: (code: string) => `Write the order number ${code} on a note inside the package.`,
     dropTitle: 'Next step: hand over your cards at the event',
@@ -176,6 +178,10 @@ function handoverBlock(data: Data, code: string, lang: Locale) {
   if (data.shippingMethod === 'COURIER_INSURED') {
     const a = LAB_RECEIVING_ADDRESS;
     return a ? box(c.shipTitle, addressLines(a), c.shipCode(code)) : box(c.shipTitle, [c.shipPending], c.shipCode(code));
+  }
+  if (data.shippingMethod === 'VAULT_STORE') {
+    const a = LAB_RECEIVING_ADDRESS;
+    return a ? box(c.storeTitle, addressLines(a), c.dropCode(code)) : box(c.storeTitle, [c.dropPending], c.dropCode(code));
   }
   return { html: '', plain: '' };
 }

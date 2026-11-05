@@ -77,6 +77,8 @@ export async function findTracking(db: Db, rawQuery: string, viewerId: string | 
       handover = { kind: 'dropoff', event: event ? toPublicEvent(event) : null };
     } else if (order.shippingMethod === 'COURIER_INSURED') {
       handover = { kind: 'ship', address: LAB_RECEIVING_ADDRESS };
+    } else if (order.shippingMethod === 'VAULT_STORE') {
+      handover = { kind: 'store', address: LAB_RECEIVING_ADDRESS };
     }
   }
 

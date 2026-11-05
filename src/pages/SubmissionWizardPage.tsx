@@ -10,7 +10,8 @@ import { formatEventWhen, type PublicEventDto } from '../../shared/events';
 import { formatEur } from '../utils/money';
 import { InlineSignIn } from '../components/common/InlineSignIn';
 import type { QuoteDto, QuoteIssue } from '../../shared/orders';
-import { CalendarDays, CheckCircle2, Clock, Check, ShieldCheck, Lock, MapPin, Truck } from 'lucide-react';
+import { addressLines, LAB_RECEIVING_ADDRESS } from '../../shared/handover';
+import { CalendarDays, CheckCircle2, Clock, Check, ShieldCheck, Lock, MapPin, Truck, Store } from 'lucide-react';
 import { 
   BlueprintCaliper, 
   BlueprintScanner, 
@@ -119,7 +120,7 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
     }
   }, [language]);
 
-  const [shippingMethod, setShippingMethod] = useState<'COURIER_INSURED' | 'CARD_SHOW_DROPOFF'>('COURIER_INSURED');
+  const [shippingMethod, setShippingMethod] = useState<'COURIER_INSURED' | 'CARD_SHOW_DROPOFF' | 'VAULT_STORE'>('COURIER_INSURED');
   // Entrega en mano: el cliente elige uno de los próximos eventos que publica la dirección.
   const [upcomingEvents, setUpcomingEvents] = useState<PublicEventDto[] | null>(null);
   const [eventsFailed, setEventsFailed] = useState(false);
@@ -1119,6 +1120,13 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
               text: es ? 'Entregas y recoges tus cartas en un evento oficial de Gorilla Grading.' : 'Hand over and collect your cards at an official Gorilla Grading event.',
               price: es ? 'Gratis' : 'Free',
             },
+            {
+              id: 'VAULT_STORE' as const,
+              icon: Store,
+              title: es ? 'Punto de venta' : 'Point of sale',
+              text: es ? 'Entregas y recoges tus cartas en nuestro punto de venta de Paracuellos de Jarama (Madrid).' : 'Drop off and collect your cards at our point of sale in Paracuellos de Jarama (Madrid).',
+              price: es ? 'Gratis' : 'Free',
+            },
           ];
           const section = (n: string, title: string, hint: string) => (
             <div className="flex items-start gap-3 mb-5">
@@ -1147,9 +1155,9 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
                   {/* 1. Cómo se devuelven */}
                   <section className={`border rounded-2xl p-5 sm:p-6 ${panel}`}>
                     {section('1', es ? 'Cómo recibes tus cartas' : 'How you get your cards back', es ? 'Elige una opción.' : 'Choose one option.')}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3" role="radiogroup">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3" role="radiogroup">
                       {methods.map((method) => {
-                        const disabled = method.id === 'COURIER_INSURED' && selectedTier?.id === 'event';
+                        const disabled = method.id !== 'CARD_SHOW_DROPOFF' && selectedTier?.id === 'event';
                         const selected = shippingMethod === method.id;
                         const Icon = method.icon;
                         return (
@@ -1201,6 +1209,20 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
                         );
                       })}
                     </div>
+
+                    {(shippingMethod === 'COURIER_INSURED' || shippingMethod === 'VAULT_STORE') && LAB_RECEIVING_ADDRESS && (
+                      <div className={`mt-5 rounded-xl border px-4 py-3.5 flex gap-3 ${isLight ? 'border-[#E5DEC9] bg-[#FBFAF6]' : 'border-white/10 bg-[#0F130F]'}`}>
+                        <MapPin className={`w-4 h-4 mt-0.5 shrink-0 ${isLight ? 'text-[#2D9A46]' : 'text-[#48C765]'}`} aria-hidden="true" />
+                        <div className="text-sm">
+                          <div className={`font-bold ${strong}`}>
+                            {shippingMethod === 'VAULT_STORE'
+                              ? (es ? 'Entrega tus cartas en nuestro punto de venta' : 'Bring your cards to our point of sale')
+                              : (es ? 'Envía tus cartas a esta dirección' : 'Send your cards to this address')}
+                          </div>
+                          <div className={muted}>{addressLines(LAB_RECEIVING_ADDRESS).join(', ')}</div>
+                        </div>
+                      </div>
+                    )}
 
                     {shippingMethod === 'CARD_SHOW_DROPOFF' && (
                       <div className="mt-6">
@@ -1422,7 +1444,9 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
           const money = (cents: number) => formatEur(cents, language);
           const returnText = shippingMethod === 'COURIER_INSURED'
             ? (es ? 'Mensajería asegurada' : 'Insured courier')
-            : (es ? 'Entrega en mano en un evento' : 'In-person at an event');
+            : shippingMethod === 'VAULT_STORE'
+              ? (es ? 'Punto de venta' : 'Point of sale')
+              : (es ? 'Entrega en mano en un evento' : 'In-person at an event');
 
           return (
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -1493,6 +1517,12 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
                 {shippingMethod === 'COURIER_INSURED' && (
                   <div className={muted}>
                     {contact.line1}, {contact.postalCode} {contact.city} ({contact.countryCode})
+                  </div>
+                )}
+                {(shippingMethod === 'VAULT_STORE' || shippingMethod === 'COURIER_INSURED') && LAB_RECEIVING_ADDRESS && (
+                  <div className={`pt-2 ${muted}`}>
+                    <span className="font-bold">{shippingMethod === 'VAULT_STORE' ? (es ? 'Entrega tus cartas en: ' : 'Bring your cards to: ') : (es ? 'Envía tus cartas a: ' : 'Send your cards to: ')}</span>
+                    {addressLines(LAB_RECEIVING_ADDRESS).join(', ')}
                   </div>
                 )}
                 {shippingMethod === 'CARD_SHOW_DROPOFF' && chosenEvent && (
