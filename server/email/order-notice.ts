@@ -2,7 +2,7 @@ import { publicBaseUrl } from '../env.js';
 import type { Mail } from './transport.js';
 import { cardTitle } from '../../shared/cards.js';
 import { formatEventWhen, type PublicEventDto } from '../../shared/events.js';
-import { LAB_RECEIVING_ADDRESS, addressLines } from '../../shared/handover.js';
+import { LAB_RECEIVING_ADDRESS, STORE_POINT_ADDRESS, addressLines } from '../../shared/handover.js';
 
 type Locale = 'es' | 'en';
 type Data = Record<string, unknown>;
@@ -180,7 +180,7 @@ function handoverBlock(data: Data, code: string, lang: Locale) {
     return a ? box(c.shipTitle, addressLines(a), c.shipCode(code)) : box(c.shipTitle, [c.shipPending], c.shipCode(code));
   }
   if (data.shippingMethod === 'VAULT_STORE') {
-    const a = LAB_RECEIVING_ADDRESS;
+    const a = STORE_POINT_ADDRESS;
     return a ? box(c.storeTitle, addressLines(a), c.dropCode(code)) : box(c.storeTitle, [c.dropPending], c.dropCode(code));
   }
   return { html: '', plain: '' };

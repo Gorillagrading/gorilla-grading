@@ -29,6 +29,9 @@ export const LAB_RECEIVING_ADDRESS: LabAddress | null = {
   country: 'España',
 };
 
+/** El punto de venta donde se entregan y recogen las cartas: misma dirección, a nombre de Asdecromos. */
+export const STORE_POINT_ADDRESS: LabAddress | null = LAB_RECEIVING_ADDRESS ? { ...LAB_RECEIVING_ADDRESS, recipient: 'Asdecromos' } : null;
+
 export type Handover =
   | { kind: 'ship'; address: LabAddress | null }
   | { kind: 'dropoff'; event: PublicEventDto | null }

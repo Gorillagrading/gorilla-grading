@@ -2,7 +2,7 @@ import { and, asc, desc, eq, ne, sql } from 'drizzle-orm';
 import { normalizeCode } from '../../shared/codes.js';
 import type { Db } from '../../db/client.js';
 import { custodyEvents, events as eventsTable, orderItems, orders, shipments } from '../../db/schema.js';
-import { LAB_RECEIVING_ADDRESS, type Handover } from '../../shared/handover.js';
+import { LAB_RECEIVING_ADDRESS, STORE_POINT_ADDRESS, type Handover } from '../../shared/handover.js';
 import { toPublicEvent } from './events.js';
 import type { OrderStatus } from '../../shared/domain.js';
 import type { TrackingDto } from '../../shared/tracking.js';
@@ -78,7 +78,7 @@ export async function findTracking(db: Db, rawQuery: string, viewerId: string | 
     } else if (order.shippingMethod === 'COURIER_INSURED') {
       handover = { kind: 'ship', address: LAB_RECEIVING_ADDRESS };
     } else if (order.shippingMethod === 'VAULT_STORE') {
-      handover = { kind: 'store', address: LAB_RECEIVING_ADDRESS };
+      handover = { kind: 'store', address: STORE_POINT_ADDRESS };
     }
   }
 

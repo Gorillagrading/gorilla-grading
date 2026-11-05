@@ -10,7 +10,7 @@ import { formatEventWhen, type PublicEventDto } from '../../shared/events';
 import { formatEur } from '../utils/money';
 import { InlineSignIn } from '../components/common/InlineSignIn';
 import type { QuoteDto, QuoteIssue } from '../../shared/orders';
-import { addressLines, LAB_RECEIVING_ADDRESS } from '../../shared/handover';
+import { addressLines, LAB_RECEIVING_ADDRESS, STORE_POINT_ADDRESS } from '../../shared/handover';
 import { CalendarDays, CheckCircle2, Clock, Check, ShieldCheck, Lock, MapPin, Truck, Store } from 'lucide-react';
 import { 
   BlueprintCaliper, 
@@ -1219,7 +1219,7 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
                               ? (es ? 'Entrega tus cartas en nuestro punto de venta' : 'Bring your cards to our point of sale')
                               : (es ? 'Envía tus cartas a esta dirección' : 'Send your cards to this address')}
                           </div>
-                          <div className={muted}>{addressLines(LAB_RECEIVING_ADDRESS).join(', ')}</div>
+                          <div className={muted}>{addressLines(shippingMethod === 'VAULT_STORE' && STORE_POINT_ADDRESS ? STORE_POINT_ADDRESS : LAB_RECEIVING_ADDRESS).join(', ')}</div>
                         </div>
                       </div>
                     )}
@@ -1411,10 +1411,19 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
                         </span>
                       </div>
                     )}
-                    {!courier && chosenEvent && (
+                    {shippingMethod === 'CARD_SHOW_DROPOFF' && chosenEvent && (
                       <div className="flex justify-between gap-3">
                         <span className={muted}>{es ? 'Evento' : 'Event'}</span>
                         <span className={`font-bold text-right ${strong}`}>{chosenEvent.name}</span>
+                      </div>
+                    )}
+                    {shippingMethod === 'VAULT_STORE' && STORE_POINT_ADDRESS && (
+                      <div className="flex justify-between gap-3">
+                        <span className={muted}>{es ? 'Punto de venta' : 'Point of sale'}</span>
+                        <span className={`font-bold text-right ${strong}`}>
+                          {STORE_POINT_ADDRESS.recipient}
+                          <span className={`block font-normal text-xs ${muted}`}>{addressLines(STORE_POINT_ADDRESS).slice(1).join(', ')}</span>
+                        </span>
                       </div>
                     )}
                     <div className={`flex justify-between items-baseline gap-3 pt-3 border-t ${isLight ? 'border-[#E5DEC9]' : 'border-white/10'}`}>
@@ -1522,7 +1531,7 @@ export const SubmissionWizardPage: React.FC<SubmissionWizardPageProps> = ({ onNa
                 {(shippingMethod === 'VAULT_STORE' || shippingMethod === 'COURIER_INSURED') && LAB_RECEIVING_ADDRESS && (
                   <div className={`pt-2 ${muted}`}>
                     <span className="font-bold">{es ? 'Entrega o envía tus cartas a esta dirección: ' : 'Hand over or send your cards to this address: '}</span>
-                    {addressLines(LAB_RECEIVING_ADDRESS).join(', ')}
+                    {addressLines(shippingMethod === 'VAULT_STORE' && STORE_POINT_ADDRESS ? STORE_POINT_ADDRESS : LAB_RECEIVING_ADDRESS).join(', ')}
                   </div>
                 )}
                 {shippingMethod === 'CARD_SHOW_DROPOFF' && chosenEvent && (
