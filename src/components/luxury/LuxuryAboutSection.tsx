@@ -94,7 +94,7 @@ export const LuxuryAboutSection: React.FC<LuxuryAboutSectionProps> = ({ onNaviga
           </div>
 
           {/* Interactive Image Display */}
-          <div className="mt-12 relative w-full aspect-[4/3] bg-[#14170F] border border-white/[0.04] overflow-hidden group">
+          <div className="mt-12 relative w-full aspect-[4/3] bg-[#3B3B3B] border border-white/[0.04] overflow-hidden group">
             <div className="absolute bottom-4 left-4 font-mono text-[10px] font-bold text-[#48C765] tracking-widest z-20 uppercase">
               {hoveredStep ? steps.find(s => s.num === hoveredStep)?.tag : steps[0].tag}
             </div>

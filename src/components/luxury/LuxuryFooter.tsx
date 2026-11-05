@@ -24,7 +24,7 @@ export const LuxuryFooter: React.FC<LuxuryFooterProps> = ({ onNavigate }) => {
       className={`relative z-20 w-full pt-12 sm:pt-16 pb-8 border-t select-none transition-colors duration-300 ${
         isLight 
           ? 'bg-[#F6F4EE] border-[#E2DDD3] text-[#1B1E1A]' 
-          : 'bg-[#111411] border-white/[0.08] text-[#EAEAEA]'
+          : 'bg-[#363636] border-white/[0.08] text-[#EAEAEA]'
       }`}
     >
       {/* Top Footer Section Content */}

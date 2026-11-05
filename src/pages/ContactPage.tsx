@@ -128,7 +128,7 @@ export const ContactPage: React.FC<ContactPageProps> = ({ onNavigate }) => {
           <div className={`lg:col-span-7 border p-8 sm:p-10 relative overflow-hidden transition-colors duration-300 ${
             isLight 
               ? 'bg-[#F2ECE1] border-black/[0.08] shadow-sm' 
-              : 'bg-[#2B302B] border-white/[0.06] shadow-2xl'
+              : 'bg-[#3B3B3B] border-white/[0.06] shadow-2xl'
           }`}>
             <div className={`absolute top-0 right-0 w-32 h-32 blur-3xl pointer-events-none ${
               isLight ? 'bg-[#15803D]/10' : 'bg-[#48C765]/5'
@@ -142,7 +142,7 @@ export const ContactPage: React.FC<ContactPageProps> = ({ onNavigate }) => {
               >
                 <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-6 ${
                   isLight 
-                    ? 'bg-[#14170F] text-white shadow-sm' 
+                    ? 'bg-[#3B3B3B] text-white shadow-sm' 
                     : 'bg-white/10 text-[#48C765] border border-white/20'
                 }`}>
                   <CheckCircle2 size={32} />
@@ -391,7 +391,7 @@ export const ContactPage: React.FC<ContactPageProps> = ({ onNavigate }) => {
             <div className={`border p-8 flex flex-col gap-6 transition-colors duration-300 ${
               isLight 
                 ? 'bg-[#F2ECE1] border-black/[0.08] shadow-sm' 
-                : 'bg-[#2B302B] border-white/[0.06]'
+                : 'bg-[#3B3B3B] border-white/[0.06]'
             }`}>
               <span className={`font-mono text-[10px] tracking-[0.2em] uppercase font-bold ${
                 isLight ? 'text-[#15803D]' : 'text-[#48C765]'
@@ -490,7 +490,7 @@ export const ContactPage: React.FC<ContactPageProps> = ({ onNavigate }) => {
             <div className={`border p-8 flex flex-col gap-5 transition-colors duration-300 ${
               isLight 
                 ? 'bg-[#F2ECE1] border-black/[0.08] shadow-sm' 
-                : 'bg-[#2B302B] border-white/[0.06]'
+                : 'bg-[#3B3B3B] border-white/[0.06]'
             }`}>
               <div className="flex items-center gap-3">
                 <div className={`w-8 h-8 rounded-none border flex items-center justify-center shrink-0 ${

@@ -117,14 +117,14 @@ export const LuxuryNavbar: React.FC<LuxuryNavbarProps> = ({ onNavigate }) => {
   const headerBgClass = isMobileMenuOpen
     ? (isLight 
         ? 'bg-white text-[#111827] border-b border-black/[0.06] shadow-sm' 
-        : 'bg-[#0B0E0B] text-white border-b border-white/10 shadow-sm')
+        : 'bg-[#383838] text-white border-b border-white/10 shadow-sm')
     : !isScrolled
     ? (isLight 
         ? 'bg-white text-[#111827] border-b border-black/[0.05] shadow-xs' 
-        : 'bg-[#0B0E0B] text-white border-b border-white/[0.05] shadow-xs')
+        : 'bg-[#383838] text-white border-b border-white/[0.05] shadow-xs')
     : (isLight 
         ? 'bg-white/90 text-[#111827] backdrop-blur-md border-b border-black/[0.05]' 
-        : 'bg-[#0B0E0B]/90 text-white backdrop-blur-md border-b border-white/[0.05]');
+        : 'bg-[#383838]/90 text-white backdrop-blur-md border-b border-white/[0.05]');
 
   return (
     <header 

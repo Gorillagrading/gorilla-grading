@@ -13,7 +13,7 @@ export const PromoCTA: React.FC<PromoCTAProps> = ({ onNavigate }) => {
 
   return (
     <section className={`w-full py-10 sm:py-12 lg:py-14 px-6 lg:px-12 relative overflow-hidden border-y transition-colors duration-300 ${
-      isLight ? 'bg-[#FAF8F5] text-[#14170F] border-black/[0.06]' : 'bg-[#2B302B] text-white border-white/[0.04]'
+      isLight ? 'bg-[#FAF8F5] text-[#3B3B3B] border-black/[0.06]' : 'bg-[#3B3B3B] text-white border-white/[0.04]'
     }`}>
       {/* Background graphic */}
       <div className="absolute inset-0 z-0 pointer-events-none opacity-20">
@@ -41,7 +41,7 @@ export const PromoCTA: React.FC<PromoCTAProps> = ({ onNavigate }) => {
         </div>
         
         <h2 className={`font-['Nunito',sans-serif] font-[900] text-3xl sm:text-4xl md:text-5xl uppercase tracking-normal leading-tight mb-5 ${
-          isLight ? '!text-[#14170F]' : 'text-white'
+          isLight ? '!text-[#3B3B3B]' : 'text-white'
         }`}>
           {language === 'es' 
             ? 'No necesitas pagar envío' 

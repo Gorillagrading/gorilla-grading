@@ -23,7 +23,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onNavigate }) => {
 
       {/* 2. Deep Dive: Precision, Philosophy & Laboratory Ethics */}
       <section className={`w-full py-20 px-6 lg:px-12 border-y relative overflow-hidden transition-colors duration-300 ${
-        isLight ? 'bg-[#E5DDCF] border-black/[0.08]' : 'bg-[#2B302B] border-white/[0.06]'
+        isLight ? 'bg-[#E5DDCF] border-black/[0.08]' : 'bg-[#3B3B3B] border-white/[0.06]'
       }`}>
         <div className="max-w-[1200px] mx-auto relative z-10">
           

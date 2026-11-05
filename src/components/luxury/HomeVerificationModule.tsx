@@ -70,7 +70,7 @@ export const HomeVerificationModule: React.FC<HomeVerificationModuleProps> = ({ 
       className={`relative w-full flex flex-col justify-center py-10 sm:py-12 lg:py-14 px-5 lg:px-10 border-b select-none transition-colors duration-300 ${
         isLight 
           ? 'bg-white/40 backdrop-blur-md text-[#111827] border-[#E5E7EB]' 
-          : 'bg-[#181B18]/40 backdrop-blur-md text-white border-white/[0.08]'
+          : 'bg-[#3B3B3B]/40 backdrop-blur-md text-white border-white/[0.08]'
       }`}
     >
       {/* Background Subtle Precision Grid */}
@@ -181,7 +181,7 @@ export const HomeVerificationModule: React.FC<HomeVerificationModuleProps> = ({ 
           <div className={`mt-8 border shadow-xl overflow-hidden transition-all duration-300 ${
             isLight 
               ? 'bg-white border-[#E5E7EB]' 
-              : 'bg-[#141714] border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.6)]'
+              : 'bg-[#3B3B3B] border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.6)]'
           }`}>
             
             <CertificateStatusBanner certificate={selectedCard} onNavigate={onNavigate} />
@@ -257,7 +257,7 @@ export const HomeVerificationModule: React.FC<HomeVerificationModuleProps> = ({ 
                   >
                     {/* FRONT FACE */}
                     <div 
-                      className="absolute inset-0 w-full h-full rounded-[18px] overflow-hidden bg-[#141714]"
+                      className="absolute inset-0 w-full h-full rounded-[18px] overflow-hidden bg-[#3B3B3B]"
                       style={{ backfaceVisibility: 'hidden' }}
                     >
                       <img 
@@ -318,7 +318,7 @@ export const HomeVerificationModule: React.FC<HomeVerificationModuleProps> = ({ 
 
                     {/* BACK FACE */}
                     <div 
-                      className="absolute inset-0 w-full h-full rounded-[18px] overflow-hidden bg-[#141714]"
+                      className="absolute inset-0 w-full h-full rounded-[18px] overflow-hidden bg-[#3B3B3B]"
                       style={{ 
                         backfaceVisibility: 'hidden',
                         transform: 'rotateY(180deg)'

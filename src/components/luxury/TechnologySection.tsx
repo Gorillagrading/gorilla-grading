@@ -99,7 +99,7 @@ export const TechnologySection: React.FC<TechnologySectionProps> = ({
       ref={sectionRef}
       id="how-it-works"
       className={`relative w-full overflow-hidden select-none transition-colors duration-300 ${
-        isLight ? 'bg-[#F1ECE5] text-[#1C201D]' : 'bg-[#14170F] text-white'
+        isLight ? 'bg-[#F1ECE5] text-[#1C201D]' : 'bg-[#3B3B3B] text-white'
       }`}
     >
       {/* Full Width Background Video - the clip is edited as a seamless loop, so native loop is enough */}
@@ -148,7 +148,7 @@ export const TechnologySection: React.FC<TechnologySectionProps> = ({
               {language === 'es' ? 'EL PROCESO' : 'SUBMISSION PROCESS'}
             </p>
             <h2 className={`font-['Nunito',sans-serif] font-[900] text-4xl sm:text-5xl lg:text-[46px] xl:text-[52px] tracking-normal uppercase leading-[1.05] mb-5 whitespace-pre-line text-center lg:text-left ${
-              isLight ? 'text-[#14170F]' : 'text-white'
+              isLight ? 'text-[#3B3B3B]' : 'text-white'
             }`}>
               {language === 'es' ? 'CÓMO FUNCIONA' : 'HOW IT WORKS'}
             </h2>
@@ -156,7 +156,7 @@ export const TechnologySection: React.FC<TechnologySectionProps> = ({
               isLight ? 'text-[#2B322C]' : 'text-[#C8D2C5]'
             }`}>
               <p className={`font-bold mb-2 tracking-wide uppercase ${
-                isLight ? 'text-[#14170F]' : 'text-white'
+                isLight ? 'text-[#3B3B3B]' : 'text-white'
               }`}>
                 {language === 'es' ? 'SIMPLE | SEGURO | TRANSPARENTE' : 'SIMPLE | SECURE | TRANSPARENT'}
               </p>

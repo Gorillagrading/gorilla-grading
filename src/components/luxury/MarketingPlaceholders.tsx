@@ -73,7 +73,7 @@ export const VerifiedAuditsSection: React.FC = () => {
               className={`p-7 border flex flex-col justify-between min-h-[220px] transition-all duration-300 ${
                 isLight 
                   ? 'bg-white/80 border-gray-200 shadow-sm hover:border-gray-400' 
-                  : 'bg-[#141814]/70 border-white/10 hover:border-white/20'
+                  : 'bg-[#3B3B3B]/70 border-white/10 hover:border-white/20'
               }`}
             >
               <div>
@@ -197,7 +197,7 @@ export const LiveLabActivitySection: React.FC = () => {
       ref={ref}
       id="community-reels"
       className={`w-full py-8 sm:py-10 px-6 lg:px-12 border-b select-none transition-colors duration-300 ${
-        isLight ? 'bg-white/60 backdrop-blur-md border-[#E5E7EB]' : 'bg-[#141714]/60 backdrop-blur-md border-white/[0.08]'
+        isLight ? 'bg-white/60 backdrop-blur-md border-[#E5E7EB]' : 'bg-[#3B3B3B]/60 backdrop-blur-md border-white/[0.08]'
       }`}
     >
       <div className="max-w-[1100px] mx-auto">
@@ -247,7 +247,7 @@ export const LiveLabActivitySection: React.FC = () => {
                   className={`group flex flex-col h-full border transition-colors duration-300 ${
                     isLight
                       ? 'bg-white border-gray-200 hover:border-[#15803D]/60 shadow-sm'
-                      : 'bg-[#141714] border-white/10 hover:border-[#48C765]/60'
+                      : 'bg-[#3B3B3B] border-white/10 hover:border-[#48C765]/60'
                   }`}
                   aria-label={`${es ? 'Ver en Instagram' : 'View on Instagram'}: ${post.caption?.slice(0, 80) ?? formatDate(post.postedAt)}`}
                 >

@@ -42,7 +42,7 @@ export const NewsletterSection: React.FC = () => {
       <div className={`w-full max-w-[800px] border p-8 md:p-12 relative overflow-hidden flex flex-col items-center text-center transition-all ${
         isLight 
           ? 'bg-white/80 backdrop-blur-md border-[#DCD5C8] shadow-xl' 
-          : 'bg-[#181B18]/80 backdrop-blur-md border-white/10 shadow-2xl'
+          : 'bg-[#3B3B3B]/80 backdrop-blur-md border-white/10 shadow-2xl'
       }`}>
         
         {/* Background Decorative Accents */}
@@ -69,7 +69,7 @@ export const NewsletterSection: React.FC = () => {
           </p>
 
           {subscribed ? (
-            <div role="status" className={`w-full max-w-[420px] py-4 px-5 border-2 border-[#16A34A] text-left ${isLight ? 'bg-white' : 'bg-[#121612]'}`}>
+            <div role="status" className={`w-full max-w-[420px] py-4 px-5 border-2 border-[#16A34A] text-left ${isLight ? 'bg-white' : 'bg-[#3B3B3B]'}`}>
               <div className="text-[#16A34A] text-xs font-bold uppercase tracking-wider">{es ? 'Revisa tu correo' : 'Check your email'}</div>
               <p className={`text-sm mt-1 ${isLight ? 'text-[#111827]' : 'text-white'}`}>
                 {es
@@ -88,7 +88,7 @@ export const NewsletterSection: React.FC = () => {
                 className={`flex-1 px-4 py-3.5 text-sm focus:outline-none transition-colors border ${
                   isLight 
                     ? 'bg-white border-[#D0C9BC] text-[#111827] placeholder:text-[#8C948B] focus:border-[#16A34A]' 
-                    : 'bg-[#121612] border-white/10 text-white placeholder:text-[#6B7268] focus:border-[#16A34A]'
+                    : 'bg-[#3B3B3B] border-white/10 text-white placeholder:text-[#6B7268] focus:border-[#16A34A]'
                 }`}
               />
               <button 

@@ -54,7 +54,7 @@ const PillarCard: React.FC<{ p: Pillar; isLight: boolean }> = ({ p, isLight }) =
       >
         {/* Macro Photographic Image Area */}
         <div className={`w-full h-48 sm:h-52 relative border-b overflow-hidden ${
-          isLight ? 'border-black/5 bg-[#E2DCD1]' : 'border-white/[0.06] bg-[#14170F]'
+          isLight ? 'border-black/5 bg-[#E2DCD1]' : 'border-white/[0.06] bg-[#3B3B3B]'
         }`}>
           <img
             src={p.imgSrc}
@@ -66,7 +66,7 @@ const PillarCard: React.FC<{ p: Pillar; isLight: boolean }> = ({ p, isLight }) =
         {/* Editorial Pillar Body Content - Pure Informative */}
         <div className="p-6 flex flex-col flex-1">
           <h3 className={`font-['Nunito',sans-serif] font-[900] text-lg uppercase tracking-tight mb-2.5 ${
-            isLight ? 'text-[#14170F]' : 'text-white'
+            isLight ? 'text-[#3B3B3B]' : 'text-white'
           }`}>
             {p.title}
           </h3>
@@ -122,8 +122,8 @@ export const CardAnalysisPillars: React.FC<CardAnalysisPillarsProps> = () => {
       id="pillars" 
       className={`w-full py-16 sm:py-20 px-6 lg:px-12 border-b select-none transition-colors duration-300 ${
         isLight 
-          ? 'bg-[#E5DFD5] text-[#14170F] border-black/10' 
-          : 'bg-[#14170F] text-white border-white/[0.06]'
+          ? 'bg-[#E5DFD5] text-[#3B3B3B] border-black/10' 
+          : 'bg-[#3B3B3B] text-white border-white/[0.06]'
       }`}
     >
       <div className="max-w-[1400px] mx-auto">

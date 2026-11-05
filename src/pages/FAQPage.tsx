@@ -288,7 +288,7 @@ export const FAQPage: React.FC<FAQPageProps> = ({ onNavigate }) => {
         <div className="flex flex-col gap-4 mb-16">
           {filteredFaqs.length === 0 ? (
             <div className={`p-12 border text-center flex flex-col items-center ${
-              isLight ? 'bg-[#F2ECE1] border-black/[0.08]' : 'bg-[#2B302B] border-white/10'
+              isLight ? 'bg-[#F2ECE1] border-black/[0.08]' : 'bg-[#3B3B3B] border-white/10'
             }`}>
               <p className={`font-sans text-sm mb-4 ${isLight ? 'text-[#4A5048]' : 'text-[#A4ACA1]'}`}>
                 {language === 'es' 
@@ -315,7 +315,7 @@ export const FAQPage: React.FC<FAQPageProps> = ({ onNavigate }) => {
                   className={`border transition-all ${
                     isLight 
                       ? 'bg-[#F2ECE1] border-black/[0.08] hover:border-black/20 shadow-sm' 
-                      : 'bg-[#2B302B] border-white/[0.06] hover:border-white/15'
+                      : 'bg-[#3B3B3B] border-white/[0.06] hover:border-white/15'
                   }`}
                 >
                   <button
