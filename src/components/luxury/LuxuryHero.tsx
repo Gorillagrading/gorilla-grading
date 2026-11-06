@@ -320,7 +320,7 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
         {videoReady && (
         <video
           ref={ambientRef}
-          src="/videos/gorilla_hero_loop.mp4"
+          src="/videos/hero-web-1080p.webm"
           aria-hidden="true"
           autoPlay
           muted
@@ -340,7 +340,7 @@ export const LuxuryHero: React.FC<LuxuryHeroProps> = ({ onNavigate, onOpenTechMo
           <div className="relative w-full h-full lg:w-auto lg:aspect-video lg:max-w-full shrink-0 lg:[mask-image:linear-gradient(to_right,transparent,#000_22%)] lg:[-webkit-mask-image:linear-gradient(to_right,transparent,#000_22%)]">
             <video
               ref={videoRef}
-              src="/videos/gorilla_hero_loop.mp4"
+              src="/videos/hero-web-1080p.webm"
               aria-label="Gorilla Grading hero video"
               autoPlay
               muted
