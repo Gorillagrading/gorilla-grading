@@ -104,7 +104,7 @@ export const FAQTurnaroundPage: React.FC<FAQTurnaroundPageProps> = ({ onNavigate
             }`}
           >
             <img 
-              src="/images/step_2_cleanroom.jpg" 
+              src="/images/step_2_cleanroom.webp" 
               alt="Tiempos de respuesta"
               className={`absolute inset-0 w-full h-full object-cover ${
                 isLight ? 'opacity-90' : 'mix-blend-luminosity opacity-80'

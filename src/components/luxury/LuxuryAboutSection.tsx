@@ -15,28 +15,28 @@ export const LuxuryAboutSection: React.FC<LuxuryAboutSectionProps> = ({ onNaviga
       title: t('how.step1.title'),
       sub: t('how.step1.sub'),
       tag: language === 'es' ? 'CÁMARA ACORAZADA' : 'SECURE VAULT',
-      img: '/images/step_1_vault.jpg'
+      img: '/images/step_1_vault.webp'
     },
     {
       num: t('how.step2.num'),
       title: t('how.step2.title'),
       sub: t('how.step2.sub'),
       tag: language === 'es' ? 'SALA LIMPIA ISO' : 'ISO CLEANROOM',
-      img: '/images/step_2_cleanroom.jpg'
+      img: '/images/step_2_cleanroom.webp'
     },
     {
       num: t('how.step3.num'),
       title: t('how.step3.title'),
       sub: t('how.step3.sub'),
       tag: language === 'es' ? 'ESPECTROMETRÍA' : 'SPECTROMETRY',
-      img: '/images/step_3_spectrometry.jpg'
+      img: '/images/step_3_spectrometry.webp'
     },
     {
       num: t('how.step4.num'),
       title: t('how.step4.title'),
       sub: t('how.step4.sub'),
       tag: language === 'es' ? 'CALIBRE LÁSER' : 'LASER CALIPER',
-      img: '/images/macro_understand.jpg'
+      img: '/images/macro_understand.webp'
     },
     {
       num: t('how.step5.num'),
@@ -50,7 +50,7 @@ export const LuxuryAboutSection: React.FC<LuxuryAboutSectionProps> = ({ onNaviga
       title: t('how.step6.title'),
       sub: t('how.step6.sub'),
       tag: language === 'es' ? 'FUSIÓN 35 KHZ' : '35 KHZ FUSION',
-      img: '/images/macro_preserve.jpg'
+      img: '/images/macro_preserve.webp'
     }
   ];
 

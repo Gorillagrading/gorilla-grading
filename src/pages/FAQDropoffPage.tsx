@@ -116,7 +116,7 @@ export const FAQDropoffPage: React.FC<FAQDropoffPageProps> = ({ onNavigate }) =>
             }`}
           >
             <img 
-              src="/images/step_1_vault.jpg" 
+              src="/images/step_1_vault.webp" 
               alt="Dropoff en persona"
               className={`absolute inset-0 w-full h-full object-cover ${
                 isLight ? 'opacity-90' : 'mix-blend-luminosity opacity-80'
