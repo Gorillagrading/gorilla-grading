@@ -9,7 +9,7 @@ export const NEWSLETTER_CONSENT_VERSION = '2026-10-30';
 
 export const NewsletterBody = z.object({
   email: z.string().trim().toLowerCase().email().max(254),
-  locale: z.enum(['es', 'en']).default('es'),
+  locale: z.enum(['es', 'en']).default('en'),
   /** Campo trampa, invisible para las personas: si llega con texto, lo ha rellenado un robot. */
   website: z.string().max(200).optional(),
 });

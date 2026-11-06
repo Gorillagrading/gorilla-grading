@@ -24,7 +24,7 @@ export function authRoutes(deps: Deps) {
   routes.post('/auth/otp', async (c) => {
     const { email, locale } = await parseJson(c, RequestCodeBody);
     const { code } = await issueLoginCode(deps.getDb(), { email, ip: clientIp(c) });
-    await deps.sendLoginCode(email, code, locale ?? 'es');
+    await deps.sendLoginCode(email, code, locale ?? 'en');
     return c.json({ status: 'sent', expiresInSeconds: CODE_TTL_MS / 1000 }, 202);
   });
 

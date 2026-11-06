@@ -90,7 +90,7 @@ describe('newsletter', () => {
     await post('/newsletter', { email: 'luis@example.com' });
 
     const stats = await read(await t.app.request('/api/v1/admin/newsletter', { headers: { cookie } }));
-    expect(stats).toMatchObject({ confirmed: 1, pending: 1, unsubscribed: 0, subscribers: [{ email: 'ana@example.com', locale: 'es' }] });
+    expect(stats).toMatchObject({ confirmed: 1, pending: 1, unsubscribed: 0, subscribers: [{ email: 'ana@example.com', locale: 'en' }] });
     expect((await t.app.request('/api/v1/admin/newsletter')).status).toBe(401);
   });
 });

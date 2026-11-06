@@ -58,7 +58,7 @@ export const CreateOrderBody = z
     fullName: text(120).min(1),
     /** Obligatoria si la devolución es por mensajería. */
     shippingAddress: ShippingAddressInput.optional(),
-    locale: z.enum(['es', 'en']).default('es'),
+    locale: z.enum(['es', 'en']).default('en'),
     /** Identificador que genera el navegador una vez por pedido: reenviarlo no crea un pedido nuevo. */
     clientToken: z.string().trim().min(8).max(64),
     acceptedTerms: z.literal(true),
