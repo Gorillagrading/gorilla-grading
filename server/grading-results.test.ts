@@ -328,8 +328,17 @@ describe('salida del laboratorio', () => {
     await grade(code, 'admin@lab.test', { ...scores(8.5, 8.5, 8.5, 8.5), submit: true }, 2);
     expect((await move(code, 'qa@lab.test', 'SHIPPED', 'QUALITY_ASSURANCE')).status).toBe(409);
 
+    const inQueue = async (status: string) =>
+      (await read(await api(`/admin/orders?status=${status}`, 'qa@lab.test'))).orders.map((o: any) => o.code);
+    expect(await inQueue('lab')).toContain(code);
+    expect(await inQueue('ready')).not.toContain(code);
+
     // Sin número de seguimiento registrado, la salida se aprueba igual.
     await action(code, 'qa@lab.test', 'approve', undefined, 2);
+    // Con todas las cartas confirmadas pasa de «En el laboratorio» a «Listos para salir».
+    expect(await inQueue('ready')).toContain(code);
+    expect(await inQueue('lab')).not.toContain(code);
+    expect((await read(await api('/admin/orders', 'qa@lab.test'))).readyCount).toBe(1);
     expect(await shipOption()).toMatchObject({ allowed: true });
     expect((await move(code, 'qa@lab.test', 'SHIPPED', 'QUALITY_ASSURANCE')).status).toBe(200);
   });

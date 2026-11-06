@@ -29,9 +29,9 @@ export const SECTIONS_BY_ROLE: Record<StaffRole, readonly TodaySectionKey[]> = {
 };
 
 /** Secciones de pedidos enteros que se pueden abrir filtradas en la lista de pedidos. */
-export const SECTION_STATUS: Partial<Record<TodaySectionKey, OrderStatus>> = {
+export const SECTION_STATUS: Partial<Record<TodaySectionKey, OrderStatus | 'ready'>> = {
   toReceive: 'SUBMITTED',
-  readyToShip: 'QUALITY_ASSURANCE',
+  readyToShip: 'ready',
   toDeliver: 'SHIPPED',
   onHold: 'ON_HOLD',
 };

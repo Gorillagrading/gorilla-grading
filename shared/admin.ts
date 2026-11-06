@@ -13,9 +13,18 @@ export const isStaffRole = (role: string): role is StaffRole => (STAFF_ROLES as 
 /** Adónde va cada cuenta al iniciar sesión: el equipo a su panel, el cliente a su cuenta. */
 export const homePathFor = (user: { role: string }) => (isStaffRole(user.role) ? '/admin' : '/account');
 
+/**
+ * Grupos de la cola de pedidos, pensados para el trabajo del equipo (no para las fases que ve el cliente):
+ * "active" todo lo que sigue en curso; "lab" lo que está en el laboratorio y aún no se puede enviar; "ready" lo que
+ * está en control de calidad con todas sus cartas confirmadas; "closed" lo entregado, cancelado o devuelto.
+ */
+export const QUEUE_GROUPS = ['active', 'lab', 'ready', 'closed'] as const;
+/** Estados en los que el pedido está dentro del laboratorio. */
+export const LAB_STATUSES = ['PACKAGE_RECEIVED', 'PRE_INSPECTION', 'OPTICAL_GRADING', 'ENCAPSULATION', 'QUALITY_ASSURANCE'] as const;
+
 export const AdminOrdersQuery = z.object({
-  /** Un estado, o "active" para todos los pedidos que siguen en curso. */
-  status: z.union([OrderStatus, z.literal('active')]).optional(),
+  /** Un estado concreto o uno de los grupos de QUEUE_GROUPS. */
+  status: z.union([OrderStatus, z.enum(QUEUE_GROUPS)]).optional(),
   q: z.string().trim().max(100).optional(),
   sort: z.enum(['oldest', 'newest']).default('oldest'),
   page: z.coerce.number().int().min(1).default(1),
@@ -71,6 +80,8 @@ export interface AdminOrderList {
   orders: AdminOrderRow[];
   /** Pedidos por estado, para las pestañas del panel. No dependen del filtro actual. */
   counts: Partial<Record<OrderStatus, number>>;
+  /** Pedidos listos para aprobar la salida (control de calidad con todas las cartas confirmadas). */
+  readyCount: number;
   total: number;
   page: number;
   pageSize: number;

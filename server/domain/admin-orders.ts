@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, ilike, inArray, ne, or, type SQL } from 'drizzle-orm';
+import { and, asc, count, desc, eq, ilike, inArray, ne, not, or, sql, type SQL } from 'drizzle-orm';
 import type { Db } from '../../db/client.js';
 import {
   auditLogs, custodyEvents, emailOutbox, orderItems, orders, serviceTiers, shipments, users,
@@ -6,6 +6,7 @@ import {
 import type {
   AdminOrderDetail, AdminOrderList, AdminOrdersQuery, AdminTransitionOption, ShipmentBody, TransitionBody,
 } from '../../shared/admin.js';
+import { LAB_STATUSES } from '../../shared/admin.js';
 import type { UserDto } from '../../shared/auth.js';
 import { ACTIVE_STATUSES, FINISHED_STATUSES } from '../../shared/domain.js';
 import { hashIp } from '../auth/crypto.js';
@@ -28,9 +29,23 @@ const likePattern = (q: string) => `%${q.replace(/[\\%_]/g, (c) => `\\${c}`)}%`;
 // Listado
 // ---------------------------------------------------------------------------
 
+/** En control de calidad y con todas sus cartas confirmadas: solo falta aprobar la salida. */
+const readyToShip = () =>
+  and(
+    eq(orders.status, 'QUALITY_ASSURANCE'),
+    sql`exists (select 1 from order_items oi where oi.order_id = ${orders.id})`,
+    sql`not exists (
+      select 1 from order_items oi where oi.order_id = ${orders.id}
+      and not exists (select 1 from grading_results gr where gr.order_item_id = oi.id and gr.status = 'approved')
+    )`,
+  )!;
+
 export async function listAdminOrders(db: Db, query: AdminOrdersQuery): Promise<AdminOrderList> {
   const conditions: SQL[] = [ne(orders.status, 'DRAFT')];
   if (query.status === 'active') conditions.push(inArray(orders.status, ACTIVE_STATUSES));
+  else if (query.status === 'lab') conditions.push(and(inArray(orders.status, [...LAB_STATUSES]), not(readyToShip()))!);
+  else if (query.status === 'ready') conditions.push(readyToShip());
+  else if (query.status === 'closed') conditions.push(inArray(orders.status, FINISHED_STATUSES));
   else if (query.status) conditions.push(eq(orders.status, query.status));
   if (query.q) {
     const pattern = likePattern(query.q);
@@ -39,7 +54,7 @@ export async function listAdminOrders(db: Db, query: AdminOrdersQuery): Promise<
   const where = and(...conditions);
   const order = query.sort === 'newest' ? desc(orders.submittedAt) : asc(orders.submittedAt);
 
-  const [rows, [{ total }], statusCounts] = await Promise.all([
+  const [rows, [{ total }], statusCounts, [{ ready }]] = await Promise.all([
     db
       .select({ order: orders, customer: users })
       .from(orders)
@@ -50,6 +65,7 @@ export async function listAdminOrders(db: Db, query: AdminOrdersQuery): Promise<
       .offset((query.page - 1) * ADMIN_PAGE_SIZE),
     db.select({ total: count() }).from(orders).innerJoin(users, eq(users.id, orders.userId)).where(where),
     db.select({ status: orders.status, n: count() }).from(orders).where(ne(orders.status, 'DRAFT')).groupBy(orders.status),
+    db.select({ ready: count() }).from(orders).where(readyToShip()),
   ]);
 
   const ids = rows.map((r) => r.order.id);
@@ -76,6 +92,7 @@ export async function listAdminOrders(db: Db, query: AdminOrdersQuery): Promise<
       dueDate: o.estimatedCompletionAt ?? null,
     })),
     counts: Object.fromEntries(statusCounts.map((c) => [c.status, c.n])),
+    readyCount: ready,
     total,
     page: query.page,
     pageSize: ADMIN_PAGE_SIZE,

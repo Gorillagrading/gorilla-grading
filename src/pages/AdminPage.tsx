@@ -3,13 +3,13 @@ import '@fontsource-variable/archivo/wght.css';
 import '@fontsource/jetbrains-mono/latin-400.css';
 import '@fontsource/jetbrains-mono/latin-600.css';
 import { CalendarDays, ChevronDown, ExternalLink, Inbox, LineChart, LogOut, Menu, Package, Search, Users, X, type LucideIcon } from 'lucide-react';
-import { STAFF_ROLES } from '../../shared/admin';
+import { LAB_STATUSES, STAFF_ROLES } from '../../shared/admin';
 import { useAuth } from '../context/AuthContext';
 import { fetchAdminOrders, fetchStaffToday } from '../api/admin';
-import { ACTIVE_STATUSES, type OrderStatus } from '../../shared/domain';
+import { ACTIVE_STATUSES, FINISHED_STATUSES, type OrderStatus } from '../../shared/domain';
 import { BusinessDashboard, CertificateHistorySection } from './admin/BusinessDashboard';
 import { OrderDetail } from './admin/OrderDetail';
-import { OrderQueue, QUEUE_STATUSES, queueFilterName } from './admin/OrderQueue';
+import { OrderQueue, QUEUE_FILTERS, queueFilterName } from './admin/OrderQueue';
 import { TodayPanel } from './admin/TodayPanel';
 import { EventsCalendar } from './admin/EventsCalendar';
 import { TeamPanel } from './admin/TeamPanel';
@@ -126,7 +126,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ path, search: query = '', 
   const [menuOpen, setMenuOpen] = useState(false);
   const [search, setSearch] = useState('');
   /** Contadores del carril: tareas de hoy de quien entra y pedidos activos del laboratorio. */
-  const [counts, setCounts] = useState<{ today?: number; active?: number; byStatus?: Partial<Record<OrderStatus, number>> }>({});
+  const [counts, setCounts] = useState<{ today?: number; active?: number; ready?: number; byStatus?: Partial<Record<OrderStatus, number>> }>({});
   /** Si el submenú de Pedidos está desplegado. Se recuerda en este navegador. */
   const [ordersOpen, setOrdersOpen] = useState(() => {
     try {
@@ -154,7 +154,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ path, search: query = '', 
         .then((d) => !cancelled && setCounts((c) => ({ ...c, today: d.sections.reduce((n, x) => n + x.count, 0) })))
         .catch(() => undefined);
       fetchAdminOrders({ status: 'active', sort: 'oldest', page: 1 })
-        .then((l) => !cancelled && setCounts((c) => ({ ...c, byStatus: l.counts, active: ACTIVE_STATUSES.reduce((n, st) => n + (l.counts[st] ?? 0), 0) })))
+        .then((l) => !cancelled && setCounts((c) => ({ ...c, byStatus: l.counts, ready: l.readyCount, active: ACTIVE_STATUSES.reduce((n, st) => n + (l.counts[st] ?? 0), 0) })))
         .catch(() => undefined);
     };
     load();
@@ -226,15 +226,24 @@ export const AdminPage: React.FC<AdminPageProps> = ({ path, search: query = '', 
   type NavItem = { to: string; label: string; icon?: LucideIcon; on: boolean; count?: number; sub?: boolean; children?: NavItem[] };
   const queueStatus = section === 'queue' ? initialStatus : null;
   const byStatus = counts.byStatus;
-  const orderFilters: NavItem[] = ['active', 'all', ...QUEUE_STATUSES].map((key) => ({
+  const sum = (sts: readonly OrderStatus[]) => sts.reduce((n, st) => n + (byStatus?.[st] ?? 0), 0);
+  const filterCount = (key: string): number | undefined => {
+    if (!byStatus) return undefined;
+    switch (key) {
+      case 'active': return counts.active;
+      case 'lab': return sum(LAB_STATUSES) - (counts.ready ?? 0);
+      case 'ready': return counts.ready ?? 0;
+      case 'closed': return sum(FINISHED_STATUSES);
+      case 'all': return Object.values(byStatus).reduce((a, b) => a + (b ?? 0), 0);
+      default: return byStatus[key as OrderStatus] ?? 0;
+    }
+  };
+  const orderFilters: NavItem[] = QUEUE_FILTERS.map((key) => ({
     to: `${QUEUE_PATH}?status=${key}`,
     label: queueFilterName(key),
     on: queueStatus === key,
     sub: true,
-    count: !byStatus ? undefined
-      : key === 'active' ? counts.active
-      : key === 'all' ? Object.values(byStatus).reduce((a, b) => a + (b ?? 0), 0)
-      : byStatus[key as OrderStatus] ?? 0,
+    count: filterCount(key),
   }));
   const groups: { name: string; items: NavItem[] }[] = [
     {

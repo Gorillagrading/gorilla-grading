@@ -5,15 +5,25 @@ import type { AdminOrderList } from '../../../shared/admin';
 import { adminErrorMessage, fetchAdminOrders } from '../../api/admin';
 import { PlazoRuler, SHIPPING_LABEL, StatusPill, groupCode, formatDate, money, statusName, usePanelTheme, waiting } from './ui';
 
-/** Fases de la cola, en el orden del recorrido del pedido. Se eligen en el menú lateral, bajo «Pedidos». */
-export const QUEUE_STATUSES: OrderStatus[] = [
-  'SUBMITTED', 'PACKAGE_RECEIVED', 'PRE_INSPECTION', 'OPTICAL_GRADING', 'ENCAPSULATION',
-  'QUALITY_ASSURANCE', 'SHIPPED', 'ON_HOLD', 'DELIVERED', 'CANCELLED',
-];
+/**
+ * Filtros de la cola en el menú lateral, bajo «Pedidos», en el orden del trabajo del equipo. Las fases que ve el
+ * cliente (pre-inspección, encapsulado…) van juntas en «En el laboratorio»; cada pedido sigue mostrando la suya.
+ */
+export const QUEUE_FILTERS = ['active', 'SUBMITTED', 'lab', 'ready', 'SHIPPED', 'ON_HOLD', 'closed', 'all'] as const;
 
-/** Nombre de un filtro de la cola: «Activos», «Todos» o el nombre de la fase. */
-export const queueFilterName = (key: string) =>
-  key === 'active' ? 'Activos' : key === 'all' ? 'Todos' : statusName(key as OrderStatus);
+const FILTER_NAME: Record<string, string> = {
+  active: 'Activos',
+  SUBMITTED: 'Por recibir',
+  lab: 'En el laboratorio',
+  ready: 'Listos para salir',
+  SHIPPED: 'Enviados',
+  ON_HOLD: 'En pausa',
+  closed: 'Cerrados',
+  all: 'Todos',
+};
+
+/** Nombre de un filtro de la cola; si llega una fase concreta (desde la línea del laboratorio), su nombre. */
+export const queueFilterName = (key: string) => FILTER_NAME[key] ?? statusName(key as OrderStatus);
 
 export const OrderQueue: React.FC<{ initialStatus?: string; initialQuery?: string; onOpen: (code: string) => void }> = ({
   initialStatus = 'active',
