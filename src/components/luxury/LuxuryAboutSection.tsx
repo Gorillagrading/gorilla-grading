@@ -43,14 +43,14 @@ export const LuxuryAboutSection: React.FC<LuxuryAboutSectionProps> = ({ onNaviga
       title: t('how.step5.title'),
       sub: t('how.step5.sub'),
       tag: language === 'es' ? 'CAMPO OSCURO 40X' : '40X DARKFIELD',
-      img: '/images/macro_authenticate.jpg'
+      img: '/images/macro_authenticate.webp'
     },
     {
       num: t('how.step6.num'),
       title: t('how.step6.title'),
       sub: t('how.step6.sub'),
       tag: language === 'es' ? 'FUSIÓN 35 KHZ' : '35 KHZ FUSION',
-      img: '/images/macro_preserve.webp'
+      img: '/images/06encap.webp'
     }
   ];
 

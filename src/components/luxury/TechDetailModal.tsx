@@ -474,7 +474,7 @@ export const TechDetailModal: React.FC<TechDetailModalProps> = ({ isOpen, onClos
                   <div className="my-2 sm:my-4 relative flex flex-col items-center justify-center">
                     <div className="relative w-full max-w-[340px] aspect-[4/3] border border-current/25 shadow-xl overflow-hidden bg-black">
                       <img 
-                        src="/images/macro_authenticate.jpg" 
+                        src="/images/macro_authenticate.webp" 
                         alt="Detalle forense de roseta litográfica"
                         className={`w-full h-full object-cover transition-transform duration-500 ${
                           loupeZoom ? 'scale-115' : 'scale-100'
