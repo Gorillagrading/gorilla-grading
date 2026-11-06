@@ -121,7 +121,7 @@ export const FAQPreparePage: React.FC<FAQPreparePageProps> = ({ onNavigate }) =>
           >
             
             <img 
-              src="/images/preservar.png" 
+              src="/images/preservar.webp" 
               alt="Preparación de cartas"
               className={`absolute inset-0 w-full h-full object-cover ${
                 isLight ? 'opacity-90' : 'mix-blend-luminosity opacity-80'

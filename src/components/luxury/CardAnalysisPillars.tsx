@@ -91,28 +91,28 @@ export const CardAnalysisPillars: React.FC<CardAnalysisPillarsProps> = () => {
       id: 'preserve',
       title: t('ref.pillar1.title'),
       desc: t('ref.pillar1.desc'),
-      imgSrc: '/images/preservar.png?v=7',
+      imgSrc: '/images/preservar.webp?v=8',
       imgAlt: 'Preserve - Hermetic acrylic slab protection'
     },
     {
       id: 'authenticate',
       title: t('ref.pillar2.title'),
       desc: t('ref.pillar2.desc'),
-      imgSrc: '/images/autenticar.png?v=7',
+      imgSrc: '/images/autenticar.webp?v=8',
       imgAlt: 'Authenticate - Advanced analysis against fakes'
     },
     {
       id: 'understand',
       title: t('ref.pillar3.title'),
       desc: t('ref.pillar3.desc'),
-      imgSrc: '/images/comprender.png?v=7',
+      imgSrc: '/images/comprender.webp?v=8',
       imgAlt: 'Understand - Clear explanation for every grade'
     },
     {
       id: 'belong',
       title: t('ref.pillar4.title'),
       desc: t('ref.pillar4.desc'),
-      imgSrc: '/images/pertenecer.png?v=7',
+      imgSrc: '/images/pertenecer.webp?v=8',
       imgAlt: 'Belong - A growing community across Europe'
     }
   ];
