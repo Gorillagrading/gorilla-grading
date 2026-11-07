@@ -58,18 +58,23 @@
 
   /* Custom Minimalist Scrollbar */
   ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+    width: 14px;
+    height: 14px;
   }
   ::-webkit-scrollbar-track {
-    background: #14170F;
+    background: #1B1F1A;
   }
   ::-webkit-scrollbar-thumb {
-    background: #1D241E;
+    background: #6B756C;
     border-radius: 9999px;
+    border: 3px solid #1B1F1A;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #2D3A2F;
+    background: #61B663;
+  }
+  /* Firefox no usa los estilos de arriba */
+  @supports not selector(::-webkit-scrollbar) {
+    html { scrollbar-color: #6B756C #1B1F1A; scrollbar-width: auto; }
   }
 }
 
@@ -166,13 +171,17 @@
 }
 
 .light-theme ::-webkit-scrollbar-track {
-  background: #F3EFE6;
+  background: #E4DFD2;
 }
 .light-theme ::-webkit-scrollbar-thumb {
-  background: #D5CEBF;
+  background: #8F8977;
+  border-color: #E4DFD2;
 }
 .light-theme ::-webkit-scrollbar-thumb:hover {
-  background: #BCB4A3;
+  background: #2F8F3E;
+}
+@supports not selector(::-webkit-scrollbar) {
+  .light-theme { scrollbar-color: #8F8977 #E4DFD2; }
 }
 
 /* ── Cinematic Glow (light version) ── */
