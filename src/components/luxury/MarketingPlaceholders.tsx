@@ -48,7 +48,7 @@ export const VerifiedAuditsSection: React.FC = () => {
             <span className={`font-mono text-[10px] tracking-[0.25em] uppercase font-bold ${
               isLight ? 'text-gray-900' : 'text-white'
             }`}>
-              [ AUDITORÍAS · EXPERTOS INDEPENDIENTES ]
+              [ {language === 'es' ? 'AUDITORÍAS · EXPERTOS INDEPENDIENTES' : 'AUDITS · INDEPENDENT EXPERTS'} ]
             </span>
           </div>
 

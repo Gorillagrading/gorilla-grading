@@ -9,7 +9,6 @@ import { TechDetailModal } from '../components/luxury/TechDetailModal';
 import { VerifiedAuditsSection, LiveLabActivitySection } from '../components/luxury/MarketingPlaceholders';
 import { PromoCTA } from '../components/luxury/PromoCTA';
 import { FAQSection } from '../components/luxury/FAQSection';
-import { NewsletterSection } from '../components/luxury/NewsletterSection';
 
 interface LuxuryReferenceHomePageProps {
   onNavigate: (path: string) => void;
@@ -42,9 +41,6 @@ export const LuxuryReferenceHomePage: React.FC<LuxuryReferenceHomePageProps> = (
       {/* 5. Step by Step / Process */}
       <TechnologySection onNavigate={onNavigate} />
 
-      {/* 7. Verified Expert Audits & Testimonials */}
-      <VerifiedAuditsSection />
-
       {/* 8. Call to Action / Promos */}
       <PromoCTA onNavigate={onNavigate} />
 
@@ -57,8 +53,8 @@ export const LuxuryReferenceHomePage: React.FC<LuxuryReferenceHomePageProps> = (
       {/* 11. Customer Promise / International Shipping */}
       <MissionBanner onNavigate={onNavigate} />
 
-      {/* 12. Newsletter Subscription */}
-      <NewsletterSection />
+      {/* 12. Verified Expert Audits & Testimonials (last section of the page) */}
+      <VerifiedAuditsSection />
 
       {/* Interactive Technology Detail Explorer Modal */}
       <TechDetailModal
