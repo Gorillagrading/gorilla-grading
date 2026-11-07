@@ -17,7 +17,6 @@ import { createEvent, deleteEvent, listAdminEvents, updateEvent } from '../domai
 import { EventBody } from '../../shared/events.js';
 import { AddMemberBody, ChangeRoleBody } from '../../shared/team.js';
 import { addMember, changeRole, listTeam, removeMember } from '../domain/team.js';
-import { newsletterStats } from '../domain/newsletter.js';
 import { clientIp, parseJson } from '../http.js';
 import { ProblemError } from '../problem.js';
 
@@ -124,8 +123,6 @@ export function adminRoutes(deps: Deps) {
     return c.body(null, 204);
   });
 
-  // Suscriptores confirmados de la newsletter, para exportarlos a la herramienta de envíos.
-  routes.get('/admin/newsletter', ...admin, async (c) => c.json(await newsletterStats(deps.getDb())));
 
   // Equipo: la dirección da de alta a las personas del laboratorio y les cambia el rol.
   routes.get('/admin/team', ...admin, async (c) => c.json({ members: await listTeam(deps.getDb()) }));

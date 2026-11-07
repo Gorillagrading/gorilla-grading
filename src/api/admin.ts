@@ -1,4 +1,3 @@
-import type { NewsletterStatsDto } from '../../shared/newsletter';
 import type { AddMemberBody, TeamMemberDto } from '../../shared/team';
 import type { StaffRole } from '../../shared/admin';
 import type { AdminEventDto, EventBody } from '../../shared/events';
@@ -185,4 +184,3 @@ export const addTeamMember = (body: AddMemberBody) => api<{ id: string }>('/admi
 export const changeTeamRole = (id: string, role: StaffRole) => api<void>(`/admin/team/${id}`, { method: 'PUT', body: { role } });
 export const removeTeamMember = (id: string) => api<void>(`/admin/team/${id}`, { method: 'DELETE' });
 
-export const fetchNewsletterStats = () => api<NewsletterStatsDto>('/admin/newsletter');
