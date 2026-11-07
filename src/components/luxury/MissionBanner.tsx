@@ -17,7 +17,7 @@ export const MissionBanner: React.FC<MissionBannerProps> = ({ onNavigate }) => {
   const [inView, setInView] = useState(false);
   const [cycle, setCycle] = useState(0);
 
-  const missionImgSrc = theme === 'dark' ? '/images/Dark/ourmission.png' : '/images/ourmission.png?v=7';
+  const missionImgSrc = theme === 'dark' ? '/images/Dark/ourmission.webp?v=8' : '/images/ourmission.webp?v=8';
 
   useEffect(() => {
     const el = sectionRef.current;
